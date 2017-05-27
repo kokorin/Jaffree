@@ -1,0 +1,71 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                    http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.github.kokorin.jaffree</groupId>
+    <artifactId>jaffree</artifactId>
+    <version>0.1-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.5.1</version>
+                <configuration>
+                    <source>1.7</source>
+                    <target>1.7</target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>vfs-maven-plugin</artifactId>
+                <version>1.0.1</version>
+                <executions>
+                    <execution>
+                        <id>http2file</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <fileset>
+                                <source>http://samples.ffmpeg.org/</source>
+                                <includes>
+                                    <include>MPEG-4/MPEG4 by philips.mp4</include>
+                                    <include>MPEG-4/video.mp4</include>
+                                    <include>MPEG-4/video2.mp4</include>
+                                </includes>
+                                <destination>file://${project.build.directory}/samples</destination>
+                            </fileset>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!--<plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>wagon-maven-plugin</artifactId>
+                <version>1.0</version>
+                <executions>
+                    <execution>
+                        <id>download-test-data</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>download</goal>
+                        </goals>
+                        <configuration>
+                            <url>http://samples.ffmpeg.org/</url>
+                            <fromDir>MPEG-4</fromDir>
+                            <toDir>${project.build.directory}/MPEG-4</toDir>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>-->
+        </plugins>
+    </build>
+</project>
