@@ -22,20 +22,19 @@ public class FFprobe extends Executable<FFprobeType>{
     private final String printFormat = "xml=\"x=1:q=1\"";
     private final boolean bitExact = true;
 
-    private boolean sections = false;
-    private List<StreamSpecifier> selectStreams;
-    private boolean showData = false;
+    private StreamSpecifier selectStreams;
+    private boolean showData;
     private String showDataHash;
-    private boolean showError = false;
-    private boolean showFormat = false;
+    private boolean showError;
+    private boolean showFormat;
     private String showFormatEntry;
     //TODO extract type
     private String showEntries;
-    private boolean showPackets = false;
+    private boolean showPackets;
     private boolean showFrames;
     private LogLevel showLog;
-    private boolean showStreams = true;
-    private boolean showPrograms = false;
+    private boolean showStreams;
+    private boolean showPrograms;
     private boolean showChapters;
     private boolean countFrames;
     private boolean countPackets;
@@ -54,20 +53,6 @@ public class FFprobe extends Executable<FFprobeType>{
     protected FFprobe(Path executablePath) {
         super(executablePath);
     }
-
-    /**
-     * Print sections structure and section information, and exit.
-     * <p>
-     * The output is not meant to be parsed by a machine.
-     *
-     * @param sections
-     * @return this
-     */
-    public FFprobe setSections(boolean sections) {
-        this.sections = sections;
-        return this;
-    }
-
     /**
      * Select only the streams specified by stream_specifier.
      * <p>
@@ -76,7 +61,7 @@ public class FFprobe extends Executable<FFprobeType>{
      * @param selectStreams
      * @return this
      */
-    public FFprobe setSelectStreams(List<StreamSpecifier> selectStreams) {
+    public FFprobe setSelectStreams(StreamSpecifier selectStreams) {
         this.selectStreams = selectStreams;
         return this;
     }
@@ -339,11 +324,8 @@ public class FFprobe extends Executable<FFprobeType>{
 
         //result.add(new Option("-hide_banner"));
 
-        if (sections) {
-            result.add(new Option("-sections"));
-        }
         if (selectStreams != null) {
-            result.add(new Option("-select_streams", selectStreams.toString()));
+            result.add(new Option("-select_streams", selectStreams.getOptionValue()));
         }
         if (showData) {
             result.add(new Option("-show_data"));

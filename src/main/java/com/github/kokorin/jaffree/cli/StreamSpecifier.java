@@ -5,14 +5,30 @@ package com.github.kokorin.jaffree.cli;
  * @see <a href="https://ffmpeg.org/ffprobe.html#toc-Stream-specifiers-1">stream specifiers</a>
  */
 public class StreamSpecifier {
-    private int index;
+    private Integer index;
     private String type;
 
-    public int getIndex() {
+    public StreamSpecifier() {
+    }
+
+    public StreamSpecifier(String type) {
+        this.type = type;
+    }
+
+    public StreamSpecifier(Integer index) {
+        this.index = index;
+    }
+
+    public StreamSpecifier(Integer index, String type) {
+        this.index = index;
+        this.type = type;
+    }
+
+    public Integer getIndex() {
         return index;
     }
 
-    public void setIndex(int index) {
+    public void setIndex(Integer index) {
         this.index = index;
     }
 
@@ -32,5 +48,19 @@ public class StreamSpecifier {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getOptionValue() {
+        if (type != null && index != null) {
+            return type + ":" + index;
+        }
+        if (type != null) {
+            return type;
+        }
+        if (index != null) {
+            return index.toString();
+        }
+
+        return null;
     }
 }
