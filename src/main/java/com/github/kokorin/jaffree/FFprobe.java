@@ -1,50 +1,56 @@
 package com.github.kokorin.jaffree;
 
 import com.github.kokorin.jaffree.cli.LogLevel;
+import com.github.kokorin.jaffree.cli.Option;
 import com.github.kokorin.jaffree.cli.StreamSpecifier;
 import com.github.kokorin.jaffree.ffprobe.xml.FFprobeType;
+import org.apache.commons.io.IOUtils;
 
+import javax.xml.bind.JAXB;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class FFprobe {
-    private final Path path;
+    private final Path executablePath;
 
     //This final options are required for well-formatted xml output
-    private final String outputFormat = "xml";
-    private final Boolean xsdCompliant = true;
-    private final Boolean bitExact = true;
+    private final String printFormat = "xml=\"x=1:q=1\"";
+    private final boolean bitExact = true;
 
-    private Boolean sections = false;
+    private boolean sections = false;
     private List<StreamSpecifier> selectStreams;
-    private Boolean showData;
+    private boolean showData = false;
     private String showDataHash;
-    private Boolean showError;
-    private Boolean showFormat;
+    private boolean showError = false;
+    private boolean showFormat = false;
     private String showFormatEntry;
     //TODO extract type
     private String showEntries;
-    private Boolean showPackets;
-    private Boolean showFrames;
+    private boolean showPackets = false;
+    private boolean showFrames;
     private LogLevel showLog;
-    private Boolean showStreams;
-    private Boolean showPrograms;
-    private Boolean showChapters;
-    private Boolean countFrames;
-    private Boolean countPackets;
+    private boolean showStreams = true;
+    private boolean showPrograms = false;
+    private boolean showChapters;
+    private boolean countFrames;
+    private boolean countPackets;
     //TODO extract type
     private String readIntervals;
 
-    private Boolean showPrivateData;
-    private Boolean showProgramVersion;
-    private Boolean showLibraryVersions;
-    private Boolean showVersions;
-    private Boolean showPixelFormats;
-    private String input;
+    private boolean showPrivateData;
+    private boolean showProgramVersion;
+    private boolean showLibraryVersions;
+    private boolean showVersions;
+    private boolean showPixelFormats;
+    private Path inputPath;
 
-    protected FFprobe(Path path) {
-        this.path = path;
+    protected FFprobe(Path executablePath) {
+        this.executablePath = executablePath;
     }
 
     /**
@@ -91,27 +97,27 @@ public class FFprobe {
     /**
      * Show a hash of payload data, for packets with -show_packets and for codec extradata with -show_streams.
      *
-     * @param showDataHash
+     * @param algorithm
      * @return this
      */
-    public FFprobe setShowDataHash(String showDataHash) {
-        this.showDataHash = showDataHash;
+    public FFprobe setShowDataHash(String algorithm) {
+        this.showDataHash = algorithm;
         return this;
     }
 
     /**
-     * Show information about the error found when trying to probe the input.
+     * Show information about the error found when trying to probe the inputPath.
      *
      * @param showError
      * @return this
      */
-    public FFprobe setShowError(Boolean showError) {
+    public FFprobe setShowError(boolean showError) {
         this.showError = showError;
         return this;
     }
 
     /**
-     * Show information about the container format of the input multimedia stream.
+     * Show information about the container format of the inputPath multimedia stream.
      *
      * @param showFormat
      * @return this
@@ -150,7 +156,7 @@ public class FFprobe {
     }
 
     /**
-     * Show information about each packet contained in the input multimedia stream.
+     * Show information about each packet contained in the inputPath multimedia stream.
      *
      * @param showPackets
      * @return this
@@ -161,7 +167,7 @@ public class FFprobe {
     }
 
     /**
-     * Show information about each frame and subtitle contained in the input multimedia stream.
+     * Show information about each frame and subtitle contained in the inputPath multimedia stream.
      *
      * @param showFrames
      * @return this
@@ -185,7 +191,7 @@ public class FFprobe {
     }
 
     /**
-     * Show information about each media stream contained in the input multimedia stream.
+     * Show information about each media stream contained in the inputPath multimedia stream.
      *
      * @param showStreams
      * @return this
@@ -196,7 +202,7 @@ public class FFprobe {
     }
 
     /**
-     * Show information about programs and their streams contained in the input multimedia stream.
+     * Show information about programs and their streams contained in the inputPath multimedia stream.
      *
      * @param showPrograms
      * @return this
@@ -312,42 +318,101 @@ public class FFprobe {
         return this;
     }
 
-    public FFprobe setInput(String input) {
-        this.input = input;
+    public FFprobe setInputPath(Path inputPath) {
+        this.inputPath = inputPath;
         return this;
     }
 
     public FFprobeType execute() {
-        List<Option> command = buildCommand();
-        return null;
+        List<Option> options = buildOptions();
+
+        List<String> command = new ArrayList<>();
+
+        command.add(executablePath.toString());
+
+        for (Option option : options) {
+            command.add(option.getName());
+            if (option.getValue() != null) {
+                command.add(option.getValue());
+            }
+        }
+
+        Process process;
+        try {
+            process = new ProcessBuilder(command).start();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to start process.", e);
+        }
+
+        FFprobeType result = null;
+        Thread errorThread = null;
+        try (InputStream stdOut = process.getInputStream();
+             InputStream stdErr = process.getErrorStream()) {
+            errorThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    String processError = "";
+                    try {
+                        List<String> lines = IOUtils.readLines(stdErr, StandardCharsets.UTF_8);
+                        for (String line : lines) {
+                            processError += line + "\n";
+                        }
+                        System.out.println(processError);
+                        System.out.println("---------------");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+            errorThread.start();
+
+            result = JAXB.unmarshal(stdOut, FFprobeType.class);
+            process.waitFor();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (errorThread != null) {
+                try {
+                    errorThread.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return result;
     }
 
-    protected List<Option> buildCommand() {
+    protected List<Option> buildOptions() {
         List<Option> result = new ArrayList<>();
 
-        if (xsdCompliant != null) {
-            result.add(new Option("-xsd_compliant", xsdCompliant.toString()));
+        if (bitExact) {
+            result.add(new Option("-bitexact"));
         }
-        if (bitExact != null) {
-            result.add(new Option("-bitexact", bitExact.toString()));
+
+        if (printFormat != null) {
+            result.add(new Option("-print_format", printFormat));
         }
-        if (sections != null) {
-            result.add(new Option("-sections", sections.toString()));
+
+        //result.add(new Option("-hide_banner"));
+
+        if (sections) {
+            result.add(new Option("-sections"));
         }
         if (selectStreams != null) {
             result.add(new Option("-select_streams", selectStreams.toString()));
         }
-        if (showData != null) {
-            result.add(new Option("-show_data", showData.toString()));
+        if (showData) {
+            result.add(new Option("-show_data"));
         }
         if (showDataHash != null) {
             result.add(new Option("-show_data_hash", showDataHash));
         }
-        if (showError != null) {
-            result.add(new Option("-show_error", showError.toString()));
+        if (showError) {
+            result.add(new Option("-show_error"));
         }
-        if (showFormat != null) {
-            result.add(new Option("-show_format", showFormat.toString()));
+        if (showFormat) {
+            result.add(new Option("-show_format"));
         }
         if (showFormatEntry != null) {
             result.add(new Option("-show_format_entry", showFormatEntry));
@@ -355,66 +420,71 @@ public class FFprobe {
         if (showEntries != null) {
             result.add(new Option("-show_entries", showEntries));
         }
-        if (showPackets != null) {
-            result.add(new Option("-show_packets", showPackets.toString()));
+        if (showPackets) {
+            result.add(new Option("-show_packets"));
         }
-        if (showFrames != null) {
-            result.add(new Option("-show_frames", showFrames.toString()));
+        if (showFrames) {
+            result.add(new Option("-show_frames"));
         }
         if (showLog != null) {
-            result.add(new Option("-show_log", showLog.toString()));
+            result.add(new Option("-show_log", showLog.value()));
         }
-        if (showStreams != null) {
-            result.add(new Option("-show_streams", showStreams.toString()));
+        if (showStreams) {
+            result.add(new Option("-show_streams"));
         }
-        if (showPrograms != null) {
-            result.add(new Option("-show_programs", showPrograms.toString()));
+        if (showPrograms) {
+            result.add(new Option("-show_programs"));
         }
-        if (showChapters != null) {
-            result.add(new Option("-show_chapters", showChapters.toString()));
+        if (showChapters) {
+            result.add(new Option("-show_chapters"));
         }
-        if (countFrames != null) {
-            result.add(new Option("-count_frames", countFrames.toString()));
+        if (countFrames) {
+            result.add(new Option("-count_frames"));
         }
-        if (countPackets != null) {
-            result.add(new Option("-count_packets", countPackets.toString()));
+        if (countPackets) {
+            result.add(new Option("-count_packets"));
         }
         if (readIntervals != null) {
             result.add(new Option("-read_intervals", readIntervals));
         }
-        if (showPrivateData != null) {
-            result.add(new Option("-show_private_data", showPrivateData.toString()));
+        if (showPrivateData) {
+            result.add(new Option("-show_private_data"));
+        } else {
+            result.add(new Option("-noprivate"));
         }
-        if (showProgramVersion != null) {
-            result.add(new Option("-show_program_version", showProgramVersion.toString()));
+        if (showProgramVersion) {
+            result.add(new Option("-show_program_version"));
         }
-        if (showLibraryVersions != null) {
-            result.add(new Option("-show_library_versions", showLibraryVersions.toString()));
+        if (showLibraryVersions) {
+            result.add(new Option("-show_library_versions"));
         }
-        if (showVersions != null) {
-            result.add(new Option("-show_versions", showVersions.toString()));
+        if (showVersions) {
+            result.add(new Option("-show_versions"));
         }
-        if (showPixelFormats != null) {
-            result.add(new Option("-show_pixel_formats", showPixelFormats.toString()));
+        if (showPixelFormats) {
+            result.add(new Option("-show_pixel_formats"));
         }
-        if (input != null) {
-            result.add(new Option("-i", input));
-        }
+
+        Objects.requireNonNull(inputPath, "Input file not specified");
+        result.add(new Option("-i", inputPath.toString()));
 
         return result;
     }
 
     public static FFprobe atPath(Path pathToDir) {
-        return new FFprobe(pathToDir);
-    }
-
-    public static class Option {
-        public String name;
-        public String value;
-
-        public Option(String name, String value) {
-            this.name = name;
-            this.value = value;
+        String os = System.getProperty("os.name");
+        if (os == null) {
+            throw new RuntimeException("Failed to detect OS");
         }
+
+        Path executable;
+        if (os.toLowerCase().contains("win")) {
+            executable = pathToDir.resolve("ffprobe.exe");
+        } else {
+            executable = pathToDir.resolve("ffprobe");
+        }
+
+        return new FFprobe(executable);
     }
+
 }

@@ -55,4 +55,8 @@ public enum LogLevel {
     LogLevel(int code) {
         this.code = code;
     }
+
+    public String value() {
+        return name().toLowerCase();
+    }
 }
