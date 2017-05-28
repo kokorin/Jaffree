@@ -4,19 +4,19 @@ import com.github.kokorin.jaffree.cli.LogLevel;
 import com.github.kokorin.jaffree.cli.Option;
 import com.github.kokorin.jaffree.cli.StreamSpecifier;
 import com.github.kokorin.jaffree.ffprobe.xml.FFprobeType;
-import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.xml.bind.JAXB;
-import java.io.IOException;
+import java.io.BufferedReader;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
+import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class FFprobe {
-    private final Path executablePath;
+public class FFprobe extends Executable<FFprobeType>{
 
     //This final options are required for well-formatted xml output
     private final String printFormat = "xml=\"x=1:q=1\"";
@@ -49,8 +49,10 @@ public class FFprobe {
     private boolean showPixelFormats;
     private Path inputPath;
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(FFprobe.class);
+
     protected FFprobe(Path executablePath) {
-        this.executablePath = executablePath;
+        super(executablePath);
     }
 
     /**
@@ -323,66 +325,7 @@ public class FFprobe {
         return this;
     }
 
-    public FFprobeType execute() {
-        List<Option> options = buildOptions();
-
-        List<String> command = new ArrayList<>();
-
-        command.add(executablePath.toString());
-
-        for (Option option : options) {
-            command.add(option.getName());
-            if (option.getValue() != null) {
-                command.add(option.getValue());
-            }
-        }
-
-        Process process;
-        try {
-            process = new ProcessBuilder(command).start();
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to start process.", e);
-        }
-
-        FFprobeType result = null;
-        Thread errorThread = null;
-        try (InputStream stdOut = process.getInputStream();
-             InputStream stdErr = process.getErrorStream()) {
-            errorThread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    String processError = "";
-                    try {
-                        List<String> lines = IOUtils.readLines(stdErr, StandardCharsets.UTF_8);
-                        for (String line : lines) {
-                            processError += line + "\n";
-                        }
-                        System.out.println(processError);
-                        System.out.println("---------------");
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-            errorThread.start();
-
-            result = JAXB.unmarshal(stdOut, FFprobeType.class);
-            process.waitFor();
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (errorThread != null) {
-                try {
-                    errorThread.join();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        return result;
-    }
-
+    @Override
     protected List<Option> buildOptions() {
         List<Option> result = new ArrayList<>();
 
@@ -469,6 +412,21 @@ public class FFprobe {
         result.add(new Option("-i", inputPath.toString()));
 
         return result;
+    }
+
+    @Override
+    protected FFprobeType parseStdOut(InputStream stdOut) {
+        return JAXB.unmarshal(stdOut, FFprobeType.class);
+    }
+
+    @Override
+    protected void parseStdErr(InputStream stdErr) throws Exception {
+        //just read stdErr fully
+        BufferedReader reader = new BufferedReader(new InputStreamReader(stdErr));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            LOGGER.info(line);
+        }
     }
 
     public static FFprobe atPath(Path pathToDir) {
