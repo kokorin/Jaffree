@@ -36,7 +36,19 @@ public abstract class Executable<T> {
             }
         }
 
-        LOGGER.info("Command constructed (quotes are missing):\n{}");
+        if (LOGGER.isInfoEnabled()) {
+            StringBuilder commandBuilder = new StringBuilder();
+            boolean first = true;
+            for (String argument : command) {
+                if (!first) {
+                    commandBuilder.append(" ");
+                }
+                String quote = argument.contains(" ") ? "\"" : "";
+                commandBuilder.append(quote).append(argument).append(quote);
+                first = false;
+            }
+            LOGGER.info("Command constructed:\n{}", commandBuilder.toString());
+        }
 
         Process process;
         try {

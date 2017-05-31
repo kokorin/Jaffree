@@ -28,6 +28,81 @@ public class FFprobeTest {
         Assert.assertTrue("Sample videos weren't found: " + samples.toAbsolutePath(), Files.exists(samples));
     }
 
+    //private boolean showData;
+
+    @Test
+    public void testShowDataWithShowStreams() throws Exception {
+        FFprobeType result = FFprobe.atPath(bin)
+                .setInputPath(videoMP4)
+                .setShowData(true)
+                .setShowStreams(true)
+                .execute();
+
+        Assert.assertNotNull(result);
+        Assert.assertNotNull(result.getStreams().getStream().get(0).getExtradata());
+    }
+
+    @Test
+    public void testShowDataWithShowPackets() throws Exception {
+        FFprobeType result = FFprobe.atPath(bin)
+                .setInputPath(videoMP4)
+                .setShowData(true)
+                .setShowPackets(true)
+                .execute();
+
+        Assert.assertNotNull(result);
+        Assert.assertNotNull(result.getPackets().getPacket().get(0).getData());
+    }
+
+
+    //private String showDataHash;
+
+    @Test
+    public void testShowDataHashWithShowStreams() throws Exception {
+        FFprobeType result = FFprobe.atPath(bin)
+                .setInputPath(videoMP4)
+                .setShowDataHash("MD5")
+                .setShowStreams(true)
+                .execute();
+
+        Assert.assertNotNull(result);
+        Assert.assertNotNull(result.getStreams().getStream().get(0).getExtradataHash());
+    }
+
+    @Test
+    public void testShowDataHashWithShowPackets() throws Exception {
+        FFprobeType result = FFprobe.atPath(bin)
+                .setInputPath(videoMP4)
+                .setShowDataHash("MD5")
+                .setShowPackets(true)
+                .execute();
+
+        Assert.assertNotNull(result);
+        Assert.assertNotNull(result.getPackets().getPacket().get(0).getDataHash());
+    }
+    //private boolean showError;
+    //private boolean showFormat;
+    //private String showFormatEntry;
+    ////TODO extract type
+    //private String showEntries;
+    //private boolean showPackets;
+    //private boolean showFrames;
+    //private LogLevel showLog;
+    //private boolean showStreams;
+    //private boolean showPrograms;
+    //private boolean showChapters;
+    //private boolean countFrames;
+    //private boolean countPackets;
+    ////TODO extract type
+    //private String readIntervals;
+    //
+    //private boolean showPrivateData;
+    //private boolean showProgramVersion;
+    //private boolean showLibraryVersions;
+    //private boolean showVersions;
+    //private boolean showPixelFormats;
+
+
     @Test
     public void testShowStreams() throws Exception {
         FFprobeType result = FFprobe.atPath(bin)
@@ -65,4 +140,7 @@ public class FFprobeTest {
         Assert.assertNotNull(result);
         Assert.assertEquals(1, result.getPackets().getPacket().size());
     }
+
+
+
 }

@@ -18,7 +18,15 @@ import java.util.Objects;
 
 public class FFprobe extends Executable<FFprobeType>{
 
-    //This final options are required for well-formatted xml output
+    // This final options are required for well-formatted xml output
+    //
+    // fully_qualified, q
+    // If set to 1 specify if the output should be fully qualified. Default value is 0.
+    // This is required for generating an XML file which can be validated through an XSD file.
+    //
+    // xsd_compliant, x
+    // If set to 1 perform more checks for ensuring that the output is XSD compliant. Default value is 0.
+    // This option automatically sets fully_qualified to 1.
     private final String printFormat = "xml=\"x=1:q=1\"";
     private final boolean bitExact = true;
 
