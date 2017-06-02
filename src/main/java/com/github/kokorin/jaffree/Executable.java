@@ -96,12 +96,17 @@ public abstract class Executable<T> {
         Exception exception = exceptionRef.get();
         if (status == 0) {
             if (exception != null) {
-                LOGGER.warn("Process execution has ended successfully, but exception has been caught:", exception);
+                LOGGER.warn("Process execution has ended successfully, but exception has been caught: ", exception);
             }
             return result;
         }
 
-        throw new RuntimeException("Process has ended with non zero status: " + status, exception);
+        if (result != null) {
+            LOGGER.warn("Process has ended with non zero status: {}", status, exception);
+            return result;
+        }
+
+        throw new RuntimeException("Process has ended with no result and non zero status: " + status, exception);
     }
 
     protected abstract List<Option> buildOptions();

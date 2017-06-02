@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class FFprobe extends Executable<FFprobeType>{
+public class FFprobe extends Executable<FFprobeType> {
 
     // This final options are required for well-formatted xml output
     //
@@ -61,6 +61,7 @@ public class FFprobe extends Executable<FFprobeType>{
     protected FFprobe(Path executablePath) {
         super(executablePath);
     }
+
     /**
      * Select only the streams specified by stream_specifier.
      * <p>
@@ -129,7 +130,8 @@ public class FFprobe extends Executable<FFprobeType>{
      *
      * @param showFormatEntry
      * @return this
-     * @deprecated This option is deprecated, use show_entries instead.
+     * @see #setShowEntries(String)
+     * @deprecated This option is deprecated, use show_entries instead.     *
      */
     public FFprobe setShowFormatEntry(String showFormatEntry) {
         this.showFormatEntry = showFormatEntry;
@@ -139,8 +141,24 @@ public class FFprobe extends Executable<FFprobeType>{
     /**
      * Set list of entries to show.
      * <p>
+     * Entries are specified according to the following syntax. section_entries contains a list of section entries separated by :.
+     * Each section entry is composed by a section name (or unique name),
+     * optionally followed by a list of entries local to that section, separated by ,.
+     * <p>
      * Note that the order of specification of the local section entries is not honored in the output,
      * and the usual display order will be retained.
+     * <p>
+     * The formal syntax is given by:
+     * <p>
+     * LOCAL_SECTION_ENTRIES ::= SECTION_ENTRY_NAME[,LOCAL_SECTION_ENTRIES]
+     * <p>
+     * SECTION_ENTRY         ::= SECTION_NAME[=[LOCAL_SECTION_ENTRIES]]
+     * <p>
+     * SECTION_ENTRIES       ::= SECTION_ENTRY[:SECTION_ENTRIES]
+     * <p>
+     * TODO: output with this option doesn't conform to ffprobe.xsd.
+     * {@link com.github.kokorin.jaffree.ffprobe.xml.PacketType#streamIndex} can be absent in XML
+     * {@link com.github.kokorin.jaffree.ffprobe.xml.StreamType#getIndex()} also can be absent in XML
      *
      * @param showEntries
      * @return this
