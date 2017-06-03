@@ -348,7 +348,7 @@ public class FFprobe extends Executable<FFprobeType> {
         //result.add(new Option("-hide_banner"));
 
         if (selectStreams != null) {
-            result.add(new Option("-select_streams", selectStreams.getOptionValue()));
+            result.add(new Option("-select_streams", selectStreams.getValue()));
         }
         if (showData) {
             result.add(new Option("-show_data"));

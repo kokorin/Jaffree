@@ -199,7 +199,7 @@ public class FFprobeTest {
         FFprobeType result = FFprobe.atPath(BIN)
                 .setInputPath(VIDEO_MP4)
                 .setShowPackets(true)
-                .setSelectStreams(new StreamSpecifier(5))
+                .setSelectStreams(StreamSpecifier.withIndex(5))
                 .execute();
 
         Assert.assertNotNull(result);

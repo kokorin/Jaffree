@@ -5,62 +5,41 @@ package com.github.kokorin.jaffree.cli;
  * @see <a href="https://ffmpeg.org/ffprobe.html#toc-Stream-specifiers-1">stream specifiers</a>
  */
 public class StreamSpecifier {
-    private Integer index;
-    private String type;
+    private final String value;
 
-    public StreamSpecifier() {
+    public StreamSpecifier(String value) {
+        this.value = value;
     }
 
-    public StreamSpecifier(String type) {
-        this.type = type;
+    public String getValue() {
+        return value;
     }
 
-    public StreamSpecifier(Integer index) {
-        this.index = index;
+    public static StreamSpecifier withIndex(int index) {
+        return new StreamSpecifier(Integer.toString(index));
     }
 
-    public StreamSpecifier(Integer index, String type) {
-        this.index = index;
-        this.type = type;
+    public static StreamSpecifier withTypeAndIndex(StreamType type, int index) {
+        return new StreamSpecifier(type.code() + ":" + index);
     }
 
-    public Integer getIndex() {
-        return index;
+    public static StreamSpecifier withProgramId(int programId) {
+        return new StreamSpecifier("p:" + programId);
     }
 
-    public void setIndex(Integer index) {
-        this.index = index;
+    public static StreamSpecifier withProgramIdAndStreamIndex(int programId, int index) {
+        return new StreamSpecifier("p:" + programId + ":" + index);
     }
 
-    /**
-     * stream_type is one of following: ’v’ or ’V’ for video, ’a’ for audio, ’s’ for subtitle,
-     * ’d’ for data, and ’t’ for attachments.
-     * <p>
-     * ’v’ matches all video streams, ’V’ only matches video streams which are not attached pictures,
-     * video thumbnails or cover arts. If stream_index is given, then it matches stream number stream_index of this type.
-     * Otherwise, it matches all streams of this type.
-     *
-     * @return
-     */
-    public String getType() {
-        return type;
+    public static StreamSpecifier withMetadataKey(String key) {
+        return new StreamSpecifier("m:" + key);
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public static StreamSpecifier withMetadataKeyAndValue(String key, String value) {
+        return new StreamSpecifier("m:" + key + ":" + value);
     }
 
-    public String getOptionValue() {
-        if (type != null && index != null) {
-            return type + ":" + index;
-        }
-        if (type != null) {
-            return type;
-        }
-        if (index != null) {
-            return index.toString();
-        }
-
-        return null;
+    public static StreamSpecifier withUsableConfiguration() {
+        return new StreamSpecifier("u");
     }
 }
