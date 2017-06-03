@@ -1,5 +1,5 @@
 package com.github.kokorin.jaffree;
 
 public interface ProgressListener {
-    void onProgress();
+    void onProgress(FFmpegProgress progress);
 }

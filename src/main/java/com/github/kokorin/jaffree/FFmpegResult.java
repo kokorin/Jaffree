@@ -49,12 +49,12 @@ public class FFmpegResult {
     // video:24326kB audio:1997kB subtitle:0kB other streams:0kB global headers:0kB muxing overhead: 0.532625%
     private static final String SIZE_PATTERN = "(\\d+)([kKmMgGibB]+)";
     private static final Pattern RESULT_PATTERN = Pattern.compile(
-            "^video:\\s*" + SIZE_PATTERN
-            + "\\s*audio:\\s*" + SIZE_PATTERN
-            + "\\s*subtitle:\\s*" + SIZE_PATTERN
-            + "\\s*other streams:\\s*" + SIZE_PATTERN
-            + "\\s*global headers:\\s*" + SIZE_PATTERN
-            + "\\s*muxing overhead: ([\\.\\d]+)%$"
+            "^video:\\s*" + SIZE_PATTERN + "\\s*" +
+            "audio:\\s*" + SIZE_PATTERN + "\\s*" +
+            "subtitle:\\s*" + SIZE_PATTERN + "\\s*" +
+            "other streams:\\s*" + SIZE_PATTERN + "\\s*" +
+            "global headers:\\s*" + SIZE_PATTERN + "\\s*" +
+            "muxing overhead: ([\\.\\de\\+-]+)%$"
     );
 
     public static FFmpegResult fromString(String value) {
