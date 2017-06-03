@@ -34,11 +34,13 @@ public class FFmpegTest {
         Path tempDir = Files.createTempDirectory("jaffree");
         Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
 
-        FFmpeg.atPath(BIN)
+        FFmpegResult result = FFmpeg.atPath(BIN)
                 .addInput(new Input().setUrl(VIDEO_MP4.toString()))
                 .addOutput(new Output()
                         .setUrl(outputPath.toString())
                         .addCodec(null, "copy"))
                 .execute();
+
+        Assert.assertNotNull(result);
     }
 }

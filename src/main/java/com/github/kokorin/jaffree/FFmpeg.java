@@ -14,7 +14,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FFmpeg extends Executable<Void> {
+public class FFmpeg extends Executable<FFmpegResult> {
     private List<Input> inputs;
     private List<Output> outputs;
     private List<Option> additionalOptions;
@@ -23,7 +23,7 @@ public class FFmpeg extends Executable<Void> {
     private static final Logger LOGGER = LoggerFactory.getLogger(FFmpeg.class);
 
     public FFmpeg(Path executablePath) {
-        super(executablePath);
+        super(executablePath, true);
     }
 
     public FFmpeg addInput(Input input) {
@@ -106,30 +106,31 @@ public class FFmpeg extends Executable<Void> {
     }
 
     @Override
-    protected Void parseStdOut(InputStream stdOut) {
+    protected FFmpegResult parseStdOut(InputStream stdOut) {
         //just read stdErr fully
         BufferedReader reader = new BufferedReader(new InputStreamReader(stdOut));
         String line;
+        FFmpegResult result = null;
 
         try {
             while ((line = reader.readLine()) != null) {
                 LOGGER.info("stdout - " + line);
+                FFmpegResult possibleResult = FFmpegResult.fromString(line);
+
+                if (possibleResult != null) {
+                    result = possibleResult;
+                }
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        return null;
+        return result;
     }
 
     @Override
     protected void parseStdErr(InputStream stdErr) throws Exception {
-        //just read stdErr fully
-        BufferedReader reader = new BufferedReader(new InputStreamReader(stdErr));
-        String line;
-        while ((line = reader.readLine()) != null) {
-            LOGGER.info("stderr - " + line);
-        }
+        throw new RuntimeException("Error output stream should be redirected to standard output");
     }
 
     public static FFmpeg atPath(Path pathToDir) {

@@ -22,4 +22,8 @@ public enum SizeUnit {
     SizeUnit(long multiplier) {
         this.multiplier = multiplier;
     }
+
+    public long multiplier() {
+        return multiplier;
+    }
 }

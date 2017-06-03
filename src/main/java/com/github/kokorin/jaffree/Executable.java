@@ -13,11 +13,17 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class Executable<T> {
     private final Path executablePath;
+    private final boolean redirectErrToStd;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Executable.class);
 
     public Executable(Path executablePath) {
+        this(executablePath, false);
+    }
+
+    public Executable(Path executablePath, boolean redirectErrToStd) {
         this.executablePath = executablePath;
+        this.redirectErrToStd = redirectErrToStd;
     }
 
     public T execute() {
@@ -53,7 +59,9 @@ public abstract class Executable<T> {
         Process process;
         try {
             LOGGER.debug("Starting process");
-            process = new ProcessBuilder(command).start();
+            process = new ProcessBuilder(command)
+                    .redirectErrorStream(redirectErrToStd)
+                    .start();
         } catch (IOException e) {
             throw new RuntimeException("Failed to start process.", e);
         }
@@ -67,24 +75,33 @@ public abstract class Executable<T> {
 
         try (InputStream stdOut = process.getInputStream();
              final InputStream stdErr = process.getErrorStream()) {
-            errorThread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    Exception exception = null;
-                    try {
-                        parseStdErr(stdErr);
-                    } catch (Exception e) {
-                        exception = e;
+            if (!redirectErrToStd) {
+                errorThread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Exception exception = null;
+                        try {
+                            parseStdErr(stdErr);
+                        } catch (Exception e) {
+                            exception = e;
+                        }
+                        exceptionRef.set(exception);
                     }
-                    exceptionRef.set(exception);
-                }
-            });
-            LOGGER.debug("Starting thread for reading stderr");
-            errorThread.start();
+                });
+                LOGGER.debug("Starting thread for reading stderr");
+                errorThread.start();
+            }
 
             result = parseStdOut(stdOut);
-            errorThread.join();
+
+            if (errorThread != null) {
+                LOGGER.debug("Waiting for thread to join current thread");
+                errorThread.join();
+            }
+
+            LOGGER.debug("Waiting process to finish");
             status = process.waitFor();
+
             errorThread = null;
         } catch (Exception e) {
             if (errorThread != null) {
