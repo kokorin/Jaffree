@@ -14,7 +14,6 @@ import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class FFprobe extends Executable<FFprobeType> {
 
@@ -28,7 +27,10 @@ public class FFprobe extends Executable<FFprobeType> {
     // If set to 1 perform more checks for ensuring that the output is XSD compliant. Default value is 0.
     // This option automatically sets fully_qualified to 1.
     private final String printFormat = "xml=\"x=1:q=1\"";
-    private final boolean bitExact = true;
+    // Show private data, that is data depending on the format of the particular shown element.
+    // This option is enabled by default, but you may need to disable it for specific uses,
+    // for example when creating XSD-compliant XML output.
+    private final boolean showPrivateData = false;
 
     private StreamSpecifier selectStreams;
     private boolean showData;
@@ -49,7 +51,6 @@ public class FFprobe extends Executable<FFprobeType> {
     //TODO extract type
     private String readIntervals;
 
-    private boolean showPrivateData;
     private boolean showProgramVersion;
     private boolean showLibraryVersions;
     private boolean showVersions;
@@ -197,6 +198,7 @@ public class FFprobe extends Executable<FFprobeType> {
      *
      * @param logLevel
      * @return this
+     * @see #setShowFrames(boolean)
      */
     public FFprobe setShowLog(LogLevel logLevel) {
         this.showLog = logLevel;
@@ -262,26 +264,18 @@ public class FFprobe extends Executable<FFprobeType> {
      * Read only the specified intervals. read_intervals must be a sequence of interval specifications separated by ",".
      * <p>
      * ffprobe will seek to the interval starting point, and will continue reading from that.
-     *
-     * @param readIntervals
-     * @return this
-     */
-    public FFprobe setReadIntervals(String readIntervals) {
-        this.readIntervals = readIntervals;
-        return this;
-    }
-
-    /**
-     * Show private data, that is data depending on the format of the particular shown element.
      * <p>
-     * This option is enabled by default, but you may need to disable it for specific uses,
-     * for example when creating XSD-compliant XML output.
+     * The formal syntax is given by:
+     * <p>
+     * INTERVAL  ::= [START|+START_OFFSET][%[END|+END_OFFSET|+#NUMBER_OF_FRAMES]]
+     * <p>
+     * INTERVALS ::= INTERVAL[,INTERVALS]
      *
-     * @param showPrivateData
+     * @param intervals
      * @return this
      */
-    public FFprobe setShowPrivateData(boolean showPrivateData) {
-        this.showPrivateData = showPrivateData;
+    public FFprobe setReadIntervals(String intervals) {
+        this.readIntervals = intervals;
         return this;
     }
 
@@ -340,6 +334,9 @@ public class FFprobe extends Executable<FFprobeType> {
     protected List<Option> buildOptions() {
         List<Option> result = new ArrayList<>();
 
+        // Force bitexact output, useful to produce output which is not dependent on the specific build.
+        // -bitexact and -show_program_version or -show_library_versions options are incompatible
+        boolean bitExact = !showProgramVersion && !showLibraryVersions && !showVersions;
         if (bitExact) {
             result.add(new Option("-bitexact"));
         }
@@ -378,7 +375,7 @@ public class FFprobe extends Executable<FFprobeType> {
             result.add(new Option("-show_frames"));
         }
         if (showLog != null) {
-            result.add(new Option("-show_log", showLog.value()));
+            result.add(new Option("-show_log", Integer.toString(showLog.code())));
         }
         if (showStreams) {
             result.add(new Option("-show_streams"));
@@ -416,8 +413,9 @@ public class FFprobe extends Executable<FFprobeType> {
             result.add(new Option("-show_pixel_formats"));
         }
 
-        Objects.requireNonNull(inputPath, "Input file not specified");
-        result.add(new Option("-i", inputPath.toString()));
+        if (inputPath != null) {
+            result.add(new Option("-i", inputPath.toString()));
+        }
 
         return result;
     }

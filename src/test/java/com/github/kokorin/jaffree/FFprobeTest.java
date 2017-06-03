@@ -1,5 +1,6 @@
 package com.github.kokorin.jaffree;
 
+import com.github.kokorin.jaffree.cli.LogLevel;
 import com.github.kokorin.jaffree.cli.StreamSpecifier;
 import com.github.kokorin.jaffree.ffprobe.xml.FFprobeType;
 import com.github.kokorin.jaffree.ffprobe.xml.StreamType;
@@ -16,6 +17,7 @@ public class FFprobeTest {
     public static Path SAMPLES = Paths.get("target/samples");
     public static Path VIDEO_MP4 = SAMPLES.resolve("MPEG-4/video.mp4");
     public static Path ERROR_MP4 = SAMPLES.resolve("non_existent.mp4");
+    public static Path TRANSPORT_VOB = SAMPLES.resolve("MPEG-VOB/transport-stream/capture.neimeng");
 
     @BeforeClass
     public static void setUp() throws Exception {
@@ -150,22 +152,21 @@ public class FFprobeTest {
         Assert.assertTrue(result.getFrames().getFrameOrSubtitle().size() > 0);
     }
 
-
     //private LogLevel showLog;
-    //private boolean showStreams;
-    //private boolean showPrograms;
-    //private boolean showChapters;
-    //private boolean countFrames;
-    //private boolean countPackets;
-    ////TODO extract type
-    //private String readIntervals;
-    //
-    //private boolean showPrivateData;
-    //private boolean showProgramVersion;
-    //private boolean showLibraryVersions;
-    //private boolean showVersions;
-    //private boolean showPixelFormats;
 
+    @Test
+    public void testShowLog() throws Exception {
+        FFprobeType result = FFprobe.atPath(BIN)
+                .setInputPath(VIDEO_MP4)
+                .setShowFrames(true)
+                .setShowLog(LogLevel.TRACE)
+                .execute();
+
+        Assert.assertNotNull(result);
+
+    }
+
+    //private boolean showStreams;
 
     @Test
     public void testShowStreams() throws Exception {
@@ -205,6 +206,104 @@ public class FFprobeTest {
         Assert.assertEquals(1, result.getPackets().getPacket().size());
     }
 
+    //private boolean showPrograms;
 
+    @Test
+    public void testShowPrograms() throws Exception {
+        FFprobeType result = FFprobe.atPath(BIN)
+                .setInputPath(TRANSPORT_VOB)
+                .setShowPrograms(true)
+                .execute();
+
+        Assert.assertNotNull(result);
+        Assert.assertFalse(result.getPrograms().getProgram().isEmpty());
+    }
+
+    //private boolean showChapters;
+
+    @Test
+    public void testShowChapters() throws Exception {
+        FFprobeType result = FFprobe.atPath(BIN)
+                .setInputPath(VIDEO_MP4)
+                .setShowChapters(true)
+                .execute();
+
+        Assert.assertNotNull(result);
+        //TODO Find media file with chapters
+        Assert.assertNotNull(result.getChapters());
+    }
+
+    //private boolean countFrames;
+    //private boolean countPackets;
+
+    @Test
+    public void testCountFramesAndPackets() throws Exception {
+        FFprobeType result = FFprobe.atPath(BIN)
+                .setInputPath(VIDEO_MP4)
+                .setShowStreams(true)
+                .setCountFrames(true)
+                .setCountPackets(true)
+                .execute();
+
+        Assert.assertNotNull(result);
+        for (StreamType streamType : result.getStreams().getStream()) {
+            Assert.assertTrue(streamType.getNbFrames() > 0);
+            Assert.assertTrue(streamType.getNbReadPackets() > 0);
+        }
+    }
+
+    //private String readIntervals;
+
+    @Test
+    public void testReadIntervals() throws Exception {
+        FFprobeType result = FFprobe.atPath(BIN)
+                .setInputPath(VIDEO_MP4)
+                .setShowPackets(true)
+                .setReadIntervals("30%+#42")
+                .execute();
+
+        Assert.assertNotNull(result);
+        Assert.assertTrue(result.getPackets().getPacket().size() == 42);
+    }
+
+    //private boolean showProgramVersion;
+    //private boolean showLibraryVersions;
+    //private boolean showVersions;
+
+    @Test
+    public void testShowVersions() throws Exception {
+        FFprobeType result = FFprobe.atPath(BIN)
+                .setShowProgramVersion(true)
+                .execute();
+
+        Assert.assertNotNull(result);
+        Assert.assertFalse(result.getProgramVersion().getVersion().isEmpty());
+
+        result = FFprobe.atPath(BIN)
+                .setShowLibraryVersions(true)
+                .execute();
+
+        Assert.assertNotNull(result);
+        Assert.assertFalse(result.getLibraryVersions().getLibraryVersion().isEmpty());
+
+        result = FFprobe.atPath(BIN)
+                .setShowVersions(true)
+                .execute();
+
+        Assert.assertNotNull(result);
+        Assert.assertFalse(result.getProgramVersion().getVersion().isEmpty());
+        Assert.assertFalse(result.getLibraryVersions().getLibraryVersion().isEmpty());
+    }
+
+    //private boolean showPixelFormats;
+    @Test
+    public void testShowPixelFormats() throws Exception {
+        FFprobeType result = FFprobe.atPath(BIN)
+                .setShowPixelFormats(true)
+                .execute();
+
+        Assert.assertNotNull(result);
+        Assert.assertFalse(result.getPixelFormats().getPixelFormat().isEmpty());
+    }
 
 }

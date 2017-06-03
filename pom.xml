@@ -63,11 +63,8 @@
                             <fileset>
                                 <source>http://samples.ffmpeg.org/</source>
                                 <includes>
-                                    <include>MPEG-4/MPEG4 by philips.mp4</include>
                                     <include>MPEG-4/video.mp4</include>
-                                    <include>MPEG-4/video2.mp4</include>
-                                    <!--<include>FLV/flv2mpg_error.flv</include>
-                                    <include>Matroska/decode-error-stop.mkv</include>-->
+                                    <include>MPEG-VOB/transport-stream/capture.neimeng</include>
                                 </includes>
                                 <destination>file://${project.build.directory}/samples</destination>
                             </fileset>
