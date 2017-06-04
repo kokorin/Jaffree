@@ -1,14 +1,16 @@
 package com.github.kokorin.jaffree;
 
-import com.github.kokorin.jaffree.cli.Input;
-import com.github.kokorin.jaffree.cli.Output;
+import com.github.kokorin.jaffree.cli.*;
+import com.github.kokorin.jaffree.ffprobe.xml.FFprobeType;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class FFmpegTest {
@@ -48,6 +50,25 @@ public class FFmpegTest {
     }
 
     @Test
+    @Ignore
+    public void testOutputAdditionalOption() throws Exception {
+        Path tempDir = Files.createTempDirectory("jaffree");
+        Path outputPath = tempDir.resolve("test.mp3");
+
+        FFmpegResult result = FFmpeg.atPath(BIN)
+                .addInput(new Input().setUrl(SMALL_MP4.toString()))
+                .addOutput(new Output()
+                        .setUrl(outputPath.toString())
+                        .addCodec(StreamSpecifier.withType(StreamType.AUDIO), "mp3")
+                        .addOption(new Option("-vn"))
+                        .addOption(new Option("-id3v2_version", "3"))
+                )
+                .execute();
+
+        Assert.assertNotNull(result);
+    }
+
+    @Test
     public void testProgress() throws Exception {
         Path tempDir = Files.createTempDirectory("jaffree");
         Path outputPath = tempDir.resolve("test.mp4");
@@ -63,7 +84,7 @@ public class FFmpegTest {
 
         FFmpegResult result = FFmpeg.atPath(BIN)
                 .addInput(new Input().setUrl(SMALL_FLV.toString()))
-                .addOutput(new Output() .setUrl(outputPath.toString()))
+                .addOutput(new Output().setUrl(outputPath.toString()))
                 .setProgressListener(listener)
                 .execute();
 
@@ -87,11 +108,40 @@ public class FFmpegTest {
 
         FFmpegResult result = FFmpeg.atPath(BIN)
                 .addInput(new Input().setUrl(SMALL_MP4.toString()))
-                .addOutput(new Output() .setUrl(outputPath.toString()))
+                .addOutput(new Output().setUrl(outputPath.toString()))
                 .setProgressListener(listener)
                 .execute();
 
         Assert.assertNotNull(result);
         Assert.assertTrue(counter.get() > 0);
+    }
+
+    @Test
+    public void testDuration() throws Exception {
+        Path tempDir = Files.createTempDirectory("jaffree");
+        Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
+
+        FFmpegResult result = FFmpeg.atPath(BIN)
+                .addInput(new Input()
+                        .setUrl(VIDEO_MP4.toString())
+                        .setDuration(10, TimeUnit.SECONDS)
+                )
+                .addOutput(new Output()
+                        .setUrl(outputPath.toString())
+                        .addCodec(null, "copy"))
+                .execute();
+
+        Assert.assertNotNull(result);
+
+        FFprobeType test = FFprobe.atPath(BIN)
+                .setShowStreams(true)
+                .setShowError(true)
+                .setInputPath(outputPath)
+                .execute();
+
+        Assert.assertNull(test.getError());
+        for (com.github.kokorin.jaffree.ffprobe.xml.StreamType streamType : test.getStreams().getStream()) {
+            Assert.assertEquals(10.0f, streamType.getDuration(), 0.1);
+        }
     }
 }
