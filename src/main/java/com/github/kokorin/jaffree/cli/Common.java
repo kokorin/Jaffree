@@ -11,6 +11,12 @@ public abstract class Common<T extends Common> {
     private String format;
     private Long duration;
     private Long position;
+    private Long positionEof;
+    //-r[:stream_specifier] fps (input/output,per-stream)
+    //-s[:stream_specifier] size (input/output,per-stream)
+    //-pix_fmt[:stream_specifier] format (input/output,per-stream)
+    //-sws_flags flags (input/output)
+    //
 
     private final List<Codec> codecs = new ArrayList<>();
     private final List<Option> additionalOptions = new ArrayList<>();
@@ -62,7 +68,7 @@ public abstract class Common<T extends Common> {
      * <p>
      * When used as an output option (before an output url), decodes but discards input until the timestamps reach position.
      *
-     * @param positionMillis position in milliseconds, if negative, than relative to the EOF.
+     * @param positionMillis position in milliseconds.
      * @return this
      */
     public T setPosition(long positionMillis) {
@@ -71,7 +77,7 @@ public abstract class Common<T extends Common> {
     }
 
     /**
-     * @param position position, if negative, than relative to the EOF.
+     * @param position position.
      * @param unit time unit
      * @return this
      * @see #setPosition(long)
@@ -81,7 +87,27 @@ public abstract class Common<T extends Common> {
         return thisAsT();
     }
 
+    /**
+     * Like the {@link #setPosition(long)} (-ss) option but relative to the "end of file".
+     * That is negative values are earlier in the file, 0 is at EOF.
+     * @param positionEofMillis position in milliseconds, relative to the EOF
+     * @return this
+     */
+    public T setPositionEof(long positionEofMillis) {
+        this.positionEof = positionEofMillis;
+        return thisAsT();
+    }
 
+    /**
+     * @param positionEof position, relative to the EOF
+     * @param unit time unit
+     * @return this
+     * @see #setPositionEof(long)
+     */
+    public T setPositionEof(long positionEof, TimeUnit unit) {
+        this.positionEof = unit.toMillis(positionEof);
+        return thisAsT();
+    }
 
     public T addCodec(StreamSpecifier streamSpecifier, String codecName) {
         codecs.add(new Codec(streamSpecifier, codecName));
@@ -114,8 +140,11 @@ public abstract class Common<T extends Common> {
         }
 
         if (position != null) {
-            String optionName = position >= 0 ? "-ss" : "-sseof";
-            result.add(new Option(optionName, formatDuration(position)));
+            result.add(new Option("-ss", formatDuration(position)));
+        }
+
+        if (positionEof != null) {
+            result.add(new Option("-sseof", formatDuration(positionEof)));
         }
 
         for (Codec codec : codecs) {

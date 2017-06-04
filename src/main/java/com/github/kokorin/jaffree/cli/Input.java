@@ -6,6 +6,8 @@ import java.util.List;
 public class Input extends Common<Input> {
     private String url;
     private Integer streamLoop;
+    //-itsoffset offset (input)
+    //-dump_attachment[:stream_specifier] filename (input,per-stream)
 
     /**
      * @param url input file url

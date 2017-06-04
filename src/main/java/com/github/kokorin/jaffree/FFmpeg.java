@@ -20,6 +20,10 @@ public class FFmpeg extends Executable<FFmpegResult> {
     private List<Option> additionalOptions;
     private boolean overwriteOutput;
     private ProgressListener progressListener;
+    //-progress url (global)
+    //-filter_threads nb_threads (global)
+    //-debug_ts (global)
+    //
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FFmpeg.class);
 

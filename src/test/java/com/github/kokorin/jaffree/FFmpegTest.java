@@ -208,7 +208,7 @@ public class FFmpegTest {
         FFmpegResult result = FFmpeg.atPath(BIN)
                 .addInput(new Input()
                         .setUrl(VIDEO_MP4.toString())
-                        .setPosition(-7, TimeUnit.SECONDS)
+                        .setPositionEof(-7, TimeUnit.SECONDS)
                 )
                 .addOutput(new Output()
                         .setUrl(outputPath.toString())

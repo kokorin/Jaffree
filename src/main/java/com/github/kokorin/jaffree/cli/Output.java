@@ -8,6 +8,24 @@ public class Output extends Common<Output> {
     private String url;
     private Long outputPosition;
     private Long sizeLimit;
+    //-timestamp date (output)
+    //-metadata[:metadata_specifier] key=value (output,per-metadata)
+    //-disposition[:stream_specifier] value (output,per-stream)
+    //-program [title=title:][program_num=program_num:]st=stream[:st=stream...] (output)
+    //-target type (output)
+    //-dframes number (output)
+    //-frames[:stream_specifier] framecount (output,per-stream)
+    //-qscale[:stream_specifier] q (output,per-stream)
+    //-filter[:stream_specifier] filtergraph (output,per-stream)
+    //-filter_script[:stream_specifier] filename (output,per-stream)
+    //-pre[:stream_specifier] preset_name (output,per-stream)
+    //-attach filename (output)
+    //-vframes number (output)
+    //-aspect[:stream_specifier] aspect (output,per-stream)
+    //-vn (output)
+    //-pass[:stream_specifier] n (output,per-stream)
+    //-passlogfile[:stream_specifier] prefix (output,per-stream)
+    //
 
     public Output setUrl(String url) {
         this.url = url;
