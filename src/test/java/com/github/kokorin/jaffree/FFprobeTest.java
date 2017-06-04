@@ -1,9 +1,7 @@
 package com.github.kokorin.jaffree;
 
-import com.github.kokorin.jaffree.cli.LogLevel;
-import com.github.kokorin.jaffree.cli.StreamSpecifier;
-import com.github.kokorin.jaffree.ffprobe.xml.FFprobeType;
-import com.github.kokorin.jaffree.ffprobe.xml.StreamType;
+import com.github.kokorin.jaffree.result.FFprobeResult;
+import com.github.kokorin.jaffree.result.Stream;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -35,7 +33,7 @@ public class FFprobeTest {
 
     @Test
     public void testShowDataWithShowStreams() throws Exception {
-        FFprobeType result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(BIN)
                 .setInputPath(VIDEO_MP4)
                 .setShowData(true)
                 .setShowStreams(true)
@@ -47,7 +45,7 @@ public class FFprobeTest {
 
     @Test
     public void testShowDataWithShowPackets() throws Exception {
-        FFprobeType result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(BIN)
                 .setInputPath(VIDEO_MP4)
                 .setShowData(true)
                 .setShowPackets(true)
@@ -62,7 +60,7 @@ public class FFprobeTest {
 
     @Test
     public void testShowDataHashWithShowStreams() throws Exception {
-        FFprobeType result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(BIN)
                 .setInputPath(VIDEO_MP4)
                 .setShowDataHash("MD5")
                 .setShowStreams(true)
@@ -74,7 +72,7 @@ public class FFprobeTest {
 
     @Test
     public void testShowDataHashWithShowPackets() throws Exception {
-        FFprobeType result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(BIN)
                 .setInputPath(VIDEO_MP4)
                 .setShowDataHash("MD5")
                 .setShowPackets(true)
@@ -89,7 +87,7 @@ public class FFprobeTest {
     @Test
     public void testShowError() throws Exception {
 
-        FFprobeType result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(BIN)
                 .setInputPath(ERROR_MP4)
                 .setShowError(true)
                 .execute();
@@ -103,7 +101,7 @@ public class FFprobeTest {
 
     @Test
     public void testShowFormat() throws Exception {
-        FFprobeType result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(BIN)
                 .setInputPath(VIDEO_MP4)
                 .setShowFormat(true)
                 .execute();
@@ -118,7 +116,7 @@ public class FFprobeTest {
     @Test
     public void testShowEntries() throws Exception {
 
-        FFprobeType result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(BIN)
                 .setInputPath(VIDEO_MP4)
                 .setShowEntries("packet=pts_time,duration_time,stream_index : stream=index,codec_type")
                 .execute();
@@ -142,7 +140,7 @@ public class FFprobeTest {
 
     @Test
     public void testShowFrames() throws Exception {
-        FFprobeType result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(BIN)
                 .setInputPath(VIDEO_MP4)
                 .setShowFrames(true)
                 .execute();
@@ -156,7 +154,7 @@ public class FFprobeTest {
 
     @Test
     public void testShowLog() throws Exception {
-        FFprobeType result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(BIN)
                 .setInputPath(VIDEO_MP4)
                 .setShowFrames(true)
                 .setShowLog(LogLevel.TRACE)
@@ -170,7 +168,7 @@ public class FFprobeTest {
 
     @Test
     public void testShowStreams() throws Exception {
-        FFprobeType result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(BIN)
                 .setInputPath(VIDEO_MP4)
                 .setShowStreams(true)
                 .execute();
@@ -181,7 +179,7 @@ public class FFprobeTest {
 
     @Test
     public void testSelectStreamWithShowStreams() throws Exception {
-        FFprobeType result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(BIN)
                 .setInputPath(VIDEO_MP4)
                 .setShowStreams(true)
                 .setSelectStreams(new StreamSpecifier("v"))
@@ -190,13 +188,13 @@ public class FFprobeTest {
         Assert.assertNotNull(result);
         Assert.assertEquals(1, result.getStreams().getStream().size());
 
-        StreamType stream = result.getStreams().getStream().get(0);
+        Stream stream = result.getStreams().getStream().get(0);
         Assert.assertEquals("video", stream.getCodecType());
     }
 
     @Test
     public void testSelectStreamWithShowPackets() throws Exception {
-        FFprobeType result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(BIN)
                 .setInputPath(VIDEO_MP4)
                 .setShowPackets(true)
                 .setSelectStreams(StreamSpecifier.withIndex(5))
@@ -210,7 +208,7 @@ public class FFprobeTest {
 
     @Test
     public void testShowPrograms() throws Exception {
-        FFprobeType result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(BIN)
                 .setInputPath(TRANSPORT_VOB)
                 .setShowPrograms(true)
                 .execute();
@@ -223,7 +221,7 @@ public class FFprobeTest {
 
     @Test
     public void testShowChapters() throws Exception {
-        FFprobeType result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(BIN)
                 .setInputPath(VIDEO_MP4)
                 .setShowChapters(true)
                 .execute();
@@ -238,7 +236,7 @@ public class FFprobeTest {
 
     @Test
     public void testCountFramesAndPackets() throws Exception {
-        FFprobeType result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(BIN)
                 .setInputPath(VIDEO_MP4)
                 .setShowStreams(true)
                 .setCountFrames(true)
@@ -246,9 +244,9 @@ public class FFprobeTest {
                 .execute();
 
         Assert.assertNotNull(result);
-        for (StreamType streamType : result.getStreams().getStream()) {
-            Assert.assertTrue(streamType.getNbFrames() > 0);
-            Assert.assertTrue(streamType.getNbReadPackets() > 0);
+        for (Stream stream : result.getStreams().getStream()) {
+            Assert.assertTrue(stream.getNbFrames() > 0);
+            Assert.assertTrue(stream.getNbReadPackets() > 0);
         }
     }
 
@@ -256,7 +254,7 @@ public class FFprobeTest {
 
     @Test
     public void testReadIntervals() throws Exception {
-        FFprobeType result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(BIN)
                 .setInputPath(VIDEO_MP4)
                 .setShowPackets(true)
                 .setReadIntervals("30%+#42")
@@ -272,7 +270,7 @@ public class FFprobeTest {
 
     @Test
     public void testShowVersions() throws Exception {
-        FFprobeType result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(BIN)
                 .setShowProgramVersion(true)
                 .execute();
 
@@ -298,7 +296,7 @@ public class FFprobeTest {
     //private boolean showPixelFormats;
     @Test
     public void testShowPixelFormats() throws Exception {
-        FFprobeType result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(BIN)
                 .setShowPixelFormats(true)
                 .execute();
 

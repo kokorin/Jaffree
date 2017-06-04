@@ -1,7 +1,8 @@
 package com.github.kokorin.jaffree;
 
-import com.github.kokorin.jaffree.cli.*;
-import com.github.kokorin.jaffree.ffprobe.xml.FFprobeType;
+import com.github.kokorin.jaffree.result.FFmpegResult;
+import com.github.kokorin.jaffree.result.FFprobeResult;
+import com.github.kokorin.jaffree.result.Stream;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -243,14 +244,14 @@ public class FFmpegTest {
 
         Assert.assertNotNull(result);
 
-        FFprobeType probe = FFprobe.atPath(BIN)
+        FFprobeResult probe = FFprobe.atPath(BIN)
                 .setShowStreams(true)
                 .setShowError(true)
                 .setInputPath(outputPath)
                 .execute();
         Assert.assertNull(probe.getError());
 
-        List<com.github.kokorin.jaffree.ffprobe.xml.StreamType> streamTypes = probe.getStreams().getStream();
+        List<Stream> streamTypes = probe.getStreams().getStream();
 
         Assert.assertEquals(3, streamTypes.size());
         Assert.assertEquals("audio", streamTypes.get(0).getCodecType());
@@ -259,7 +260,7 @@ public class FFmpegTest {
     }
 
     private static double getDuration(Path path) {
-        FFprobeType probe = FFprobe.atPath(BIN)
+        FFprobeResult probe = FFprobe.atPath(BIN)
                 .setShowStreams(true)
                 .setShowError(true)
                 .setInputPath(path)
@@ -267,8 +268,8 @@ public class FFmpegTest {
         Assert.assertNull(probe.getError());
 
         double result = 0.0;
-        for (com.github.kokorin.jaffree.ffprobe.xml.StreamType streamType : probe.getStreams().getStream()) {
-            result = Math.max(result, streamType.getDuration());
+        for (Stream stream : probe.getStreams().getStream()) {
+            result = Math.max(result, stream.getDuration());
         }
 
         return result;

@@ -1,8 +1,6 @@
 package com.github.kokorin.jaffree;
 
-import com.github.kokorin.jaffree.cli.Input;
-import com.github.kokorin.jaffree.cli.Option;
-import com.github.kokorin.jaffree.cli.Output;
+import com.github.kokorin.jaffree.result.FFmpegResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,7 +1,5 @@
 package com.github.kokorin.jaffree;
 
-import com.github.kokorin.jaffree.cli.SizeUnit;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

@@ -1,9 +1,8 @@
 package com.github.kokorin.jaffree;
 
-import com.github.kokorin.jaffree.cli.LogLevel;
-import com.github.kokorin.jaffree.cli.Option;
-import com.github.kokorin.jaffree.cli.StreamSpecifier;
-import com.github.kokorin.jaffree.ffprobe.xml.FFprobeType;
+import com.github.kokorin.jaffree.result.FFprobeResult;
+import com.github.kokorin.jaffree.result.Packet;
+import com.github.kokorin.jaffree.result.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,7 +14,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FFprobe extends Executable<FFprobeType> {
+public class FFprobe extends Executable<FFprobeResult> {
 
     // This final options are required for well-formatted xml output
     //
@@ -158,8 +157,8 @@ public class FFprobe extends Executable<FFprobeType> {
      * SECTION_ENTRIES       ::= SECTION_ENTRY[:SECTION_ENTRIES]
      * <p>
      * TODO: output with this option doesn't conform to ffprobe.xsd.
-     * {@link com.github.kokorin.jaffree.ffprobe.xml.PacketType#streamIndex} can be absent in XML
-     * {@link com.github.kokorin.jaffree.ffprobe.xml.StreamType#getIndex()} also can be absent in XML
+     * {@link Packet#streamIndex} can be absent in XML
+     * {@link Stream#getIndex()} also can be absent in XML
      *
      * @param showEntries
      * @return this
@@ -421,8 +420,8 @@ public class FFprobe extends Executable<FFprobeType> {
     }
 
     @Override
-    protected FFprobeType parseStdOut(InputStream stdOut) {
-        return JAXB.unmarshal(stdOut, FFprobeType.class);
+    protected FFprobeResult parseStdOut(InputStream stdOut) {
+        return JAXB.unmarshal(stdOut, FFprobeResult.class);
     }
 
     @Override

@@ -1,6 +1,5 @@
 package com.github.kokorin.jaffree;
 
-import com.github.kokorin.jaffree.cli.Option;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
