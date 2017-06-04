@@ -9,11 +9,14 @@ import org.junit.Test;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class FFmpegTest {
     public static Path BIN;
     public static Path SAMPLES = Paths.get("target/samples");
     public static Path VIDEO_MP4 = SAMPLES.resolve("MPEG-4/video.mp4");
+    public static Path SMALL_FLV = SAMPLES.resolve("FLV/zelda.flv");
+    public static Path SMALL_MP4 = SAMPLES.resolve("MPEG-4/turn-on-off.mp4");
     public static Path ERROR_MP4 = SAMPLES.resolve("non_existent.mp4");
     public static Path TRANSPORT_VOB = SAMPLES.resolve("MPEG-VOB/transport-stream/capture.neimeng");
 
@@ -42,5 +45,53 @@ public class FFmpegTest {
                 .execute();
 
         Assert.assertNotNull(result);
+    }
+
+    @Test
+    public void testProgress() throws Exception {
+        Path tempDir = Files.createTempDirectory("jaffree");
+        Path outputPath = tempDir.resolve("test.mp4");
+
+        final AtomicLong counter = new AtomicLong();
+
+        ProgressListener listener = new ProgressListener() {
+            @Override
+            public void onProgress(FFmpegProgress progress) {
+                counter.incrementAndGet();
+            }
+        };
+
+        FFmpegResult result = FFmpeg.atPath(BIN)
+                .addInput(new Input().setUrl(SMALL_FLV.toString()))
+                .addOutput(new Output() .setUrl(outputPath.toString()))
+                .setProgressListener(listener)
+                .execute();
+
+        Assert.assertNotNull(result);
+        Assert.assertTrue(counter.get() > 0);
+    }
+
+    @Test
+    public void testProgress2() throws Exception {
+        Path tempDir = Files.createTempDirectory("jaffree");
+        Path outputPath = tempDir.resolve("test.flv");
+
+        final AtomicLong counter = new AtomicLong();
+
+        ProgressListener listener = new ProgressListener() {
+            @Override
+            public void onProgress(FFmpegProgress progress) {
+                counter.incrementAndGet();
+            }
+        };
+
+        FFmpegResult result = FFmpeg.atPath(BIN)
+                .addInput(new Input().setUrl(SMALL_MP4.toString()))
+                .addOutput(new Output() .setUrl(outputPath.toString()))
+                .setProgressListener(listener)
+                .execute();
+
+        Assert.assertNotNull(result);
+        Assert.assertTrue(counter.get() > 0);
     }
 }

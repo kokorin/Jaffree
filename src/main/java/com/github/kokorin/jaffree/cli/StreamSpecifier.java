@@ -19,6 +19,10 @@ public class StreamSpecifier {
         return new StreamSpecifier(Integer.toString(index));
     }
 
+    public static StreamSpecifier withType(StreamType type) {
+        return new StreamSpecifier(type.code());
+    }
+
     public static StreamSpecifier withTypeAndIndex(StreamType type, int index) {
         return new StreamSpecifier(type.code() + ":" + index);
     }

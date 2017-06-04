@@ -19,6 +19,7 @@ public class FFmpeg extends Executable<FFmpegResult> {
     private List<Output> outputs;
     private List<Option> additionalOptions;
     private boolean overwriteOutput;
+    private ProgressListener progressListener;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FFmpeg.class);
 
@@ -67,6 +68,11 @@ public class FFmpeg extends Executable<FFmpegResult> {
         return this;
     }
 
+    public FFmpeg setProgressListener(ProgressListener progressListener) {
+        this.progressListener = progressListener;
+        return this;
+    }
+
     @Override
     protected List<Option> buildOptions() {
         List<Option> result = new ArrayList<>();
@@ -107,14 +113,22 @@ public class FFmpeg extends Executable<FFmpegResult> {
 
     @Override
     protected FFmpegResult parseStdOut(InputStream stdOut) {
-        //just read stdErr fully
+        //just read stdOut fully
         BufferedReader reader = new BufferedReader(new InputStreamReader(stdOut));
         String line;
         FFmpegResult result = null;
 
         try {
             while ((line = reader.readLine()) != null) {
-                LOGGER.info("stdout - " + line);
+                LOGGER.info(line);
+                if (progressListener != null) {
+                    FFmpegProgress progress = FFmpegProgress.fromString(line);
+                    if (progress != null) {
+                        progressListener.onProgress(progress);
+                        continue;
+                    }
+                }
+
                 FFmpegResult possibleResult = FFmpegResult.fromString(line);
 
                 if (possibleResult != null) {

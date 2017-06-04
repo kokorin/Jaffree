@@ -54,7 +54,7 @@ public class FFmpegResult {
             "subtitle:\\s*" + SIZE_PATTERN + "\\s*" +
             "other streams:\\s*" + SIZE_PATTERN + "\\s*" +
             "global headers:\\s*" + SIZE_PATTERN + "\\s*" +
-            "muxing overhead: ([\\.\\de\\+-]+)%$"
+            "muxing overhead: ([\\.\\de\\+-]+)%\\s*$"
     );
 
     public static FFmpegResult fromString(String value) {

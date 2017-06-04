@@ -63,7 +63,7 @@ public class FFmpegProgress {
             "Lsize=\\s*(\\d+)([kKmMgGibB]+)\\s*" +
             "time=\\s*(\\d+):(\\d+):([.\\d]+)\\s*" +
             "bitrate=\\s*([\\-.\\d]+)kbits/s\\s*" +
-            "speed=\\s*([.\\de+\\-]+)x$"
+            "speed=\\s*([.\\de+\\-]+)x\\s*$"
     );
 
     public static FFmpegProgress fromString(String value) {
