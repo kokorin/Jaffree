@@ -133,15 +133,108 @@ public class FFmpegTest {
 
         Assert.assertNotNull(result);
 
-        FFprobeType test = FFprobe.atPath(BIN)
-                .setShowStreams(true)
-                .setShowError(true)
-                .setInputPath(outputPath)
+        double outputDuration = getDuration(outputPath);
+        Assert.assertEquals(10.0, outputDuration, 0.1);
+    }
+
+    @Test
+    public void testOutputPosition() throws Exception {
+        Path tempDir = Files.createTempDirectory("jaffree");
+        Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
+
+        FFmpegResult result = FFmpeg.atPath(BIN)
+                .addInput(new Input().setUrl(VIDEO_MP4.toString()))
+                .addOutput(new Output()
+                        .setUrl(outputPath.toString())
+                        .addCodec(null, "copy")
+                        .setOutputPosition(15, TimeUnit.SECONDS)
+                )
                 .execute();
 
-        Assert.assertNull(test.getError());
-        for (com.github.kokorin.jaffree.ffprobe.xml.StreamType streamType : test.getStreams().getStream()) {
-            Assert.assertEquals(10.0f, streamType.getDuration(), 0.1);
+        Assert.assertNotNull(result);
+
+        double outputDuration = getDuration(outputPath);
+        Assert.assertEquals(15.0, outputDuration, 0.1);
+    }
+
+    @Test
+    public void testSizeLimit() throws Exception {
+        Path tempDir = Files.createTempDirectory("jaffree");
+        Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
+
+        FFmpegResult result = FFmpeg.atPath(BIN)
+                .addInput(new Input().setUrl(VIDEO_MP4.toString()))
+                .addOutput(new Output()
+                        .setUrl(outputPath.toString())
+                        .addCodec(null, "copy")
+                        .setSizeLimit(1, SizeUnit.MB)
+                )
+                .execute();
+
+        Assert.assertNotNull(result);
+
+        long outputSize = Files.size(outputPath);
+        Assert.assertTrue(outputSize < 1_100_000 * 8);
+    }
+
+    @Test
+    public void testPosition() throws Exception {
+        Path tempDir = Files.createTempDirectory("jaffree");
+        Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
+
+        FFmpegResult result = FFmpeg.atPath(BIN)
+                .addInput(new Input()
+                        .setUrl(VIDEO_MP4.toString())
+                        .setPosition(10, TimeUnit.SECONDS)
+                )
+                .addOutput(new Output()
+                        .setUrl(outputPath.toString())
+                        .addCodec(null, "copy"))
+                .execute();
+
+        Assert.assertNotNull(result);
+
+        double inputDuration = getDuration(VIDEO_MP4);
+        double outputDuration = getDuration(outputPath);
+
+        Assert.assertEquals(inputDuration - 10, outputDuration, 0.1);
+    }
+
+    @Test
+    public void testPositionNegative() throws Exception {
+        Path tempDir = Files.createTempDirectory("jaffree");
+        Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
+
+        FFmpegResult result = FFmpeg.atPath(BIN)
+                .addInput(new Input()
+                        .setUrl(VIDEO_MP4.toString())
+                        .setPosition(-7, TimeUnit.SECONDS)
+                )
+                .addOutput(new Output()
+                        .setUrl(outputPath.toString())
+                        .addCodec(null, "copy"))
+                .execute();
+
+        Assert.assertNotNull(result);
+
+        double outputDuration = getDuration(outputPath);
+
+        Assert.assertEquals(7.0, outputDuration, 0.1);
+    }
+
+    private double getDuration(Path path) {
+        FFprobeType probe = FFprobe.atPath(BIN)
+                .setShowStreams(true)
+                .setShowError(true)
+                .setInputPath(path)
+                .execute();
+        Assert.assertNull(probe.getError());
+
+        double result = 0.0;
+        for (com.github.kokorin.jaffree.ffprobe.xml.StreamType streamType : probe.getStreams().getStream()) {
+            result = Math.max(result, streamType.getDuration());
         }
+
+        return result;
     }
 }

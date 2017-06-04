@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 public abstract class Common<T extends Common> {
     private String format;
     private Long duration;
+    private Long position;
 
     private final List<Codec> codecs = new ArrayList<>();
     private final List<Option> additionalOptions = new ArrayList<>();
@@ -40,18 +41,46 @@ public abstract class Common<T extends Common> {
     }
 
     /**
-     * When used as an input option, limit the duration of data read from the input file.
-     * <p>
-     * When used as an output option, stop writing the output after its duration reaches duration.
-     *
      * @param duration duration
      * @param timeUnit unit of duration
      * @return this
+     * @see #setDuration(long)
      */
     public T setDuration(long duration, TimeUnit timeUnit) {
         this.duration = timeUnit.toMillis(duration);
         return thisAsT();
     }
+
+    /**
+     * When used as an input option, seeks in this input file to position.
+     * <p>
+     * Note that in most formats it is not possible to seek exactly, so ffmpeg will seek
+     * to the closest seek point before position.
+     * When transcoding and -accurate_seek is enabled (the default), this extra segment between
+     * the seek point and position will be decoded and discarded.
+     * When doing stream copy or when -noaccurate_seek is used, it will be preserved.
+     * <p>
+     * When used as an output option (before an output url), decodes but discards input until the timestamps reach position.
+     *
+     * @param positionMillis position in milliseconds, if negative, than relative to the EOF.
+     * @return this
+     */
+    public T setPosition(long positionMillis) {
+        this.position = positionMillis;
+        return thisAsT();
+    }
+
+    /**
+     * @param position position, if negative, than relative to the EOF.
+     * @param unit time unit
+     * @return this
+     * @see #setPosition(long)
+     */
+    public T setPosition(long position, TimeUnit unit) {
+        this.position = unit.toMillis(position);
+        return thisAsT();
+    }
+
 
 
     public T addCodec(StreamSpecifier streamSpecifier, String codecName) {
@@ -82,6 +111,11 @@ public abstract class Common<T extends Common> {
 
         if (duration != null) {
             result.add(new Option("-t", formatDuration(duration)));
+        }
+
+        if (position != null) {
+            String optionName = position >= 0 ? "-ss" : "-sseof";
+            result.add(new Option(optionName, formatDuration(position)));
         }
 
         for (Codec codec : codecs) {
