@@ -23,7 +23,6 @@ public class FFmpeg extends Executable<FFmpegResult> {
     //-progress url (global)
     //-filter_threads nb_threads (global)
     //-debug_ts (global)
-    //
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FFmpeg.class);
 

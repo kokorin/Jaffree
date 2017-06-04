@@ -10,6 +10,7 @@ import org.junit.Test;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -222,7 +223,42 @@ public class FFmpegTest {
         Assert.assertEquals(7.0, outputDuration, 0.1);
     }
 
-    private double getDuration(Path path) {
+    @Test
+    public void testMap() throws Exception {
+        Path tempDir = Files.createTempDirectory("jaffree");
+        Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
+
+        FFmpegResult result = FFmpeg.atPath(BIN)
+                .addInput(new Input()
+                        .setUrl(VIDEO_MP4.toString())
+                )
+                .addOutput(new Output()
+                        .setUrl(outputPath.toString())
+                        .addCodec(null, "copy")
+                        .addMap(0, StreamSpecifier.withType(StreamType.AUDIO))
+                        .addMap(0, StreamSpecifier.withType(StreamType.AUDIO))
+                        .addMap(0, StreamSpecifier.withType(StreamType.ALL_VIDEO))
+                )
+                .execute();
+
+        Assert.assertNotNull(result);
+
+        FFprobeType probe = FFprobe.atPath(BIN)
+                .setShowStreams(true)
+                .setShowError(true)
+                .setInputPath(outputPath)
+                .execute();
+        Assert.assertNull(probe.getError());
+
+        List<com.github.kokorin.jaffree.ffprobe.xml.StreamType> streamTypes = probe.getStreams().getStream();
+
+        Assert.assertEquals(3, streamTypes.size());
+        Assert.assertEquals("audio", streamTypes.get(0).getCodecType());
+        Assert.assertEquals("audio", streamTypes.get(1).getCodecType());
+        Assert.assertEquals("video", streamTypes.get(2).getCodecType());
+    }
+
+    private static double getDuration(Path path) {
         FFprobeType probe = FFprobe.atPath(BIN)
                 .setShowStreams(true)
                 .setShowError(true)

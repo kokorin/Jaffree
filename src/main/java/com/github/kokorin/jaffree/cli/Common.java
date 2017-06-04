@@ -14,8 +14,9 @@ public abstract class Common<T extends Common> {
     private Long positionEof;
     //-r[:stream_specifier] fps (input/output,per-stream)
     //-s[:stream_specifier] size (input/output,per-stream)
-    //-pix_fmt[:stream_specifier] format (input/output,per-stream)
-    //-sws_flags flags (input/output)
+
+    //-ar[:stream_specifier] freq (input/output,per-stream)
+    //-ac[:stream_specifier] channels (input/output,per-stream)
     //
 
     private final List<Codec> codecs = new ArrayList<>();

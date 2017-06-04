@@ -8,6 +8,8 @@ public class Output extends Common<Output> {
     private String url;
     private Long outputPosition;
     private Long sizeLimit;
+    private final List<Map> maps = new ArrayList<>();
+
     //-timestamp date (output)
     //-metadata[:metadata_specifier] key=value (output,per-metadata)
     //-disposition[:stream_specifier] value (output,per-stream)
@@ -25,7 +27,13 @@ public class Output extends Common<Output> {
     //-vn (output)
     //-pass[:stream_specifier] n (output,per-stream)
     //-passlogfile[:stream_specifier] prefix (output,per-stream)
-    //
+    //-rc_override[:stream_specifier] override (output,per-stream)
+
+    //-aframes number (output)
+    //-aq q (output)
+    //-an (output)
+    //-sample_fmt[:stream_specifier] sample_fmt (output,per-stream)
+
 
     public Output setUrl(String url) {
         this.url = url;
@@ -40,7 +48,7 @@ public class Output extends Common<Output> {
      * @param positionMillis outputPosition in milliseconds
      * @return this
      * @see #setDuration(long)
-     *
+     * <p>
      * TODO do we need this method? It seems, that it has the same effect as Common#setDuration
      */
     public Output setOutputPosition(long positionMillis) {
@@ -54,10 +62,10 @@ public class Output extends Common<Output> {
      * outputPosition (-to) and duration (-t) are mutually exclusive and duration has priority.
      *
      * @param position outputPosition
-     * @param unit unit
+     * @param unit     unit
      * @return this
      * @see #setDuration(long)
-     *
+     * <p>
      * TODO do we need this method? It seems, that it has the same effect as Common#setDuration
      */
     public Output setOutputPosition(long position, TimeUnit unit) {
@@ -68,6 +76,7 @@ public class Output extends Common<Output> {
     /**
      * Set the file size limit, expressed in bytes. No further chunk of bytes is written after the limit is exceeded.
      * The size of the output file is slightly more than the requested file size.
+     *
      * @param sizeLimitBytes size limit in bytes
      * @return this
      */
@@ -79,14 +88,43 @@ public class Output extends Common<Output> {
     /**
      * Set the file size limit. No further chunk of bytes is written after the limit is exceeded.
      * The size of the output file is slightly more than the requested file size.
+     *
      * @param sizeLimit size limit
-     * @param unit size unit
+     * @param unit      size unit
      * @return this
      */
     public Output setSizeLimit(long sizeLimit, SizeUnit unit) {
         this.sizeLimit = sizeLimit * unit.multiplier();
         return this;
     }
+
+    /**
+     * Designate one or more input streams as a source for the output file.
+     * <p>
+     * Each input stream is identified by the input file index input_file_id and the input stream index
+     * input_stream_id within the input file. Both indices start at 0.
+     *
+     * @param inputFileIndex  index of input file
+     * @param streamSpecifier specifier for stream(s) in input file
+     * @return this
+     */
+    public Output addMap(int inputFileIndex, StreamSpecifier streamSpecifier) {
+        this.maps.add(new MapDefault(false, inputFileIndex, streamSpecifier, false));
+        return this;
+    }
+
+    /**
+     * An alternative [linklabel] form will map outputs from complex filter graphs (see the -filter_complex option)
+     * to the output file. linklabel must correspond to a defined output link label in the graph.
+     *
+     * @param linkLabel label in complex filter
+     * @return this
+     */
+    public Output addMap(String linkLabel) {
+        this.maps.add(new MapLabel(linkLabel));
+        return this;
+    }
+
 
     @Override
     public List<Option> buildOptions() {
@@ -102,9 +140,65 @@ public class Output extends Common<Output> {
 
         result.addAll(buildCommonOptions());
 
+        for (Map map : maps) {
+            result.add(new Option("-map", map.getOptionValue()));
+        }
+
         // must be the last option
         result.add(new Option(url));
 
         return result;
+    }
+
+    private static interface Map {
+        String getOptionValue();
+    }
+
+    private static class MapDefault implements Map {
+        public boolean negative;
+        public int inputFileId;
+        public StreamSpecifier streamSpecifier;
+        public boolean optional;
+
+        public MapDefault(boolean negative, int inputFileId, StreamSpecifier streamSpecifier, boolean optional) {
+            this.negative = negative;
+            this.inputFileId = inputFileId;
+            this.streamSpecifier = streamSpecifier;
+            this.optional = optional;
+        }
+
+        @Override
+        public String getOptionValue() {
+            StringBuilder result = new StringBuilder();
+
+            if (negative) {
+                result.append("-");
+            }
+            result.append(inputFileId);
+
+            if (streamSpecifier != null) {
+                result.append(":")
+                        .append(streamSpecifier.getValue());
+            }
+
+            if (optional) {
+                result.append("?");
+            }
+
+            return result.toString();
+        }
+    }
+
+    private static class MapLabel implements Map {
+        public String linkLabel;
+
+        public MapLabel(String linkLabel) {
+            this.linkLabel = linkLabel;
+        }
+
+        @Override
+        public String getOptionValue() {
+            return "[" + linkLabel + "]";
+        }
     }
 }
