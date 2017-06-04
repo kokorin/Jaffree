@@ -23,6 +23,14 @@ public class StreamSpecifier {
         return new StreamSpecifier(type.code());
     }
 
+    public static StreamSpecifier withInputIndexAndStreamIndex(int inputIndex, int streamIndex) {
+        return new StreamSpecifier(inputIndex + ":" + streamIndex);
+    }
+
+    public static StreamSpecifier withInputIndexAndType(int inputIndex, StreamType type) {
+        return new StreamSpecifier(inputIndex + ":" + type.code());
+    }
+
     public static StreamSpecifier withTypeAndIndex(StreamType type, int index) {
         return new StreamSpecifier(type.code() + ":" + index);
     }
