@@ -35,6 +35,16 @@ public class Filter {
         return this;
     }
 
+    public Filter addArgument(String value) {
+        this.arguments.add(escape(value));
+        return this;
+    }
+
+    public Filter addArgumentEscaped(String value) {
+        this.arguments.add(value);
+        return this;
+    }
+
     public Filter addOutputLink(String link) {
         this.outputLinks.add(link);
         return this;
@@ -65,6 +75,18 @@ public class Filter {
         }
 
         return result.toString();
+    }
+
+    public static Filter fromInputLink(String link) {
+        return new Filter().addInputLink(link);
+    }
+
+    public static Filter fromInputLink(StreamSpecifier streamSpecifier) {
+        return new Filter().addInputLink(streamSpecifier);
+    }
+
+    public static Filter withName(String name) {
+        return new Filter().setName(name);
     }
 
     /**

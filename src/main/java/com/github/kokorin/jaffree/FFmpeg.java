@@ -21,6 +21,7 @@ public class FFmpeg extends Executable<FFmpegResult> {
     //-progress url (global)
     //-filter_threads nb_threads (global)
     //-debug_ts (global)
+    private FilterGraph complexFilter;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FFmpeg.class);
 
@@ -45,6 +46,11 @@ public class FFmpeg extends Executable<FFmpegResult> {
 
         additionalOptions.add(option);
 
+        return this;
+    }
+
+    public FFmpeg setComplexFilter(FilterGraph graph) {
+        this.complexFilter = graph;
         return this;
     }
 
@@ -93,6 +99,10 @@ public class FFmpeg extends Executable<FFmpegResult> {
         } else {
             // Do not overwrite output files, and exit immediately if a specified output file already exists.
             result.add(new Option("-n"));
+        }
+
+        if (complexFilter != null) {
+            result.add(new Option("-filter_complex", complexFilter.getValue()));
         }
 
         if (additionalOptions != null) {

@@ -1,5 +1,6 @@
 package com.github.kokorin.jaffree;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -148,6 +149,14 @@ public class Output extends Common<Output> {
         result.add(new Option(url));
 
         return result;
+    }
+
+    public static Output toUrl(String url) {
+        return new Output().setUrl(url);
+    }
+
+    public static Output toPath(Path path) {
+        return new Output().setUrl(path.toString());
     }
 
     private static interface Map {

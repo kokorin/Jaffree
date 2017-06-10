@@ -1,5 +1,6 @@
 package com.github.kokorin.jaffree;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,5 +45,13 @@ public class Input extends Common<Input> {
         }
 
         return result;
+    }
+
+    public static Input fromUrl(String url) {
+        return new Input().setUrl(url);
+    }
+
+    public static Input fromPath(Path path) {
+        return new Input().setUrl(path.toString());
     }
 }
