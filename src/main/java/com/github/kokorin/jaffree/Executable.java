@@ -103,7 +103,7 @@ public abstract class Executable<T> {
                         }
                         exceptionRef.set(exception);
                     }
-                });
+                }, "ffprobe stderr reader");
                 LOGGER.debug("Starting thread for reading stderr");
                 errorThread.start();
             }
