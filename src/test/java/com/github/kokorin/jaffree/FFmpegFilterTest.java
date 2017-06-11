@@ -46,7 +46,7 @@ public class FFmpegFilterTest {
     @Test
     public void testMosaic() throws Exception {
         Path tempDir = Files.createTempDirectory("jaffree");
-        Path outputPath = tempDir.resolve("mosaic.mp4");
+        Path outputPath = tempDir.resolve("mosaic.mkv");
 
         FFmpegResult result = FFmpeg.atPath(BIN)
                 .addInput(Input.fromPath(VIDEO_MP4).setDuration(10, TimeUnit.SECONDS))
@@ -186,6 +186,9 @@ public class FFmpegFilterTest {
                                         .addOutputLink("a")
                         )
                 ))
+
+                //On ubuntu ffmpeg uses AAC encoder in experimental mode, this option allows using AAC
+                .addOption(new Option("-strict", "-2"))
 
                 .addOutput(Output.toPath(outputPath)
                         .addMap("v")

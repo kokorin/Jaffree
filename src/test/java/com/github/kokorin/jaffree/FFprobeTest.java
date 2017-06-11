@@ -1,9 +1,12 @@
 package com.github.kokorin.jaffree;
 
 import com.github.kokorin.jaffree.result.FFprobeResult;
+import com.github.kokorin.jaffree.result.Frame;
 import com.github.kokorin.jaffree.result.Stream;
+import com.github.kokorin.jaffree.result.Subtitle;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.nio.file.Files;
@@ -153,6 +156,7 @@ public class FFprobeTest {
     //private LogLevel showLog;
 
     @Test
+    @Ignore("For some reason ffmpeg on ubuntu doesn't recognize -show_log option")
     public void testShowLog() throws Exception {
         FFprobeResult result = FFprobe.atPath(BIN)
                 .setInputPath(VIDEO_MP4)
@@ -161,6 +165,14 @@ public class FFprobeTest {
                 .execute();
 
         Assert.assertNotNull(result);
+        for (Object frameOrSubtitle : result.getFrames().getFrameOrSubtitle()) {
+            if (frameOrSubtitle instanceof Frame) {
+                Frame frame = (Frame) frameOrSubtitle;
+                Assert.assertNotNull(frame.getLogs());
+            } else {
+                Assert.assertEquals(Subtitle.class, frameOrSubtitle.getClass());
+            }
+        }
 
     }
 
@@ -303,5 +315,4 @@ public class FFprobeTest {
         Assert.assertNotNull(result);
         Assert.assertFalse(result.getPixelFormats().getPixelFormat().isEmpty());
     }
-
 }

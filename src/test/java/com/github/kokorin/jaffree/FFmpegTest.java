@@ -5,7 +5,6 @@ import com.github.kokorin.jaffree.result.FFprobeResult;
 import com.github.kokorin.jaffree.result.Stream;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.nio.file.Files;
@@ -52,13 +51,12 @@ public class FFmpegTest {
     }
 
     @Test
-    @Ignore
     public void testOutputAdditionalOption() throws Exception {
         Path tempDir = Files.createTempDirectory("jaffree");
         Path outputPath = tempDir.resolve("test.mp3");
 
         FFmpegResult result = FFmpeg.atPath(BIN)
-                .addInput(new Input().setUrl(SMALL_MP4.toString()))
+                .addInput(new Input().setUrl(VIDEO_MP4.toString()))
                 .addOutput(new Output()
                         .setUrl(outputPath.toString())
                         .addCodec(StreamSpecifier.withType(StreamType.AUDIO), "mp3")
@@ -68,12 +66,22 @@ public class FFmpegTest {
                 .execute();
 
         Assert.assertNotNull(result);
+
+        FFprobeResult probe = FFprobe.atPath(BIN)
+                .setInputPath(outputPath)
+                .setShowStreams(true)
+                .setShowError(true)
+                .execute();
+
+        Assert.assertNotNull(probe);
+        Assert.assertEquals(1, probe.getStreams().getStream().size());
+        Assert.assertEquals("audio", probe.getStreams().getStream().get(0).getCodecType());
     }
 
     @Test
     public void testProgress() throws Exception {
         Path tempDir = Files.createTempDirectory("jaffree");
-        Path outputPath = tempDir.resolve("test.mp4");
+        Path outputPath = tempDir.resolve("test.mkv");
 
         final AtomicLong counter = new AtomicLong();
 
@@ -176,6 +184,7 @@ public class FFmpegTest {
         Assert.assertNotNull(result);
 
         long outputSize = Files.size(outputPath);
+        Assert.assertTrue(outputSize > 900_000 * 8);
         Assert.assertTrue(outputSize < 1_100_000 * 8);
     }
 

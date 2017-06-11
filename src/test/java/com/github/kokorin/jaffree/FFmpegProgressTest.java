@@ -36,7 +36,7 @@ public class FFmpegProgressTest {
     }
 
     @Test
-    @Ignore
+    @Ignore("This output string appeared, but I can reproduce it")
     public void testFromStringWhenEncoding() throws Exception {
         String value = "frame=  184 fps=0.0 q=-1.0 Lsize=      38kB time=00:00:07.24 bitrate=  43.4kbits/s dup=73 drop=0 speed=19.5x";
         FFmpegProgress result = FFmpegProgress.fromString(value);

@@ -42,7 +42,7 @@ public class FFprobe extends Executable<FFprobeResult> {
     // xsd_compliant, x
     // If set to 1 perform more checks for ensuring that the output is XSD compliant. Default value is 0.
     // This option automatically sets fully_qualified to 1.
-    private final String printFormat = "xml=\"x=1:q=1\"";
+    private final String printFormat = "xml=x=1:q=1";
     // Show private data, that is data depending on the format of the particular shown element.
     // This option is enabled by default, but you may need to disable it for specific uses,
     // for example when creating XSD-compliant XML output.
