@@ -35,6 +35,22 @@ public class FFmpegProgressTest {
         Assert.assertEquals(11.9, result.getSpeed(), 0.1);
     }
 
+
+    @Test
+    public void fromStringWhenReencodingSmallVideo() throws Exception {
+        String value = "frame=  358 fps=0.0 q=-1.0 Lsize=     443kB time=00:00:29.71 bitrate= 122.0kbits/s";
+        FFmpegProgress result = FFmpegProgress.fromString(value);
+
+        Assert.assertNotNull(result);
+        Assert.assertEquals(358, result.getFrame());
+        Assert.assertEquals(0.0, result.getFps(), 0.01);
+        Assert.assertEquals(-1.0, result.getQ(), 0.01);
+        Assert.assertEquals(443_000 * 8, result.getSize());
+        Assert.assertEquals(29_710, result.getTime());
+        Assert.assertEquals(122.0, result.getBitrate(), 0.01);
+        Assert.assertTrue(Double.isNaN(result.getSpeed()));
+    }
+
     @Test
     @Ignore("This output string appeared, but I can reproduce it")
     public void testFromStringWhenEncoding() throws Exception {

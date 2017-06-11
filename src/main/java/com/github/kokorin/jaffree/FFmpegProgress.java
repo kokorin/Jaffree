@@ -78,7 +78,7 @@ public class FFmpegProgress {
             "Lsize=\\s*(\\d+)([kKmMgGibB]+)\\s*" +
             "time=\\s*(\\d+):(\\d+):([.\\d]+)\\s*" +
             "bitrate=\\s*([\\-.\\d]+)kbits/s\\s*" +
-            "speed=\\s*([.\\de+\\-]+)x\\s*$"
+            "(?:speed=\\s*([.\\de+\\-]+)x\\s*$)?"
     );
 
     public static FFmpegProgress fromString(String value) {
@@ -100,7 +100,12 @@ public class FFmpegProgress {
         double seconds = Double.parseDouble(matcher.group(8));
         long time = (long) (((hours * 60 + minutes) * 60 + seconds) * 1000);
         double bitrate = Double.parseDouble(matcher.group(9));
-        double speed = Double.parseDouble(matcher.group(10));
+
+        String speedStr = matcher.group(10);
+        double speed = Double.NaN;
+        if (speedStr != null && !speedStr.isEmpty()) {
+            speed = Double.parseDouble(speedStr);
+        }
 
         return new FFmpegProgress(frame, fps, q, size, time, bitrate, speed);
     }

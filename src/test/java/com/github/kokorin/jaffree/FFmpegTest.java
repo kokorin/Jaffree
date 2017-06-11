@@ -208,7 +208,7 @@ public class FFmpegTest {
         double inputDuration = getDuration(VIDEO_MP4);
         double outputDuration = getDuration(outputPath);
 
-        Assert.assertEquals(inputDuration - 10, outputDuration, 0.1);
+        Assert.assertEquals(inputDuration - 10, outputDuration, 0.5);
     }
 
     @Test
@@ -230,7 +230,7 @@ public class FFmpegTest {
 
         double outputDuration = getDuration(outputPath);
 
-        Assert.assertEquals(7.0, outputDuration, 0.1);
+        Assert.assertEquals(7.0, outputDuration, 0.5);
     }
 
     @Test
