@@ -28,6 +28,13 @@
         </dependency>
 
         <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.5</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
@@ -64,6 +71,7 @@
                                 <source>http://samples.ffmpeg.org/</source>
                                 <includes>
                                     <include>MPEG-4/video.mp4</include>
+                                    <include>MPEG-4/video2.mp4</include>
                                     <include>FLV/zelda.flv</include>
                                     <include>MPEG-4/turn-on-off.mp4</include>
                                     <include>MPEG-VOB/transport-stream/capture.neimeng</include>
