@@ -30,9 +30,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FFmpeg extends Executable<FFmpegResult> {
-    private List<Input> inputs;
-    private List<Output> outputs;
-    private List<Option> additionalOptions;
+    private final List<Input> inputs = new ArrayList<>();
+    private final List<Output> outputs = new ArrayList<>();
+    private final List<Option> additionalOptions = new ArrayList<>();
     private boolean overwriteOutput;
     private ProgressListener progressListener;
     //-progress url (global)
@@ -47,22 +47,12 @@ public class FFmpeg extends Executable<FFmpegResult> {
     }
 
     public FFmpeg addInput(Input input) {
-        if (inputs == null) {
-            inputs = new ArrayList<>();
-        }
-
         inputs.add(input);
-
         return this;
     }
 
-    public FFmpeg addInput(Option option) {
-        if (additionalOptions == null) {
-            additionalOptions = new ArrayList<>();
-        }
-
+    public FFmpeg addOption(Option option) {
         additionalOptions.add(option);
-
         return this;
     }
 
@@ -72,12 +62,7 @@ public class FFmpeg extends Executable<FFmpegResult> {
     }
 
     public FFmpeg addOutput(Output output) {
-        if (outputs == null) {
-            outputs = new ArrayList<>();
-        }
-
         outputs.add(output);
-
         return this;
     }
 
