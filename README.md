@@ -3,6 +3,14 @@ Jaffree stands for [Ja]va [ff]mpeg and [ff]probe [free] command line wrapper.
 
 It integrates with ffmpeg via `java.lang.Process`.
 
+```xml
+<dependency>
+    <groupId>com.github.kokorin.jaffree</groupId>
+    <artifactId>jaffree</artifactId>
+    <version>0.1</version>
+</dependency>
+```
+
 # Examples
 
 ## Iterate over media streams
