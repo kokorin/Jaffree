@@ -44,7 +44,8 @@ public class FFmpegTest {
                 .addInput(new Input().setUrl(VIDEO_MP4.toString()))
                 .addOutput(new Output()
                         .setUrl(outputPath.toString())
-                        .addCodec(null, "copy"))
+                        .addCodecCopy()
+                )
                 .execute();
 
         Assert.assertNotNull(result);

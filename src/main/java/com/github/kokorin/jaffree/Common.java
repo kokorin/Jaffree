@@ -129,6 +129,24 @@ public abstract class Common<T extends Common> {
         return thisAsT();
     }
 
+    /**
+     * Sets special "copy" codec for all streams
+     * @return this
+     */
+    public T addCodecCopy() {
+        codecs.add(new Codec(null, "copy"));
+        return thisAsT();
+    }
+
+    /**
+     * Sets special "copy" codec for specified streams
+     * @return this
+     */
+    public T addCodecCopy(StreamSpecifier streamSpecifier) {
+        codecs.add(new Codec(streamSpecifier, "copy"));
+        return thisAsT();
+    }
+
     public T addCodec(StreamSpecifier streamSpecifier, String codecName) {
         codecs.add(new Codec(streamSpecifier, codecName));
         return thisAsT();
