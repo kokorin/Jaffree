@@ -143,3 +143,10 @@ FFmpegResult result = FFmpeg.atPath(BIN)
         .addOutput(Output.toPath(outputPath))
         .execute();
 ```
+
+## Programmatic video creation
+
+Work in progress
+
+Supported uncompressed video+audio by mkv+ffmpeg
+d:\distribs\ffmpeg-3.3.1-win64-static\bin\ffmpeg.exe -t 5 -i target\samples\MPEG-4\video.mp4 -y -vcodec rawvideo -pix_fmt yuyv422 -an target\raw.mkv
