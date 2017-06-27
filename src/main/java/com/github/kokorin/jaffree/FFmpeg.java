@@ -43,7 +43,7 @@ public class FFmpeg extends Executable<FFmpegResult> {
     private static final Logger LOGGER = LoggerFactory.getLogger(FFmpeg.class);
 
     public FFmpeg(Path executablePath) {
-        super(executablePath, true);
+        super(executablePath);
     }
 
     public FFmpeg addInput(Input input) {
@@ -122,6 +122,16 @@ public class FFmpeg extends Executable<FFmpegResult> {
 
 
         return result;
+    }
+
+    @Override
+    protected boolean isRedirectErrToStd() {
+        return true;
+    }
+
+    @Override
+    protected boolean isWriteToStdIn() {
+        return super.isWriteToStdIn();
     }
 
     @Override

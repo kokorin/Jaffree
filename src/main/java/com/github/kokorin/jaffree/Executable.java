@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,17 +30,11 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class Executable<T> {
     private final Path executablePath;
-    private final boolean redirectErrToStd;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Executable.class);
 
     public Executable(Path executablePath) {
-        this(executablePath, false);
-    }
-
-    public Executable(Path executablePath, boolean redirectErrToStd) {
         this.executablePath = executablePath;
-        this.redirectErrToStd = redirectErrToStd;
     }
 
     public T execute() {
@@ -76,7 +71,7 @@ public abstract class Executable<T> {
         try {
             LOGGER.debug("Starting process");
             process = new ProcessBuilder(command)
-                    .redirectErrorStream(redirectErrToStd)
+                    .redirectErrorStream(isRedirectErrToStd())
                     .start();
         } catch (IOException e) {
             throw new RuntimeException("Failed to start process.", e);
@@ -86,12 +81,14 @@ public abstract class Executable<T> {
         final AtomicReference<Exception> exceptionRef = new AtomicReference<>();
         int status = 0;
         Thread errorThread = null;
+        Thread inThread = null;
 
         LOGGER.debug("Reading of stdout and stderr");
 
         try (InputStream stdOut = process.getInputStream();
-             final InputStream stdErr = process.getErrorStream()) {
-            if (!redirectErrToStd) {
+             final InputStream stdErr = process.getErrorStream();
+             final OutputStream stdIn = process.getOutputStream()) {
+            if (!isRedirectErrToStd()) {
                 errorThread = new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -103,13 +100,28 @@ public abstract class Executable<T> {
                         }
                         exceptionRef.set(exception);
                     }
-                }, "ffprobe stderr reader");
+                }, "stderr reader");
                 LOGGER.debug("Starting thread for reading stderr");
+                errorThread.start();
+            }
+
+            if (isWriteToStdIn()) {
+                inThread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        writeStdIn(stdIn);
+                    }
+                }, "stdin writer");
+                LOGGER.debug("Starting thread for writing stdin");
                 errorThread.start();
             }
 
             result = parseStdOut(stdOut);
 
+            if (inThread != null) {
+                LOGGER.debug("Waiting for thread to join current thread");
+                inThread.join();
+            }
             if (errorThread != null) {
                 LOGGER.debug("Waiting for thread to join current thread");
                 errorThread.join();
@@ -120,6 +132,9 @@ public abstract class Executable<T> {
 
             errorThread = null;
         } catch (Exception e) {
+            if (inThread != null) {
+                inThread.interrupt();
+            }
             if (errorThread != null) {
                 errorThread.interrupt();
             }
@@ -142,6 +157,20 @@ public abstract class Executable<T> {
         throw new RuntimeException("Process has ended with no result and non zero status: " + status, exception);
     }
 
+    /**
+     * Whether to combine stdOut and stdErr. May ease parsing of output.
+     */
+    protected boolean isRedirectErrToStd() {
+        return false;
+    }
+
+    /**
+     * Whether to write to stdIn.
+     */
+    protected boolean isWriteToStdIn() {
+        return false;
+    }
+
     protected abstract List<Option> buildOptions();
 
     /**
@@ -161,4 +190,8 @@ public abstract class Executable<T> {
      * @throws Exception if execution of process has failed
      */
     protected abstract void parseStdErr(InputStream stdErr) throws Exception;
+
+    protected void writeStdIn(OutputStream stdIn) {
+
+    }
 }

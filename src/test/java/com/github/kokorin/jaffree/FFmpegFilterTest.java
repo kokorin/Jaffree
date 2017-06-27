@@ -49,10 +49,10 @@ public class FFmpegFilterTest {
         Path outputPath = tempDir.resolve("mosaic.mkv");
 
         FFmpegResult result = FFmpeg.atPath(BIN)
-                .addInput(Input.fromPath(VIDEO_MP4).setDuration(10, TimeUnit.SECONDS))
-                .addInput(Input.fromPath(SMALL_FLV).setDuration(10, TimeUnit.SECONDS))
-                .addInput(Input.fromPath(SMALL_MP4).setDuration(10, TimeUnit.SECONDS))
-                .addInput(Input.fromPath(VIDEO2_MP4).setDuration(10, TimeUnit.SECONDS))
+                .addInput(UrlInput.fromPath(VIDEO_MP4).setDuration(10, TimeUnit.SECONDS))
+                .addInput(UrlInput.fromPath(SMALL_FLV).setDuration(10, TimeUnit.SECONDS))
+                .addInput(UrlInput.fromPath(SMALL_MP4).setDuration(10, TimeUnit.SECONDS))
+                .addInput(UrlInput.fromPath(VIDEO2_MP4).setDuration(10, TimeUnit.SECONDS))
 
                 .setComplexFilter(FilterGraph.of(
                         FilterChain.of(
@@ -169,8 +169,8 @@ public class FFmpegFilterTest {
         Path outputPath = tempDir.resolve("concat.mp4");
 
         FFmpegResult result = FFmpeg.atPath(BIN)
-                .addInput(Input.fromPath(VIDEO_MP4).setDuration(5, TimeUnit.SECONDS))
-                .addInput(Input.fromPath(VIDEO2_MP4).setPositionEof(-5, TimeUnit.SECONDS))
+                .addInput(UrlInput.fromPath(VIDEO_MP4).setDuration(5, TimeUnit.SECONDS))
+                .addInput(UrlInput.fromPath(VIDEO2_MP4).setPositionEof(-5, TimeUnit.SECONDS))
 
                 .setComplexFilter(FilterGraph.of(
                         FilterChain.of(

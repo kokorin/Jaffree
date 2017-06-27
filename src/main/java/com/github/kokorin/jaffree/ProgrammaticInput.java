@@ -17,8 +17,12 @@
 
 package com.github.kokorin.jaffree;
 
+import java.util.Collections;
 import java.util.List;
 
-public interface Input {
-    List<Option> buildOptions();
+public class ProgrammaticInput implements Input {
+    @Override
+    public List<Option> buildOptions() {
+        return Collections.singletonList(new Option("-i", "-"));
+    }
 }

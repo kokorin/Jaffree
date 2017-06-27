@@ -41,7 +41,7 @@ public class FFmpegTest {
         Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
 
         FFmpegResult result = FFmpeg.atPath(BIN)
-                .addInput(new Input().setUrl(VIDEO_MP4.toString()))
+                .addInput(UrlInput.fromPath(VIDEO_MP4))
                 .addOutput(new Output()
                         .setUrl(outputPath.toString())
                         .addCodec(null, "copy"))
@@ -56,7 +56,7 @@ public class FFmpegTest {
         Path outputPath = tempDir.resolve("test.mp3");
 
         FFmpegResult result = FFmpeg.atPath(BIN)
-                .addInput(new Input().setUrl(VIDEO_MP4.toString()))
+                .addInput(UrlInput.fromPath(VIDEO_MP4))
                 .addOutput(new Output()
                         .setUrl(outputPath.toString())
                         .addCodec(StreamSpecifier.withType(StreamType.AUDIO), "mp3")
@@ -93,7 +93,7 @@ public class FFmpegTest {
         };
 
         FFmpegResult result = FFmpeg.atPath(BIN)
-                .addInput(new Input().setUrl(SMALL_FLV.toString()))
+                .addInput(UrlInput.fromPath(SMALL_FLV))
                 .addOutput(new Output().setUrl(outputPath.toString()))
                 .setProgressListener(listener)
                 .execute();
@@ -117,7 +117,7 @@ public class FFmpegTest {
         };
 
         FFmpegResult result = FFmpeg.atPath(BIN)
-                .addInput(new Input().setUrl(SMALL_MP4.toString()))
+                .addInput(UrlInput.fromPath(SMALL_MP4))
                 .addOutput(new Output().setUrl(outputPath.toString()))
                 .setProgressListener(listener)
                 .execute();
@@ -132,8 +132,8 @@ public class FFmpegTest {
         Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
 
         FFmpegResult result = FFmpeg.atPath(BIN)
-                .addInput(new Input()
-                        .setUrl(VIDEO_MP4.toString())
+                .addInput(UrlInput
+                        .fromPath(VIDEO_MP4)
                         .setDuration(10, TimeUnit.SECONDS)
                 )
                 .addOutput(new Output()
@@ -153,7 +153,7 @@ public class FFmpegTest {
         Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
 
         FFmpegResult result = FFmpeg.atPath(BIN)
-                .addInput(new Input().setUrl(VIDEO_MP4.toString()))
+                .addInput(UrlInput.fromPath(VIDEO_MP4))
                 .addOutput(new Output()
                         .setUrl(outputPath.toString())
                         .addCodec(null, "copy")
@@ -173,7 +173,7 @@ public class FFmpegTest {
         Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
 
         FFmpegResult result = FFmpeg.atPath(BIN)
-                .addInput(new Input().setUrl(VIDEO_MP4.toString()))
+                .addInput(UrlInput.fromPath(VIDEO_MP4))
                 .addOutput(new Output()
                         .setUrl(outputPath.toString())
                         .addCodec(null, "copy")
@@ -194,8 +194,8 @@ public class FFmpegTest {
         Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
 
         FFmpegResult result = FFmpeg.atPath(BIN)
-                .addInput(new Input()
-                        .setUrl(VIDEO_MP4.toString())
+                .addInput(UrlInput
+                        .fromPath(VIDEO_MP4)
                         .setPosition(10, TimeUnit.SECONDS)
                 )
                 .addOutput(new Output()
@@ -217,8 +217,8 @@ public class FFmpegTest {
         Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
 
         FFmpegResult result = FFmpeg.atPath(BIN)
-                .addInput(new Input()
-                        .setUrl(VIDEO_MP4.toString())
+                .addInput(UrlInput
+                        .fromPath(VIDEO_MP4)
                         .setPositionEof(-7, TimeUnit.SECONDS)
                 )
                 .addOutput(new Output()
@@ -239,9 +239,7 @@ public class FFmpegTest {
         Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
 
         FFmpegResult result = FFmpeg.atPath(BIN)
-                .addInput(new Input()
-                        .setUrl(VIDEO_MP4.toString())
-                )
+                .addInput(UrlInput.fromPath(VIDEO_MP4))
                 .addOutput(new Output()
                         .setUrl(outputPath.toString())
                         .addCodec(null, "copy")
