@@ -138,6 +138,9 @@ public abstract class Executable<T> {
             if (errorThread != null) {
                 errorThread.interrupt();
             }
+            if (process != null) {
+                process.destroy();
+            }
             throw new RuntimeException("Failed to handle process execution", e);
         }
 
