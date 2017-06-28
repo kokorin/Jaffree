@@ -76,7 +76,7 @@ public class UncompressedTest {
                                 .setDuration(1, TimeUnit.SECONDS)
                 )
                 .addOutput(
-                        Output.toPath(outputPath)
+                        UrlOutput.toPath(outputPath)
                         .addCodec(StreamSpecifier.withType(StreamType.ALL_VIDEO), "h264")
                         .addCodec(StreamSpecifier.withType(StreamType.AUDIO), "ac3")
                 )
@@ -103,7 +103,7 @@ public class UncompressedTest {
                                 .setDuration(5, TimeUnit.SECONDS)
                 )
                 .addOutput(
-                        Output.toPath(outputPath)
+                        UrlOutput.toPath(outputPath)
                         .addCodec(StreamSpecifier.withType(StreamType.ALL_VIDEO), "rawvideo")
                         .addOption(new Option("-pix_fmt", "yuv420p"))
                         .addCodec(StreamSpecifier.withType(StreamType.AUDIO), "pcm_s32le")

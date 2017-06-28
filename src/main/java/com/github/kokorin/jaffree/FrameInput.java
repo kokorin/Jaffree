@@ -20,7 +20,7 @@ package com.github.kokorin.jaffree;
 import java.util.Collections;
 import java.util.List;
 
-public class ProgrammaticInput implements Input {
+public class FrameInput implements Input {
     @Override
     public List<Option> buildOptions() {
         return Collections.singletonList(new Option("-i", "-"));

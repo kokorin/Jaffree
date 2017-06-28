@@ -125,7 +125,7 @@ public class FFmpegFilterTest {
                         )
                 ))
 
-                .addOutput(Output.toPath(outputPath))
+                .addOutput(UrlOutput.toPath(outputPath))
                 .execute();
 
         Assert.assertNotNull(result);
@@ -190,7 +190,7 @@ public class FFmpegFilterTest {
                 //On ubuntu ffmpeg uses AAC encoder in experimental mode, this option allows using AAC
                 .addOption(new Option("-strict", "-2"))
 
-                .addOutput(Output.toPath(outputPath)
+                .addOutput(UrlOutput.toPath(outputPath)
                         .addMap("v")
                         .addMap("a")
                 )

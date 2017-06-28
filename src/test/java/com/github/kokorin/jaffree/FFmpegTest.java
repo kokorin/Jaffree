@@ -42,8 +42,8 @@ public class FFmpegTest {
 
         FFmpegResult result = FFmpeg.atPath(BIN)
                 .addInput(UrlInput.fromPath(VIDEO_MP4))
-                .addOutput(new Output()
-                        .setUrl(outputPath.toString())
+                .addOutput(UrlOutput
+                        .toPath(outputPath)
                         .addCodec(null, "copy"))
                 .execute();
 
@@ -57,8 +57,8 @@ public class FFmpegTest {
 
         FFmpegResult result = FFmpeg.atPath(BIN)
                 .addInput(UrlInput.fromPath(VIDEO_MP4))
-                .addOutput(new Output()
-                        .setUrl(outputPath.toString())
+                .addOutput(UrlOutput
+                        .toPath(outputPath)
                         .addCodec(StreamSpecifier.withType(StreamType.AUDIO), "mp3")
                         .addOption(new Option("-vn"))
                         .addOption(new Option("-id3v2_version", "3"))
@@ -94,7 +94,7 @@ public class FFmpegTest {
 
         FFmpegResult result = FFmpeg.atPath(BIN)
                 .addInput(UrlInput.fromPath(SMALL_FLV))
-                .addOutput(new Output().setUrl(outputPath.toString()))
+                .addOutput(UrlOutput.toPath(outputPath))
                 .setProgressListener(listener)
                 .execute();
 
@@ -118,7 +118,7 @@ public class FFmpegTest {
 
         FFmpegResult result = FFmpeg.atPath(BIN)
                 .addInput(UrlInput.fromPath(SMALL_MP4))
-                .addOutput(new Output().setUrl(outputPath.toString()))
+                .addOutput(UrlOutput.toPath(outputPath))
                 .setProgressListener(listener)
                 .execute();
 
@@ -136,8 +136,8 @@ public class FFmpegTest {
                         .fromPath(VIDEO_MP4)
                         .setDuration(10, TimeUnit.SECONDS)
                 )
-                .addOutput(new Output()
-                        .setUrl(outputPath.toString())
+                .addOutput(UrlOutput
+                        .toPath(outputPath)
                         .addCodec(null, "copy"))
                 .execute();
 
@@ -154,8 +154,8 @@ public class FFmpegTest {
 
         FFmpegResult result = FFmpeg.atPath(BIN)
                 .addInput(UrlInput.fromPath(VIDEO_MP4))
-                .addOutput(new Output()
-                        .setUrl(outputPath.toString())
+                .addOutput(UrlOutput
+                        .toPath(outputPath)
                         .addCodec(null, "copy")
                         .setOutputPosition(15, TimeUnit.SECONDS)
                 )
@@ -174,8 +174,8 @@ public class FFmpegTest {
 
         FFmpegResult result = FFmpeg.atPath(BIN)
                 .addInput(UrlInput.fromPath(VIDEO_MP4))
-                .addOutput(new Output()
-                        .setUrl(outputPath.toString())
+                .addOutput(UrlOutput
+                        .toPath(outputPath)
                         .addCodec(null, "copy")
                         .setSizeLimit(1, SizeUnit.MB)
                 )
@@ -198,8 +198,8 @@ public class FFmpegTest {
                         .fromPath(VIDEO_MP4)
                         .setPosition(10, TimeUnit.SECONDS)
                 )
-                .addOutput(new Output()
-                        .setUrl(outputPath.toString())
+                .addOutput(UrlOutput
+                        .toPath(outputPath)
                         .addCodec(null, "copy"))
                 .execute();
 
@@ -221,8 +221,8 @@ public class FFmpegTest {
                         .fromPath(VIDEO_MP4)
                         .setPositionEof(-7, TimeUnit.SECONDS)
                 )
-                .addOutput(new Output()
-                        .setUrl(outputPath.toString())
+                .addOutput(UrlOutput
+                        .toPath(outputPath)
                         .addCodec(null, "copy"))
                 .execute();
 
@@ -240,8 +240,8 @@ public class FFmpegTest {
 
         FFmpegResult result = FFmpeg.atPath(BIN)
                 .addInput(UrlInput.fromPath(VIDEO_MP4))
-                .addOutput(new Output()
-                        .setUrl(outputPath.toString())
+                .addOutput(UrlOutput
+                        .toPath(outputPath)
                         .addCodec(null, "copy")
                         .addMap(0, StreamSpecifier.withType(StreamType.AUDIO))
                         .addMap(0, StreamSpecifier.withType(StreamType.AUDIO))
