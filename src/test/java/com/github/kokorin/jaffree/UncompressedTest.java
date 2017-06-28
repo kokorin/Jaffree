@@ -17,8 +17,11 @@
 
 package com.github.kokorin.jaffree;
 
+import com.github.kokorin.jaffree.ffmpeg.FFmpeg;
+import com.github.kokorin.jaffree.ffmpeg.FFmpegResult;
+import com.github.kokorin.jaffree.ffmpeg.UrlInput;
+import com.github.kokorin.jaffree.ffmpeg.UrlOutput;
 import com.github.kokorin.jaffree.matroska.ExtraDocTypes;
-import com.github.kokorin.jaffree.result.FFmpegResult;
 import org.ebml.io.FileDataSource;
 import org.ebml.matroska.MatroskaFile;
 import org.ebml.matroska.MatroskaFileFrame;

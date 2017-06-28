@@ -9,14 +9,14 @@
         </layout>
     </appender>
 
+ <!--   <logger name="org.ebml" additivity="false">
+        <level value="info" />
+        <appender-ref ref="console" />
+    </logger>-->
+
     <root>
         <priority value ="info" />
         <appender-ref ref="console" />
     </root>
-
-    <logger name="org.ebml" additivity="false">
-        <level value="info" />
-        <appender-ref ref="console" />
-    </logger>
 
 </log4j:configuration>
