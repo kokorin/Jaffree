@@ -454,8 +454,8 @@ public class FFprobe {
         };
     }
 
-    protected StdReader<Void> createStdErrReader() {
-        return new LoggingStdReader();
+    protected StdReader<FFprobeResult> createStdErrReader() {
+        return new LoggingStdReader<>();
     }
 
     public static FFprobe atPath(Path pathToDir) {

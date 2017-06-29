@@ -15,25 +15,24 @@
  *
  */
 
-package com.github.kokorin.jaffree;
+package com.github.kokorin.jaffree.ffmpeg;
 
-import com.github.kokorin.jaffree.ffmpeg.FFmpeg;
-import com.github.kokorin.jaffree.ffmpeg.FFmpegResult;
-import com.github.kokorin.jaffree.ffmpeg.UrlInput;
-import com.github.kokorin.jaffree.ffmpeg.UrlOutput;
+import com.github.kokorin.jaffree.StreamSpecifier;
+import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.matroska.ExtraDocTypes;
 import org.ebml.io.FileDataSource;
 import org.ebml.matroska.MatroskaFile;
-import org.ebml.matroska.MatroskaFileFrame;
 import org.ebml.matroska.MatroskaFileTrack;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class UncompressedTest {
     public static Path BIN;
@@ -56,6 +55,8 @@ public class UncompressedTest {
         BIN = Paths.get(ffmpegHome);
 
         Assert.assertTrue("Sample videos weren't found: " + SAMPLES.toAbsolutePath(), Files.exists(SAMPLES));
+
+        ExtraDocTypes.init();
     }
 
     @Test
@@ -80,8 +81,8 @@ public class UncompressedTest {
                 )
                 .addOutput(
                         UrlOutput.toPath(outputPath)
-                        .addCodec(StreamSpecifier.withType(StreamType.ALL_VIDEO), "h264")
-                        .addCodec(StreamSpecifier.withType(StreamType.AUDIO), "ac3")
+                                .addCodec(StreamSpecifier.withType(StreamType.ALL_VIDEO), "h264")
+                                .addCodec(StreamSpecifier.withType(StreamType.AUDIO), "ac3")
                 )
                 .execute();
 
@@ -96,9 +97,17 @@ public class UncompressedTest {
     }
 
     @Test
+    @Ignore
     public void testReadUncompressed() throws Exception {
         Path tempDir = Files.createTempDirectory("jaffree");
-        Path outputPath = tempDir.resolve("raw.mkv");
+
+        final AtomicLong frameCounter = new AtomicLong();
+        FrameConsumer consumer = new FrameConsumer() {
+            @Override
+            public void consume(Frame frame) {
+                frameCounter.incrementAndGet();
+            }
+        };
 
         FFmpegResult result = FFmpeg.atPath(BIN)
                 .addInput(
@@ -106,34 +115,12 @@ public class UncompressedTest {
                                 .setDuration(5, TimeUnit.SECONDS)
                 )
                 .addOutput(
-                        UrlOutput.toPath(outputPath)
-                        .addCodec(StreamSpecifier.withType(StreamType.ALL_VIDEO), "rawvideo")
-                        .addOption(new Option("-pix_fmt", "yuv420p"))
-                        .addCodec(StreamSpecifier.withType(StreamType.AUDIO), "pcm_s32le")
+                        FrameOutput.withConsumer(consumer)
+                                .extractVideo(true)
                 )
                 .execute();
 
         Assert.assertNotNull(result);
-
-        MatroskaFile mkvFile = new MatroskaFile(new FileDataSource(outputPath.toString()));
-        mkvFile.readFile();
-
-        MatroskaFileTrack[] tracks = mkvFile.getTrackList();
-        Assert.assertNotNull(tracks);
-        Assert.assertEquals(2, tracks.length);
-
-        for (MatroskaFileTrack track : tracks) {
-            System.out.println(track);
-        }
-
-        MatroskaFileFrame frame;
-        while ((frame = mkvFile.getNextFrame()) != null) {
-            System.out.println("time:" + frame.getTimecode()
-                    + " tr:" + frame.getTrackNo()
-                    + " dur:" + frame.getDuration()
-                    + " key:" + frame.isKeyFrame()
-                    + " size:" + frame.getData().limit()
-            );
-        }
+        Assert.assertTrue(frameCounter.get() > 0);
     }
 }

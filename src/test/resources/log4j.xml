@@ -9,10 +9,10 @@
         </layout>
     </appender>
 
- <!--   <logger name="org.ebml" additivity="false">
-        <level value="info" />
+    <logger name="org.ebml" additivity="false">
+        <level value="trace" />
         <appender-ref ref="console" />
-    </logger>-->
+    </logger>
 
     <root>
         <priority value ="info" />

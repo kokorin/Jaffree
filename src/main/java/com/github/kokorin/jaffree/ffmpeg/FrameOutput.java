@@ -18,7 +18,6 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.Option;
-import com.github.kokorin.jaffree.Output;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +26,11 @@ public class FrameOutput implements Output {
     private boolean video;
     private boolean audio;
 
-    private FrameConsumer consumer;
+    private final FrameConsumer consumer;
+
+    public FrameOutput(FrameConsumer consumer) {
+        this.consumer = consumer;
+    }
 
     public FrameOutput extractVideo(boolean video) {
         this.video = video;
@@ -39,15 +42,20 @@ public class FrameOutput implements Output {
         return this;
     }
 
-    public FrameOutput setConsumer(FrameConsumer consumer) {
-        this.consumer = consumer;
-        return this;
+    public FrameConsumer getConsumer() {
+        return consumer;
     }
 
+    @Override
+    public void beforeExecute(FFmpeg fFmpeg) {
+
+    }
 
     @Override
     public List<Option> buildOptions() {
         List<Option> result = new ArrayList<>();
+
+        result.add(new Option("-f", "matroska"));
 
         if (video) {
             result.add(new Option("-vcodec", "rawvideo"));
@@ -62,6 +70,12 @@ public class FrameOutput implements Output {
             result.add(new Option("-an"));
         }
 
+        result.add(new Option("-"));
+
         return result;
+    }
+
+    public static FrameOutput withConsumer(FrameConsumer consumer) {
+        return new FrameOutput(consumer);
     }
 }

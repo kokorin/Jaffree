@@ -32,8 +32,8 @@ import java.util.concurrent.atomic.AtomicReference;
 public class ProcessHandler<T> {
     private final Path executable;
     private StdWriter stdInWriter = null;
-    private StdReader<T> stdOutReader = new LoggingStdReader<>();
-    private StdReader<Void> stdErrReader = new LoggingStdReader<>();
+    private StdReader<T> stdOutReader = new GobblingStdReader<>();
+    private StdReader<T> stdErrReader = new GobblingStdReader<>();
     private boolean redirectErrToOut = false;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessHandler.class);
@@ -52,7 +52,7 @@ public class ProcessHandler<T> {
         return this;
     }
 
-    public ProcessHandler<T> setStdErrReader(StdReader<Void> stdErrReader) {
+    public ProcessHandler<T> setStdErrReader(StdReader<T> stdErrReader) {
         this.stdErrReader = stdErrReader;
         return this;
     }
@@ -76,6 +76,7 @@ public class ProcessHandler<T> {
         }
 
         T result = null;
+        final AtomicReference<T> errResultRef = new AtomicReference<>();
         final AtomicReference<Exception> exceptionRef = new AtomicReference<>();
         int status = 0;
         Thread stdInThread = null;
@@ -90,13 +91,12 @@ public class ProcessHandler<T> {
             stdErrThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    Exception exception = null;
                     try {
-                        stdErrReader.read(stdErr);
+                        T errResult = stdErrReader.read(stdErr);
+                        errResultRef.set(errResult);
                     } catch (Exception e) {
-                        exception = e;
+                        exceptionRef.set(e);
                     }
-                    exceptionRef.set(exception);
                 }
             }, "stderr reader");
             LOGGER.debug("Starting thread for reading stderr");
@@ -111,9 +111,12 @@ public class ProcessHandler<T> {
                 }, "stdin writer");
                 LOGGER.debug("Starting thread for writing stdin");
                 stdErrThread.start();
-            }
+        }
 
             result = stdOutReader.read(stdOut);
+            if (result == null) {
+                result = errResultRef.get();
+            }
 
             if (stdInThread != null) {
                 LOGGER.debug("Waiting for thread to join current thread");

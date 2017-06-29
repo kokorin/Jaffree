@@ -18,16 +18,11 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.Option;
-import com.github.kokorin.jaffree.Output;
 import com.github.kokorin.jaffree.process.ProcessHandler;
 import com.github.kokorin.jaffree.process.StdReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +37,9 @@ public class FFmpeg {
     //-filter_threads nb_threads (global)
     //-debug_ts (global)
     private FilterGraph complexFilter;
+
+    private StdReader<FFmpegResult> stdOutReader;
+    private StdReader<FFmpegResult> stdErrReader;
 
     private final Path executable;
 
@@ -88,11 +86,34 @@ public class FFmpeg {
         return this;
     }
 
+    public ProgressListener getProgressListener() {
+        return progressListener;
+    }
+
+    public void setStdOutReader(StdReader<FFmpegResult> stdOutReader) {
+        this.stdOutReader = stdOutReader;
+    }
+
+    public void setStdErrReader(StdReader<FFmpegResult> stdErrReader) {
+        this.stdErrReader = stdErrReader;
+    }
+
     public FFmpegResult execute() {
-        return ProcessHandler.<FFmpegResult>forExecutable(executable)
-                .setRedirectErrToOut(true)
-                .setStdOutReader(createStdOutReader(progressListener))
-                .execute(buildOptions());
+        for (Output output : outputs) {
+            output.beforeExecute(this);
+        }
+
+        ProcessHandler<FFmpegResult> processHandler = ProcessHandler.<FFmpegResult>forExecutable(executable);
+
+        if (stdErrReader != null) {
+            processHandler.setStdErrReader(stdErrReader);
+        }
+
+        if (stdOutReader != null) {
+            processHandler.setStdOutReader(stdOutReader);
+        }
+
+        return processHandler.execute(buildOptions());
     }
 
     protected List<Option> buildOptions() {
@@ -127,41 +148,6 @@ public class FFmpeg {
         }
 
         return result;
-    }
-
-    protected StdReader<FFmpegResult> createStdOutReader(final ProgressListener progressListener) {
-        return new StdReader<FFmpegResult>() {
-            @Override
-            public FFmpegResult read(InputStream stdOut) {
-                //just read stdOut fully
-                BufferedReader reader = new BufferedReader(new InputStreamReader(stdOut));
-                String line;
-                FFmpegResult result = null;
-
-                try {
-                    while ((line = reader.readLine()) != null) {
-                        LOGGER.info(line);
-                        if (progressListener != null) {
-                            FFmpegProgress progress = FFmpegProgress.fromString(line);
-                            if (progress != null) {
-                                progressListener.onProgress(progress);
-                                continue;
-                            }
-                        }
-
-                        FFmpegResult possibleResult = FFmpegResult.fromString(line);
-
-                        if (possibleResult != null) {
-                            result = possibleResult;
-                        }
-                    }
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-
-                return result;
-            }
-        };
     }
 
     public static FFmpeg atPath(Path pathToDir) {
