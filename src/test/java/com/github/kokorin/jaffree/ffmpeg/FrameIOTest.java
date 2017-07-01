@@ -4,6 +4,7 @@ import com.github.kokorin.jaffree.Option;
 import com.github.kokorin.jaffree.StreamSpecifier;
 import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.matroska.ExtraDocTypes;
+import com.github.kokorin.jaffree.matroska.InputStreamSource;
 import com.github.kokorin.jaffree.process.StdReader;
 import org.apache.commons.io.IOUtils;
 import org.ebml.io.FileDataSource;
@@ -14,9 +15,7 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -55,40 +54,26 @@ public class FrameIOTest {
         MatroskaFile mkvFile = new MatroskaFile(new FileDataSource(VIDEO_MKV.toString()));
         mkvFile.readFile();
 
-        MatroskaFileTrack[] tracks = mkvFile.getTrackList();
-        Assert.assertNotNull(tracks);
-        Assert.assertEquals(2, tracks.length);
+        MatroskaFileTrack[] fileTracks = mkvFile.getTrackList();
+        Assert.assertNotNull(fileTracks);
+        Assert.assertEquals(2, fileTracks.length);
+    }
+
+
+    @Test
+    public void testInputStreamSource() throws Exception {
+        try (FileInputStream inputStream = new FileInputStream(VIDEO_MKV.toFile())) {
+            MatroskaFile mkvStream = new MatroskaFile(new InputStreamSource(inputStream));
+            mkvStream.readFile();
+
+            MatroskaFileTrack[] streamTracks = mkvStream.getTrackList();
+            Assert.assertNotNull(streamTracks);
+            Assert.assertEquals(2, streamTracks.length);
+        }
     }
 
     @Test
-    public void testReadCompressed2() throws Exception {
-        Path tempDir = Files.createTempDirectory("jaffree");
-        Path outputPath = tempDir.resolve("test.mkv");
-
-        FFmpegResult result = FFmpeg.atPath(BIN)
-                .addInput(
-                        UrlInput.fromPath(VIDEO_MP4)
-                                .setDuration(1, TimeUnit.SECONDS)
-                )
-                .addOutput(
-                        UrlOutput.toPath(outputPath)
-                                .addCodec(StreamSpecifier.withType(StreamType.ALL_VIDEO), "h264")
-                                .addCodec(StreamSpecifier.withType(StreamType.AUDIO), "ac3")
-                )
-                .execute();
-
-        Assert.assertNotNull(result);
-
-        MatroskaFile mkvFile = new MatroskaFile(new FileDataSource(outputPath.toString()));
-        mkvFile.readFile();
-
-        MatroskaFileTrack[] tracks = mkvFile.getTrackList();
-        Assert.assertNotNull(tracks);
-        Assert.assertEquals(2, tracks.length);
-    }
-
-    @Test
-    @Ignore
+    @Ignore("It seems that std output differs from file output")
     public void testStdOutTheSameAsFileOut() throws Exception {
         Path tempDir = Files.createTempDirectory("jaffree");
         final Path output = tempDir.resolve("test.mkv");
@@ -128,7 +113,6 @@ public class FrameIOTest {
             @Override
             public void beforeExecute(FFmpeg ffmpeg) {
                 ffmpeg.setStdOutReader(stdReader);
-                //ffmpeg.setStdErrReader(new LoggingStdReader<FFmpegResult>());
             }
 
             @Override
@@ -153,7 +137,72 @@ public class FrameIOTest {
     }
 
     @Test
-    public void testReadUncompressed() throws Exception {
+    public void testReadUncompressedStreamDumpedToDisk() throws Exception {
+        Path tempDir = Files.createTempDirectory("jaffree");
+        final Path output = tempDir.resolve("test.mkv");
+
+        final StdReader<FFmpegResult> stdToDiskReader = new StdReader<FFmpegResult>() {
+            @Override
+            public FFmpegResult read(InputStream stdOut) {
+                try (OutputStream fileStream = new FileOutputStream(output.toFile())) {
+                    IOUtils.copy(stdOut, fileStream);
+                } catch (IOException e) {
+                    throw new RuntimeException("Failed to write output to disk", e);
+                }
+                return null;
+            }
+        };
+
+        Output compareOutput = new Output() {
+            @Override
+            public void beforeExecute(FFmpeg ffmpeg) {
+                ffmpeg.setStdOutReader(stdToDiskReader);
+            }
+
+            @Override
+            public List<Option> buildOptions() {
+                return Arrays.asList(
+                        new Option("-f", "matroska"),
+                        new Option("-vcodec", "rawvideo"),
+                        new Option("-pix_fmt", "yuv420p"),
+                        new Option("-an"),
+                        new Option("-")
+                );
+            }
+        };
+
+        FFmpegResult resultStdOut = FFmpeg.atPath(BIN)
+                .addInput(
+                        UrlInput.fromPath(VIDEO_MP4)
+                                .setDuration(5, TimeUnit.SECONDS)
+                )
+                .addOutput(compareOutput)
+                .execute();
+
+        Assert.assertNotNull(resultStdOut);
+        Assert.assertTrue(Files.exists(output));
+
+        //Use JEBML with FileDataSource
+        MatroskaFile mkvFile = new MatroskaFile(new FileDataSource(output.toString()));
+        mkvFile.readFile();
+
+        MatroskaFileTrack[] tracks = mkvFile.getTrackList();
+        Assert.assertNotNull(tracks);
+        Assert.assertEquals(1, tracks.length);
+
+        //Use JEBML with InputStreamSource
+        try (FileInputStream inputStream = new FileInputStream(output.toFile())) {
+            MatroskaFile mkvStream = new MatroskaFile(new InputStreamSource(inputStream));
+            mkvStream.readFile();
+
+            MatroskaFileTrack[] streamTracks = mkvStream.getTrackList();
+            Assert.assertNotNull(streamTracks);
+            Assert.assertEquals(1, streamTracks.length);
+        }
+    }
+
+    @Test
+    public void testReadUncompressedMkvFromStdOut() throws Exception {
         Path tempDir = Files.createTempDirectory("jaffree");
 
         final AtomicLong frameCounter = new AtomicLong();
@@ -176,6 +225,6 @@ public class FrameIOTest {
                 .execute();
 
         Assert.assertNotNull(result);
-        Assert.assertTrue(frameCounter.get() > 0);
+        Assert.assertTrue(frameCounter.get() > 10);
     }
 }

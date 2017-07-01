@@ -20,7 +20,6 @@ package com.github.kokorin.jaffree.ffmpeg;
 import com.github.kokorin.jaffree.Option;
 import com.github.kokorin.jaffree.SizeUnit;
 import com.github.kokorin.jaffree.StreamSpecifier;
-import com.github.kokorin.jaffree.process.StdReader;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -149,10 +148,7 @@ public class UrlOutput extends UrlInOut<UrlOutput> implements Output {
     }
 
     @Override
-    public void beforeExecute(FFmpeg fFmpeg) {
-        ProgressListener progressListener = fFmpeg.getProgressListener();
-        StdReader<FFmpegResult> stdErrReader = new FFmpegResultReader(progressListener);
-        fFmpeg.setStdErrReader(stdErrReader);
+    public void beforeExecute(FFmpeg ffmpeg) {
     }
 
     @Override

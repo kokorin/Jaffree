@@ -26,6 +26,16 @@ public class ExtraDocTypes {
     // Without such initialization, an exception will occur while parsing MKV.
     public static final ProtoType<MasterElement> Colour = new ProtoType<>(MasterElement.class, "Colour", new byte[] {(byte) 0x55, (byte) 0xB0}, 4);
 
+    // A workaround for EOF, InputStreamSource.readByte() return -1 eg 0xFF
+    // JEBML tries to parse find element with such code.
+    // May be this is because of an error in InputStreamSource, but it works
+    public static final ProtoType<MasterElement> EOF = new ProtoType<MasterElement>(MasterElement.class, "EOF", new byte[] {(byte) 0xFF}, 4){
+        @Override
+        public MasterElement getInstance() {
+            return null;
+        }
+    };
+
 
     private ExtraDocTypes() {}
 

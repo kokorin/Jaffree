@@ -151,10 +151,9 @@ public class ProcessHandler<T> {
             workingThreadCount.incrementAndGet();
             stdOutThread.start();
 
-            LOGGER.debug("Waiting for stopping or threads finish");
             while (!stopped && workingThreadCount.get() != 0) {
                 try {
-                    LOGGER.info("Sleeping... ");
+                    LOGGER.debug("Waiting for stopping or threads finish");
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
                     LOGGER.warn("Interrupted", e);

@@ -105,9 +105,10 @@ public class FFmpeg {
 
         ProcessHandler<FFmpegResult> processHandler = ProcessHandler.<FFmpegResult>forExecutable(executable);
 
-        if (stdErrReader != null) {
-            processHandler.setStdErrReader(stdErrReader);
+        if (stdErrReader == null) {
+            stdErrReader = new FFmpegResultReader(progressListener);
         }
+        processHandler.setStdErrReader(stdErrReader);
 
         if (stdOutReader != null) {
             processHandler.setStdOutReader(stdOutReader);

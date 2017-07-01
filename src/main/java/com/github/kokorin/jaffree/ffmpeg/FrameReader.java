@@ -39,15 +39,6 @@ public class FrameReader<T> implements StdReader<T> {
 
     @Override
     public T read(InputStream stdOut) {
-                /*byte[] bytes = new byte[1_000_000];
-                try {
-                    while (stdOut.read(bytes) != -1) {
-                        LOGGER.warn("Read bytes");
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }*/
-
         DataSource source = new InputStreamSource(stdOut);
         MatroskaFile mkv = new MatroskaFile(source);
         mkv.readFile();
