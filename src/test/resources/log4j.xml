@@ -14,6 +14,11 @@
         <appender-ref ref="console" />
     </logger>
 
+    <logger name="com.github" additivity="false">
+        <level value="debug" />
+        <appender-ref ref="console" />
+    </logger>
+
     <root>
         <priority value ="info" />
         <appender-ref ref="console" />

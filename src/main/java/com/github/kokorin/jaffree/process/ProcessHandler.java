@@ -27,6 +27,7 @@ import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ProcessHandler<T> {
@@ -35,6 +36,7 @@ public class ProcessHandler<T> {
     private StdReader<T> stdOutReader = new GobblingStdReader<>();
     private StdReader<T> stdErrReader = new GobblingStdReader<>();
     private boolean redirectErrToOut = false;
+    private volatile boolean stopped = false;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessHandler.class);
 
@@ -57,7 +59,7 @@ public class ProcessHandler<T> {
         return this;
     }
 
-    public  ProcessHandler<T> setRedirectErrToOut(boolean redirectErrToOut) {
+    public ProcessHandler<T> setRedirectErrToOut(boolean redirectErrToOut) {
         this.redirectErrToOut = redirectErrToOut;
         return this;
     }
@@ -65,7 +67,7 @@ public class ProcessHandler<T> {
     public T execute(List<Option> options) {
         List<String> command = buildCommand(executable, options);
 
-        Process process;
+        final Process process;
         try {
             LOGGER.info("Starting process: {}", executable);
             process = new ProcessBuilder(command)
@@ -76,70 +78,115 @@ public class ProcessHandler<T> {
         }
 
         T result = null;
+        final AtomicReference<T> resultRef = new AtomicReference<>();
         final AtomicReference<T> errResultRef = new AtomicReference<>();
         final AtomicReference<Exception> exceptionRef = new AtomicReference<>();
-        int status = 0;
+        final AtomicInteger workingThreadCount = new AtomicInteger();
+
+        int status = -1;
         Thread stdInThread = null;
+        Thread stdOutThread = null;
         Thread stdErrThread = null;
 
-        LOGGER.debug("Reading of stdout and stderr");
+        LOGGER.debug("Starting io interaction with process");
 
-        try (InputStream stdOut = process.getInputStream();
+        try (final InputStream stdOut = process.getInputStream();
              final InputStream stdErr = process.getErrorStream();
              final OutputStream stdIn = process.getOutputStream()) {
 
-            stdErrThread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        T errResult = stdErrReader.read(stdErr);
-                        errResultRef.set(errResult);
-                    } catch (Exception e) {
-                        exceptionRef.set(e);
+            if (!redirectErrToOut) {
+                stdErrThread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        LOGGER.debug("StdErr thread has started");
+                        try {
+                            T errResult = stdErrReader.read(stdErr);
+                            errResultRef.set(errResult);
+                        } catch (Exception e) {
+                            exceptionRef.set(e);
+                            stop();
+                        }
+                        LOGGER.debug("StdErr thread has finished");
+                        workingThreadCount.decrementAndGet();
                     }
-                }
-            }, "stderr reader");
-            LOGGER.debug("Starting thread for reading stderr");
-            stdErrThread.start();
+                }, "stderr reader");
+                workingThreadCount.incrementAndGet();
+                stdErrThread.start();
+            }
 
             if (stdInWriter != null) {
                 stdInThread = new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        stdInWriter.write(stdIn);
+                        LOGGER.debug("StdIn thread has started");
+                        try {
+                            stdInWriter.write(stdIn);
+                        } catch (Exception e) {
+                            exceptionRef.set(e);
+                            stop();
+                        }
+                        LOGGER.debug("StdIn thread has finished");
+                        workingThreadCount.decrementAndGet();
                     }
                 }, "stdin writer");
-                LOGGER.debug("Starting thread for writing stdin");
+                workingThreadCount.incrementAndGet();
                 stdErrThread.start();
-        }
-
-            result = stdOutReader.read(stdOut);
-            if (result == null) {
-                result = errResultRef.get();
             }
 
-            if (stdInThread != null) {
-                LOGGER.debug("Waiting for thread to join current thread");
-                stdInThread.join();
-            }
-            if (stdErrThread != null) {
-                LOGGER.debug("Waiting for thread to join current thread");
-                stdErrThread.join();
+            stdOutThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    LOGGER.debug("StdOut thread has started");
+                    try {
+                        T result = stdOutReader.read(stdOut);
+                        resultRef.set(result);
+                    } catch (Exception e) {
+                        exceptionRef.set(e);
+                        stop();
+                    }
+                    LOGGER.debug("StdOut thread has finished");
+                    workingThreadCount.decrementAndGet();
+                }
+            }, "stdout reader");
+            workingThreadCount.incrementAndGet();
+            stdOutThread.start();
+
+            LOGGER.debug("Waiting for stopping or threads finish");
+            while (!stopped && workingThreadCount.get() != 0) {
+                try {
+                    LOGGER.info("Sleeping... ");
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    LOGGER.warn("Interrupted", e);
+                }
             }
 
-            LOGGER.debug("Waiting process to finish");
-            status = process.waitFor();
+            if (!stopped) {
+                LOGGER.debug("Waiting for process to finish");
+                status = process.waitFor();
+
+                result = resultRef.get();
+                if (result == null) {
+                    result = errResultRef.get();
+                }
+            } else {
+                LOGGER.info("Destroying process");
+                process.destroy();
+            }
         } catch (Exception e) {
+            throw new RuntimeException("Failed to handle process execution", e);
+        } finally {
+            LOGGER.debug("Interrupting existing threads");
             if (stdInThread != null) {
                 stdInThread.interrupt();
             }
+            if (stdOutThread != null) {
+                stdOutThread.interrupt();
+            }
             if (stdErrThread != null) {
-                stdErrThread.interrupt();
+                stdOutThread.interrupt();
             }
-            if (process != null) {
-                process.destroy();
-            }
-            throw new RuntimeException("Failed to handle process execution", e);
+            process.destroy();
         }
 
         Exception exception = exceptionRef.get();
@@ -155,7 +202,12 @@ public class ProcessHandler<T> {
             return result;
         }
 
-        throw new RuntimeException("Process has ended with no ffprobe and non zero status: " + status, exception);
+        throw new RuntimeException("Process has ended with no result and non zero status: " + status, exception);
+    }
+
+    public void stop() {
+        LOGGER.warn("Stop command has been received");
+        stopped = true;
     }
 
     public static <T> ProcessHandler<T> forExecutable(Path executable) {

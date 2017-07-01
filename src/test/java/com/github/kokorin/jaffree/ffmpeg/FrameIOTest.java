@@ -1,25 +1,11 @@
-/*
- *    Copyright  2017 Denis Kokorin
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
- *
- */
-
 package com.github.kokorin.jaffree.ffmpeg;
 
+import com.github.kokorin.jaffree.Option;
 import com.github.kokorin.jaffree.StreamSpecifier;
 import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.matroska.ExtraDocTypes;
+import com.github.kokorin.jaffree.process.StdReader;
+import org.apache.commons.io.IOUtils;
 import org.ebml.io.FileDataSource;
 import org.ebml.matroska.MatroskaFile;
 import org.ebml.matroska.MatroskaFileTrack;
@@ -28,13 +14,18 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class UncompressedTest {
+public class FrameIOTest {
     public static Path BIN;
     public static Path SAMPLES = Paths.get("target/samples");
     public static Path VIDEO_MP4 = SAMPLES.resolve("MPEG-4/video.mp4");
@@ -98,6 +89,70 @@ public class UncompressedTest {
 
     @Test
     @Ignore
+    public void testStdOutTheSameAsFileOut() throws Exception {
+        Path tempDir = Files.createTempDirectory("jaffree");
+        final Path output = tempDir.resolve("test.mkv");
+
+        FFmpegResult resultFile = FFmpeg.atPath(BIN)
+                .addInput(
+                        UrlInput.fromPath(VIDEO_MP4)
+                                .setDuration(5, TimeUnit.SECONDS)
+                )
+                .addOutput(
+                        UrlOutput.toPath(output)
+                                .addCodec(StreamSpecifier.withType(StreamType.ALL_VIDEO), "rawvideo")
+                                .addOption("-pix_fmt", "yuv420p")
+                                .addOption("-an")
+                )
+                .execute();
+
+        Assert.assertNotNull(resultFile);
+
+        final StdReader<FFmpegResult> stdReader = new StdReader<FFmpegResult>() {
+            @Override
+            public FFmpegResult read(InputStream stdOut) {
+                try (InputStream fileStream = new FileInputStream(output.toFile());) {
+                    boolean equals = IOUtils.contentEquals(fileStream, stdOut);
+                    if (!equals) {
+                        throw new RuntimeException("File output isn't the same as std");
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                return null;
+            }
+        };
+
+        Output compareOutput = new Output() {
+            @Override
+            public void beforeExecute(FFmpeg ffmpeg) {
+                ffmpeg.setStdOutReader(stdReader);
+                //ffmpeg.setStdErrReader(new LoggingStdReader<FFmpegResult>());
+            }
+
+            @Override
+            public List<Option> buildOptions() {
+                return Arrays.asList(
+                        new Option("-f", "matroska"),
+                        new Option("-vcodec", "rawvideo"),
+                        new Option("-pix_fmt", "yuv420p"),
+                        new Option("-an"),
+                        new Option("-")
+                );
+            }
+        };
+
+        FFmpegResult resultStdOut = FFmpeg.atPath(BIN)
+                .addInput(
+                        UrlInput.fromPath(VIDEO_MP4)
+                                .setDuration(5, TimeUnit.SECONDS)
+                )
+                .addOutput(compareOutput)
+                .execute();
+    }
+
+    @Test
     public void testReadUncompressed() throws Exception {
         Path tempDir = Files.createTempDirectory("jaffree");
 

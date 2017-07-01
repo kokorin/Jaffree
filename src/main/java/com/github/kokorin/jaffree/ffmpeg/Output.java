@@ -22,6 +22,6 @@ import com.github.kokorin.jaffree.Option;
 import java.util.List;
 
 public interface Output  {
-    void beforeExecute(FFmpeg fFmpeg);
+    void beforeExecute(FFmpeg ffmpeg);
     List<Option> buildOptions();
 }

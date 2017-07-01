@@ -48,7 +48,7 @@ public class FrameOutput implements Output {
 
     @Override
     public void beforeExecute(FFmpeg fFmpeg) {
-
+        fFmpeg.setStdOutReader(new FrameReader<FFmpegResult>(consumer));
     }
 
     @Override

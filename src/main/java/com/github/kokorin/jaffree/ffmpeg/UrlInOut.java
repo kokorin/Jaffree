@@ -149,6 +149,16 @@ public abstract class UrlInOut<T extends UrlInOut> {
         return thisAsT();
     }
 
+    public T addOption(String key, String value) {
+        additionalOptions.add(new Option(key, value));
+        return thisAsT();
+    }
+
+    public T addOption(String key) {
+        additionalOptions.add(new Option(key));
+        return thisAsT();
+    }
+
     public abstract List<Option> buildOptions();
 
     protected List<Option> buildCommonOptions() {
