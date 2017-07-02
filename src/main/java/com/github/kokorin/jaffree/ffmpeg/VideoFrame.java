@@ -17,5 +17,16 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-public class VideoFrame implements Frame {
+import java.awt.image.BufferedImage;
+
+public class VideoFrame extends Frame {
+    private BufferedImage image;
+
+    public BufferedImage getImage() {
+        return image;
+    }
+
+    public void setImage(BufferedImage image) {
+        this.image = image;
+    }
 }

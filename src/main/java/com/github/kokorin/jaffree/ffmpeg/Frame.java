@@ -17,5 +17,23 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-public interface Frame {
+public abstract class Frame {
+    private int track;
+    private long timecode;
+
+    public int getTrack() {
+        return track;
+    }
+
+    public void setTrack(int track) {
+        this.track = track;
+    }
+
+    public long getTimecode() {
+        return timecode;
+    }
+
+    public void setTimecode(long timecode) {
+        this.timecode = timecode;
+    }
 }

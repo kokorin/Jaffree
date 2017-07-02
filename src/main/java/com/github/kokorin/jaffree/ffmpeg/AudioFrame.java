@@ -17,5 +17,5 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-public class AudioFrame implements Frame {
+public class AudioFrame extends Frame {
 }

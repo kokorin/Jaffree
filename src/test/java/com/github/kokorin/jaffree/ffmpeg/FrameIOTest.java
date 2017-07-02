@@ -4,7 +4,6 @@ import com.github.kokorin.jaffree.Option;
 import com.github.kokorin.jaffree.StreamSpecifier;
 import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.matroska.ExtraDocTypes;
-import com.github.kokorin.jaffree.matroska.InputStreamSource;
 import com.github.kokorin.jaffree.process.StdReader;
 import org.apache.commons.io.IOUtils;
 import org.ebml.io.FileDataSource;
@@ -15,6 +14,7 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import javax.imageio.ImageIO;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -217,6 +217,45 @@ public class FrameIOTest {
                 .addInput(
                         UrlInput.fromPath(VIDEO_MP4)
                                 .setDuration(5, TimeUnit.SECONDS)
+                )
+                .addOutput(
+                        FrameOutput.withConsumer(consumer)
+                                .extractVideo(true)
+                )
+                .execute();
+
+        Assert.assertNotNull(result);
+        Assert.assertTrue(frameCounter.get() > 10);
+    }
+
+    @Test
+    public void testReadUncompressedMkvFromStdOutAndSaveFrames() throws Exception {
+        final Path tempDir = Files.createTempDirectory("jaffree");
+        System.out.println("Will write to " + tempDir);
+
+        final AtomicLong frameCounter = new AtomicLong();
+        FrameConsumer consumer = new FrameConsumer() {
+            @Override
+            public void consume(Frame frame) {
+                long n = frameCounter.incrementAndGet();
+                if (frame instanceof VideoFrame) {
+                    VideoFrame videoFrame = (VideoFrame) frame;
+                    String filename = String.format("frame%05d.png", n);
+                    try {
+                        boolean written = ImageIO.write(videoFrame.getImage(), "png", tempDir.resolve(filename).toFile());
+                        Assert.assertTrue(written);
+                        System.out.println(filename);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+        };
+
+        FFmpegResult result = FFmpeg.atPath(BIN)
+                .addInput(
+                        UrlInput.fromPath(VIDEO_MP4)
+                                .setDuration(1, TimeUnit.SECONDS)
                 )
                 .addOutput(
                         FrameOutput.withConsumer(consumer)

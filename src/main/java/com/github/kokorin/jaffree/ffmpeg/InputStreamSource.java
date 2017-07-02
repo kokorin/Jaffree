@@ -15,7 +15,7 @@
  *
  */
 
-package com.github.kokorin.jaffree.matroska;
+package com.github.kokorin.jaffree.ffmpeg;
 
 import org.ebml.io.DataSource;
 import org.slf4j.Logger;
