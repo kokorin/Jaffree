@@ -3,27 +3,36 @@ package com.github.kokorin.jaffree.ffmpeg;
 import com.github.kokorin.jaffree.Option;
 import com.github.kokorin.jaffree.StreamSpecifier;
 import com.github.kokorin.jaffree.StreamType;
+import com.github.kokorin.jaffree.ffprobe.FFprobe;
+import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
+import com.github.kokorin.jaffree.ffprobe.Stream;
 import com.github.kokorin.jaffree.matroska.ExtraDocTypes;
 import com.github.kokorin.jaffree.process.StdReader;
 import org.apache.commons.io.IOUtils;
 import org.ebml.io.FileDataSource;
 import org.ebml.matroska.MatroskaFile;
+import org.ebml.matroska.MatroskaFileFrame;
 import org.ebml.matroska.MatroskaFileTrack;
+import org.ebml.matroska.MatroskaFileWriter;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+@Ignore
 public class FrameIOTest {
     public static Path BIN;
     public static Path SAMPLES = Paths.get("target/samples");
@@ -61,7 +70,7 @@ public class FrameIOTest {
 
 
     @Test
-    public void testInputStreamSource() throws Exception {
+    public void testJebml() throws Exception {
         try (FileInputStream inputStream = new FileInputStream(VIDEO_MKV.toFile())) {
             MatroskaFile mkvStream = new MatroskaFile(new InputStreamSource(inputStream));
             mkvStream.readFile();
@@ -70,6 +79,56 @@ public class FrameIOTest {
             Assert.assertNotNull(streamTracks);
             Assert.assertEquals(2, streamTracks.length);
         }
+    }
+
+    @Test
+    public void testJebmlDemuxAndMux() throws Exception {
+        Path tempDir = Files.createTempDirectory("jaffree");
+        final Path output = tempDir.resolve("test.mkv");
+        System.out.println(output);
+
+        try (OutputStream out = new FileOutputStream(output.toFile())) {
+            MatroskaFile mkvReader = new MatroskaFile(new FileDataSource(VIDEO_MKV.toString()));
+            mkvReader.readFile();
+
+            MatroskaFileWriter mkvWrtier = new MatroskaFileWriter(new OutputStreamWriter(out));
+
+            for (MatroskaFileTrack track : mkvReader.getTrackList()) {
+                MatroskaFileTrack write = new MatroskaFileTrack();
+                write.setName(track.getName());
+                write.setCodecID(track.getCodecID());
+                write.setTrackNo(track.getTrackNo());
+                write.setVideo(track.getVideo());
+                write.setAudio(track.getAudio());
+                write.setTrackType(track.getTrackType());
+
+                mkvWrtier.addTrack(track);
+            }
+
+            for (MatroskaFileFrame frame = mkvReader.getNextFrame(); frame != null; frame = mkvReader.getNextFrame()) {
+                MatroskaFileFrame write = new MatroskaFileFrame(frame);
+                write.setTrackNo(write.getTrackNo() - 1);
+                mkvWrtier.addFrame(write);
+            }
+
+            mkvWrtier.close();
+        }
+
+        Assert.assertTrue(Files.exists(output));
+
+        FFprobeResult probe = FFprobe.atPath(BIN)
+                .setShowStreams(true)
+                .setShowError(true)
+                .setInputPath(output)
+                .execute();
+
+        Assert.assertNotNull(probe);
+        Assert.assertEquals(2, probe.getStreams().getStream().size());
+        Stream stream1 = probe.getStreams().getStream().get(0);
+        Stream stream2 = probe.getStreams().getStream().get(1);
+
+        Assert.assertEquals("audio", stream1.getCodecType());
+        Assert.assertEquals("video", stream2.getCodecType());
     }
 
     @Test
@@ -205,8 +264,14 @@ public class FrameIOTest {
     public void testReadUncompressedMkvFromStdOut() throws Exception {
         Path tempDir = Files.createTempDirectory("jaffree");
 
+        final AtomicLong trackCounter = new AtomicLong();
         final AtomicLong frameCounter = new AtomicLong();
         FrameConsumer consumer = new FrameConsumer() {
+            @Override
+            public void consumeTracks(List<Track> tracks) {
+                trackCounter.set(tracks.size());
+            }
+
             @Override
             public void consume(Frame frame) {
                 frameCounter.incrementAndGet();
@@ -225,6 +290,7 @@ public class FrameIOTest {
                 .execute();
 
         Assert.assertNotNull(result);
+        Assert.assertEquals(1, trackCounter.get());
         Assert.assertTrue(frameCounter.get() > 10);
     }
 
@@ -233,8 +299,14 @@ public class FrameIOTest {
         final Path tempDir = Files.createTempDirectory("jaffree");
         System.out.println("Will write to " + tempDir);
 
+        final AtomicLong trackCounter = new AtomicLong();
         final AtomicLong frameCounter = new AtomicLong();
         FrameConsumer consumer = new FrameConsumer() {
+            @Override
+            public void consumeTracks(List<Track> tracks) {
+                trackCounter.set(tracks.size());
+            }
+
             @Override
             public void consume(Frame frame) {
                 long n = frameCounter.incrementAndGet();
@@ -264,6 +336,150 @@ public class FrameIOTest {
                 .execute();
 
         Assert.assertNotNull(result);
+        Assert.assertEquals(1, trackCounter.get());
         Assert.assertTrue(frameCounter.get() > 10);
+    }
+
+    @Test
+    public void testWriteUncompressedMkvToDiskAndCompareColorSpace() throws Exception {
+        final Path tempDir = Files.createTempDirectory("jaffree");
+        Path expected = tempDir.resolve("expected.mkv");
+        Path streamedOut = tempDir.resolve("streamed.mkv");
+        Path fileOut = tempDir.resolve("file.mkv");
+
+        System.out.println("Will write to " + tempDir);
+
+        FrameProducer producer = new FrameProducer() {
+            private long frameCounter = 0;
+
+            @Override
+            public List<Track> produceTracks() {
+                return Collections.singletonList(new Track()
+                        .setType(Track.Type.VIDEO)
+                        .setWidth(320)
+                        .setHeight(240)
+                );
+            }
+
+            @Override
+            public Frame produce() {
+                if (frameCounter > 30) {
+                    return null;
+                }
+                System.out.println("Creating frame " + frameCounter);
+
+                VideoFrame frame = new VideoFrame();
+
+                BufferedImage image = new BufferedImage(320, 240, BufferedImage.TYPE_INT_RGB);
+                Graphics2D graphics = image.createGraphics();
+                graphics.setPaint(new Color(frameCounter * 1.0f / 30, 0, 0));
+                graphics.fillRect(0, 0, 320, 240);
+
+                frame.setImage(image);
+                frame.setTimecode(frameCounter * 1000 / 10);
+                frameCounter++;
+
+                return frame;
+            }
+        };
+
+        try (FileOutputStream outputStream = new FileOutputStream(streamedOut.toFile())) {
+            new FrameWriter(producer).write(outputStream);
+        }
+
+        Assert.assertTrue(Files.exists(streamedOut));
+
+
+        FFmpegResult result = FFmpeg.atPath(BIN)
+                .addInput(
+                        UrlInput.fromPath(VIDEO_MP4)
+                                .setDuration(5, TimeUnit.SECONDS)
+                )
+                .addOutput(
+                        UrlOutput.toPath(expected)
+                                .addCodec(StreamSpecifier.withType(StreamType.ALL_VIDEO), "rawvideo")
+                                .addOption("-pix_fmt", "yuv420p")
+                                .addOption("-an")
+                )
+                .execute();
+
+        Assert.assertNotNull(result);
+
+        FFprobeResult expectedProbe = FFprobe.atPath(BIN)
+                .setShowStreams(true)
+                .setShowError(true)
+                .setInputPath(expected)
+                .execute();
+
+        Assert.assertNotNull(expectedProbe);
+        Stream expectedStream = expectedProbe.getStreams().getStream().get(0);
+
+        //Use JEBML with FileDataSource
+        MatroskaFile mkvFile = new MatroskaFile(new FileDataSource(expected.toString()));
+        mkvFile.readFile();
+
+        FFprobeResult actualProbe = FFprobe.atPath(BIN)
+                .setShowStreams(true)
+                .setShowError(true)
+                .setInputPath(streamedOut)
+                .execute();
+
+        Assert.assertNotNull(actualProbe);
+        Stream actualStream = actualProbe.getStreams().getStream().get(0);
+
+        Assert.assertEquals(expectedStream.getColorSpace(), actualStream.getColorSpace());
+
+    }
+
+    @Test
+    public void testWriteUncompressedMkvToStdInAndSaveGif() throws Exception {
+        final Path tempDir = Files.createTempDirectory("jaffree");
+        Path output = tempDir.resolve("test.gif");
+        System.out.println("Will write to " + tempDir);
+
+        FrameProducer producer = new FrameProducer() {
+            private long frameCounter = 0;
+
+            @Override
+            public List<Track> produceTracks() {
+                return Collections.singletonList(new Track()
+                        .setType(Track.Type.VIDEO)
+                        .setWidth(320)
+                        .setHeight(240)
+                );
+            }
+
+            @Override
+            public Frame produce() {
+                if (frameCounter > 30) {
+                    return null;
+                }
+                System.out.println("Creating frame " + frameCounter);
+
+                VideoFrame frame = new VideoFrame();
+
+                BufferedImage image = new BufferedImage(320, 240, BufferedImage.TYPE_INT_RGB);
+                Graphics2D graphics = image.createGraphics();
+                graphics.setPaint(new Color(frameCounter * 1.0f / 30, 0, 0));
+                graphics.fillRect(0, 0, 320, 240);
+
+                frame.setImage(image);
+                frame.setTimecode(frameCounter * 1000 / 10);
+                frameCounter++;
+
+                return frame;
+            }
+        };
+
+        FFmpegResult result = FFmpeg.atPath(BIN)
+                .addInput(
+                        FrameInput.withProducer(producer)
+                )
+                .addOutput(
+                        UrlOutput.toPath(output)
+                )
+                .execute();
+
+        Assert.assertNotNull(result);
     }
 }

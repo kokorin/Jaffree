@@ -18,21 +18,38 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.Option;
+import com.github.kokorin.jaffree.process.LoggingStdReader;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 
 public class FrameInput implements Input {
-    private int width;
-    private int height;
-
-    private int timebase;
-    private int framerate;
 
     private FrameProducer producer;
 
+    public FrameInput setProducer(FrameProducer producer) {
+        this.producer = producer;
+        return this;
+    }
+
+    @Override
+    public void beforeExecute(FFmpeg ffmpeg) {
+        ffmpeg.setStdInWriter(new FrameWriter(producer));
+        ffmpeg.setStdErrReader(new LoggingStdReader<FFmpegResult>());
+        ffmpeg.setStdOutReader(new LoggingStdReader<FFmpegResult>());
+    }
+
     @Override
     public List<Option> buildOptions() {
-        return Collections.singletonList(new Option("-i", "-"));
+        return Arrays.asList(
+                new Option("-f", "matroska"),
+                new Option("-vcodec", "rawvideo"),
+                //new Option("-pix_fmt", "yuv420p"),
+                new Option("-i", "-")
+        );
+    }
+
+    public static FrameInput withProducer(FrameProducer producer) {
+        return new FrameInput().setProducer(producer);
     }
 }

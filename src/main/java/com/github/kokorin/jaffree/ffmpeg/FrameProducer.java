@@ -17,6 +17,9 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
+import java.util.List;
+
 public interface FrameProducer {
+    List<Track> produceTracks();
     Frame produce();
 }

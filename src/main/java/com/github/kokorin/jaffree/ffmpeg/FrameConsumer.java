@@ -17,6 +17,9 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
+import java.util.List;
+
 public interface FrameConsumer {
+    void consumeTracks(List<Track> tracks);
     void consume(Frame frame);
 }

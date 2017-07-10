@@ -12,12 +12,12 @@
     <!--<logger name="org.ebml" additivity="false">
         <level value="trace" />
         <appender-ref ref="console" />
-    </logger>
+    </logger>-->
 
     <logger name="com.github" additivity="false">
         <level value="debug" />
         <appender-ref ref="console" />
-    </logger>-->
+    </logger>
 
     <root>
         <priority value ="info" />

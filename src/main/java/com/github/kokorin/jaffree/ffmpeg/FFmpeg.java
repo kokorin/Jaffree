@@ -20,6 +20,7 @@ package com.github.kokorin.jaffree.ffmpeg;
 import com.github.kokorin.jaffree.Option;
 import com.github.kokorin.jaffree.process.ProcessHandler;
 import com.github.kokorin.jaffree.process.StdReader;
+import com.github.kokorin.jaffree.process.StdWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +39,7 @@ public class FFmpeg {
     //-debug_ts (global)
     private FilterGraph complexFilter;
 
+    private StdWriter stdInWriter;
     private StdReader<FFmpegResult> stdOutReader;
     private StdReader<FFmpegResult> stdErrReader;
 
@@ -90,20 +92,31 @@ public class FFmpeg {
         return progressListener;
     }
 
-    public void setStdOutReader(StdReader<FFmpegResult> stdOutReader) {
+    void setStdInWriter(StdWriter stdInWriter) {
+        this.stdInWriter = stdInWriter;
+    }
+
+    void setStdOutReader(StdReader<FFmpegResult> stdOutReader) {
         this.stdOutReader = stdOutReader;
     }
 
-    public void setStdErrReader(StdReader<FFmpegResult> stdErrReader) {
+    void setStdErrReader(StdReader<FFmpegResult> stdErrReader) {
         this.stdErrReader = stdErrReader;
     }
 
     public FFmpegResult execute() {
+        for (Input input : inputs) {
+            input.beforeExecute(this);
+        }
         for (Output output : outputs) {
             output.beforeExecute(this);
         }
 
         ProcessHandler<FFmpegResult> processHandler = ProcessHandler.<FFmpegResult>forExecutable(executable);
+
+        if (stdInWriter != null) {
+            processHandler.setStdInWriter(stdInWriter);
+        }
 
         if (stdErrReader == null) {
             stdErrReader = new FFmpegResultReader(progressListener);

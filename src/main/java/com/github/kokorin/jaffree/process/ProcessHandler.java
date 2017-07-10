@@ -130,7 +130,7 @@ public class ProcessHandler<T> {
                     }
                 }, "stdin writer");
                 workingThreadCount.incrementAndGet();
-                stdErrThread.start();
+                stdInThread.start();
             }
 
             stdOutThread = new Thread(new Runnable() {
@@ -153,7 +153,7 @@ public class ProcessHandler<T> {
 
             while (!stopped && workingThreadCount.get() != 0) {
                 try {
-                    LOGGER.debug("Waiting for stopping or threads finish");
+                    LOGGER.trace("Waiting for stopping or threads finish");
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
                     LOGGER.warn("Interrupted", e);
@@ -183,7 +183,7 @@ public class ProcessHandler<T> {
                 stdOutThread.interrupt();
             }
             if (stdErrThread != null) {
-                stdOutThread.interrupt();
+                stdErrThread.interrupt();
             }
             process.destroy();
         }
@@ -197,7 +197,7 @@ public class ProcessHandler<T> {
         }
 
         if (result != null) {
-            LOGGER.warn("Process has ended with non zero status: {}", status, exception);
+            LOGGER.warn("Process has ended with non zero status: {} and exception", status, exception);
             return result;
         }
 

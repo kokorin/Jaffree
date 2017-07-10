@@ -29,6 +29,8 @@ import org.slf4j.LoggerFactory;
 import java.awt.image.BufferedImage;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FrameReader<T> implements StdReader<T> {
     private final FrameConsumer frameConsumer;
@@ -44,9 +46,12 @@ public class FrameReader<T> implements StdReader<T> {
         DataSource source = new InputStreamSource(stdOut);
         MatroskaFile mkv = new MatroskaFile(source);
         mkv.readFile();
-        MatroskaFileTrack[] tracks = mkv.getTrackList();
 
-        LOGGER.debug("Tracks: {}", tracks);
+        MatroskaFileTrack[] mkvTracks = mkv.getTrackList();
+        List<Track> tracks = parseTracks(mkvTracks);
+        frameConsumer.consumeTracks(tracks);
+
+        LOGGER.debug("Tracks: {}", mkvTracks);
 
         MatroskaFileFrame mkvFrame;
         while ((mkvFrame = mkv.getNextFrame()) != null) {
@@ -62,6 +67,32 @@ public class FrameReader<T> implements StdReader<T> {
         }
 
         return null;
+    }
+
+    public static List<Track> parseTracks(MatroskaFileTrack[] mkvTracks) {
+        List<Track> result = new ArrayList<>();
+
+        for (MatroskaFileTrack mkvTrack : mkvTracks) {
+            Track track = null;
+            if (mkvTrack.getTrackType() == MatroskaFileTrack.TrackType.VIDEO) {
+                track = new Track()
+                        .setType(Track.Type.VIDEO)
+                        .setWidth(mkvTrack.getVideo().getPixelWidth())
+                        .setHeight(mkvTrack.getVideo().getPixelHeight());
+            } else if (mkvTrack.getTrackType() == MatroskaFileTrack.TrackType.AUDIO) {
+                track = new Track()
+                        .setType(Track.Type.AUDIO)
+                        .setSamplingFreaquency(mkvTrack.getAudio().getSamplingFrequency());
+            }
+
+            if (track != null) {
+                track.setId(mkvTrack.getTrackNo())
+                        .setTitle(mkvTrack.getName());
+                result.add(track);
+            }
+        }
+
+        return result;
     }
 
     public static Frame parseFrame(MatroskaFileTrack track, MatroskaFileFrame frame) {
@@ -108,18 +139,18 @@ public class FrameReader<T> implements StdReader<T> {
     }
 
     public static int yuvToRgb(byte y, byte u, byte v) {
-        final int c = (y & 0xFF) - 16;
-        final int d = (u & 0xFF) - 128;
-        final int e = (v & 0xFF) - 128;
+        int c = (y & 0xFF) - 16;
+        int d = (u & 0xFF) - 128;
+        int e = (v & 0xFF) - 128;
 
-        final int r = (298 * c + 409 * e + 128) >> 8;
-        final int g = (298 * c - 100 * d - 208 * e + 128) >> 8;
-        final int b = (298 * c + 516 * d + 128) >> 8;
+        int r = (298 * c + 409 * e + 128) >> 8;
+        int g = (298 * c - 100 * d - 208 * e + 128) >> 8;
+        int b = (298 * c + 516 * d + 128) >> 8;
 
         int rc = Math.max(0, Math.min(r, 0xFF));
         int gc = Math.max(0, Math.min(g, 0xFF));
         int bc = Math.max(0, Math.min(b, 0xFF));
-        //return r << 16 + g << 8 + b;
+
         return (rc << 16) + (gc << 8) + bc;
     }
 }
