@@ -121,6 +121,7 @@ public class ProcessHandler<T> {
                         LOGGER.debug("StdIn thread has started");
                         try {
                             stdInWriter.write(stdIn);
+                            stdIn.close();
                         } catch (Exception e) {
                             exceptionRef.set(e);
                             stop();

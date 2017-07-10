@@ -344,8 +344,7 @@ public class FrameIOTest {
     public void testWriteUncompressedMkvToDiskAndCompareColorSpace() throws Exception {
         final Path tempDir = Files.createTempDirectory("jaffree");
         Path expected = tempDir.resolve("expected.mkv");
-        Path streamedOut = tempDir.resolve("streamed.mkv");
-        Path fileOut = tempDir.resolve("file.mkv");
+        Path actual = tempDir.resolve("actual.mkv");
 
         System.out.println("Will write to " + tempDir);
 
@@ -383,11 +382,11 @@ public class FrameIOTest {
             }
         };
 
-        try (FileOutputStream outputStream = new FileOutputStream(streamedOut.toFile())) {
+        try (FileOutputStream outputStream = new FileOutputStream(actual.toFile())) {
             new FrameWriter(producer).write(outputStream);
         }
 
-        Assert.assertTrue(Files.exists(streamedOut));
+        Assert.assertTrue(Files.exists(actual));
 
 
         FFmpegResult result = FFmpeg.atPath(BIN)
@@ -421,7 +420,7 @@ public class FrameIOTest {
         FFprobeResult actualProbe = FFprobe.atPath(BIN)
                 .setShowStreams(true)
                 .setShowError(true)
-                .setInputPath(streamedOut)
+                .setInputPath(actual)
                 .execute();
 
         Assert.assertNotNull(actualProbe);

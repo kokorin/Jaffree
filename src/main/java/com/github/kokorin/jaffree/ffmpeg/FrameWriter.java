@@ -60,7 +60,7 @@ public class FrameWriter implements StdWriter {
                 MatroskaVideoTrack videoTrack = new MatroskaVideoTrack();
                 videoTrack.setPixelWidth((short) track.getWidth());
                 videoTrack.setPixelHeight((short) track.getHeight());
-                videoTrack.setColourSpace(I420);
+                videoTrack.setColourSpace(ByteBuffer.wrap(I420));
 
                 mkvTrack.setVideo(videoTrack);
             }
@@ -99,15 +99,7 @@ public class FrameWriter implements StdWriter {
         int width = image.getWidth();
         int height = image.getHeight();
 
-        ByteBuffer buffer = ByteBuffer.allocate(width * height * 3 / 2 + 4);
-        //ByteBuffer buffer = ByteBuffer.allocate(width * height * 3 / 2);
-        //0x30 32 34 49
-        buffer.put((byte) 0x30);
-        buffer.put((byte) 0x32);
-        buffer.put((byte) 0x34);
-        buffer.put((byte) 0x49);
-
-        ByteBuffer data = buffer.slice();
+        byte[] buffer = new byte[width * height * 3 / 2];
 
         int total = width * height;
         byte[] yuv = new byte[3];
@@ -116,14 +108,13 @@ public class FrameWriter implements StdWriter {
                 int rgb = image.getRGB(x, y);
                 rgbToYuv(rgb, yuv);
 
-                data.put(y * width + x, yuv[0]);
-                data.put((y / 2) * (width / 2) + (x / 2) + total, yuv[1]);
-                data.put((y / 2) * (width / 2) + (x / 2) + total + (total / 4), yuv[2]);
+                buffer[y * width + x] = yuv[0];
+                buffer[(y / 2) * (width / 2) + (x / 2) + total] = yuv[1];
+                buffer[(y / 2) * (width / 2) + (x / 2) + total + (total / 4)] = yuv[2];
             }
         }
 
-        buffer.flip();
-        return buffer;
+        return ByteBuffer.wrap(buffer);
 
     }
 
