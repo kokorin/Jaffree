@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-@Ignore
 public class FrameIOTest {
     public static Path BIN;
     public static Path SAMPLES = Paths.get("target/samples");

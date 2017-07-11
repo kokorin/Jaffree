@@ -1,4 +1,5 @@
 # Jaffree
+
 Jaffree stands for [Ja]va [ff]mpeg and [ff]probe [free] command line wrapper.
 
 It integrates with ffmpeg via `java.lang.Process`.
@@ -15,7 +16,7 @@ Inspired by [ffmpeg-cli-wrapper](/bramp/ffmpeg-cli-wrapper) by [Andrew Brampton]
 
 # Examples
 
-## Iterate over media streams
+## Iterate over media streams with ffprobe
 
 ```java
 Path BIN = Paths.get("/path/to/ffmpeg_directory/");
@@ -61,7 +62,7 @@ FFmpegResult result = FFmpeg.atPath(BIN)
         .execute();
 ```
 
-## Mosaic video (complex filtergraph) 
+## Complex filtergraph (mosaic video)
 
 More details about this example can be found on ffmpeg wiki: [Create a mosaic out of several input videos](https://trac.ffmpeg.org/wiki/Create%20a%20mosaic%20out%20of%20several%20input%20videos)
 ```java
@@ -146,16 +147,109 @@ FFmpegResult result = FFmpeg.atPath(BIN)
         .execute();
 ```
 
-## Programmatic video creation
+## Programmatic video
 
-Work in progress
+*Work is still in progress* and not published to maven central.
 
-Supported uncompressed video+audio by mkv+ffmpeg
+### Producing video
 
-d:\distribs\ffmpeg-3.3.1-win64-static\bin\ffmpeg.exe -t 5 -i target\samples\MPEG-4\video.mp4 -y -vcodec rawvideo -pix_fmt yuyv422 -an target\raw.mkv
+Jaffree allows creation of video in pure java code:
 
-http://zulko.github.io/blog/2013/09/27/read-and-write-video-frames-in-python-using-ffmpeg/
+```java
+final Path tempDir = Files.createTempDirectory("jaffree");
+Path output = tempDir.resolve("test.gif");
 
-https://superuser.com/questions/347433/how-to-create-an-uncompressed-avi-from-a-series-of-1000s-of-png-images-using-ff
+FrameProducer producer = new FrameProducer() {
+    private long frameCounter = 0;
 
-https://en.wikipedia.org/wiki/Flash_Video#Media_type_support
+    @Override
+    public List<Track> produceTracks() {
+        return Collections.singletonList(new Track()
+                .setType(Track.Type.VIDEO)
+                .setWidth(320)
+                .setHeight(240)
+        );
+    }
+
+    @Override
+    public Frame produce() {
+        if (frameCounter > 30) {
+            return null;
+        }
+        System.out.println("Creating frame " + frameCounter);
+
+        VideoFrame frame = new VideoFrame();
+
+        BufferedImage image = new BufferedImage(320, 240, BufferedImage.TYPE_INT_RGB);
+        Graphics2D graphics = image.createGraphics();
+        graphics.setPaint(new Color(frameCounter * 1.0f / 30, 0, 0));
+        graphics.fillRect(0, 0, 320, 240);
+
+        frame.setImage(image);
+        frame.setTimecode(frameCounter * 1000 / 10);
+        frameCounter++;
+
+        return frame;
+    }
+};
+
+FFmpegResult result = FFmpeg.atPath(BIN)
+        .addInput(
+                FrameInput.withProducer(producer)
+        )
+        .addOutput(
+                UrlOutput.toPath(output)
+        )
+        .execute();
+```
+
+Here is an output of the above example:
+
+![example output](programmatic.gif)
+
+
+### Consuming video
+
+Jaffree allows consumption of video in the similar manner:
+
+```java
+final Path tempDir = Files.createTempDirectory("jaffree");
+System.out.println("Will write to " + tempDir);
+
+final AtomicLong trackCounter = new AtomicLong();
+final AtomicLong frameCounter = new AtomicLong();
+
+FrameConsumer consumer = new FrameConsumer() {
+    @Override
+    public void consumeTracks(List<Track> tracks) {
+        trackCounter.set(tracks.size());
+    }
+
+    @Override
+    public void consume(Frame frame) {
+        long n = frameCounter.incrementAndGet();
+        if (frame instanceof VideoFrame) {
+            VideoFrame videoFrame = (VideoFrame) frame;
+            String filename = String.format("frame%05d.png", n);
+            try {
+                boolean written = ImageIO.write(videoFrame.getImage(), "png", tempDir.resolve(filename).toFile());
+                Assert.assertTrue(written);
+                System.out.println(filename);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+};
+
+FFmpegResult result = FFmpeg.atPath(BIN)
+        .addInput(
+                UrlInput.fromPath(VIDEO_MP4)
+                        .setDuration(1, TimeUnit.SECONDS)
+        )
+        .addOutput(
+                FrameOutput.withConsumer(consumer)
+                        .extractVideo(true)
+        )
+        .execute();
+```
