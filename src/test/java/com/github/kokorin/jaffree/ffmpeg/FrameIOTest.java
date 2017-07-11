@@ -6,7 +6,6 @@ import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffprobe.FFprobe;
 import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
 import com.github.kokorin.jaffree.ffprobe.Stream;
-import com.github.kokorin.jaffree.matroska.ExtraDocTypes;
 import com.github.kokorin.jaffree.process.StdReader;
 import org.apache.commons.io.IOUtils;
 import org.ebml.io.FileDataSource;
@@ -38,11 +37,6 @@ public class FrameIOTest {
     public static Path VIDEO_MP4 = SAMPLES.resolve("MPEG-4/video.mp4");
     public static Path VIDEO_MKV = SAMPLES.resolve("Matroska/atlantis405-test.mkv");
 
-    static {
-        ExtraDocTypes.init();
-    }
-
-
     @BeforeClass
     public static void setUp() throws Exception {
         String ffmpegHome = System.getProperty("FFMPEG_BIN");
@@ -53,8 +47,6 @@ public class FrameIOTest {
         BIN = Paths.get(ffmpegHome);
 
         Assert.assertTrue("Sample videos weren't found: " + SAMPLES.toAbsolutePath(), Files.exists(SAMPLES));
-
-        ExtraDocTypes.init();
     }
 
     @Test

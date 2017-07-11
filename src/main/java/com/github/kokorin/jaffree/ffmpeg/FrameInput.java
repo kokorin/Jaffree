@@ -18,6 +18,7 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.Option;
+import com.github.kokorin.jaffree.matroska.ExtraDocTypes;
 import com.github.kokorin.jaffree.process.LoggingStdReader;
 
 import java.util.Arrays;
@@ -26,6 +27,10 @@ import java.util.List;
 public class FrameInput implements Input {
 
     private FrameProducer producer;
+
+    static {
+        ExtraDocTypes.init();
+    }
 
     public FrameInput setProducer(FrameProducer producer) {
         this.producer = producer;

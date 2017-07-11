@@ -18,6 +18,7 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.Option;
+import com.github.kokorin.jaffree.matroska.ExtraDocTypes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +28,10 @@ public class FrameOutput implements Output {
     private boolean audio;
 
     private final FrameConsumer consumer;
+
+    static {
+        ExtraDocTypes.init();
+    }
 
     public FrameOutput(FrameConsumer consumer) {
         this.consumer = consumer;

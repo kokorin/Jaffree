@@ -40,7 +40,7 @@ public class ExtraDocTypes {
     private ExtraDocTypes() {}
 
     /**
-     * Use this method to initialize this class before using JEBML
+     * Use this method to initialize extra Matroska types before using JEBML
      */
     public static void init() {}
 }
