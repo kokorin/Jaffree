@@ -98,7 +98,7 @@ public class FrameIOTest {
 
             for (MatroskaFileFrame frame = mkvReader.getNextFrame(); frame != null; frame = mkvReader.getNextFrame()) {
                 MatroskaFileFrame write = new MatroskaFileFrame(frame);
-                write.setTrackNo(write.getTrackNo() - 1);
+                write.setTrackNo(write.getTrackNo());
                 mkvWrtier.addFrame(write);
             }
 
