@@ -4,9 +4,10 @@ public class Track {
     private int id;
     private String title;
     private Type type;
-    private int width;
-    private int height;
-    private float samplingFreaquency;
+    private Integer width;
+    private Integer height;
+    private Long sampleRate;
+    private Integer channels;
 
     public int getId() {
         return id;
@@ -35,7 +36,7 @@ public class Track {
         return this;
     }
 
-    public int getWidth() {
+    public Integer getWidth() {
         return width;
     }
 
@@ -44,7 +45,7 @@ public class Track {
         return this;
     }
 
-    public int getHeight() {
+    public Integer getHeight() {
         return height;
     }
 
@@ -53,12 +54,21 @@ public class Track {
         return this;
     }
 
-    public float getSamplingFreaquency() {
-        return samplingFreaquency;
+    public Long getSampleRate() {
+        return sampleRate;
     }
 
-    public Track setSamplingFreaquency(float samplingFreaquency) {
-        this.samplingFreaquency = samplingFreaquency;
+    public Track setSampleRate(long sampleRate) {
+        this.sampleRate = sampleRate;
+        return this;
+    }
+
+    public Integer getChannels() {
+        return channels;
+    }
+
+    public Track setChannels(int channels) {
+        this.channels = channels;
         return this;
     }
 

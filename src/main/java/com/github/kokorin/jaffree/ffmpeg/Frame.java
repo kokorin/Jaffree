@@ -20,6 +20,7 @@ package com.github.kokorin.jaffree.ffmpeg;
 public abstract class Frame {
     private int track;
     private long timecode;
+    private long duration;
 
     public int getTrack() {
         return track;
@@ -35,5 +36,17 @@ public abstract class Frame {
 
     public void setTimecode(long timecode) {
         this.timecode = timecode;
+    }
+
+    /**
+     * Duration in milliseconds
+     * @return
+     */
+    public long getDuration() {
+        return duration;
+    }
+
+    public void setDuration(long durationMillis) {
+        this.duration = durationMillis;
     }
 }

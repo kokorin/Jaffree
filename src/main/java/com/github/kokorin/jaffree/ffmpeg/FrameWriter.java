@@ -21,6 +21,7 @@ import com.github.kokorin.jaffree.process.StdWriter;
 import org.ebml.io.DataWriter;
 import org.ebml.matroska.MatroskaFileFrame;
 import org.ebml.matroska.MatroskaFileTrack;
+import org.ebml.matroska.MatroskaFileTrack.MatroskaAudioTrack;
 import org.ebml.matroska.MatroskaFileTrack.MatroskaVideoTrack;
 import org.ebml.matroska.MatroskaFileWriter;
 
@@ -58,11 +59,22 @@ public class FrameWriter implements StdWriter {
                 mkvTrack.setCodecID("V_UNCOMPRESSED");
 
                 MatroskaVideoTrack videoTrack = new MatroskaVideoTrack();
-                videoTrack.setPixelWidth((short) track.getWidth());
-                videoTrack.setPixelHeight((short) track.getHeight());
+                videoTrack.setPixelWidth(track.getWidth().shortValue());
+                videoTrack.setPixelHeight(track.getHeight().shortValue());
                 videoTrack.setColourSpace(ByteBuffer.wrap(I420));
 
                 mkvTrack.setVideo(videoTrack);
+            } else if (track.getType() == Track.Type.AUDIO) {
+                mkvTrack = new MatroskaFileTrack();
+                mkvTrack.setTrackType(MatroskaFileTrack.TrackType.AUDIO);
+                mkvTrack.setCodecID("A_PCM/INT/BIG");
+
+                MatroskaAudioTrack audioTrack = new MatroskaAudioTrack();
+                audioTrack.setChannels(track.getChannels().shortValue());
+                audioTrack.setSamplingFrequency(track.getSampleRate().floatValue());
+                audioTrack.setBitDepth(32);
+
+                mkvTrack.setAudio(audioTrack);
             }
 
             if (mkvTrack != null) {
@@ -82,10 +94,15 @@ public class FrameWriter implements StdWriter {
             MatroskaFileFrame mkvFrame = new MatroskaFileFrame();
             mkvFrame.setTrackNo(frame.getTrack());
             mkvFrame.setTimecode(frame.getTimecode());
+            mkvFrame.setDuration(frame.getDuration());
 
             if (frame instanceof VideoFrame) {
                 VideoFrame videoFrame = (VideoFrame) frame;
-                ByteBuffer data = composeDate(videoFrame.getImage());
+                ByteBuffer data = composeVideoData(videoFrame.getImage());
+                mkvFrame.setData(data);
+            } else if (frame instanceof AudioFrame) {
+                AudioFrame audioFrame = (AudioFrame) frame;
+                ByteBuffer data = composeAudioData(audioFrame.getSamples());
                 mkvFrame.setData(data);
             }
 
@@ -95,7 +112,13 @@ public class FrameWriter implements StdWriter {
         mkv.close();
     }
 
-    public static ByteBuffer composeDate(BufferedImage image) {
+    public static ByteBuffer composeAudioData(int[] samples) {
+        ByteBuffer result = ByteBuffer.allocate(samples.length * 4);
+        result.asIntBuffer().put(samples);
+        return result;
+    }
+
+    public static ByteBuffer composeVideoData(BufferedImage image) {
         int width = image.getWidth();
         int height = image.getHeight();
 

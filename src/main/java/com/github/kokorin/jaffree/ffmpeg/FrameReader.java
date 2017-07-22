@@ -22,6 +22,7 @@ import org.ebml.io.DataSource;
 import org.ebml.matroska.MatroskaFile;
 import org.ebml.matroska.MatroskaFileFrame;
 import org.ebml.matroska.MatroskaFileTrack;
+import org.ebml.matroska.MatroskaFileTrack.MatroskaAudioTrack;
 import org.ebml.matroska.MatroskaFileTrack.MatroskaVideoTrack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.image.BufferedImage;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -82,7 +84,8 @@ public class FrameReader<T> implements StdReader<T> {
             } else if (mkvTrack.getTrackType() == MatroskaFileTrack.TrackType.AUDIO) {
                 track = new Track()
                         .setType(Track.Type.AUDIO)
-                        .setSamplingFreaquency(mkvTrack.getAudio().getSamplingFrequency());
+                        .setSampleRate((long) mkvTrack.getAudio().getSamplingFrequency())
+                        .setChannels(mkvTrack.getAudio().getChannels());
             }
 
             if (track != null) {
@@ -107,12 +110,23 @@ public class FrameReader<T> implements StdReader<T> {
             BufferedImage image = parseImage(data, videoTrack.getPixelWidth(), videoTrack.getPixelHeight());
             VideoFrame videoResult = new VideoFrame();
             videoResult.setImage(image);
+
             result = videoResult;
+        } else if (track.getTrackType() == MatroskaFileTrack.TrackType.AUDIO) {
+            MatroskaAudioTrack audioTrack = track.getAudio();
+            ByteBuffer data = frame.getData().slice();
+            int[] samples = parseAudioSamples(data);
+
+            AudioFrame audioResult = new AudioFrame();
+            audioResult.setSamples(samples);
+
+            result = audioResult;
         }
 
         if (result != null) {
             result.setTrack(track.getTrackNo());
             result.setTimecode(frame.getTimecode());
+            result.setDuration(frame.getDuration());
         }
 
         return result;
@@ -152,5 +166,12 @@ public class FrameReader<T> implements StdReader<T> {
         int bc = Math.max(0, Math.min(b, 0xFF));
 
         return (rc << 16) + (gc << 8) + bc;
+    }
+
+    public static int[] parseAudioSamples(ByteBuffer data) {
+        IntBuffer intData = data.asIntBuffer();
+        int[] result = new int[intData.limit()];
+        intData.get(result);
+        return result;
     }
 }

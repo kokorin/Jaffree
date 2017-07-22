@@ -48,7 +48,7 @@ public class FrameInput implements Input {
         return Arrays.asList(
                 new Option("-f", "matroska"),
                 new Option("-vcodec", "rawvideo"),
-                //new Option("-pix_fmt", "yuv420p"),
+                new Option("-acodec", "pcm_s32be"),
                 new Option("-i", "-")
         );
     }

@@ -6,6 +6,7 @@ import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffprobe.FFprobe;
 import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
 import com.github.kokorin.jaffree.ffprobe.Stream;
+import com.github.kokorin.jaffree.matroska.ExtraDocTypes;
 import com.github.kokorin.jaffree.process.StdReader;
 import org.apache.commons.io.IOUtils;
 import org.ebml.io.FileDataSource;
@@ -19,6 +20,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.imageio.ImageIO;
+import javax.sound.sampled.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -188,8 +190,10 @@ public class FrameIOTest {
 
     @Test
     public void testReadUncompressedStreamDumpedToDisk() throws Exception {
+        ExtraDocTypes.init();
         Path tempDir = Files.createTempDirectory("jaffree");
         final Path output = tempDir.resolve("test.mkv");
+        System.out.println("Will write to " + output);
 
         final StdReader<FFmpegResult> stdToDiskReader = new StdReader<FFmpegResult>() {
             @Override
@@ -215,7 +219,7 @@ public class FrameIOTest {
                         new Option("-f", "matroska"),
                         new Option("-vcodec", "rawvideo"),
                         new Option("-pix_fmt", "yuv420p"),
-                        new Option("-an"),
+                        new Option("-acodec", "pcm_s32be"),
                         new Option("-")
                 );
             }
@@ -238,7 +242,7 @@ public class FrameIOTest {
 
         MatroskaFileTrack[] tracks = mkvFile.getTrackList();
         Assert.assertNotNull(tracks);
-        Assert.assertEquals(1, tracks.length);
+        Assert.assertEquals(2, tracks.length);
 
         //Use JEBML with InputStreamSource
         try (FileInputStream inputStream = new FileInputStream(output.toFile())) {
@@ -247,14 +251,12 @@ public class FrameIOTest {
 
             MatroskaFileTrack[] streamTracks = mkvStream.getTrackList();
             Assert.assertNotNull(streamTracks);
-            Assert.assertEquals(1, streamTracks.length);
+            Assert.assertEquals(2, streamTracks.length);
         }
     }
 
     @Test
     public void testReadUncompressedMkvFromStdOut() throws Exception {
-        Path tempDir = Files.createTempDirectory("jaffree");
-
         final AtomicLong trackCounter = new AtomicLong();
         final AtomicLong frameCounter = new AtomicLong();
         FrameConsumer consumer = new FrameConsumer() {
@@ -277,6 +279,7 @@ public class FrameIOTest {
                 .addOutput(
                         FrameOutput.withConsumer(consumer)
                                 .extractVideo(true)
+                                .extractAudio(false)
                 )
                 .execute();
 
@@ -323,6 +326,7 @@ public class FrameIOTest {
                 .addOutput(
                         FrameOutput.withConsumer(consumer)
                                 .extractVideo(true)
+                                .extractAudio(false)
                 )
                 .execute();
 
@@ -455,6 +459,129 @@ public class FrameIOTest {
 
                 frame.setImage(image);
                 frame.setTimecode(frameCounter * 1000 / 10);
+                frameCounter++;
+
+                return frame;
+            }
+        };
+
+        FFmpegResult result = FFmpeg.atPath(BIN)
+                .addInput(
+                        FrameInput.withProducer(producer)
+                )
+                .addOutput(
+                        UrlOutput.toPath(output)
+                )
+                .execute();
+
+        Assert.assertNotNull(result);
+    }
+
+    @Test
+    @Ignore("This test plays sound via javax.sound")
+    public void testReadAudioSamples() throws Exception {
+        final AtomicLong trackCounter = new AtomicLong();
+        final AtomicLong frameCounter = new AtomicLong();
+
+        FrameConsumer consumer = new FrameConsumer() {
+            SourceDataLine line = null;
+
+            @Override
+            public void consumeTracks(List<Track> tracks) {
+                trackCounter.set(tracks.size());
+                for (Track track : tracks) {
+                    if (line == null && track.getType() == Track.Type.AUDIO) {
+                        AudioFormat audioFormat = new AudioFormat(track.getSampleRate(), 8, track.getChannels(), true, false);
+                        try {
+                            line = AudioSystem.getSourceDataLine(audioFormat);
+                            line.addLineListener(new LineListener() {
+                                @Override
+                                public void update(LineEvent event) {
+                                    System.out.println(event);
+                                }
+                            });
+                            line.open(audioFormat);
+                            line.start();
+                        } catch (LineUnavailableException e) {
+                            e.printStackTrace();
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void consume(Frame frame) {
+                if (frame instanceof AudioFrame) {
+                    frameCounter.incrementAndGet();
+
+                    AudioFrame audioFrame = (AudioFrame) frame;
+                    //audioFrame.getDuration();
+                    int[] samples = audioFrame.getSamples();
+                    byte[] bytes = new byte[samples.length];
+
+                    int coeff = Integer.MAX_VALUE / Byte.MAX_VALUE;
+
+                    for (int i = 0; i < samples.length; i++) {
+                        bytes[i] = (byte) (samples[i] / coeff);
+                    }
+                    line.write(bytes, 0, bytes.length);
+                }
+            }
+        };
+
+        FFmpegResult result = FFmpeg.atPath(BIN)
+                .addInput(
+                        UrlInput.fromPath(VIDEO_MP4)
+                                .setDuration(3, TimeUnit.SECONDS)
+                )
+                .addOutput(
+                        FrameOutput.withConsumer(consumer)
+                                .extractVideo(true)
+                                .extractAudio(true)
+                )
+                .execute();
+
+        Assert.assertNotNull(result);
+        Assert.assertEquals(2, trackCounter.get());
+        Assert.assertTrue(frameCounter.get() > 10);
+    }
+
+    @Test
+    public void testWriteAudioSamples() throws Exception {
+        final Path tempDir = Files.createTempDirectory("jaffree");
+        Path output = tempDir.resolve("test.mp3");
+        System.out.println("Will write to " + tempDir);
+
+        FrameProducer producer = new FrameProducer() {
+            private long frameCounter = 0;
+
+            @Override
+            public List<Track> produceTracks() {
+                return Collections.singletonList(new Track()
+                        .setType(Track.Type.AUDIO)
+                        .setSampleRate(44100)
+                        .setChannels(1)
+                );
+            }
+
+            @Override
+            public Frame produce() {
+                if (frameCounter > 30) {
+                    return null;
+                }
+                System.out.println("Creating frame " + frameCounter);
+
+                AudioFrame frame = new AudioFrame();
+
+                long timecode = frameCounter * 1000 / 10;
+                frame.setTimecode(timecode);
+                int[] samples = new int[4410];
+                for (int i = 0; i < samples.length; i++) {
+                    samples[i] = (int)(Integer.MAX_VALUE * Math.sin(300. * (timecode + i * 100 / samples.length)));
+                }
+                frame.setSamples(samples);
+                frame.setDuration(100);
                 frameCounter++;
 
                 return frame;

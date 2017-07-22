@@ -18,4 +18,13 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
 public class AudioFrame extends Frame {
+    private int[] samples;
+
+    public int[] getSamples() {
+        return samples;
+    }
+
+    public void setSamples(int[] samples) {
+        this.samples = samples;
+    }
 }

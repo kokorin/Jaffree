@@ -24,8 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FrameOutput implements Output {
-    private boolean video;
-    private boolean audio;
+    private boolean video = true;
+    private boolean audio = true;
 
     private final FrameConsumer consumer;
 
@@ -70,7 +70,7 @@ public class FrameOutput implements Output {
         }
 
         if (audio) {
-            result.add(new Option("-acodec", "pcm_s32le"));
+            result.add(new Option("-acodec", "pcm_s32be"));
         } else {
             result.add(new Option("-an"));
         }
