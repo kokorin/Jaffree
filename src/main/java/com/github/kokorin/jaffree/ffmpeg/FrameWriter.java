@@ -95,6 +95,7 @@ public class FrameWriter implements StdWriter {
             mkvFrame.setTrackNo(frame.getTrack());
             mkvFrame.setTimecode(frame.getTimecode());
             mkvFrame.setDuration(frame.getDuration());
+            mkvFrame.setKeyFrame(true);
 
             if (frame instanceof VideoFrame) {
                 VideoFrame videoFrame = (VideoFrame) frame;

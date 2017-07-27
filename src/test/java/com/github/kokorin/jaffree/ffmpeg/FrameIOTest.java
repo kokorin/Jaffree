@@ -432,6 +432,7 @@ public class FrameIOTest {
         System.out.println("Will write to " + tempDir);
 
         FrameProducer producer = new FrameProducer() {
+            private final int frameCount = 30;
             private long frameCounter = 0;
 
             @Override
@@ -445,7 +446,7 @@ public class FrameIOTest {
 
             @Override
             public Frame produce() {
-                if (frameCounter > 30) {
+                if (frameCounter > frameCount) {
                     return null;
                 }
                 System.out.println("Creating frame " + frameCounter);
@@ -454,7 +455,7 @@ public class FrameIOTest {
 
                 BufferedImage image = new BufferedImage(320, 240, BufferedImage.TYPE_INT_RGB);
                 Graphics2D graphics = image.createGraphics();
-                graphics.setPaint(new Color(frameCounter * 1.0f / 30, 0, 0));
+                graphics.setPaint(new Color(frameCounter * 1.0f / frameCount, 0, 0));
                 graphics.fillRect(0, 0, 320, 240);
 
                 frame.setImage(image);

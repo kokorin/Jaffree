@@ -103,6 +103,7 @@ public class ProcessHandler<T> {
                             T errResult = stdErrReader.read(stdErr);
                             errResultRef.set(errResult);
                         } catch (Exception e) {
+                            LOGGER.warn("Failed to process stderr", e);
                             exceptionRef.set(e);
                             stop();
                         }
@@ -123,6 +124,7 @@ public class ProcessHandler<T> {
                             stdInWriter.write(stdIn);
                             stdIn.close();
                         } catch (Exception e) {
+                            LOGGER.warn("Failed to process stdin", e);
                             exceptionRef.set(e);
                             stop();
                         }
@@ -142,6 +144,7 @@ public class ProcessHandler<T> {
                         T result = stdOutReader.read(stdOut);
                         resultRef.set(result);
                     } catch (Exception e) {
+                        LOGGER.warn("Failed to process stdout", e);
                         exceptionRef.set(e);
                         stop();
                     }

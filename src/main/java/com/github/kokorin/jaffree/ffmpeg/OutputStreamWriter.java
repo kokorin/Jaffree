@@ -49,7 +49,7 @@ public class OutputStreamWriter implements DataWriter {
             pointer++;
             result = 1;
         } catch (IOException e) {
-            LOGGER.warn("Failed to write byte", e);
+            throw new RuntimeException("Failed to write byte", e);
         }
 
         return result;
@@ -65,7 +65,7 @@ public class OutputStreamWriter implements DataWriter {
             }
             pointer += result;
         } catch (IOException e) {
-            LOGGER.warn("Failed to write bytes", e);
+            throw new RuntimeException("Failed to write bytes", e);
         }
 
         return result;
@@ -88,6 +88,6 @@ public class OutputStreamWriter implements DataWriter {
 
     @Override
     public long seek(long pos) {
-       throw new UnsupportedOperationException("Seek is not supported");
+        throw new UnsupportedOperationException("Seek is not supported");
     }
 }
