@@ -68,6 +68,8 @@ public class FrameReader<T> implements StdReader<T> {
             frameConsumer.consume(frame);
         }
 
+        frameConsumer.consume(null);
+
         return null;
     }
 

@@ -42,6 +42,7 @@ public class FFmpeg {
     private StdWriter stdInWriter;
     private StdReader<FFmpegResult> stdOutReader;
     private StdReader<FFmpegResult> stdErrReader;
+    private String contextName = null;
 
     private final Path executable;
 
@@ -104,6 +105,11 @@ public class FFmpeg {
         this.stdErrReader = stdErrReader;
     }
 
+    public FFmpeg setContextName(String contextName) {
+        this.contextName = contextName;
+        return this;
+    }
+
     public FFmpegResult execute() {
         for (Input input : inputs) {
             input.beforeExecute(this);
@@ -112,7 +118,7 @@ public class FFmpeg {
             output.beforeExecute(this);
         }
 
-        ProcessHandler<FFmpegResult> processHandler = ProcessHandler.<FFmpegResult>forExecutable(executable);
+        ProcessHandler<FFmpegResult> processHandler = new ProcessHandler<>(executable, contextName);
 
         if (stdInWriter != null) {
             processHandler.setStdInWriter(stdInWriter);

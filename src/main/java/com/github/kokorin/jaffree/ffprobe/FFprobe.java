@@ -350,7 +350,7 @@ public class FFprobe {
     }
 
     public FFprobeResult execute() {
-        return ProcessHandler.<FFprobeResult>forExecutable(executable)
+        return new ProcessHandler<FFprobeResult>(executable, null)
                 .setStdOutReader(createStdOutReader())
                 .setStdErrReader(createStdErrReader())
                 .execute(buildOptions());

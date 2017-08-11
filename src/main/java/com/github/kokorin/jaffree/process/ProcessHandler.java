@@ -32,6 +32,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class ProcessHandler<T> {
     private final Path executable;
+    private final String contextName;
     private StdWriter stdInWriter = null;
     private StdReader<T> stdOutReader = new GobblingStdReader<>();
     private StdReader<T> stdErrReader = new GobblingStdReader<>();
@@ -40,8 +41,9 @@ public class ProcessHandler<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessHandler.class);
 
-    public ProcessHandler(Path executable) {
+    public ProcessHandler(Path executable, String contextName) {
         this.executable = executable;
+        this.contextName = contextName;
     }
 
     public ProcessHandler<T> setStdInWriter(StdWriter stdInWriter) {
@@ -110,7 +112,8 @@ public class ProcessHandler<T> {
                         LOGGER.debug("StdErr thread has finished");
                         workingThreadCount.decrementAndGet();
                     }
-                }, "stderr reader");
+                }, getThreadName("stderr"));
+                stdErrThread.setDaemon(true);
                 workingThreadCount.incrementAndGet();
                 stdErrThread.start();
             }
@@ -131,7 +134,8 @@ public class ProcessHandler<T> {
                         LOGGER.debug("StdIn thread has finished");
                         workingThreadCount.decrementAndGet();
                     }
-                }, "stdin writer");
+                }, getThreadName("stdin"));
+                stdInThread.setDaemon(true);
                 workingThreadCount.incrementAndGet();
                 stdInThread.start();
             }
@@ -151,7 +155,8 @@ public class ProcessHandler<T> {
                     LOGGER.debug("StdOut thread has finished");
                     workingThreadCount.decrementAndGet();
                 }
-            }, "stdout reader");
+            }, getThreadName("stdout reader"));
+            stdOutThread.setDaemon(true);
             workingThreadCount.incrementAndGet();
             stdOutThread.start();
 
@@ -213,8 +218,12 @@ public class ProcessHandler<T> {
         stopped = true;
     }
 
-    public static <T> ProcessHandler<T> forExecutable(Path executable) {
-        return new ProcessHandler<>(executable);
+    private String getThreadName(String name) {
+        if (contextName == null) {
+            return name;
+        }
+
+        return  contextName + "-" + name;
     }
 
     protected static List<String> buildCommand(Path executable, List<Option> options) {

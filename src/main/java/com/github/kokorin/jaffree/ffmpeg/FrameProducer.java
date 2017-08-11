@@ -21,5 +21,10 @@ import java.util.List;
 
 public interface FrameProducer {
     List<Track> produceTracks();
+
+    /**
+     * Called repeatedly to get frames. When there is no more frame, method should return {@code}null{@code} value
+     * @return
+     */
     Frame produce();
 }

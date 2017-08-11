@@ -174,7 +174,6 @@ public class BouncingBall {
     }
 
     public static void main(String[] args) {
-        String arg;
         Iterator<String> argIter = Arrays.asList(args).iterator();
 
         String ffmpegBin = null;

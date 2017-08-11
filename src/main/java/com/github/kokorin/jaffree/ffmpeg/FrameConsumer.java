@@ -21,5 +21,11 @@ import java.util.List;
 
 public interface FrameConsumer {
     void consumeTracks(List<Track> tracks);
+
+    /**
+     * Called for every frame in video file. When there is no more frame this method is called one more time
+     * with {@code}null{@code} to notify consumer about EOF.
+     * @param frame
+     */
     void consume(Frame frame);
 }
