@@ -26,6 +26,7 @@ import java.util.List;
 public class UrlInput extends UrlInOut<UrlInput> implements Input {
     private String url;
     private Integer streamLoop;
+    private boolean readAtFrameRate = false;
     //-itsoffset offset (input)
     //-dump_attachment[:stream_specifier] filename (input,per-stream)
 
@@ -48,6 +49,11 @@ public class UrlInput extends UrlInOut<UrlInput> implements Input {
         return this;
     }
 
+    public UrlInput setReadAtFrameRate(boolean readAtFrameRate) {
+        this.readAtFrameRate = readAtFrameRate;
+        return this;
+    }
+
     @Override
     public void beforeExecute(FFmpeg ffmpeg) {
     }
@@ -58,6 +64,10 @@ public class UrlInput extends UrlInOut<UrlInput> implements Input {
 
         if (streamLoop != null) {
             result.add(new Option("-stream_loop", streamLoop.toString()));
+        }
+
+        if (readAtFrameRate) {
+            result.add(new Option("-re"));
         }
 
         result.addAll(buildCommonOptions());
