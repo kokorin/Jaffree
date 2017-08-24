@@ -8,7 +8,17 @@ It integrates with ffmpeg via `java.lang.Process`.
 <dependency>
     <groupId>com.github.kokorin.jaffree</groupId>
     <artifactId>jaffree</artifactId>
-    <version>0.2</version>
+    <version>0.3</version>
+</dependency>
+
+<!--
+    You should also include slf4j into dependencies.
+    This is done intentionally to allow changing of slf4j version.
+  -->
+<dependency>
+    <groupId>org.slf4j</groupId>
+    <artifactId>slf4j-api</artifactId>
+    <version>1.7.25</version>
 </dependency>
 ```
 
@@ -54,10 +64,11 @@ ProgressListener listener = new ProgressListener() {
 
 
 FFmpegResult result = FFmpeg.atPath(BIN)
-        .addInput(Input.fromPath(VIDEO_MP4))
-        .addOutput(Output.toPath(outputPath)
+        .addInput(UrlInput.fromPath(VIDEO_MP4))
+        .addOutput(UrlOutput.toPath(outputPath)
                 .addCodec(null, "copy")
         )
+        // This is optional
         .setProgressListener(listener)
         .execute();
 ```
@@ -67,10 +78,10 @@ FFmpegResult result = FFmpeg.atPath(BIN)
 More details about this example can be found on ffmpeg wiki: [Create a mosaic out of several input videos](https://trac.ffmpeg.org/wiki/Create%20a%20mosaic%20out%20of%20several%20input%20videos)
 ```java
 FFmpegResult result = FFmpeg.atPath(BIN)
-        .addInput(Input.fromPath(VIDEO1_MP4).setDuration(10, TimeUnit.SECONDS))
-        .addInput(Input.fromPath(VIDEO2_MP4).setDuration(10, TimeUnit.SECONDS))
-        .addInput(Input.fromPath(VIDEO3_MP4).setDuration(10, TimeUnit.SECONDS))
-        .addInput(Input.fromPath(VIDEO4_MP4).setDuration(10, TimeUnit.SECONDS))
+        .addInput(UrlInput.fromPath(VIDEO1_MP4).setDuration(10, TimeUnit.SECONDS))
+        .addInput(UrlInput.fromPath(VIDEO2_MP4).setDuration(10, TimeUnit.SECONDS))
+        .addInput(UrlInput.fromPath(VIDEO3_MP4).setDuration(10, TimeUnit.SECONDS))
+        .addInput(UrlInput.fromPath(VIDEO4_MP4).setDuration(10, TimeUnit.SECONDS))
 
         .setComplexFilter(FilterGraph.of(
                 FilterChain.of(
@@ -143,13 +154,12 @@ FFmpegResult result = FFmpeg.atPath(BIN)
                 )
         ))
 
-        .addOutput(Output.toPath(outputPath))
+        .addOutput(UrlOutput.toPath(outputPath))
         .execute();
 ```
 
 ## Programmatic video
 
-*Work is still in progress* and not published to maven central.
 
 ### Producing video
 
@@ -207,6 +217,8 @@ Here is an output of the above example:
 
 ![example output](programmatic.gif)
 
+Jaffree also allows producing of audio tracks, see BouncingBall [example](examples/src/main/java/BouncingBall.java) for more details.
+
 
 ### Consuming video
 
@@ -253,3 +265,7 @@ FFmpegResult result = FFmpeg.atPath(BIN)
         )
         .execute();
 ```
+
+### Programmatic mosaic video creation
+
+Jaffree allows simultaneous reading from several sources (with one instance per every source). You can find details in
