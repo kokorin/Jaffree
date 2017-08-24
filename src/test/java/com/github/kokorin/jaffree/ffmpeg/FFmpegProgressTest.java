@@ -90,6 +90,14 @@ public class FFmpegProgressTest {
 
         Assert.assertNotNull(result);
         Assert.assertEquals(0, result.getSize());
-        Assert.assertEquals(0, result.getBitrate(), 0.0001);
+        Assert.assertTrue(Double.isNaN(result.getBitrate()));
+    }
+
+    @Test
+    public void testFromStringWhichDoesnContainProgress() throws Exception {
+        String value = "This= 5Random String doesn't contain progre==55 info";
+        FFmpegProgress result = FFmpegProgress.fromString(value);
+
+        Assert.assertNull(result);
     }
 }

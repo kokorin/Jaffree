@@ -124,7 +124,7 @@ public class FFmpegProgress {
 
             String bitrateStr = map.get("bitrate");
             String[] bitrateAndUnit = splitValueAndUnit(bitrateStr);
-            double bitrate = 0;
+            double bitrate = Double.NaN;
             if (bitrateAndUnit[1].equals("kbits/s")) {
                 bitrate = parseDouble(bitrateAndUnit[0], Double.NaN);
             }
@@ -138,7 +138,10 @@ public class FFmpegProgress {
             }
             double speed = parseDouble(speedStr, Double.NaN);
 
-            return new FFmpegProgress(frame, fps, q, size, time, dup, drop, bitrate, speed);
+            if (frame != 0 || !Double.isNaN(fps) || !Double.isNaN(q) || size != 0
+                    || time != 0 || !Double.isNaN(bitrate) || !Double.isNaN(speed)) {
+                return new FFmpegProgress(frame, fps, q, size, time, dup, drop, bitrate, speed);
+            }
         } catch (Exception e) {
             // suppress
         }
