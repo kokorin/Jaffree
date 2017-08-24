@@ -269,3 +269,4 @@ FFmpegResult result = FFmpeg.atPath(BIN)
 ### Programmatic mosaic video creation
 
 Jaffree allows simultaneous reading from several sources (with one instance per every source). You can find details in
+ Mosaic [example](examples/src/main/java/Mosaic.java).
