@@ -15,6 +15,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class Mosaic {
     private final Path ffmpegBin;
     private final List<String> inputs;
+    private final int sampleRate = 44100;
 
     public static final Logger LOGGER = LoggerFactory.getLogger(Mosaic.class);
 
@@ -35,10 +36,12 @@ public class Mosaic {
             final FFmpeg ffmpeg = FFmpeg.atPath(ffmpegBin)
                     .addInput(UrlInput
                             .fromUrl(input)
-                            .setDuration(10_000))
+                            .setDuration(100_000))
                     .addOutput(FrameOutput
                             .withConsumer(frameIterator.getConsumer())
-                            .addOption("-ac", "1"))
+                            .addOption("-ac", "1")
+                            .addOption("-ar", Integer.toString(sampleRate))
+                    )
                     .setContextName("input" + i);
 
             Thread ffmpegThread = new Thread(new Runnable() {
@@ -73,13 +76,14 @@ public class Mosaic {
             private final int mosaicWidth = columns * elementWidth;
             private final int mosaicHeight = rows * elementHeight;
             // Millis to read frames ahead into Deques
-            private final long readAheadMillis = 500;
-            private final long videoFramDuration = 1000 / 25;
-            private final long audioFrameDuration = 1000 * 1024 / 44100; //1000 / 25;
-            private final long sampleRate = 44100;
+            private final long readAheadMillis = 1000;
+            private final long videoFrameDuration = 1000 / 25;
+            private final long audioFrameDuration = 500;
 
             private final List<Deque<VideoFrame>> videoQueues = new ArrayList<>(Collections.nCopies(frameIterators.size(), (Deque<VideoFrame>) null));
             private final List<Deque<AudioFrame>> audioQueues = new ArrayList<>(Collections.nCopies(frameIterators.size(), (Deque<AudioFrame>) null));
+            private final long[] audioSamplesRead = new long[frameIterators.size()];
+            private long audioSamplesWritten = 0;
             private long timecode = 0;
             private long nextVideoFrameTimecode = 0;
             private long nextAudioFrameTimecode = 0;
@@ -191,11 +195,13 @@ public class Mosaic {
                 result.setTimecode(nextVideoFrameTimecode);
                 result.setTrack(1);
 
-                nextVideoFrameTimecode += videoFramDuration;
+                nextVideoFrameTimecode += videoFrameDuration;
 
                 return result;
             }
 
+            // While producing audio frames we have to count written and read number of samples.
+            // Frame can't have rational timecode in MKV.
             private Frame produceAudioFrame() {
                 int[] samples = new int[(int) (sampleRate * audioFrameDuration / 1000)];
 
@@ -222,34 +228,31 @@ public class Mosaic {
                             break;
                         }
 
-                        int[] frameSamples = frame.getSamples();
-                        long frameSampleRate = track.getSampleRate();
-                        long frameDurationMillis = 1000 * frameSamples.length / frameSampleRate;
+                        // ffmpeg resamples audio track and set channels to 1
+                        int[] srcSamples = frame.getSamples();
 
-                        if (frame.getTimecode() + frameDurationMillis < nextAudioFrameTimecode) {
-                            continue;
-                        }
-
-                        int[] resamples = resample(frameSamples, frameSampleRate, sampleRate);
-                        int firstSample = (int) ((nextAudioFrameTimecode - frame.getTimecode()) * sampleRate / 1000);
+                        // first sample to write into result
+                        int firstSample = (int) (audioSamplesRead[i] - audioSamplesWritten);
 
                         // Source audio frame starts before target audio frame
                         if (firstSample >= 0) {
-                            for (int j = 0; (j < samples.length) && (j + firstSample < resamples.length); j++) {
-                                samples[j] += resamples[j + firstSample];
+                            for (int j = 0; (j < srcSamples.length) && (j + firstSample < samples.length); j++) {
+                                samples[j + firstSample] += srcSamples[j];
                             }
                         } else {
                             int absFirstSample = Math.abs(firstSample);
-                            for (int j = 0; (j < resamples.length) && (j + absFirstSample < samples.length); j++) {
-                                samples[j + absFirstSample] += resamples[j];
+                            for (int j = 0; (j + absFirstSample < srcSamples.length) && (j < samples.length); j++) {
+                                samples[j] += srcSamples[j + absFirstSample];
                             }
                         }
 
                         // Current target audio frame ends before source audio frame
-                        if (nextAudioFrameTimecode + audioFrameDuration < frame.getTimecode() + frameDurationMillis) {
+                        if (audioSamplesRead[i] + srcSamples.length > audioSamplesWritten + samples.length) {
                             deque.addFirst(frame);
                             break;
                         }
+
+                        audioSamplesRead[i] += srcSamples.length;
                     }
                 }
 
@@ -258,6 +261,7 @@ public class Mosaic {
                 result.setTimecode(nextAudioFrameTimecode);
                 result.setTrack(2);
 
+                audioSamplesWritten += samples.length;
                 nextAudioFrameTimecode += audioFrameDuration;
 
                 return result;
@@ -293,27 +297,6 @@ public class Mosaic {
                         }
                     }
                 }
-            }
-
-            private int[] resample(int[] samples, long fromRate, long toRate) {
-                if (fromRate == toRate) {
-                    return samples;
-                }
-
-                long durationMillis = 1000 * samples.length / fromRate;
-                int[] result = new int[(int) (toRate * durationMillis / 1000)];
-
-                for (int i = 0; i < result.length; i++) {
-                    double fromI = 1. * samples.length * i / result.length;
-                    int left = (int) Math.floor(fromI);
-                    int right = (int) Math.ceil(fromI);
-                    double leftFactor = right - fromI;
-                    double rightFactor = 1.0 - leftFactor;
-
-                    result[i] = (int) (left * leftFactor + right * rightFactor);
-                }
-
-                return result;
             }
         };
     }
