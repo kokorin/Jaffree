@@ -26,6 +26,7 @@ import java.util.List;
 public class FrameOutput implements Output {
     private boolean video = true;
     private boolean audio = true;
+    private final List<Option> additionalOptions = new ArrayList<>();
 
     private final FrameConsumer consumer;
 
@@ -44,6 +45,16 @@ public class FrameOutput implements Output {
 
     public FrameOutput extractAudio(boolean audio) {
         this.audio = audio;
+        return this;
+    }
+
+    public FrameOutput addOption(Option option) {
+        additionalOptions.add(option);
+        return this;
+    }
+
+    public FrameOutput addOption(String key, String value) {
+        additionalOptions.add(new Option(key, value));
         return this;
     }
 
@@ -74,6 +85,8 @@ public class FrameOutput implements Output {
         } else {
             result.add(new Option("-an"));
         }
+
+        result.addAll(additionalOptions);
 
         result.add(new Option("-"));
 

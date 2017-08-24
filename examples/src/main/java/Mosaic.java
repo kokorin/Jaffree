@@ -33,8 +33,12 @@ public class Mosaic {
             frameIterators.add(frameIterator);
 
             final FFmpeg ffmpeg = FFmpeg.atPath(ffmpegBin)
-                    .addInput(UrlInput.fromUrl(input))
-                    .addOutput(FrameOutput.withConsumer(frameIterator.getConsumer()))
+                    .addInput(UrlInput
+                            .fromUrl(input)
+                            .setDuration(10_000))
+                    .addOutput(FrameOutput
+                            .withConsumer(frameIterator.getConsumer())
+                            .addOption("-ac", "1"))
                     .setContextName("input" + i);
 
             Thread ffmpegThread = new Thread(new Runnable() {
@@ -68,21 +72,31 @@ public class Mosaic {
             private final int elementHeight = 240;
             private final int mosaicWidth = columns * elementWidth;
             private final int mosaicHeight = rows * elementHeight;
+            // Millis to read frames ahead into Deques
+            private final long readAheadMillis = 500;
+            private final long videoFramDuration = 1000 / 25;
+            private final long audioFrameDuration = 1000 * 1024 / 44100; //1000 / 25;
+            private final long sampleRate = 44100;
 
-            private final List<Deque<VideoFrame>> videoQueues = new ArrayList<>(Collections.nCopies(frameIterators.size(), (Deque<VideoFrame>)null));
-            private final List<Deque<AudioFrame>> audioQueues = new ArrayList<>(Collections.nCopies(frameIterators.size(), (Deque<AudioFrame>)null));
+            private final List<Deque<VideoFrame>> videoQueues = new ArrayList<>(Collections.nCopies(frameIterators.size(), (Deque<VideoFrame>) null));
+            private final List<Deque<AudioFrame>> audioQueues = new ArrayList<>(Collections.nCopies(frameIterators.size(), (Deque<AudioFrame>) null));
             private long timecode = 0;
             private long nextVideoFrameTimecode = 0;
             private long nextAudioFrameTimecode = 0;
 
             @Override
             public List<Track> produceTracks() {
-                return Collections.singletonList(
+                return Arrays.asList(
                         new Track()
                                 .setType(Track.Type.VIDEO)
                                 .setWidth(mosaicWidth)
                                 .setHeight(mosaicHeight)
-                                .setId(1)
+                                .setId(1),
+                        new Track()
+                                .setType(Track.Type.AUDIO)
+                                .setChannels(1)
+                                .setSampleRate(sampleRate)
+                                .setId(2)
                 );
             }
 
@@ -90,19 +104,16 @@ public class Mosaic {
             public Frame produce() {
                 fillFrameQueues();
 
-                // TODO while audio frames aren't used
-                for (Deque<AudioFrame> deque : audioQueues) {
-                    deque.clear();
-                }
-
+                Frame result = null;
                 if (nextVideoFrameTimecode <= timecode) {
-                    return produceVideoFrame();
-                }
-                if (nextAudioFrameTimecode <= timecode) {
-                    return produceAudioFrame();
+                    result = produceVideoFrame();
+                } else if (nextAudioFrameTimecode <= timecode) {
+                    result = produceAudioFrame();
                 }
 
-                return null;
+                timecode = Math.min(nextVideoFrameTimecode, nextAudioFrameTimecode);
+
+                return result;
             }
 
             public VideoFrame produceVideoFrame() {
@@ -124,7 +135,11 @@ public class Mosaic {
 
                         videoFrames[i] = prevFrame;
                         frameDeque.addFirst(frame);
-
+                        // If target FPS is bigger that source, we use the same source frame
+                        // for several target frames
+                        if (prevFrame != null) {
+                            frameDeque.addFirst(prevFrame);
+                        }
                         break;
                     }
                 }
@@ -176,19 +191,81 @@ public class Mosaic {
                 result.setTimecode(nextVideoFrameTimecode);
                 result.setTrack(1);
 
-                // 25 FPS
-                nextVideoFrameTimecode += 40;
-                timecode += 40;
+                nextVideoFrameTimecode += videoFramDuration;
 
                 return result;
             }
 
             private Frame produceAudioFrame() {
-                return null;
+                int[] samples = new int[(int) (sampleRate * audioFrameDuration / 1000)];
+
+                for (int i = 0; i < audioQueues.size(); i++) {
+                    Deque<AudioFrame> deque = audioQueues.get(i);
+                    // Video without audio
+                    if (deque == null) {
+                        continue;
+                    }
+
+                    while (!deque.isEmpty()) {
+                        AudioFrame frame = deque.pollFirst();
+
+                        List<Track> tracks = frameIterators.get(i).getTracks();
+                        Track track = null;
+                        for (Track testTrack : tracks) {
+                            if (testTrack.getId() == frame.getTrack()) {
+                                track = testTrack;
+                                break;
+                            }
+                        }
+
+                        if (track == null) {
+                            break;
+                        }
+
+                        int[] frameSamples = frame.getSamples();
+                        long frameSampleRate = track.getSampleRate();
+                        long frameDurationMillis = 1000 * frameSamples.length / frameSampleRate;
+
+                        if (frame.getTimecode() + frameDurationMillis < nextAudioFrameTimecode) {
+                            continue;
+                        }
+
+                        int[] resamples = resample(frameSamples, frameSampleRate, sampleRate);
+                        int firstSample = (int) ((nextAudioFrameTimecode - frame.getTimecode()) * sampleRate / 1000);
+
+                        // Source audio frame starts before target audio frame
+                        if (firstSample >= 0) {
+                            for (int j = 0; (j < samples.length) && (j + firstSample < resamples.length); j++) {
+                                samples[j] += resamples[j + firstSample];
+                            }
+                        } else {
+                            int absFirstSample = Math.abs(firstSample);
+                            for (int j = 0; (j < resamples.length) && (j + absFirstSample < samples.length); j++) {
+                                samples[j + absFirstSample] += resamples[j];
+                            }
+                        }
+
+                        // Current target audio frame ends before source audio frame
+                        if (nextAudioFrameTimecode + audioFrameDuration < frame.getTimecode() + frameDurationMillis) {
+                            deque.addFirst(frame);
+                            break;
+                        }
+                    }
+                }
+
+                AudioFrame result = new AudioFrame();
+                result.setSamples(samples);
+                result.setTimecode(nextAudioFrameTimecode);
+                result.setTrack(2);
+
+                nextAudioFrameTimecode += audioFrameDuration;
+
+                return result;
             }
 
             private void fillFrameQueues() {
-                long readUpToTimecode = Math.max(nextVideoFrameTimecode, nextAudioFrameTimecode) + 500;
+                long readUpToTimecode = Math.max(nextVideoFrameTimecode, nextAudioFrameTimecode) + readAheadMillis;
+
                 for (int i = 0; i < frameIterators.size(); i++) {
                     FrameIterator frameIterator = frameIterators.get(i);
 

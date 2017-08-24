@@ -52,7 +52,7 @@
         <dependency>
             <groupId>com.github.kokorin</groupId>
             <artifactId>jebml</artifactId>
-            <version>2.3</version>
+            <version>2.3.1</version>
         </dependency>
 
         <dependency>
