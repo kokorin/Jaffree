@@ -1,7 +1,6 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class FFmpegProgressTest {
@@ -52,23 +51,23 @@ public class FFmpegProgressTest {
     }
 
     @Test
-    @Ignore
     public void testFromStringWhenEncoding() throws Exception {
         String value = "frame=  184 fps=0.0 q=-1.0 Lsize=      38kB time=00:00:07.24 bitrate=  43.4kbits/s dup=73 drop=0 speed=19.5x";
         FFmpegProgress result = FFmpegProgress.fromString(value);
 
         Assert.assertNotNull(result);
-        Assert.assertEquals(5012, result.getFrame());
-        Assert.assertEquals(25.1, result.getFps(), 0.01);
+        Assert.assertEquals(184, result.getFrame());
+        Assert.assertEquals(0, result.getFps(), 0.01);
         Assert.assertEquals(-1.0, result.getQ(), 0.01);
-        Assert.assertEquals(26_463_000 * 8, result.getSize());
-        Assert.assertEquals(167_200, result.getTime());
-        Assert.assertEquals(1296.6, result.getBitrate(), 0.01);
-        Assert.assertEquals(1.23e+3, result.getSpeed(), 0.1);
+        Assert.assertEquals(38_000 * 8, result.getSize());
+        Assert.assertEquals(7_240, result.getTime());
+        Assert.assertEquals(43.4, result.getBitrate(), 0.01);
+        Assert.assertEquals(73, result.getDup());
+        Assert.assertEquals(0, result.getDrop());
+        Assert.assertEquals(19.5, result.getSpeed(), 0.1);
     }
 
     @Test
-    @Ignore
     public void testFromStringWhenEncodingUnknownDuration() throws Exception {
         String value = "frame=  430 fps= 85 q=28.0 size=      46kB time=00:00:17.53 bitrate=  21.5kbits/s speed=3.47x";
         FFmpegProgress result = FFmpegProgress.fromString(value);
@@ -77,11 +76,20 @@ public class FFmpegProgressTest {
     }
 
     @Test
-    @Ignore
     public void testFromStringWhenEncodingUnknownDuration2() throws Exception {
         String value = "frame=  495 fps= 89 q=28.0 size=     124kB time=00:00:20.15 bitrate=  50.3kbits/s dup=1 drop=0 speed=3.63x";
         FFmpegProgress result = FFmpegProgress.fromString(value);
 
         Assert.assertNotNull(result);
+    }
+
+    @Test
+    public void testFromStringWhenSizeAndBitrateAreNotAvailable() throws Exception {
+        String value = "frame=15195 fps=819 q=-0.0 size=N/A time=00:10:07.80 bitrate=N/A";
+        FFmpegProgress result = FFmpegProgress.fromString(value);
+
+        Assert.assertNotNull(result);
+        Assert.assertEquals(0, result.getSize());
+        Assert.assertEquals(0, result.getBitrate(), 0.0001);
     }
 }

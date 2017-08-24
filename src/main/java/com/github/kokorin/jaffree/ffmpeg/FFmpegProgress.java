@@ -19,8 +19,8 @@ package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.SizeUnit;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.HashMap;
+import java.util.Map;
 
 public class FFmpegProgress {
     private final long frame;
@@ -28,15 +28,19 @@ public class FFmpegProgress {
     private final double q;
     private final long size;
     private final long time;
+    private final long dup;
+    private final long drop;
     private final double bitrate;
     private final double speed;
 
-    public FFmpegProgress(long frame, double fps, double q, long size, long time, double bitrate, double speed) {
+    public FFmpegProgress(long frame, double fps, double q, long size, long time, long dup, long drop, double bitrate, double speed) {
         this.frame = frame;
         this.fps = fps;
         this.q = q;
         this.size = size;
         this.time = time;
+        this.dup = dup;
+        this.drop = drop;
         this.bitrate = bitrate;
         this.speed = speed;
     }
@@ -64,6 +68,14 @@ public class FFmpegProgress {
         return time;
     }
 
+    public long getDup() {
+        return dup;
+    }
+
+    public long getDrop() {
+        return drop;
+    }
+
     public double getBitrate() {
         return bitrate;
     }
@@ -72,44 +84,104 @@ public class FFmpegProgress {
         return speed;
     }
 
-    // frame= 5012 fps=0.0 q=-1.0 Lsize=   26463kB time=00:02:47.20 bitrate=1296.6kbits/s speed=1.23e+003x
-    private static final Pattern PROGRESS_PATTERN = Pattern.compile(
-            "^frame=\\s*(\\d+)\\s*" +
-            "fps=\\s*([.\\d]+)\\s*" +
-            "q=\\s*([\\-.\\d]+)\\s*" +
-            "Lsize=\\s*(\\d+)([kKmMgGibB]+)\\s*" +
-            "time=\\s*(\\d+):(\\d+):([.\\d]+)\\s*" +
-            "bitrate=\\s*([\\-.\\d]+)kbits/s\\s*" +
-            "(?:speed=\\s*([.\\de+\\-]+)x\\s*$)?"
-    );
-
     public static FFmpegProgress fromString(String value) {
         if (value == null) {
             return null;
         }
 
-        Matcher matcher = PROGRESS_PATTERN.matcher(value);
-        if (!matcher.matches()) {
-            return null;
+        try {
+            Map<String, String> map = new HashMap<>();
+            // Replace "frame=  495 fps= 89" with "frame=495 fps=89"
+            value = value.replaceAll("= +", "=");
+            for (String pair : value.split(" +")) {
+                String[] nameAndValue = pair.split("=");
+
+                if (nameAndValue.length != 2) {
+                    continue;
+                }
+
+                map.put(nameAndValue[0], nameAndValue[1]);
+            }
+
+            long frame = parseLong(map.get("frame"), 0);
+            double fps = parseDouble(map.get("fps"), Double.NaN);
+            double q = parseDouble(map.get("q"), Double.NaN);
+
+            String[] sizeAndUnit = splitValueAndUnit(map.get("Lsize"));
+            long size = parseLong(sizeAndUnit[0], 0) * parseSizeUnit(sizeAndUnit[1]).multiplier();
+
+            long time = 0;
+            String timeStr = map.get("time");
+            if (timeStr != null) {
+                String[] timeParts = timeStr.split(":");
+                if (timeParts.length == 3) {
+                    long hours = parseLong(timeParts[0], 0);
+                    long minutes = parseLong(timeParts[1], 0);
+                    double seconds = parseDouble(timeParts[2], 0);
+                    time = (long) (((hours * 60 + minutes) * 60 + seconds) * 1000);
+                }
+            }
+
+            String bitrateStr = map.get("bitrate");
+            String[] bitrateAndUnit = splitValueAndUnit(bitrateStr);
+            double bitrate = 0;
+            if (bitrateAndUnit[1].equals("kbits/s")) {
+                bitrate = parseDouble(bitrateAndUnit[0], Double.NaN);
+            }
+
+            long dup = parseLong(map.get("dup"), 0);
+            long drop = parseLong(map.get("drop"), 0);
+
+            String speedStr = map.get("speed");
+            if (speedStr != null && speedStr.endsWith("x")) {
+                speedStr = speedStr.substring(0, speedStr.length() - 1);
+            }
+            double speed = parseDouble(speedStr, Double.NaN);
+
+            return new FFmpegProgress(frame, fps, q, size, time, dup, drop, bitrate, speed);
+        } catch (Exception e) {
+            // suppress
         }
 
-        long frame = Long.parseLong(matcher.group(1));
-        double fps = Double.parseDouble(matcher.group(2));
-        double q = Double.parseDouble(matcher.group(3));
-        long size = Long.parseLong(matcher.group(4)) * parseSizeUnit(matcher.group(5)).multiplier();
-        long hours = Long.parseLong(matcher.group(6));
-        long minutes = Long.parseLong(matcher.group(7));
-        double seconds = Double.parseDouble(matcher.group(8));
-        long time = (long) (((hours * 60 + minutes) * 60 + seconds) * 1000);
-        double bitrate = Double.parseDouble(matcher.group(9));
+        return null;
+    }
 
-        String speedStr = matcher.group(10);
-        double speed = Double.NaN;
-        if (speedStr != null && !speedStr.isEmpty()) {
-            speed = Double.parseDouble(speedStr);
+    private static long parseLong(String value, long defValue) {
+        if (value != null && !value.isEmpty()) {
+            try {
+                return Long.parseLong(value);
+            } catch (NumberFormatException e) {
+                // Suppress
+            }
         }
 
-        return new FFmpegProgress(frame, fps, q, size, time, bitrate, speed);
+        return defValue;
+    }
+
+    private static double parseDouble(String value, double defValue) {
+        if (value != null && !value.isEmpty()) {
+            try {
+                return Double.parseDouble(value);
+            } catch (NumberFormatException e) {
+                // Suppress
+            }
+        }
+
+        return defValue;
+    }
+
+    private static String[] splitValueAndUnit(String string) {
+        if (string == null) {
+            return new String[]{"", ""};
+        }
+
+        for (int i = 0; i < string.length(); i++) {
+            char c = string.charAt(i);
+            if ((c < '0' || c > '9') && c != '.') {
+                return new String[]{string.substring(0, i), string.substring(i)};
+            }
+        }
+        return new String[]{string, ""};
     }
 
     private static SizeUnit parseSizeUnit(String value) {
@@ -119,6 +191,6 @@ public class FFmpegProgress {
             }
         }
 
-        throw new RuntimeException("Failed to parse size unit: " + value);
+        return SizeUnit.K;
     }
 }
