@@ -22,7 +22,7 @@ It integrates with ffmpeg via `java.lang.Process`.
 </dependency>
 ```
 
-Inspired by [ffmpeg-cli-wrapper](/bramp/ffmpeg-cli-wrapper) by [Andrew Brampton](https://blog.bramp.net/)
+Inspired by [ffmpeg-cli-wrapper](https://github.com/bramp/ffmpeg-cli-wrapper) by [Andrew Brampton](https://blog.bramp.net/)
 
 # Examples
 

@@ -22,53 +22,46 @@ package com.github.kokorin.jaffree;
  * @see <a href="https://ffmpeg.org/ffprobe.html#toc-Stream-specifiers-1">stream specifiers</a>
  */
 public class StreamSpecifier {
-    private final String value;
-
-    public StreamSpecifier(String value) {
-        this.value = value;
+    private StreamSpecifier() {
     }
 
-    public String getValue() {
-        return value;
+    public static String withIndex(int index) {
+        return Integer.toString(index);
     }
 
-    public static StreamSpecifier withIndex(int index) {
-        return new StreamSpecifier(Integer.toString(index));
+    public static String withType(StreamType type) {
+        return type.code();
     }
 
-    public static StreamSpecifier withType(StreamType type) {
-        return new StreamSpecifier(type.code());
+    public static String withInputIndexAndStreamIndex(int inputIndex, int streamIndex) {
+        return inputIndex + ":" + streamIndex;
     }
 
-    public static StreamSpecifier withInputIndexAndStreamIndex(int inputIndex, int streamIndex) {
-        return new StreamSpecifier(inputIndex + ":" + streamIndex);
+    public static String withInputIndexAndType(int inputIndex, StreamType type) {
+        return inputIndex + ":" + type.code();
     }
 
-    public static StreamSpecifier withInputIndexAndType(int inputIndex, StreamType type) {
-        return new StreamSpecifier(inputIndex + ":" + type.code());
+    public static String withTypeAndIndex(StreamType type, int index) {
+        return type.code() + ":" + index;
     }
 
-    public static StreamSpecifier withTypeAndIndex(StreamType type, int index) {
-        return new StreamSpecifier(type.code() + ":" + index);
+    public static String withProgramId(int programId) {
+        return "p:" + programId;
     }
 
-    public static StreamSpecifier withProgramId(int programId) {
-        return new StreamSpecifier("p:" + programId);
+    public static String withProgramIdAndStreamIndex(int programId, int index) {
+        return "p:" + programId + ":" + index;
     }
 
-    public static StreamSpecifier withProgramIdAndStreamIndex(int programId, int index) {
-        return new StreamSpecifier("p:" + programId + ":" + index);
+    public static String withMetadataKey(String key) {
+        return "m:" + key;
     }
 
-    public static StreamSpecifier withMetadataKey(String key) {
-        return new StreamSpecifier("m:" + key);
+    public static String withMetadataKeyAndValue(String key, String value) {
+        return "m:" + key + ":" + value;
     }
 
-    public static StreamSpecifier withMetadataKeyAndValue(String key, String value) {
-        return new StreamSpecifier("m:" + key + ":" + value);
-    }
-
-    public static StreamSpecifier withUsableConfiguration() {
-        return new StreamSpecifier("u");
+    public static String withUsableConfiguration() {
+        return "u";
     }
 }

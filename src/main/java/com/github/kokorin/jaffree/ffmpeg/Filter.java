@@ -17,7 +17,7 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-import com.github.kokorin.jaffree.StreamSpecifier;
+import com.github.kokorin.jaffree.StreamType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,13 +29,13 @@ public class Filter {
     private final List<String> outputLinks = new ArrayList<>();
 
 
-    public Filter addInputLink(StreamSpecifier streamSpecifier) {
-        this.inputLinks.add(streamSpecifier.getValue());
+    public Filter addInputLink(StreamType streamType) {
+        this.inputLinks.add(streamType.code());
         return this;
     }
 
-    public Filter addInputLink(String link) {
-        this.inputLinks.add(link);
+    public Filter addInputLink(String linkOrStreamSpecifier) {
+        this.inputLinks.add(linkOrStreamSpecifier);
         return this;
     }
 
@@ -96,12 +96,12 @@ public class Filter {
         return result.toString();
     }
 
-    public static Filter fromInputLink(String link) {
-        return new Filter().addInputLink(link);
+    public static Filter fromInputLink(StreamType streamType) {
+        return new Filter().addInputLink(streamType);
     }
 
-    public static Filter fromInputLink(StreamSpecifier streamSpecifier) {
-        return new Filter().addInputLink(streamSpecifier);
+    public static Filter fromInputLink(String linkOrStreamSpecifier) {
+        return new Filter().addInputLink(linkOrStreamSpecifier);
     }
 
     public static Filter withName(String name) {

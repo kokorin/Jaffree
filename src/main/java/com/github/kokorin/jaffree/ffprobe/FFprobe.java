@@ -19,7 +19,7 @@ package com.github.kokorin.jaffree.ffprobe;
 
 import com.github.kokorin.jaffree.LogLevel;
 import com.github.kokorin.jaffree.Option;
-import com.github.kokorin.jaffree.StreamSpecifier;
+import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.process.LoggingStdReader;
 import com.github.kokorin.jaffree.process.ProcessHandler;
 import com.github.kokorin.jaffree.process.StdReader;
@@ -49,7 +49,7 @@ public class FFprobe {
     // for example when creating XSD-compliant XML output.
     private final boolean showPrivateData = false;
 
-    private StreamSpecifier selectStreams;
+    private String selectStreams;
     private boolean showData;
     private String showDataHash;
     private boolean showError;
@@ -87,11 +87,16 @@ public class FFprobe {
      * <p>
      * This option affects only the options related to streams (e.g. show_streams, show_packets, etc.).
      *
-     * @param selectStreams
+     * @param streamSpecifier
      * @return this
      */
-    public FFprobe setSelectStreams(StreamSpecifier selectStreams) {
-        this.selectStreams = selectStreams;
+    public FFprobe setSelectStreams(String streamSpecifier) {
+        this.selectStreams = streamSpecifier;
+        return this;
+    }
+
+    public FFprobe setSelectStreams(StreamType streamType) {
+        this.selectStreams = streamType.code();
         return this;
     }
 
@@ -373,7 +378,7 @@ public class FFprobe {
         //ffprobe.add(new Option("-hide_banner"));
 
         if (selectStreams != null) {
-            result.add(new Option("-select_streams", selectStreams.getValue()));
+            result.add(new Option("-select_streams", selectStreams));
         }
         if (showData) {
             result.add(new Option("-show_data"));

@@ -2,6 +2,7 @@ package com.github.kokorin.jaffree.ffprobe;
 
 import com.github.kokorin.jaffree.LogLevel;
 import com.github.kokorin.jaffree.StreamSpecifier;
+import com.github.kokorin.jaffree.StreamType;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -192,7 +193,7 @@ public class FFprobeTest {
         FFprobeResult result = FFprobe.atPath(BIN)
                 .setInputPath(VIDEO_MP4)
                 .setShowStreams(true)
-                .setSelectStreams(new StreamSpecifier("v"))
+                .setSelectStreams(StreamType.VIDEO)
                 .execute();
 
         Assert.assertNotNull(result);

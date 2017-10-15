@@ -18,7 +18,7 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.Option;
-import com.github.kokorin.jaffree.StreamSpecifier;
+import com.github.kokorin.jaffree.StreamType;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -32,14 +32,15 @@ public abstract class UrlInOut<T extends UrlInOut> {
     private Long duration;
     private Long position;
     private Long positionEof;
-    //-r[:stream_specifier] fps (input/output,per-stream)
-    //-s[:stream_specifier] size (input/output,per-stream)
+
+    private StreamSpecifierWithValue frameRate;
+    private StreamSpecifierWithValue frameSize;
 
     //-ar[:stream_specifier] freq (input/output,per-stream)
     //-ac[:stream_specifier] channels (input/output,per-stream)
     //
 
-    private final List<Codec> codecs = new ArrayList<>();
+    private final List<StreamSpecifierWithValue> codecs = new ArrayList<>();
     private final List<Option> additionalOptions = new ArrayList<>();
 
     /**
@@ -99,7 +100,7 @@ public abstract class UrlInOut<T extends UrlInOut> {
 
     /**
      * @param position position.
-     * @param unit time unit
+     * @param unit     time unit
      * @return this
      * @see #setPosition(long)
      */
@@ -111,6 +112,7 @@ public abstract class UrlInOut<T extends UrlInOut> {
     /**
      * Like the {@link #setPosition(long)} (-ss) option but relative to the "end of file".
      * That is negative values are earlier in the file, 0 is at EOF.
+     *
      * @param positionEofMillis position in milliseconds, relative to the EOF
      * @return this
      */
@@ -122,8 +124,9 @@ public abstract class UrlInOut<T extends UrlInOut> {
     /**
      * Like the {@link #setPositionEof(long)}  (-ss) option but relative to the "end of file".
      * That is negative values are earlier in the file, 0 is at EOF.
+     *
      * @param positionEof position, relative to the EOF
-     * @param unit time unit
+     * @param unit        time unit
      * @return this
      * @see #setPositionEof(long)
      */
@@ -132,46 +135,99 @@ public abstract class UrlInOut<T extends UrlInOut> {
         return thisAsT();
     }
 
-    /**
-     * Sets special "copy" codec for all streams
-     * @return this
-     */
-    public T addCodecCopy() {
-        codecs.add(new Codec(null, "copy"));
+    public T setCodec(StreamType type, String codecName) {
+        return setCodec(type.code(), codecName);
+    }
+
+    public T setCodec(String streamSpecifier, String codecName) {
+        codecs.add(new StreamSpecifierWithValue(streamSpecifier, codecName));
         return thisAsT();
     }
 
     /**
-     * Sets special "copy" codec for specified streams
+     * Set frame rate.
+     * <p>
+     * As an input option, ignore any timestamps stored in the file and instead generate timestamps assuming constant frame rate fps.
+     * <p>
+     * As an output option, duplicate or drop input frames to achieve constant output frame rate fps.
+     *
+     * @param value Hz value, fraction or abbreviation
      * @return this
      */
-    public T addCodecCopy(StreamSpecifier streamSpecifier) {
-        codecs.add(new Codec(streamSpecifier, "copy"));
+    public T setFrameRate(String value) {
+        return setFrameRate(null, value);
+    }
+
+    /**
+     * Set frame rate.
+     * <p>
+     * As an input option, ignore any timestamps stored in the file and instead generate timestamps assuming constant frame rate fps.
+     * <p>
+     * As an output option, duplicate or drop input frames to achieve constant output frame rate fps.
+     *
+     * @param streamSpecifier stream specifier
+     * @param value           Hz value, fraction or abbreviation
+     * @return this
+     */
+    public T setFrameRate(String streamSpecifier, String value) {
+        this.frameRate = new StreamSpecifierWithValue(streamSpecifier, value);
         return thisAsT();
     }
 
-    public T addCodec(StreamSpecifier streamSpecifier, String codecName) {
-        codecs.add(new Codec(streamSpecifier, codecName));
+    /**
+     * Set frame size
+     * <p>
+     * As an input option, this is a shortcut for the video_size private option, recognized by some demuxers
+     * for which the frame size is either not stored in the file or is configurable
+     * <p>
+     * As an output option, this inserts the scale video filter to the end of the corresponding filtergraph.
+     *
+     * @param width  frame width
+     * @param height frame height
+     * @return this
+     */
+    public T setFrameSize(String width, String height) {
+        return setFrameSize(null, width, height);
+    }
+
+    /**
+     * Set frame size
+     * <p>
+     * As an input option, this is a shortcut for the video_size private option, recognized by some demuxers
+     * for which the frame size is either not stored in the file or is configurable
+     * <p>
+     * As an output option, this inserts the scale video filter to the end of the corresponding filtergraph.
+     *
+     * @param streamSpecifier stream specifier
+     * @param width           frame width
+     * @param height          frame height
+     * @return this
+     */
+    public T setFrameSize(String streamSpecifier, String width, String height) {
+        this.frameSize = new StreamSpecifierWithValue(streamSpecifier, width + "x" + height);
         return thisAsT();
     }
 
     /**
      * Add custom option.
-     * Intended for options, that are not yet supported by jaffree
+     * Intended for cases, that are not yet supported by jaffree
      *
-     * @param option option to add
+     * @param key   option's key to add
+     * @param value option's value to add
      * @return this
      */
-    public T addOption(Option option) {
-        additionalOptions.add(option);
-        return thisAsT();
-    }
-
     public T addOption(String key, String value) {
         additionalOptions.add(new Option(key, value));
         return thisAsT();
     }
 
+    /**
+     * Add custom option.
+     * Intended for cases, that are not yet supported by jaffree
+     *
+     * @param key option's key to add
+     * @return this
+     */
     public T addOption(String key) {
         additionalOptions.add(new Option(key));
         return thisAsT();
@@ -198,13 +254,16 @@ public abstract class UrlInOut<T extends UrlInOut> {
             result.add(new Option("-sseof", formatDuration(positionEof)));
         }
 
-        for (Codec codec : codecs) {
-            String optionName = "-codec";
-            if (codec.streamSpecifier != null) {
-                optionName += ":" + codec.streamSpecifier.getValue();
-            }
+        if (frameRate != null) {
+            result.add(frameRate.toOption("-r"));
+        }
 
-            result.add(new Option(optionName, codec.name));
+        if (frameSize != null) {
+            result.add(frameSize.toOption("-s"));
+        }
+
+        for (StreamSpecifierWithValue codec : codecs) {
+            result.add(codec.toOption("-codec"));
         }
 
         result.addAll(additionalOptions);
@@ -217,19 +276,27 @@ public abstract class UrlInOut<T extends UrlInOut> {
         return (T) this;
     }
 
-    private static class Codec {
-        public StreamSpecifier streamSpecifier;
-        public String name;
-
-        public Codec(StreamSpecifier streamSpecifier, String name) {
-            this.streamSpecifier = streamSpecifier;
-            this.name = name;
-        }
-    }
-
     static String formatDuration(long durationMillis) {
         NumberFormat format = DecimalFormat.getNumberInstance(Locale.ROOT);
         format.setMaximumFractionDigits(3);
         return format.format(durationMillis * 0.001);
+    }
+
+    protected static class StreamSpecifierWithValue {
+        public final String streamSpecifier;
+        public final String value;
+
+        public StreamSpecifierWithValue(String streamSpecifier, String value) {
+            this.streamSpecifier = streamSpecifier;
+            this.value = value;
+        }
+
+        public Option toOption(String key) {
+            if (streamSpecifier == null) {
+                return new Option(key, value);
+            }
+
+            return new Option(key + ":" + streamSpecifier, value);
+        }
     }
 }

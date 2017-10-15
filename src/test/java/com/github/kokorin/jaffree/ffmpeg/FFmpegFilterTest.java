@@ -64,7 +64,7 @@ public class FFmpegFilterTest {
                                         .addOutputLink("base")
                         ),
                         FilterChain.of(
-                                Filter.fromInputLink(StreamSpecifier.withInputIndexAndType(0, StreamType.ALL_VIDEO))
+                                Filter.fromInputLink(StreamSpecifier.withInputIndexAndType(0, StreamType.VIDEO))
                                         .setName("setpts")
                                         .addArgument("PTS-STARTPTS"),
                                 Filter.withName("scale")
@@ -72,7 +72,7 @@ public class FFmpegFilterTest {
                                         .addOutputLink("upperleft")
                         ),
                         FilterChain.of(
-                                Filter.fromInputLink(StreamSpecifier.withInputIndexAndType(1, StreamType.ALL_VIDEO))
+                                Filter.fromInputLink(StreamSpecifier.withInputIndexAndType(1, StreamType.VIDEO))
                                         .setName("setpts")
                                         .addArgument("PTS-STARTPTS"),
                                 Filter.withName("scale")
@@ -80,7 +80,7 @@ public class FFmpegFilterTest {
                                         .addOutputLink("upperright")
                         ),
                         FilterChain.of(
-                                Filter.fromInputLink(StreamSpecifier.withInputIndexAndType(2, StreamType.ALL_VIDEO))
+                                Filter.fromInputLink(StreamSpecifier.withInputIndexAndType(2, StreamType.VIDEO))
                                         .setName("setpts")
                                         .addArgument("PTS-STARTPTS"),
                                 Filter.withName("scale")
@@ -88,7 +88,7 @@ public class FFmpegFilterTest {
                                         .addOutputLink("lowerleft")
                         ),
                         FilterChain.of(
-                                Filter.fromInputLink(StreamSpecifier.withInputIndexAndType(3, StreamType.ALL_VIDEO))
+                                Filter.fromInputLink(StreamSpecifier.withInputIndexAndType(3, StreamType.VIDEO))
                                         .setName("setpts")
                                         .addArgument("PTS-STARTPTS"),
                                 Filter.withName("scale")
@@ -106,7 +106,7 @@ public class FFmpegFilterTest {
                                 Filter.fromInputLink("tmp1")
                                         .addInputLink("upperright")
                                         .setName("overlay")
-                                        //.addArgument("shortest", "1")
+                                        //.addOption("shortest", "1")
                                         .addArgument("x", "320")
                                         .addOutputLink("tmp2")
                         ),
@@ -114,7 +114,7 @@ public class FFmpegFilterTest {
                                 Filter.fromInputLink("tmp2")
                                         .addInputLink("lowerleft")
                                         .setName("overlay")
-                                        //.addArgument("shortest", "1")
+                                        //.addOption("shortest", "1")
                                         .addArgument("y", "240")
                                         .addOutputLink("tmp3")
                         ),
@@ -122,7 +122,7 @@ public class FFmpegFilterTest {
                                 Filter.fromInputLink("tmp3")
                                         .addInputLink("lowerright")
                                         .setName("overlay")
-                                        //.addArgument("shortest", "1")
+                                        //.addOption("shortest", "1")
                                         .addArgument("x", "320")
                                         .addArgument("y", "240")
                         )
@@ -177,9 +177,9 @@ public class FFmpegFilterTest {
 
                 .setComplexFilter(FilterGraph.of(
                         FilterChain.of(
-                                Filter.fromInputLink(StreamSpecifier.withInputIndexAndType(0, StreamType.ALL_VIDEO))
+                                Filter.fromInputLink(StreamSpecifier.withInputIndexAndType(0, StreamType.VIDEO))
                                         .addInputLink(StreamSpecifier.withInputIndexAndType(0, StreamType.AUDIO))
-                                        .addInputLink(StreamSpecifier.withInputIndexAndType(1, StreamType.ALL_VIDEO))
+                                        .addInputLink(StreamSpecifier.withInputIndexAndType(1, StreamType.VIDEO))
                                         .addInputLink(StreamSpecifier.withInputIndexAndType(1, StreamType.AUDIO))
                                         .setName("concat")
                                         .addArgument("n", "2")

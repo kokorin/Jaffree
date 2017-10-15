@@ -1,7 +1,6 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.Option;
-import com.github.kokorin.jaffree.StreamSpecifier;
 import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffprobe.FFprobe;
 import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
@@ -137,9 +136,9 @@ public class FrameIOTest {
                 )
                 .addOutput(
                         UrlOutput.toPath(output)
-                                .addCodec(StreamSpecifier.withType(StreamType.ALL_VIDEO), "rawvideo")
+                                .setCodec(StreamType.VIDEO, "rawvideo")
                                 .addOption("-pix_fmt", "yuv420p")
-                                .addOption("-an")
+                                .disableStream(StreamType.AUDIO)
                 )
                 .execute();
 
@@ -391,9 +390,9 @@ public class FrameIOTest {
                 )
                 .addOutput(
                         UrlOutput.toPath(expected)
-                                .addCodec(StreamSpecifier.withType(StreamType.ALL_VIDEO), "rawvideo")
+                                .setCodec(StreamType.VIDEO, "rawvideo")
                                 .addOption("-pix_fmt", "yuv420p")
-                                .addOption("-an")
+                                .disableStream(StreamType.AUDIO)
                 )
                 .execute();
 

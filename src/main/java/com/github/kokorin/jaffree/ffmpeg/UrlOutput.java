@@ -19,7 +19,7 @@ package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.Option;
 import com.github.kokorin.jaffree.SizeUnit;
-import com.github.kokorin.jaffree.StreamSpecifier;
+import com.github.kokorin.jaffree.StreamType;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -30,6 +30,7 @@ public class UrlOutput extends UrlInOut<UrlOutput> implements Output {
     private String url;
     private Long outputPosition;
     private Long sizeLimit;
+    private final List<StreamType> disabledStreams = new ArrayList<>();
     private final List<Map> maps = new ArrayList<>();
 
     //-timestamp date (output)
@@ -121,6 +122,43 @@ public class UrlOutput extends UrlInOut<UrlOutput> implements Output {
     }
 
     /**
+     * Sets special "copy" codec for all streams
+     * @return this
+     */
+    public UrlOutput copyAllCodecs() {
+        return copyCodec(null);
+    }
+
+    /**
+     * Sets special "copy" codec for specified streams
+     * @return this
+     */
+    public UrlOutput copyCodec(String streamSpecifier) {
+        return setCodec(streamSpecifier, "copy");
+    }
+
+
+    public UrlOutput disableStream(StreamType type) {
+        disabledStreams.add(type);
+        return this;
+    }
+
+    /**
+     * Designate one or more input streams as a source for the output file.
+     * <p>
+     * Each input stream is identified by the input file index input_file_id and the input stream index
+     * input_stream_id within the input file. Both indices start at 0.
+     *
+     * @param inputFileIndex  index of input file
+     * @param streamType specifier for stream(s) in input file
+     * @return this
+     */
+    public UrlOutput addMap(int inputFileIndex, StreamType streamType) {
+        this.maps.add(new MapDefault(false, inputFileIndex, streamType.code(), false));
+        return this;
+    }
+
+    /**
      * Designate one or more input streams as a source for the output file.
      * <p>
      * Each input stream is identified by the input file index input_file_id and the input stream index
@@ -130,7 +168,7 @@ public class UrlOutput extends UrlInOut<UrlOutput> implements Output {
      * @param streamSpecifier specifier for stream(s) in input file
      * @return this
      */
-    public UrlOutput addMap(int inputFileIndex, StreamSpecifier streamSpecifier) {
+    public UrlOutput addMap(int inputFileIndex, String streamSpecifier) {
         this.maps.add(new MapDefault(false, inputFileIndex, streamSpecifier, false));
         return this;
     }
@@ -163,6 +201,10 @@ public class UrlOutput extends UrlInOut<UrlOutput> implements Output {
             result.add(new Option("-fs", sizeLimit.toString()));
         }
 
+        for (StreamType disabledStream : disabledStreams) {
+            addOption("-" + disabledStream.code() + "n");
+        }
+
         result.addAll(buildCommonOptions());
 
         for (Map map : maps) {
@@ -190,10 +232,10 @@ public class UrlOutput extends UrlInOut<UrlOutput> implements Output {
     private static class MapDefault implements Map {
         public boolean negative;
         public int inputFileId;
-        public StreamSpecifier streamSpecifier;
+        public String streamSpecifier;
         public boolean optional;
 
-        public MapDefault(boolean negative, int inputFileId, StreamSpecifier streamSpecifier, boolean optional) {
+        public MapDefault(boolean negative, int inputFileId, String streamSpecifier, boolean optional) {
             this.negative = negative;
             this.inputFileId = inputFileId;
             this.streamSpecifier = streamSpecifier;
@@ -211,7 +253,7 @@ public class UrlOutput extends UrlInOut<UrlOutput> implements Output {
 
             if (streamSpecifier != null) {
                 result.append(":")
-                        .append(streamSpecifier.getValue());
+                        .append(streamSpecifier);
             }
 
             if (optional) {

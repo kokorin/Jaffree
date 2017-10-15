@@ -38,6 +38,8 @@ public class FFmpeg {
     //-filter_threads nb_threads (global)
     //-debug_ts (global)
     private FilterGraph complexFilter;
+    // TODO audio and video specific filters: -vf and -af
+    private String filter;
 
     private StdWriter stdInWriter;
     private StdReader<FFmpegResult> stdOutReader;
@@ -64,6 +66,11 @@ public class FFmpeg {
 
     public FFmpeg setComplexFilter(FilterGraph graph) {
         this.complexFilter = graph;
+        return this;
+    }
+
+    public FFmpeg setFilter(String filter) {
+        this.filter = filter;
         return this;
     }
 
@@ -156,6 +163,10 @@ public class FFmpeg {
 
         if (complexFilter != null) {
             result.add(new Option("-filter_complex", complexFilter.getValue()));
+        }
+
+        if (filter != null) {
+            result.add(new Option("-filter", filter));
         }
 
         result.addAll(additionalOptions);

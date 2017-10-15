@@ -1,8 +1,6 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
-import com.github.kokorin.jaffree.Option;
 import com.github.kokorin.jaffree.SizeUnit;
-import com.github.kokorin.jaffree.StreamSpecifier;
 import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffprobe.FFprobe;
 import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
@@ -48,7 +46,7 @@ public class FFmpegTest {
                 .addInput(UrlInput.fromPath(VIDEO_MP4))
                 .addOutput(UrlOutput
                         .toPath(outputPath)
-                        .addCodec(null, "copy"))
+                        .copyAllCodecs())
                 .execute();
 
         Assert.assertNotNull(result);
@@ -63,9 +61,9 @@ public class FFmpegTest {
                 .addInput(UrlInput.fromPath(VIDEO_MP4))
                 .addOutput(UrlOutput
                         .toPath(outputPath)
-                        .addCodec(StreamSpecifier.withType(StreamType.AUDIO), "mp3")
-                        .addOption(new Option("-vn"))
-                        .addOption(new Option("-id3v2_version", "3"))
+                        .setCodec(StreamType.AUDIO, "mp3")
+                        .disableStream(StreamType.VIDEO)
+                        .addOption("-id3v2_version", "3")
                 )
                 .execute();
 
@@ -142,7 +140,7 @@ public class FFmpegTest {
                 )
                 .addOutput(UrlOutput
                         .toPath(outputPath)
-                        .addCodec(null, "copy"))
+                        .copyAllCodecs())
                 .execute();
 
         Assert.assertNotNull(result);
@@ -160,7 +158,7 @@ public class FFmpegTest {
                 .addInput(UrlInput.fromPath(VIDEO_MP4))
                 .addOutput(UrlOutput
                         .toPath(outputPath)
-                        .addCodec(null, "copy")
+                        .copyAllCodecs()
                         .setOutputPosition(15, TimeUnit.SECONDS)
                 )
                 .execute();
@@ -180,7 +178,7 @@ public class FFmpegTest {
                 .addInput(UrlInput.fromPath(VIDEO_MP4))
                 .addOutput(UrlOutput
                         .toPath(outputPath)
-                        .addCodec(null, "copy")
+                        .copyAllCodecs()
                         .setSizeLimit(1, SizeUnit.MB)
                 )
                 .execute();
@@ -204,7 +202,7 @@ public class FFmpegTest {
                 )
                 .addOutput(UrlOutput
                         .toPath(outputPath)
-                        .addCodec(null, "copy"))
+                        .copyAllCodecs())
                 .execute();
 
         Assert.assertNotNull(result);
@@ -227,7 +225,7 @@ public class FFmpegTest {
                 )
                 .addOutput(UrlOutput
                         .toPath(outputPath)
-                        .addCodec(null, "copy"))
+                        .copyAllCodecs())
                 .execute();
 
         Assert.assertNotNull(result);
@@ -246,10 +244,10 @@ public class FFmpegTest {
                 .addInput(UrlInput.fromPath(VIDEO_MP4))
                 .addOutput(UrlOutput
                         .toPath(outputPath)
-                        .addCodec(null, "copy")
-                        .addMap(0, StreamSpecifier.withType(StreamType.AUDIO))
-                        .addMap(0, StreamSpecifier.withType(StreamType.AUDIO))
-                        .addMap(0, StreamSpecifier.withType(StreamType.ALL_VIDEO))
+                        .copyAllCodecs()
+                        .addMap(0, StreamType.AUDIO)
+                        .addMap(0, StreamType.AUDIO)
+                        .addMap(0, StreamType.VIDEO)
                 )
                 .execute();
 

@@ -21,12 +21,12 @@ public enum StreamType {
     /**
      *  Matches all video streams
      */
-    ALL_VIDEO("v"),
+    VIDEO("v"),
 
     /**
      * Only matches video streams which are not attached pictures
      */
-    VIDEO("V"),
+    VIDEO_NOT_PICTURE("V"),
     AUDIO("a"),
     SUBTITLE("s"),
     DATA("d"),
