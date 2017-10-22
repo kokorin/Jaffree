@@ -49,7 +49,10 @@ public class MainHeader {
      */
     public final List<String> elisionHeaders;
 
-    public MainHeader(long majorVersion, long minorVersion, long streamCount, long maxDistance, List<Rational> timeBases, List<FrameTable> frameTables, List<String> elisionHeaders) {
+    public final Set<Flag> flags;
+
+    public MainHeader(long majorVersion, long minorVersion, long streamCount, long maxDistance, List<Rational> timeBases,
+                      List<FrameTable> frameTables, List<String> elisionHeaders, Set<Flag> flags) {
         this.majorVersion = majorVersion;
         this.minorVersion = minorVersion;
         this.streamCount = streamCount;
@@ -57,6 +60,7 @@ public class MainHeader {
         this.timeBases = Collections.unmodifiableList(timeBases);
         this.frameTables = Collections.unmodifiableList(frameTables);
         this.elisionHeaders = Collections.unmodifiableList(elisionHeaders);
+        this.flags = Collections.unmodifiableSet(flags);
     }
 
     public enum Flag {

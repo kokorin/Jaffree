@@ -4,6 +4,10 @@ public class NutConst {
     public static String FILE_ID = "nut/multimedia container";
     public static byte[] FILE_ID_BYTES = toCStr(FILE_ID);
 
+    public static long MAIN_STARTCODE = toStartCode(0x7A561F5F04ADL, 'M');
+    public static long SYNCPOINT_STARTCODE = toStartCode(0xE4ADEECA4569L, 'K');
+    public static long INDEX_STARTCODE = toStartCode(0xDD672F23E64EL, 'X');
+    public static long INFO_STARTCODE = toStartCode(0xAB68B596BA78L, 'I');
 
     private NutConst() {
     }
@@ -16,5 +20,7 @@ public class NutConst {
         return result;
     }
 
-
+    private static long toStartCode(long code, char c) {
+        return code + (((((long) 'N') << 8) + (long) c) << 48);
+    }
 }

@@ -1,22 +1,17 @@
 package com.github.kokorin.jaffree.nut;
 
-import java.io.BufferedInputStream;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public class NutReader {
-    private final InputStream input;
-    private long position = 0;
+    private final NutInputStream input;
     private boolean read = false;
     private MainHeader mainHeader;
+    private List<StreamHeader> streamHeaders;
 
-    public NutReader(InputStream input) {
-        if (!(input instanceof BufferedInputStream)) {
-            input = new BufferedInputStream(input);
-        }
-
+    public NutReader(NutInputStream input) {
         this.input = input;
     }
 
@@ -25,6 +20,10 @@ public class NutReader {
         return mainHeader;
     }
 
+    List<StreamHeader> getStreamHeaders() throws Exception {
+        readIfRequired();
+        return streamHeaders;
+    }
 
     // package-private for tests
     void readIfRequired() throws Exception {
@@ -32,19 +31,34 @@ public class NutReader {
             return;
         }
 
-        for (byte b : NutConst.FILE_ID_BYTES) {
-            if (b != input.read()) {
-                throw new RuntimeException("Wrong file id");
-            }
+        String fileId = input.readCString();
+        if (!Objects.equals(fileId, NutConst.FILE_ID)) {
+            throw new RuntimeException("Wrong file ID: " + fileId);
         }
 
         PacketHeader packetHeader = readPacketHeader();
-        long mainHeaderStartPosition = position;
+        if (packetHeader.startcode != NutConst.MAIN_STARTCODE) {
+            throw new RuntimeException("Unexpected startcode: " + Long.toHexString(packetHeader.startcode));
+        }
+
+        long mainHeaderStartPosition = input.getPosition();
         mainHeader = readMainHeader();
-        long mainHeaderNonReserveEndPosition = position;
+        long mainHeaderNonReserveEndPosition = input.getPosition();
         long nonReservedRead = mainHeaderNonReserveEndPosition - mainHeaderStartPosition;
-        skipBytes(packetHeader.forwardPtr - nonReservedRead);
-        readPacketFooter();
+        input.skipBytes(packetHeader.forwardPtr - nonReservedRead);
+        //readPacketFooter();
+
+        streamHeaders = new ArrayList<>((int) mainHeader.streamCount);
+        for (int i = 0; i < mainHeader.streamCount; i++) {
+            PacketHeader streamPacketHeader = readPacketHeader();
+            long streamHeaderStartPosition = input.getPosition();
+            StreamHeader streamHeader = readStreamHeader();
+            long streamHeaderNonReserveEndPosition = input.getPosition();
+            long nonResearveRead = streamHeaderNonReserveEndPosition - streamHeaderStartPosition;
+            input.skipBytes(streamPacketHeader.forwardPtr - nonResearveRead);
+            streamHeaders.add(streamHeader);
+            //readPacketFooter();
+        }
 
         read = true;
     }
@@ -57,31 +71,31 @@ public class NutReader {
             header_checksum                 u(32)
      */
     private PacketHeader readPacketHeader() throws Exception {
-        long startcode = readLong();
-        long forwardPtr = readValue();
+        long startcode = input.readLong();
+        long forwardPtr = input.readValue();
         long headerChecksum = 0;
         if (forwardPtr > 4096) {
-            headerChecksum = readInt();
+            headerChecksum = input.readInt();
         }
 
         return new PacketHeader(startcode, forwardPtr, headerChecksum);
     }
 
     private MainHeader readMainHeader() throws Exception {
-        long majorVersion = readValue();
+        long majorVersion = input.readValue();
         long minorVersion = 0;
         if (majorVersion > 3) {
-            minorVersion = readValue();
+            minorVersion = input.readValue();
         }
 
-        long streamCount = readValue();
-        long maxDistance = readValue();
-        long timeBaseCount = readValue();
+        long streamCount = input.readValue();
+        long maxDistance = input.readValue();
+        long timeBaseCount = input.readValue();
 
         List<Rational> timeBases = new ArrayList<>();
         for (int i = 0; i < timeBaseCount; i++) {
-            long numerator = readValue();
-            long denominator = readValue();
+            long numerator = input.readValue();
+            long denominator = input.readValue();
             timeBases.add(new Rational(numerator, denominator));
         }
 
@@ -89,41 +103,41 @@ public class NutReader {
         long fields, ptsDelta = 0, dataSizeMul = 1, streamId = 0, size, reserved, count, match = 1L - (1L << 62), headIdx = 0;
         List<FrameTable> frameTables = new ArrayList<>(255);
         for (int i = 0; i < 256; ) {
-            flags = FrameTable.Flag.fromBitCode(readValue());
-            fields = readValue();
+            flags = FrameTable.Flag.fromBitCode(input.readValue());
+            fields = input.readValue();
 
             if (fields > 0) {
-                ptsDelta = readSigndValue();
+                ptsDelta = input.readSigndValue();
             }
             if (fields > 1) {
-                dataSizeMul = readValue();
+                dataSizeMul = input.readValue();
             }
             if (fields > 2) {
-                streamId = readValue();
+                streamId = input.readValue();
             }
             if (fields > 3) {
-                size = readValue();
+                size = input.readValue();
             } else {
                 size = 0;
             }
             if (fields > 4) {
-                reserved = readValue();
+                reserved = input.readValue();
             } else {
                 reserved = 0;
             }
             if (fields > 5) {
-                count = readValue();
+                count = input.readValue();
             } else {
                 count = dataSizeMul - size;
             }
             if (fields > 6) {
-                match = readSigndValue();
+                match = input.readSigndValue();
             }
             if (fields > 7) {
-                headIdx = readValue();
+                headIdx = input.readValue();
             }
             for (int j = 8; j < fields; j++) {
-                readValue(); //ignore unknown fields
+                input.readValue(); //ignore unknown fields
             }
 
             for (int j = 0; j < count && i < 256; j++, i++) {
@@ -140,14 +154,45 @@ public class NutReader {
             }
         }
 
-        int elisionHeaderCount = (int) readValue();
+        int elisionHeaderCount = (int) input.readValue();
         List<String> elisionHeaders = new ArrayList<>(elisionHeaderCount);
         for (int i = 0; i < elisionHeaderCount; i++) {
-            elisionHeaders.add(readString());
+            elisionHeaders.add(input.readVariableString());
         }
-        Set<MainHeader.Flag> mainFlags = MainHeader.Flag.fromBitCode(readValue());
+        Set<MainHeader.Flag> mainFlags = MainHeader.Flag.fromBitCode(input.readValue());
 
-        return new MainHeader(majorVersion, minorVersion, streamCount, maxDistance, timeBases, frameTables, elisionHeaders);
+        return new MainHeader(majorVersion, minorVersion, streamCount, maxDistance, timeBases, frameTables, elisionHeaders, mainFlags);
+    }
+
+    private StreamHeader readStreamHeader() throws Exception {
+        long streamId = input.readValue();
+        StreamHeader.Type streamType = StreamHeader.Type.fromCode(input.readValue());
+        byte[] fourcc = input.readVariableBytes();
+        long timeBaseId = input.readValue();
+        long msbPtsShift = input.readValue();
+        long maxPtsDistance = input.readValue();
+        long decodeDelay = input.readValue();
+        Set<StreamHeader.Flag> flags = StreamHeader.Flag.fromBitCode(input.readValue());
+
+        StreamHeader.Video video = null;
+        StreamHeader.Audio audio = null;
+        if (streamType == StreamHeader.Type.VIDEO) {
+            long width = input.readValue();
+            long height = input.readValue();
+            long sampleWidth = input.readValue();
+            long sampleHeight = input.readValue();
+            StreamHeader.ColourspaceType colourspaceType = StreamHeader.ColourspaceType.fromCode(input.readValue());
+
+            video = new StreamHeader.Video(width, height, sampleWidth, sampleHeight, colourspaceType);
+        } else if (streamType == StreamHeader.Type.AUDIO) {
+            long samplerateNumerator = input.readValue();
+            long samplerateDenominator = input.readValue();
+            long channelCount = input.readValue();
+
+            audio = new StreamHeader.Audio(samplerateNumerator, samplerateDenominator, channelCount);
+        }
+
+        return new StreamHeader(streamId, streamType, fourcc, timeBaseId, msbPtsShift, maxPtsDistance, decodeDelay, flags, video, audio);
     }
 
     /*
@@ -155,123 +200,11 @@ public class NutReader {
         headerChecksum                            u(32)
      */
     private PacketFooter readPacketFooter() throws Exception {
-        long checksum = readInt();
+        long checksum = input.readInt();
         return new PacketFooter(checksum);
     }
 
 
     //reserved_headers
-
-    /**
-     * v   (variable length value, unsigned)
-     *
-     * @return unsigned value
-     */
-    long readValue() throws Exception {
-        long result = 0;
-
-        while (input.available() > 0) {
-            int tmp = input.read();
-            position++;
-
-            boolean hasMore = (tmp & 0x80) > 0;
-            if (hasMore)
-                result = (result << 7) + tmp - 0x80;
-            else
-                return (result << 7) + tmp;
-        }
-
-        return -1;
-    }
-
-    /**
-     * s   (variable length value, signed)
-     *
-     * @return signed value
-     */
-    long readSigndValue() throws Exception {
-        long tmp = readValue();
-        tmp++;
-        if ((tmp & 1) > 0) {
-            return -(tmp >> 1);
-        }
-
-        return tmp >> 1;
-    }
-
-    /**
-     * f(n)    (n fixed bits in big-endian order)
-     * n == 64
-     *
-     * @return long
-     */
-    long readLong() throws Exception {
-        long result = 0;
-
-        for (int i = 0; i < 8; i++) {
-            result = (result << 8) + input.read();
-            position++;
-        }
-
-        return result;
-    }
-
-    /**
-     * u(n)    (unsigned number encoded in n bits in MSB-first order)
-     * n == 32
-     *
-     * @return int as long
-     */
-    long readInt() throws Exception {
-        long result = 0;
-
-        for (int i = 0; i < 4; i++) {
-            result = (result << 8) + input.read();
-            position++;
-        }
-
-        return result;
-    }
-
-    /**
-     * vb  (variable length binary data or string)
-     *
-     * @return String
-     */
-    String readString() throws Exception {
-        byte[] bytes = readBytes();
-        char[] result = new char[bytes.length];
-
-        for (int i = 0; i < bytes.length; i++) {
-            result[i] = (char) bytes[i];
-        }
-
-        return String.valueOf(result);
-    }
-
-    /**
-     * vb  (variable length binary data or string)
-     *
-     * @return String
-     */
-    byte[] readBytes() throws Exception {
-        int length = (int) readValue();
-        byte[] result = new byte[length];
-
-        for (int i = 0; i < length; i++) {
-            result[i] = (byte) input.read();
-            position++;
-        }
-
-        return result;
-    }
-
-    void skipBytes(long toSkip) throws Exception {
-        while (toSkip > 0) {
-            long skipped = input.skip(toSkip);
-            position += skipped;
-            toSkip -= skipped;
-        }
-    }
 
 }

@@ -11,6 +11,7 @@ import java.io.FileInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 public class NutReaderTest {
 
@@ -43,10 +44,15 @@ public class NutReaderTest {
     @Test
     public void read() throws Exception {
         try (FileInputStream input = new FileInputStream(VIDEO_NUT.toFile())) {
-            NutReader reader = new NutReader(input);
+            NutReader reader = new NutReader(new NutInputStream(input));
+
             MainHeader mainHeader = reader.getMainHeader();
             Assert.assertNotNull(mainHeader);
             Assert.assertTrue(mainHeader.majorVersion >= 3);
+
+            List<StreamHeader> streamHeaders = reader.getStreamHeaders();
+            Assert.assertEquals(StreamHeader.Type.VIDEO, streamHeaders.get(0).streamType);
+            Assert.assertEquals(StreamHeader.Type.AUDIO, streamHeaders.get(1).streamType);
         }
     }
 }
