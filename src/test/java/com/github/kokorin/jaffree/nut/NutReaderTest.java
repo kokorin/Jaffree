@@ -52,7 +52,13 @@ public class NutReaderTest {
 
             List<StreamHeader> streamHeaders = reader.getStreamHeaders();
             Assert.assertEquals(StreamHeader.Type.VIDEO, streamHeaders.get(0).streamType);
+            Assert.assertEquals(320, streamHeaders.get(0).video.width);
+            Assert.assertEquals(240, streamHeaders.get(0).video.height);
+
             Assert.assertEquals(StreamHeader.Type.AUDIO, streamHeaders.get(1).streamType);
+            Assert.assertEquals(2, streamHeaders.get(1).audio.channelCount);
+            Assert.assertEquals(44100, streamHeaders.get(1).audio.samplerate.numerator);
+            Assert.assertEquals(1, streamHeaders.get(1).audio.samplerate.denominator);
         }
     }
 }

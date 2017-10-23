@@ -1,9 +1,6 @@
 package com.github.kokorin.jaffree.nut;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 public class NutReader {
     private final NutInputStream input;
@@ -41,23 +38,23 @@ public class NutReader {
             throw new RuntimeException("Unexpected startcode: " + Long.toHexString(packetHeader.startcode));
         }
 
-        long mainHeaderStartPosition = input.getPosition();
+        long nextPacketPosition = input.getPosition() + packetHeader.forwardPtr;
         mainHeader = readMainHeader();
-        long mainHeaderNonReserveEndPosition = input.getPosition();
-        long nonReservedRead = mainHeaderNonReserveEndPosition - mainHeaderStartPosition;
-        input.skipBytes(packetHeader.forwardPtr - nonReservedRead);
-        //readPacketFooter();
+        input.skipBytes(nextPacketPosition - input.getPosition() - 4);
+        readPacketFooter();
 
         streamHeaders = new ArrayList<>((int) mainHeader.streamCount);
         for (int i = 0; i < mainHeader.streamCount; i++) {
             PacketHeader streamPacketHeader = readPacketHeader();
-            long streamHeaderStartPosition = input.getPosition();
+            if (streamPacketHeader.startcode != NutConst.STREAM_STARTCODE) {
+                throw new RuntimeException("Unexpected startcode: " + Long.toHexString(packetHeader.startcode));
+            }
+
+            nextPacketPosition = input.getPosition() + streamPacketHeader.forwardPtr;
             StreamHeader streamHeader = readStreamHeader();
-            long streamHeaderNonReserveEndPosition = input.getPosition();
-            long nonResearveRead = streamHeaderNonReserveEndPosition - streamHeaderStartPosition;
-            input.skipBytes(streamPacketHeader.forwardPtr - nonResearveRead);
+            input.skipBytes(nextPacketPosition - input.getPosition() - 4);
             streamHeaders.add(streamHeader);
-            //readPacketFooter();
+            readPacketFooter();
         }
 
         read = true;
@@ -154,12 +151,13 @@ public class NutReader {
             }
         }
 
-        int elisionHeaderCount = (int) input.readValue();
-        List<String> elisionHeaders = new ArrayList<>(elisionHeaderCount);
-        for (int i = 0; i < elisionHeaderCount; i++) {
-            elisionHeaders.add(input.readVariableString());
-        }
-        Set<MainHeader.Flag> mainFlags = MainHeader.Flag.fromBitCode(input.readValue());
+        //int elisionHeaderCount = (int) input.readValue();
+        List<String> elisionHeaders = new ArrayList<>();
+        //for (int i = 0; i < elisionHeaderCount; i++) {
+        //   elisionHeaders.add(input.readVariableString());
+        //}
+        //Set<MainHeader.Flag> mainFlags = MainHeader.Flag.fromBitCode(input.readValue());
+        Set<MainHeader.Flag> mainFlags = Collections.emptySet();
 
         return new MainHeader(majorVersion, minorVersion, streamCount, maxDistance, timeBases, frameTables, elisionHeaders, mainFlags);
     }
@@ -173,6 +171,7 @@ public class NutReader {
         long maxPtsDistance = input.readValue();
         long decodeDelay = input.readValue();
         Set<StreamHeader.Flag> flags = StreamHeader.Flag.fromBitCode(input.readValue());
+        byte[] codecSpcificData = input.readVariableBytes();
 
         StreamHeader.Video video = null;
         StreamHeader.Audio audio = null;
@@ -189,7 +188,8 @@ public class NutReader {
             long samplerateDenominator = input.readValue();
             long channelCount = input.readValue();
 
-            audio = new StreamHeader.Audio(samplerateNumerator, samplerateDenominator, channelCount);
+            Rational sampleRate = new Rational(samplerateNumerator, samplerateDenominator);
+            audio = new StreamHeader.Audio(sampleRate, channelCount);
         }
 
         return new StreamHeader(streamId, streamType, fourcc, timeBaseId, msbPtsShift, maxPtsDistance, decodeDelay, flags, video, audio);

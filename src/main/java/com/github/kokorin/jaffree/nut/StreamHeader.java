@@ -47,13 +47,11 @@ public class StreamHeader {
     }
 
     public static class Audio {
-        public final long samplerateNumerator;
-        public final long samplerateDenomominator;
+        public final Rational samplerate;
         public final long channelCount;
 
-        public Audio(long samplerateNumerator, long samplerateDenomominator, long channelCount) {
-            this.samplerateNumerator = samplerateNumerator;
-            this.samplerateDenomominator = samplerateDenomominator;
+        public Audio(Rational samplerate, long channelCount) {
+            this.samplerate = samplerate;
             this.channelCount = channelCount;
         }
     }
