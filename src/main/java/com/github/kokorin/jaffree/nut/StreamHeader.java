@@ -5,18 +5,18 @@ import java.util.Set;
 
 public class StreamHeader {
 
-    public final long streamId;
+    public final int streamId;
     public final StreamHeader.Type streamType;
     public final byte[] fourcc;
     public final long timeBaseId;
-    public final long msbPtsShift;
+    public final int msbPtsShift;
     public final long maxPtsDistance;
     public final long decodeDelay;
     public final Set<StreamHeader.Flag> flags;
     public final Video video;
     public final Audio audio;
 
-    public StreamHeader(long streamId, Type streamType, byte[] fourcc, long timeBaseId, long msbPtsShift,
+    public StreamHeader(int streamId, Type streamType, byte[] fourcc, long timeBaseId, int msbPtsShift,
                         long maxPtsDistance, long decodeDelay, Set<Flag> flags, Video video, Audio audio) {
         this.streamId = streamId;
         this.streamType = streamType;

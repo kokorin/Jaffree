@@ -8,7 +8,7 @@ public class MainHeader {
     public final long majorVersion;
     public final long minorVersion;
 
-    public final long streamCount;
+    public final int streamCount;
 
     /**
      * Maximum distance between startcodes. If p1 and p2 are the byte
@@ -47,19 +47,19 @@ public class MainHeader {
      * <p>
      * The sum of the lengthes of all elision_headers MUST be <=1024.
      */
-    public final List<String> elisionHeaders;
+    public final long[] elisionHeaderSize;
 
     public final Set<Flag> flags;
 
-    public MainHeader(long majorVersion, long minorVersion, long streamCount, long maxDistance, List<Rational> timeBases,
-                      List<FrameTable> frameTables, List<String> elisionHeaders, Set<Flag> flags) {
+    public MainHeader(long majorVersion, long minorVersion, int streamCount, long maxDistance, List<Rational> timeBases,
+                      List<FrameTable> frameTables, long[] elisionHeaderSize, Set<Flag> flags) {
         this.majorVersion = majorVersion;
         this.minorVersion = minorVersion;
         this.streamCount = streamCount;
         this.maxDistance = maxDistance;
         this.timeBases = Collections.unmodifiableList(timeBases);
         this.frameTables = Collections.unmodifiableList(frameTables);
-        this.elisionHeaders = Collections.unmodifiableList(elisionHeaders);
+        this.elisionHeaderSize = elisionHeaderSize;
         this.flags = Collections.unmodifiableSet(flags);
     }
 

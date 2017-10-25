@@ -6,7 +6,8 @@ public class NutReader {
     private final NutInputStream input;
     private boolean read = false;
     private MainHeader mainHeader;
-    private List<StreamHeader> streamHeaders;
+    private StreamHeader[] streamHeaders;
+    private long[] lastPts;
 
     public NutReader(NutInputStream input) {
         this.input = input;
@@ -17,9 +18,9 @@ public class NutReader {
         return mainHeader;
     }
 
-    List<StreamHeader> getStreamHeaders() throws Exception {
+    StreamHeader[] getStreamHeaders() throws Exception {
         readIfRequired();
-        return streamHeaders;
+        return Arrays.copyOf(streamHeaders, streamHeaders.length);
     }
 
     // package-private for tests
@@ -43,7 +44,8 @@ public class NutReader {
         input.skipBytes(nextPacketPosition - input.getPosition() - 4);
         readPacketFooter();
 
-        streamHeaders = new ArrayList<>((int) mainHeader.streamCount);
+        streamHeaders = new StreamHeader[mainHeader.streamCount];
+        lastPts = new long[mainHeader.streamCount];
         for (int i = 0; i < mainHeader.streamCount; i++) {
             PacketHeader streamPacketHeader = readPacketHeader();
             if (streamPacketHeader.startcode != NutConst.STREAM_STARTCODE) {
@@ -51,9 +53,8 @@ public class NutReader {
             }
 
             nextPacketPosition = input.getPosition() + streamPacketHeader.forwardPtr;
-            StreamHeader streamHeader = readStreamHeader();
+            streamHeaders[i] = readStreamHeader();
             input.skipBytes(nextPacketPosition - input.getPosition() - 4);
-            streamHeaders.add(streamHeader);
             readPacketFooter();
         }
 
@@ -85,7 +86,7 @@ public class NutReader {
             minorVersion = input.readValue();
         }
 
-        long streamCount = input.readValue();
+        int streamCount = (int) input.readValue();
         long maxDistance = input.readValue();
         long timeBaseCount = input.readValue();
 
@@ -97,7 +98,8 @@ public class NutReader {
         }
 
         Set<FrameTable.Flag> flags;
-        long fields, ptsDelta = 0, dataSizeMul = 1, streamId = 0, size, reserved, count, match = 1L - (1L << 62), headIdx = 0;
+        int streamId = 0;
+        long fields, ptsDelta = 0, dataSizeMul = 1, size, reserved, count, matchTimeDelta = 1L - (1L << 62), elisionHeaderIdx = 0;
         List<FrameTable> frameTables = new ArrayList<>(255);
         for (int i = 0; i < 256; ) {
             flags = FrameTable.Flag.fromBitCode(input.readValue());
@@ -110,7 +112,7 @@ public class NutReader {
                 dataSizeMul = input.readValue();
             }
             if (fields > 2) {
-                streamId = input.readValue();
+                streamId = (int) input.readValue();
             }
             if (fields > 3) {
                 size = input.readValue();
@@ -127,11 +129,14 @@ public class NutReader {
             } else {
                 count = dataSizeMul - size;
             }
+
+            // MatchTimeDelta is present in NUT specification, but is absent in FFMPEG NUT implementation
             if (fields > 6) {
-                match = input.readSigndValue();
+                matchTimeDelta = input.readSigndValue();
             }
+            // ElisionHeaders are present in NUT specification, but are absent in FFMPEG NUT implementation
             if (fields > 7) {
-                headIdx = input.readValue();
+                elisionHeaderIdx = input.readValue();
             }
             for (int j = 8; j < fields; j++) {
                 input.readValue(); //ignore unknown fields
@@ -144,30 +149,34 @@ public class NutReader {
                     ft = FrameTable.INVALID;
                     j--;
                 } else {
-                    ft = new FrameTable(flags, streamId, dataSizeMul, size + j, ptsDelta, reserved, match, headIdx);
+                    ft = new FrameTable(flags, streamId, dataSizeMul, size + j, ptsDelta, reserved, matchTimeDelta, elisionHeaderIdx);
                 }
 
                 frameTables.add(ft);
             }
         }
 
-        //int elisionHeaderCount = (int) input.readValue();
-        List<String> elisionHeaders = new ArrayList<>();
-        //for (int i = 0; i < elisionHeaderCount; i++) {
-        //   elisionHeaders.add(input.readVariableString());
-        //}
-        //Set<MainHeader.Flag> mainFlags = MainHeader.Flag.fromBitCode(input.readValue());
+        // ElisionHeaders are present in NUT specification, but are absent in FFMPEG NUT implementation
+        // int elisionHeaderCount = (int) input.readValue();
+        // long[] elisionHeaderSize = new long[elisionHeaderCount];
+        // for (int i = 0; i < elisionHeaderCount; i++) {
+        //    elisionHeaders[i] = input.readVariableBytes().length;
+        // }
+        long[] elisionHeaderSize = new long[255];
+
+        // <MainHeader.Flag is present in NUT specification, but is absent in FFMPEG NUT implementation
+        // Set<MainHeader.Flag> mainFlags = MainHeader.Flag.fromBitCode(input.readValue());
         Set<MainHeader.Flag> mainFlags = Collections.emptySet();
 
-        return new MainHeader(majorVersion, minorVersion, streamCount, maxDistance, timeBases, frameTables, elisionHeaders, mainFlags);
+        return new MainHeader(majorVersion, minorVersion, streamCount, maxDistance, timeBases, frameTables, elisionHeaderSize, mainFlags);
     }
 
     private StreamHeader readStreamHeader() throws Exception {
-        long streamId = input.readValue();
+        int streamId = (int) input.readValue();
         StreamHeader.Type streamType = StreamHeader.Type.fromCode(input.readValue());
         byte[] fourcc = input.readVariableBytes();
         long timeBaseId = input.readValue();
-        long msbPtsShift = input.readValue();
+        int msbPtsShift = (int) input.readValue();
         long maxPtsDistance = input.readValue();
         long decodeDelay = input.readValue();
         Set<StreamHeader.Flag> flags = StreamHeader.Flag.fromBitCode(input.readValue());
@@ -200,14 +209,20 @@ public class NutReader {
         FrameTable frameTable = mainHeader.frameTables.get(frameCode);
 
         Set<FrameTable.Flag> flags = frameTable.flags;
-        long streamId = frameTable.streamId;
+        int streamId = frameTable.streamId;
         long ptsDelta = frameTable.ptsDelta;
-        long lsb = frameTable.dataSizeLsb;
+        final StreamHeader streamHeader;
+        final long pts;
+        long dataSizeMsb = 0;
+        long dataSizeMul = frameTable.dataSizeMul;
+        long dataSizeLsb = frameTable.dataSizeLsb;
         long reservedValues = frameTable.reservedCount;
+        long matchTimeDelta = frameTable.matchTimeDelta;
+        long elisionHeaderSize = 0;
         List<DataItem> sideData = Collections.emptyList();
         List<DataItem> metaData = Collections.emptyList();
 
-        if(flags.contains(FrameTable.Flag.CODED)){
+        if (flags.contains(FrameTable.Flag.CODED)) {
             flags = EnumSet.copyOf(flags);
             Set<FrameTable.Flag> codedFlags = FrameTable.Flag.fromBitCode(input.readValue());
             // flags = flags XOR codedFlags
@@ -220,14 +235,13 @@ public class NutReader {
             }
         }
 
-        if(flags.contains(FrameTable.Flag.STREAM_ID)){
-            streamId = input.readValue();
+        if (flags.contains(FrameTable.Flag.STREAM_ID)) {
+            streamId = (int) input.readValue();
         }
+        streamHeader = streamHeaders[streamId];
 
-        if(flags.contains(FrameTable.Flag.CODED_PTS)){
-            long codedPts = input.readValue();
+        if (flags.contains(FrameTable.Flag.CODED_PTS)) {
             /*
-            coded_pts (v)
             If coded_pts < ( 1 << msb_pts_shift ) then it is an lsb
             pts, otherwise it is a full pts + ( 1 << msb_pts_shift ).
             lsb pts is converted to a full pts by:
@@ -235,29 +249,46 @@ public class NutReader {
             delta = last_pts - mask / 2
             pts   = ( (pts_lsb - delta) & mask ) + delta
              */
+            long codedPts = input.readValue();
+            int shift = streamHeader.msbPtsShift;
+            if (Unsigned.compareUnsigned(codedPts, 1L << shift) >= 0) {
+                pts = codedPts - (1L << shift);
+            } else {
+                long mask = (1L << shift) - 1;
+                long delta = lastPts[streamId] - mask / 2;
+                pts = ((codedPts - delta) & mask) + delta;
+            }
+        } else {
+            // pd->pts = nut->sc[pd->stream].last_pts + nut->ft[tmp].pts_delta;
+            pts = lastPts[streamId] + frameTable.ptsDelta;
         }
 
-        if(flags.contains(FrameTable.Flag.SIZE_MSB)){
-            long data_size_msb = input.readValue();
+        if (flags.contains(FrameTable.Flag.SIZE_MSB)) {
+            dataSizeMsb = input.readValue();
         }
 
-        if(flags.contains(FrameTable.Flag.MATCH_TIME)){
-            long match_time_delta = input.readSigndValue();
+        // MatchTimeDelta is present in NUT specification, but is absent in FFMPEG NUT implementation
+        if (flags.contains(FrameTable.Flag.MATCH_TIME)) {
+            matchTimeDelta = input.readSigndValue();
         }
 
-        if(flags.contains(FrameTable.Flag.HEADER_IDX)){
-            long header_idx = input.readValue();
+        // ElisionHeaders are present in NUT specification, but are absent in FFMPEG NUT implementation
+        if (flags.contains(FrameTable.Flag.HEADER_IDX)) {
+            int elisionHeaderIdx = (int) input.readValue();
+            elisionHeaderSize = mainHeader.elisionHeaderSize[elisionHeaderIdx];
         }
 
-        if(flags.contains(FrameTable.Flag.RESERVED)) {
+        if (flags.contains(FrameTable.Flag.RESERVED)) {
             reservedValues = input.readValue();
         }
 
-        for(int i=0; i<reservedValues; i++) {
+        for (int i = 0; i < reservedValues; i++) {
+            // TODO can we optimize reading to byte-array?
             input.readValue(); // ignore reserved
         }
 
-        if(flags.contains(FrameTable.Flag.CHECKSUM)){
+        // checksum is ignored
+        if (flags.contains(FrameTable.Flag.CHECKSUM)) {
             long checksum = input.readInt();
         }
 
@@ -266,7 +297,17 @@ public class NutReader {
             metaData = readDataItems();
         }
 
+        /*
+            data_size = data_size_lsb + data_size_msb * data_size_mul ;
+            The size of the following frame, including a possible elision header.
+            If data_size is 500 bytes, and it has an elision header of 10 bytes,
+            then the stored frame data following the frame header is 490 bytes.
+         */
+        long dataSizeWithElision = dataSizeLsb + dataSizeMsb * dataSizeMul;
+        long dataSize = dataSizeWithElision - elisionHeaderSize;
+
         // TODO read frame_data
+        // TODO skip elision
         // frame_data
 
         return null;

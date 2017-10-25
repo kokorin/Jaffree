@@ -6,7 +6,7 @@ import java.util.Set;
 public class FrameTable {
     public final Set<Flag> flags;
 
-    public final long streamId;
+    public final int streamId;
 
     /**
      * If FLAG_SIZE_MSB is set then data_size_msb which is stored after the
@@ -66,7 +66,7 @@ public class FrameTable {
     public static final FrameTable INVALID = new FrameTable(EnumSet.of(Flag.INVALID), 0, 0, 0, 0, 0, 0, 0);
 
 
-    public FrameTable(Set<Flag> flags, long streamId, long dataSizeMul, long dataSizeLsb, long ptsDelta, long reservedCount, long matchTimeDelta, long headerIdx) {
+    public FrameTable(Set<Flag> flags, int streamId, long dataSizeMul, long dataSizeLsb, long ptsDelta, long reservedCount, long matchTimeDelta, long headerIdx) {
         this.flags = flags;
         this.streamId = streamId;
         this.dataSizeMul = dataSizeMul;
