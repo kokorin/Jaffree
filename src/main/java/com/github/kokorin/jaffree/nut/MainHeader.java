@@ -1,7 +1,6 @@
 package com.github.kokorin.jaffree.nut;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 public class MainHeader {
@@ -32,8 +31,8 @@ public class MainHeader {
      */
     public final long maxDistance;
 
-    public final List<Rational> timeBases;
-    public final List<FrameTable> frameTables;
+    public final Rational[] timeBases;
+    public final FrameTable[] frameTables;
 
     /**
      * For frames with a final size <= 4096 this header is prepended to the
@@ -51,14 +50,14 @@ public class MainHeader {
 
     public final Set<Flag> flags;
 
-    public MainHeader(long majorVersion, long minorVersion, int streamCount, long maxDistance, List<Rational> timeBases,
-                      List<FrameTable> frameTables, long[] elisionHeaderSize, Set<Flag> flags) {
+    public MainHeader(long majorVersion, long minorVersion, int streamCount, long maxDistance,
+                      Rational[] timeBases, FrameTable[] frameTables, long[] elisionHeaderSize, Set<Flag> flags) {
         this.majorVersion = majorVersion;
         this.minorVersion = minorVersion;
         this.streamCount = streamCount;
         this.maxDistance = maxDistance;
-        this.timeBases = Collections.unmodifiableList(timeBases);
-        this.frameTables = Collections.unmodifiableList(frameTables);
+        this.timeBases = timeBases;
+        this.frameTables = frameTables;
         this.elisionHeaderSize = elisionHeaderSize;
         this.flags = Collections.unmodifiableSet(flags);
     }

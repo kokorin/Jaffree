@@ -1,20 +1,17 @@
 package com.github.kokorin.jaffree.nut;
 
-import java.util.Collections;
-import java.util.List;
-
 public class Info {
-    public final long streamId;
-    public final long chapterId;
+    public final int streamId;
+    public final int chapterId;
     public final long chapterStart;
     public final long chapterLength;
-    public final List<DataItem> metaData;
+    public final DataItem[] metaData;
 
-    public Info(long streamId, long chapterId, long chapterStart, long chapterLength, List<DataItem> metaData) {
+    public Info(int streamId, int chapterId, long chapterStart, long chapterLength, DataItem[] metaData) {
         this.streamId = streamId;
         this.chapterId = chapterId;
         this.chapterStart = chapterStart;
         this.chapterLength = chapterLength;
-        this.metaData = Collections.unmodifiableList(metaData);
+        this.metaData = metaData;
     }
 }

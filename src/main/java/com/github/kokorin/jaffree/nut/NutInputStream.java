@@ -134,6 +134,43 @@ public class NutInputStream implements AutoCloseable {
         return result;
     }
 
+    /**
+     * Returns next byte, which will be read with any read*() method
+     * @return next byte
+     */
+    public byte checkNextByte() throws Exception {
+        input.mark(1);
+        byte result = (byte) input.read();
+        input.reset();
+
+        return result;
+    }
+
+    /**
+     * Returns true if stream contains more data
+     * @return next byte
+     */
+    public boolean hasMoreData() throws Exception {
+        input.mark(1);
+        int result = input.read();
+        input.reset();
+
+        return result != -1;
+    }
+
+    public byte[] readBytes(long toRead) throws Exception {
+        byte[] result = new byte[(int)toRead];
+        int start = 0;
+
+        while (start < toRead) {
+            long read = input.read(result, start, (int)toRead - start);
+            position += read;
+            start += read;
+        }
+
+        return result;
+    }
+
     public void skipBytes(long toSkip) throws Exception {
         while (toSkip > 0) {
             long skipped = input.skip(toSkip);

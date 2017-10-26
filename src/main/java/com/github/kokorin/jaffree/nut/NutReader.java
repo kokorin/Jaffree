@@ -7,6 +7,7 @@ public class NutReader {
     private boolean read = false;
     private MainHeader mainHeader;
     private StreamHeader[] streamHeaders;
+    private Info[] infos;
     private long[] lastPts;
 
     public NutReader(NutInputStream input) {
@@ -14,51 +15,66 @@ public class NutReader {
     }
 
     MainHeader getMainHeader() throws Exception {
-        readIfRequired();
+        readToFrame();
         return mainHeader;
     }
 
     StreamHeader[] getStreamHeaders() throws Exception {
-        readIfRequired();
+        readToFrame();
         return Arrays.copyOf(streamHeaders, streamHeaders.length);
     }
 
+    Info[] getInfos() throws Exception {
+        readToFrame();
+        return infos;
+    }
+
     // package-private for tests
-    void readIfRequired() throws Exception {
-        if (read) {
-            return;
+    private void readToFrame() throws Exception {
+        if (input.getPosition() == 0) {
+            String fileId = input.readCString();
+            if (!Objects.equals(fileId, NutConst.FILE_ID)) {
+                throw new RuntimeException("Wrong file ID: " + fileId);
+            }
         }
 
-        String fileId = input.readCString();
-        if (!Objects.equals(fileId, NutConst.FILE_ID)) {
-            throw new RuntimeException("Wrong file ID: " + fileId);
-        }
+        while (input.checkNextByte() == (byte) 'N') {
+            PacketHeader packetHeader = readPacketHeader();
+            long nextPacketPosition = input.getPosition() + packetHeader.forwardPtr;
 
-        PacketHeader packetHeader = readPacketHeader();
-        if (packetHeader.startcode != NutConst.MAIN_STARTCODE) {
-            throw new RuntimeException("Unexpected startcode: " + Long.toHexString(packetHeader.startcode));
-        }
-
-        long nextPacketPosition = input.getPosition() + packetHeader.forwardPtr;
-        mainHeader = readMainHeader();
-        input.skipBytes(nextPacketPosition - input.getPosition() - 4);
-        readPacketFooter();
-
-        streamHeaders = new StreamHeader[mainHeader.streamCount];
-        lastPts = new long[mainHeader.streamCount];
-        for (int i = 0; i < mainHeader.streamCount; i++) {
-            PacketHeader streamPacketHeader = readPacketHeader();
-            if (streamPacketHeader.startcode != NutConst.STREAM_STARTCODE) {
-                throw new RuntimeException("Unexpected startcode: " + Long.toHexString(packetHeader.startcode));
+            if (packetHeader.startcode == NutConst.MAIN_STARTCODE) {
+                mainHeader = readMainHeader();
+                if (streamHeaders == null) {
+                    streamHeaders = new StreamHeader[mainHeader.streamCount];
+                }
+                if (infos == null) {
+                    infos = new Info[mainHeader.streamCount];
+                }
+                if (lastPts == null) {
+                    lastPts = new long[mainHeader.streamCount];
+                }
+            } else if (packetHeader.startcode == NutConst.STREAM_STARTCODE) {
+                StreamHeader streamHeader = readStreamHeader();
+                streamHeaders[streamHeader.streamId] = streamHeader;
+            } else if (packetHeader.startcode == NutConst.INFO_STARTCODE) {
+                Info info = readInfo();
+                if (info.streamId >= 0) {
+                    infos[info.streamId] = info;
+                } else {
+                    // Check description of stream_id_plus1 (v)
+                    // Stream this info packet applies to. If zero, packet applies to all streams.
+                    // But we have normalized streamId while reading Info to range -1..streamCount-1
+                    for (int i = 0; i < mainHeader.streamCount; i++) {
+                        infos[i] = info;
+                    }
+                }
             }
 
-            nextPacketPosition = input.getPosition() + streamPacketHeader.forwardPtr;
-            streamHeaders[i] = readStreamHeader();
+            // Intentionally ignore these headers: INDEX & SYNCPOINT (and reserved headers also)
+
             input.skipBytes(nextPacketPosition - input.getPosition() - 4);
             readPacketFooter();
         }
-
-        read = true;
     }
 
     /*
@@ -88,19 +104,19 @@ public class NutReader {
 
         int streamCount = (int) input.readValue();
         long maxDistance = input.readValue();
-        long timeBaseCount = input.readValue();
+        int timeBaseCount = (int) input.readValue();
 
-        List<Rational> timeBases = new ArrayList<>();
+       Rational[] timeBases = new Rational[timeBaseCount];
         for (int i = 0; i < timeBaseCount; i++) {
             long numerator = input.readValue();
             long denominator = input.readValue();
-            timeBases.add(new Rational(numerator, denominator));
+            timeBases[i] = new Rational(numerator, denominator);
         }
 
         Set<FrameTable.Flag> flags;
         int streamId = 0;
         long fields, ptsDelta = 0, dataSizeMul = 1, size, reserved, count, matchTimeDelta = 1L - (1L << 62), elisionHeaderIdx = 0;
-        List<FrameTable> frameTables = new ArrayList<>(255);
+        FrameTable[] frameTables = new FrameTable[256];
         for (int i = 0; i < 256; ) {
             flags = FrameTable.Flag.fromBitCode(input.readValue());
             fields = input.readValue();
@@ -152,7 +168,7 @@ public class NutReader {
                     ft = new FrameTable(flags, streamId, dataSizeMul, size + j, ptsDelta, reserved, matchTimeDelta, elisionHeaderIdx);
                 }
 
-                frameTables.add(ft);
+                frameTables[i] = ft;
             }
         }
 
@@ -204,13 +220,18 @@ public class NutReader {
         return new StreamHeader(streamId, streamType, fourcc, timeBaseId, msbPtsShift, maxPtsDistance, decodeDelay, flags, video, audio);
     }
 
-    private Frame readFrame() throws Exception {
+    public Frame readFrame() throws Exception {
+        readToFrame();
+
+        if (!input.hasMoreData()) {
+            return null;
+        }
+
         int frameCode = (int) input.readValue();
-        FrameTable frameTable = mainHeader.frameTables.get(frameCode);
+        FrameTable frameTable = mainHeader.frameTables[frameCode];
 
         Set<FrameTable.Flag> flags = frameTable.flags;
         int streamId = frameTable.streamId;
-        long ptsDelta = frameTable.ptsDelta;
         final StreamHeader streamHeader;
         final long pts;
         long dataSizeMsb = 0;
@@ -219,8 +240,8 @@ public class NutReader {
         long reservedValues = frameTable.reservedCount;
         long matchTimeDelta = frameTable.matchTimeDelta;
         long elisionHeaderSize = 0;
-        List<DataItem> sideData = Collections.emptyList();
-        List<DataItem> metaData = Collections.emptyList();
+        DataItem[] sideData = null;
+        DataItem[] metaData = null;
 
         if (flags.contains(FrameTable.Flag.CODED)) {
             flags = EnumSet.copyOf(flags);
@@ -308,25 +329,28 @@ public class NutReader {
 
         // TODO read frame_data
         // TODO skip elision
-        // frame_data
 
-        return null;
+        byte[] data = input.readBytes(dataSize);
+        input.skipBytes(elisionHeaderSize);
+
+        lastPts[streamId] = pts;
+        return new Frame(streamId, pts, data, sideData, metaData);
     }
 
     private Info readInfo() throws Exception {
         // stream_id_plus1
-        long streamId = input.readValue() - 1;
-        long chapterId = input.readSigndValue();
+        int streamId = (int) (input.readValue() - 1);
+        int chapterId = (int) input.readSigndValue();
         long chapterStart = readTimestamp();
         long chapterLength = input.readValue();
-        List<DataItem> meta = readDataItems();
+        DataItem[] meta = readDataItems();
 
         return new Info(streamId, chapterId, chapterStart, chapterLength, meta);
     }
 
-    private List<DataItem> readDataItems() throws Exception {
-        long count = input.readValue();
-        List<DataItem> result = new ArrayList<>();
+    private DataItem[] readDataItems() throws Exception {
+        int count = (int) input.readValue();
+        DataItem[] result = new DataItem[count];
 
         for (int i = 0; i < count; i++) {
             String name = input.readVariableString();
@@ -356,7 +380,7 @@ public class NutReader {
                 value = valueCode;
             }
 
-            result.add(new DataItem(name, value, type));
+            result[i] = new DataItem(name, value, type);
         }
 
         return result;
@@ -377,9 +401,9 @@ public class NutReader {
      */
     private long readTimestamp() throws Exception {
         long tmp = input.readValue();
-        int timeBaseCount = mainHeader.timeBases.size();
+        int timeBaseCount = mainHeader.timeBases.length;
         int id = (int) (tmp % timeBaseCount);
-        Rational timeBase = mainHeader.timeBases.get(id);
+        Rational timeBase = mainHeader.timeBases[id];
 
         return (tmp / timeBaseCount) * timeBase.numerator / timeBase.denominator;
     }

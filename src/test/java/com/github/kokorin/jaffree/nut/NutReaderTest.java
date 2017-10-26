@@ -11,7 +11,6 @@ import java.io.FileInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 
 public class NutReaderTest {
 
@@ -50,15 +49,34 @@ public class NutReaderTest {
             Assert.assertNotNull(mainHeader);
             Assert.assertTrue(mainHeader.majorVersion >= 3);
 
-            List<StreamHeader> streamHeaders = reader.getStreamHeaders();
-            Assert.assertEquals(StreamHeader.Type.VIDEO, streamHeaders.get(0).streamType);
-            Assert.assertEquals(320, streamHeaders.get(0).video.width);
-            Assert.assertEquals(240, streamHeaders.get(0).video.height);
+            StreamHeader[] streamHeaders = reader.getStreamHeaders();
+            Assert.assertEquals(StreamHeader.Type.VIDEO, streamHeaders[0].streamType);
+            Assert.assertEquals(320, streamHeaders[0].video.width);
+            Assert.assertEquals(240, streamHeaders[0].video.height);
 
-            Assert.assertEquals(StreamHeader.Type.AUDIO, streamHeaders.get(1).streamType);
-            Assert.assertEquals(2, streamHeaders.get(1).audio.channelCount);
-            Assert.assertEquals(44100, streamHeaders.get(1).audio.samplerate.numerator);
-            Assert.assertEquals(1, streamHeaders.get(1).audio.samplerate.denominator);
+            Assert.assertEquals(StreamHeader.Type.AUDIO, streamHeaders[1].streamType);
+            Assert.assertEquals(2, streamHeaders[1].audio.channelCount);
+            Assert.assertEquals(44100, streamHeaders[1].audio.samplerate.numerator);
+            Assert.assertEquals(1, streamHeaders[1].audio.samplerate.denominator);
+
+            Frame frame = reader.readFrame();
+            Assert.assertNotNull(frame);
+
+            long videoFrameCount = 0;
+            long audioFrameCount = 0;
+            do {
+                if (frame.streamId == 0) {
+                    videoFrameCount++;
+                } else if (frame.streamId == 1) {
+                    audioFrameCount++;
+                } else {
+                    Assert.fail("Unexpected streamId: " + frame.streamId);
+                }
+                frame = reader.readFrame();
+            } while (frame != null);
+
+            Assert.assertTrue(videoFrameCount > 300);
+            Assert.assertTrue(audioFrameCount > 300);
         }
     }
 }
