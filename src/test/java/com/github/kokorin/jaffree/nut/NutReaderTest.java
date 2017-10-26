@@ -41,6 +41,18 @@ public class NutReaderTest {
     }
 
     @Test
+    public void checkNextByte() throws Exception {
+        try (FileInputStream input = new FileInputStream(VIDEO_NUT.toFile())) {
+            NutInputStream nutInputStream = new NutInputStream(input);
+            byte b = nutInputStream.checkNextByte();
+
+            for (int i = 0; i < 1000; i++) {
+                Assert.assertEquals("checkNextByte must not increase read position", b ,nutInputStream.checkNextByte());
+            }
+        }
+    }
+
+    @Test
     public void read() throws Exception {
         try (FileInputStream input = new FileInputStream(VIDEO_NUT.toFile())) {
             NutReader reader = new NutReader(new NutInputStream(input));

@@ -47,7 +47,7 @@ public class NutInputStream implements AutoCloseable {
      *
      * @return signed value
      */
-    public long readSigndValue() throws Exception {
+    public long readSignedValue() throws Exception {
         long tmp = readValue();
         tmp++;
         if ((tmp & 1) > 0) {
@@ -92,6 +92,19 @@ public class NutInputStream implements AutoCloseable {
     }
 
     /**
+     * f(n)    (n fixed bits in big-endian order)
+     * n == 8
+     *
+     * @return byte
+     */
+    public int readByte() throws Exception {
+        int result = input.read();
+        position++;
+
+        return result;
+    }
+
+    /**
      * vb  (variable length binary data or string)
      *
      * @return String
@@ -102,7 +115,7 @@ public class NutInputStream implements AutoCloseable {
     }
 
     /**
-        Reads input till char \0 not found
+     * Reads input till char \0 not found
      */
     public String readCString() throws Exception {
         byte[] buffer = new byte[1024];
@@ -136,6 +149,7 @@ public class NutInputStream implements AutoCloseable {
 
     /**
      * Returns next byte, which will be read with any read*() method
+     *
      * @return next byte
      */
     public byte checkNextByte() throws Exception {
@@ -148,6 +162,7 @@ public class NutInputStream implements AutoCloseable {
 
     /**
      * Returns true if stream contains more data
+     *
      * @return next byte
      */
     public boolean hasMoreData() throws Exception {
@@ -159,11 +174,11 @@ public class NutInputStream implements AutoCloseable {
     }
 
     public byte[] readBytes(long toRead) throws Exception {
-        byte[] result = new byte[(int)toRead];
+        byte[] result = new byte[(int) toRead];
         int start = 0;
 
         while (start < toRead) {
-            long read = input.read(result, start, (int)toRead - start);
+            long read = input.read(result, start, (int) toRead - start);
             position += read;
             start += read;
         }

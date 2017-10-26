@@ -122,7 +122,7 @@ public class NutReader {
             fields = input.readValue();
 
             if (fields > 0) {
-                ptsDelta = input.readSigndValue();
+                ptsDelta = input.readSignedValue();
             }
             if (fields > 1) {
                 dataSizeMul = input.readValue();
@@ -148,7 +148,7 @@ public class NutReader {
 
             // MatchTimeDelta is present in NUT specification, but is absent in FFMPEG NUT implementation
             if (fields > 6) {
-                matchTimeDelta = input.readSigndValue();
+                matchTimeDelta = input.readSignedValue();
             }
             // ElisionHeaders are present in NUT specification, but are absent in FFMPEG NUT implementation
             if (fields > 7) {
@@ -227,7 +227,7 @@ public class NutReader {
             return null;
         }
 
-        int frameCode = (int) input.readValue();
+        int frameCode = input.readByte();
         FrameTable frameTable = mainHeader.frameTables[frameCode];
 
         Set<FrameTable.Flag> flags = frameTable.flags;
@@ -290,7 +290,7 @@ public class NutReader {
 
         // MatchTimeDelta is present in NUT specification, but is absent in FFMPEG NUT implementation
         if (flags.contains(FrameTable.Flag.MATCH_TIME)) {
-            matchTimeDelta = input.readSigndValue();
+            matchTimeDelta = input.readSignedValue();
         }
 
         // ElisionHeaders are present in NUT specification, but are absent in FFMPEG NUT implementation
@@ -327,9 +327,6 @@ public class NutReader {
         long dataSizeWithElision = dataSizeLsb + dataSizeMsb * dataSizeMul;
         long dataSize = dataSizeWithElision - elisionHeaderSize;
 
-        // TODO read frame_data
-        // TODO skip elision
-
         byte[] data = input.readBytes(dataSize);
         input.skipBytes(elisionHeaderSize);
 
@@ -340,7 +337,7 @@ public class NutReader {
     private Info readInfo() throws Exception {
         // stream_id_plus1
         int streamId = (int) (input.readValue() - 1);
-        int chapterId = (int) input.readSigndValue();
+        int chapterId = (int) input.readSignedValue();
         long chapterStart = readTimestamp();
         long chapterLength = input.readValue();
         DataItem[] meta = readDataItems();
@@ -354,7 +351,7 @@ public class NutReader {
 
         for (int i = 0; i < count; i++) {
             String name = input.readVariableString();
-            long valueCode = input.readSigndValue();
+            long valueCode = input.readSignedValue();
             final String type;
             final Object value;
 
@@ -366,14 +363,14 @@ public class NutReader {
                 value = input.readVariableBytes();
             } else if (valueCode == -3) {
                 type = "s";
-                value = input.readSigndValue();
+                value = input.readSignedValue();
             } else if (valueCode == -4) {
                 type = "t";
                 value = readTimestamp();
             } else if (valueCode < -4) {
                 type = "r";
                 long denominator = -valueCode - 4;
-                long numerator = input.readSigndValue();
+                long numerator = input.readSignedValue();
                 value = new Rational(numerator, denominator);
             } else {
                 type = "v";
