@@ -52,7 +52,7 @@ public class FrameInput implements Input {
 
     @Override
     public void beforeExecute(FFmpeg ffmpeg) {
-        ffmpeg.setStdInWriter(new FrameWriter(producer));
+        ffmpeg.setStdInWriter(new MatroskaFrameWriter(producer));
         ffmpeg.setStdOutReader(new LoggingStdReader<FFmpegResult>());
     }
 

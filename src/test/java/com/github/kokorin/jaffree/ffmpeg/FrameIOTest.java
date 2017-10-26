@@ -6,6 +6,8 @@ import com.github.kokorin.jaffree.ffprobe.FFprobe;
 import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
 import com.github.kokorin.jaffree.ffprobe.Stream;
 import com.github.kokorin.jaffree.matroska.ExtraDocTypes;
+import com.github.kokorin.jaffree.matroska.InputStreamSource;
+import com.github.kokorin.jaffree.matroska.OutputStreamWriter;
 import com.github.kokorin.jaffree.process.StdReader;
 import org.apache.commons.io.IOUtils;
 import org.ebml.io.FileDataSource;
@@ -377,7 +379,7 @@ public class FrameIOTest {
         };
 
         try (FileOutputStream outputStream = new FileOutputStream(actual.toFile())) {
-            new FrameWriter(producer).write(outputStream);
+            new MatroskaFrameWriter(producer).write(outputStream);
         }
 
         Assert.assertTrue(Files.exists(actual));

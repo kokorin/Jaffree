@@ -17,6 +17,7 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
+import com.github.kokorin.jaffree.matroska.InputStreamSource;
 import com.github.kokorin.jaffree.process.StdReader;
 import org.ebml.io.DataSource;
 import org.ebml.matroska.MatroskaFile;
@@ -34,12 +35,12 @@ import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FrameReader<T> implements StdReader<T> {
+public class MatroskaFrameReader<T> implements StdReader<T> {
     private final FrameConsumer frameConsumer;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FrameReader.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MatroskaFrameReader.class);
 
-    public FrameReader(FrameConsumer frameConsumer) {
+    public MatroskaFrameReader(FrameConsumer frameConsumer) {
         this.frameConsumer = frameConsumer;
     }
 

@@ -64,7 +64,7 @@ public class FrameOutput implements Output {
 
     @Override
     public void beforeExecute(FFmpeg ffmpeg) {
-        ffmpeg.setStdOutReader(new FrameReader<FFmpegResult>(consumer));
+        ffmpeg.setStdOutReader(new MatroskaFrameReader<FFmpegResult>(consumer));
     }
 
     @Override

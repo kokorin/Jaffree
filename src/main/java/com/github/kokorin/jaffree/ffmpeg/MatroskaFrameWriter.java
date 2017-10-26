@@ -17,6 +17,7 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
+import com.github.kokorin.jaffree.matroska.OutputStreamWriter;
 import com.github.kokorin.jaffree.process.StdWriter;
 import org.ebml.io.DataWriter;
 import org.ebml.matroska.MatroskaFileFrame;
@@ -30,13 +31,13 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.List;
 
-public class FrameWriter implements StdWriter {
+public class MatroskaFrameWriter implements StdWriter {
     private final FrameProducer producer;
 
     // https://www.fourcc.org/yuv.php
     private static final byte[] I420 = {(byte) 0x49, (byte) 0x34, (byte) 0x32, (byte) 0x30};
 
-    public FrameWriter(FrameProducer producer) {
+    public MatroskaFrameWriter(FrameProducer producer) {
         this.producer = producer;
     }
 
