@@ -71,7 +71,7 @@ public class NutReaderTest {
             Assert.assertEquals(44100, streamHeaders[1].audio.samplerate.numerator);
             Assert.assertEquals(1, streamHeaders[1].audio.samplerate.denominator);
 
-            Frame frame = reader.readFrame();
+            NutFrame frame = reader.readFrame();
             Assert.assertNotNull(frame);
 
             long videoFrameCount = 0;

@@ -18,6 +18,7 @@
 package com.github.kokorin.jaffree.nut;
 
 import java.io.BufferedInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 public class NutInputStream implements AutoCloseable {
@@ -42,7 +43,7 @@ public class NutInputStream implements AutoCloseable {
      *
      * @return unsigned value
      */
-    public long readValue() throws Exception {
+    public long readValue() throws IOException {
         long result = 0;
 
         while (input.available() > 0) {
@@ -64,7 +65,7 @@ public class NutInputStream implements AutoCloseable {
      *
      * @return signed value
      */
-    public long readSignedValue() throws Exception {
+    public long readSignedValue() throws IOException {
         long tmp = readValue();
         tmp++;
         if ((tmp & 1) > 0) {
@@ -80,7 +81,7 @@ public class NutInputStream implements AutoCloseable {
      *
      * @return long
      */
-    public long readLong() throws Exception {
+    public long readLong() throws IOException {
         long result = 0;
 
         for (int i = 0; i < 8; i++) {
@@ -97,7 +98,7 @@ public class NutInputStream implements AutoCloseable {
      *
      * @return int as long
      */
-    long readInt() throws Exception {
+    long readInt() throws IOException {
         long result = 0;
 
         for (int i = 0; i < 4; i++) {
@@ -114,7 +115,7 @@ public class NutInputStream implements AutoCloseable {
      *
      * @return byte
      */
-    public int readByte() throws Exception {
+    public int readByte() throws IOException {
         int result = input.read();
         position++;
 
@@ -126,7 +127,7 @@ public class NutInputStream implements AutoCloseable {
      *
      * @return String
      */
-    public String readVariableString() throws Exception {
+    public String readVariableString() throws IOException {
         byte[] bytes = readVariableBytes();
         return toString(bytes);
     }
@@ -134,7 +135,7 @@ public class NutInputStream implements AutoCloseable {
     /**
      * Reads input till char \0 not found
      */
-    public String readCString() throws Exception {
+    public String readCString() throws IOException {
         byte[] buffer = new byte[1024];
         int length = 0;
 
@@ -152,7 +153,7 @@ public class NutInputStream implements AutoCloseable {
      *
      * @return String
      */
-    public byte[] readVariableBytes() throws Exception {
+    public byte[] readVariableBytes() throws IOException {
         int length = (int) readValue();
         byte[] result = new byte[length];
 
@@ -169,7 +170,7 @@ public class NutInputStream implements AutoCloseable {
      *
      * @return next byte
      */
-    public byte checkNextByte() throws Exception {
+    public byte checkNextByte() throws IOException {
         input.mark(1);
         byte result = (byte) input.read();
         input.reset();
@@ -182,7 +183,7 @@ public class NutInputStream implements AutoCloseable {
      *
      * @return next byte
      */
-    public boolean hasMoreData() throws Exception {
+    public boolean hasMoreData() throws IOException {
         input.mark(1);
         int result = input.read();
         input.reset();
@@ -190,12 +191,16 @@ public class NutInputStream implements AutoCloseable {
         return result != -1;
     }
 
-    public byte[] readBytes(long toRead) throws Exception {
+    public byte[] readBytes(long toRead) throws IOException {
         byte[] result = new byte[(int) toRead];
         int start = 0;
 
         while (start < toRead) {
             long read = input.read(result, start, (int) toRead - start);
+            if (read == -1) {
+                return null;
+            }
+
             position += read;
             start += read;
         }
@@ -203,7 +208,7 @@ public class NutInputStream implements AutoCloseable {
         return result;
     }
 
-    public void skipBytes(long toSkip) throws Exception {
+    public void skipBytes(long toSkip) throws IOException {
         while (toSkip > 0) {
             long skipped = input.skip(toSkip);
             position += skipped;
@@ -212,7 +217,7 @@ public class NutInputStream implements AutoCloseable {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() throws IOException {
         input.close();
     }
 

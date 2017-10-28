@@ -17,18 +17,32 @@
 
 package com.github.kokorin.jaffree.nut;
 
-public class Frame {
+public class NutFrame {
     public final int streamId;
     public final long pts;
     public final byte[] data;
     public final DataItem[] sideData;
     public final DataItem[] metaData;
+    public final boolean eor;
 
-    public Frame(int streamId, long pts, byte[] data, DataItem[] sideData, DataItem[] metaData) {
+    public NutFrame(int streamId, long pts, byte[] data, DataItem[] sideData, DataItem[] metaData, boolean eor) {
         this.streamId = streamId;
         this.pts = pts;
         this.data = data;
         this.sideData = sideData;
         this.metaData = metaData;
+        this.eor = eor;
+    }
+
+    @Override
+    public String toString() {
+        return "NutFrame{" +
+                "streamId=" + streamId +
+                ", pts=" + pts +
+                ", data=" + (data != null ? data.length : "null") +
+                ", sideData=" + (sideData != null ? sideData.length : "null") +
+                ", metaData=" + (metaData != null ? metaData.length : "null") +
+                ", eor=" + eor +
+                '}';
     }
 }

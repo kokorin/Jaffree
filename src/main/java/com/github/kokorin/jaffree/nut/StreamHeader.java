@@ -25,7 +25,7 @@ public class StreamHeader {
     public final int streamId;
     public final StreamHeader.Type streamType;
     public final byte[] fourcc;
-    public final long timeBaseId;
+    public final int timeBaseId;
     public final int msbPtsShift;
     public final long maxPtsDistance;
     public final long decodeDelay;
@@ -33,7 +33,7 @@ public class StreamHeader {
     public final Video video;
     public final Audio audio;
 
-    public StreamHeader(int streamId, Type streamType, byte[] fourcc, long timeBaseId, int msbPtsShift,
+    public StreamHeader(int streamId, Type streamType, byte[] fourcc, int timeBaseId, int msbPtsShift,
                         long maxPtsDistance, long decodeDelay, Set<Flag> flags, Video video, Audio audio) {
         this.streamId = streamId;
         this.streamType = streamType;
@@ -48,13 +48,13 @@ public class StreamHeader {
     }
 
     public static class Video {
-        public final long width;
-        public final long height;
-        public final long sampleWidth;
-        public final long sampleHeight;
+        public final int width;
+        public final int height;
+        public final int sampleWidth;
+        public final int sampleHeight;
         public final ColourspaceType type;
 
-        public Video(long width, long height, long sampleWidth, long sampleHeight, ColourspaceType type) {
+        public Video(int width, int height, int sampleWidth, int sampleHeight, ColourspaceType type) {
             this.width = width;
             this.height = height;
             this.sampleWidth = sampleWidth;
@@ -65,9 +65,9 @@ public class StreamHeader {
 
     public static class Audio {
         public final Rational samplerate;
-        public final long channelCount;
+        public final int channelCount;
 
-        public Audio(Rational samplerate, long channelCount) {
+        public Audio(Rational samplerate, int channelCount) {
             this.samplerate = samplerate;
             this.channelCount = channelCount;
         }

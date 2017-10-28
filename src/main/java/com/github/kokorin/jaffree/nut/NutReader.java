@@ -17,6 +17,7 @@
 
 package com.github.kokorin.jaffree.nut;
 
+import java.io.IOException;
 import java.util.*;
 
 public class NutReader {
@@ -31,23 +32,23 @@ public class NutReader {
         this.input = input;
     }
 
-    MainHeader getMainHeader() throws Exception {
+    public MainHeader getMainHeader() throws IOException {
         readToFrame();
         return mainHeader;
     }
 
-    StreamHeader[] getStreamHeaders() throws Exception {
+    public StreamHeader[] getStreamHeaders() throws IOException {
         readToFrame();
         return Arrays.copyOf(streamHeaders, streamHeaders.length);
     }
 
-    Info[] getInfos() throws Exception {
+    public Info[] getInfos() throws IOException {
         readToFrame();
         return infos;
     }
 
     // package-private for tests
-    private void readToFrame() throws Exception {
+    private void readToFrame() throws IOException {
         if (input.getPosition() == 0) {
             String fileId = input.readCString();
             if (!Objects.equals(fileId, NutConst.FILE_ID)) {
@@ -101,7 +102,7 @@ public class NutReader {
         if(forward_ptr > 4096)
             header_checksum                 u(32)
      */
-    private PacketHeader readPacketHeader() throws Exception {
+    private PacketHeader readPacketHeader() throws IOException {
         long startcode = input.readLong();
         long forwardPtr = input.readValue();
         long headerChecksum = 0;
@@ -112,7 +113,7 @@ public class NutReader {
         return new PacketHeader(startcode, forwardPtr, headerChecksum);
     }
 
-    private MainHeader readMainHeader() throws Exception {
+    private MainHeader readMainHeader() throws IOException {
         long majorVersion = input.readValue();
         long minorVersion = 0;
         if (majorVersion > 3) {
@@ -204,11 +205,11 @@ public class NutReader {
         return new MainHeader(majorVersion, minorVersion, streamCount, maxDistance, timeBases, frameTables, elisionHeaderSize, mainFlags);
     }
 
-    private StreamHeader readStreamHeader() throws Exception {
+    private StreamHeader readStreamHeader() throws IOException {
         int streamId = (int) input.readValue();
         StreamHeader.Type streamType = StreamHeader.Type.fromCode(input.readValue());
         byte[] fourcc = input.readVariableBytes();
-        long timeBaseId = input.readValue();
+        int timeBaseId = (int) input.readValue();
         int msbPtsShift = (int) input.readValue();
         long maxPtsDistance = input.readValue();
         long decodeDelay = input.readValue();
@@ -218,17 +219,17 @@ public class NutReader {
         StreamHeader.Video video = null;
         StreamHeader.Audio audio = null;
         if (streamType == StreamHeader.Type.VIDEO) {
-            long width = input.readValue();
-            long height = input.readValue();
-            long sampleWidth = input.readValue();
-            long sampleHeight = input.readValue();
+            int width = (int) input.readValue();
+            int height = (int) input.readValue();
+            int sampleWidth = (int) input.readValue();
+            int sampleHeight = (int) input.readValue();
             StreamHeader.ColourspaceType colourspaceType = StreamHeader.ColourspaceType.fromCode(input.readValue());
 
             video = new StreamHeader.Video(width, height, sampleWidth, sampleHeight, colourspaceType);
         } else if (streamType == StreamHeader.Type.AUDIO) {
             long samplerateNumerator = input.readValue();
             long samplerateDenominator = input.readValue();
-            long channelCount = input.readValue();
+            int channelCount = (int) input.readValue();
 
             Rational sampleRate = new Rational(samplerateNumerator, samplerateDenominator);
             audio = new StreamHeader.Audio(sampleRate, channelCount);
@@ -237,7 +238,7 @@ public class NutReader {
         return new StreamHeader(streamId, streamType, fourcc, timeBaseId, msbPtsShift, maxPtsDistance, decodeDelay, flags, video, audio);
     }
 
-    public Frame readFrame() throws Exception {
+    public NutFrame readFrame() throws IOException {
         readToFrame();
 
         if (!input.hasMoreData()) {
@@ -346,12 +347,13 @@ public class NutReader {
 
         byte[] data = input.readBytes(dataSize);
         input.skipBytes(elisionHeaderSize);
+        boolean eor = flags.contains(FrameTable.Flag.EOR);
 
         lastPts[streamId] = pts;
-        return new Frame(streamId, pts, data, sideData, metaData);
+        return new NutFrame(streamId, pts, data, sideData, metaData, eor);
     }
 
-    private Info readInfo() throws Exception {
+    private Info readInfo() throws IOException {
         // stream_id_plus1
         int streamId = (int) (input.readValue() - 1);
         int chapterId = (int) input.readSignedValue();
@@ -362,7 +364,7 @@ public class NutReader {
         return new Info(streamId, chapterId, chapterStart, chapterLength, meta);
     }
 
-    private DataItem[] readDataItems() throws Exception {
+    private DataItem[] readDataItems() throws IOException {
         int count = (int) input.readValue();
         DataItem[] result = new DataItem[count];
 
@@ -404,7 +406,7 @@ public class NutReader {
         packet_footer
         headerChecksum                            u(32)
      */
-    private PacketFooter readPacketFooter() throws Exception {
+    private PacketFooter readPacketFooter() throws IOException {
         long checksum = input.readInt();
         return new PacketFooter(checksum);
     }
@@ -413,7 +415,7 @@ public class NutReader {
     /*
         t (v coded universal timestamp)
      */
-    private long readTimestamp() throws Exception {
+    private long readTimestamp() throws IOException {
         long tmp = input.readValue();
         int timeBaseCount = mainHeader.timeBases.length;
         int id = (int) (tmp % timeBaseCount);

@@ -64,18 +64,18 @@ public class FrameOutput implements Output {
 
     @Override
     public void beforeExecute(FFmpeg ffmpeg) {
-        ffmpeg.setStdOutReader(new MatroskaFrameReader<FFmpegResult>(consumer));
+        ffmpeg.setStdOutReader(new NutFrameReader<FFmpegResult>(consumer));
     }
 
     @Override
     public List<Option> buildOptions() {
         List<Option> result = new ArrayList<>();
 
-        result.add(new Option("-f", "matroska"));
+        result.add(new Option("-f", "nut"));
 
         if (video) {
             result.add(new Option("-vcodec", "rawvideo"));
-            result.add(new Option("-pix_fmt", "yuv420p"));
+            result.add(new Option("-pix_fmt", "rgb24"));
         } else {
             result.add(new Option("-vn"));
         }
