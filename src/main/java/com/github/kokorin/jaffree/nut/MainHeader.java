@@ -98,5 +98,13 @@ public class MainHeader {
 
             return Collections.emptySet();
         }
+
+        public static long toBitCode(Set<Flag> flags) {
+            long result = 0;
+            for (Flag flag : flags) {
+                result += flag.code;
+            }
+            return result;
+        }
     }
 }

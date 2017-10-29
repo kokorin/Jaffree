@@ -18,17 +18,23 @@
 package com.github.kokorin.jaffree.nut;
 
 public class Info {
+    /**
+     * Id of stream to which this info should be applied.
+     * -1 means Info should be applied to all streams.
+     */
     public final int streamId;
     public final int chapterId;
-    public final long chapterStart;
-    public final long chapterLength;
+    public final long chapterStartPts;
+    public final long chapterLengthPts;
+    public final int timebaseId;
     public final DataItem[] metaData;
 
-    public Info(int streamId, int chapterId, long chapterStart, long chapterLength, DataItem[] metaData) {
+    public Info(int streamId, int chapterId, long chapterStart, long chapterLength, int timebaseId, DataItem[] metaData) {
         this.streamId = streamId;
         this.chapterId = chapterId;
-        this.chapterStart = chapterStart;
-        this.chapterLength = chapterLength;
+        this.chapterStartPts = chapterStart;
+        this.chapterLengthPts = chapterLength;
+        this.timebaseId = timebaseId;
         this.metaData = metaData;
     }
 }

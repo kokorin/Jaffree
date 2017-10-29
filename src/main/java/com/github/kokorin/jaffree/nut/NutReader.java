@@ -124,7 +124,7 @@ public class NutReader {
         long maxDistance = input.readValue();
         int timeBaseCount = (int) input.readValue();
 
-       Rational[] timeBases = new Rational[timeBaseCount];
+        Rational[] timeBases = new Rational[timeBaseCount];
         for (int i = 0; i < timeBaseCount; i++) {
             long numerator = input.readValue();
             long denominator = input.readValue();
@@ -132,8 +132,8 @@ public class NutReader {
         }
 
         Set<FrameTable.Flag> flags;
-        int streamId = 0;
-        long fields, ptsDelta = 0, dataSizeMul = 1, size, reserved, count, matchTimeDelta = 1L - (1L << 62), elisionHeaderIdx = 0;
+        int streamId = 0, dataSizeMul = 1, size;
+        long fields, ptsDelta = 0, reserved, count, matchTimeDelta = 1L - (1L << 62), elisionHeaderIdx = 0;
         FrameTable[] frameTables = new FrameTable[256];
         for (int i = 0; i < 256; ) {
             flags = FrameTable.Flag.fromBitCode(input.readValue());
@@ -143,13 +143,13 @@ public class NutReader {
                 ptsDelta = input.readSignedValue();
             }
             if (fields > 1) {
-                dataSizeMul = input.readValue();
+                dataSizeMul = (int) input.readValue();
             }
             if (fields > 2) {
                 streamId = (int) input.readValue();
             }
             if (fields > 3) {
-                size = input.readValue();
+                size = (int) input.readValue();
             } else {
                 size = 0;
             }
@@ -235,7 +235,8 @@ public class NutReader {
             audio = new StreamHeader.Audio(sampleRate, channelCount);
         }
 
-        return new StreamHeader(streamId, streamType, fourcc, timeBaseId, msbPtsShift, maxPtsDistance, decodeDelay, flags, video, audio);
+        return new StreamHeader(streamId, streamType, fourcc, timeBaseId, msbPtsShift, maxPtsDistance, decodeDelay,
+                flags, codecSpcificData, video, audio);
     }
 
     public NutFrame readFrame() throws IOException {
@@ -357,11 +358,14 @@ public class NutReader {
         // stream_id_plus1
         int streamId = (int) (input.readValue() - 1);
         int chapterId = (int) input.readSignedValue();
-        long chapterStart = readTimestamp();
-        long chapterLength = input.readValue();
+
+        Timestamp timestamp = input.readTimestamp(mainHeader.timeBases.length);
+
+        long chapterStartPts = timestamp.pts;
+        long chapterLengthPts = input.readValue();
         DataItem[] meta = readDataItems();
 
-        return new Info(streamId, chapterId, chapterStart, chapterLength, meta);
+        return new Info(streamId, chapterId, chapterStartPts, chapterLengthPts, timestamp.timebaseId, meta);
     }
 
     private DataItem[] readDataItems() throws IOException {
@@ -385,7 +389,7 @@ public class NutReader {
                 value = input.readSignedValue();
             } else if (valueCode == -4) {
                 type = "t";
-                value = readTimestamp();
+                value = input.readTimestamp(mainHeader.timeBases.length);
             } else if (valueCode < -4) {
                 type = "r";
                 long denominator = -valueCode - 4;
@@ -412,16 +416,32 @@ public class NutReader {
     }
 
 
-    /*
-        t (v coded universal timestamp)
-     */
-    private long readTimestamp() throws IOException {
-        long tmp = input.readValue();
-        int timeBaseCount = mainHeader.timeBases.length;
-        int id = (int) (tmp % timeBaseCount);
-        Rational timeBase = mainHeader.timeBases[id];
+    private static class PacketHeader {
+        public final long startcode;
 
-        return (tmp / timeBaseCount) * timeBase.numerator / timeBase.denominator;
+        /**
+         * Size of the packet data (exactly the distance from the first byte
+         * after the packet_header to the first byte of the next packet).
+         * <p>
+         * Every NUT packet contains a forward_ptr immediately after its startcode
+         * with the exception of frame_code-based packets. The forward pointer
+         * can be used to skip over the packet without decoding its contents.
+         */
+        public final long forwardPtr;
+        public final long headerChecksum;
+
+        public PacketHeader(long startcode, long forwardPtr, long headerChecksum) {
+            this.startcode = startcode;
+            this.forwardPtr = forwardPtr;
+            this.headerChecksum = headerChecksum;
+        }
     }
 
+    private static class PacketFooter {
+        public final long checksum;
+
+        public PacketFooter(long checksum) {
+            this.checksum = checksum;
+        }
+    }
 }

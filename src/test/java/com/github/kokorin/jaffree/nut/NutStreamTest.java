@@ -25,6 +25,7 @@ public class NutStreamTest {
         output.writeVariableBytes(new byte[]{5, 6, 7});
         output.writeCString("Jaffree");
         output.writeVariablesString("Test/\\Me");
+        output.writeTimestamp(2, new Timestamp(1, 1100));
         output.close();
 
         NutInputStream input = new NutInputStream(new ByteArrayInputStream(outputStream.toByteArray()));
@@ -41,6 +42,7 @@ public class NutStreamTest {
         Assert.assertArrayEquals(new byte[]{5, 6, 7}, input.readVariableBytes());
         Assert.assertEquals("Jaffree", input.readCString());
         Assert.assertEquals("Test/\\Me", input.readVariableString());
+        Assert.assertEquals(new Timestamp(1, 1100), input.readTimestamp(2));
     }
 
 

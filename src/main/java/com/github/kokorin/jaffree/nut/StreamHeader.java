@@ -30,11 +30,13 @@ public class StreamHeader {
     public final long maxPtsDistance;
     public final long decodeDelay;
     public final Set<StreamHeader.Flag> flags;
+    public final byte[] codecSpecificData;
     public final Video video;
     public final Audio audio;
 
     public StreamHeader(int streamId, Type streamType, byte[] fourcc, int timeBaseId, int msbPtsShift,
-                        long maxPtsDistance, long decodeDelay, Set<Flag> flags, Video video, Audio audio) {
+                        long maxPtsDistance, long decodeDelay, Set<Flag> flags,
+                        byte[] codecSpecificData, Video video, Audio audio) {
         this.streamId = streamId;
         this.streamType = streamType;
         this.fourcc = fourcc;
@@ -43,6 +45,7 @@ public class StreamHeader {
         this.maxPtsDistance = maxPtsDistance;
         this.decodeDelay = decodeDelay;
         this.flags = flags;
+        this.codecSpecificData = codecSpecificData;
         this.video = video;
         this.audio = audio;
     }
@@ -82,7 +85,7 @@ public class StreamHeader {
         SUBTITLES(2),
         USER_DATA(4);
 
-        private long code;
+        public final long code;
 
         Type(long code) {
             this.code = code;
@@ -118,6 +121,14 @@ public class StreamHeader {
 
             return Collections.emptySet();
         }
+
+        public static long toBitCode(Set<Flag> flags) {
+            long result = 0;
+            for (Flag flag : flags) {
+                result += flag.code;
+            }
+            return result;
+        }
     }
 
     public enum ColourspaceType {
@@ -134,7 +145,7 @@ public class StreamHeader {
         ITU_624_255(17),
         ITU_709_255(18);
 
-        private final long code;
+        public final long code;
 
         ColourspaceType(long code) {
             this.code = code;

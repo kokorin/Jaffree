@@ -158,6 +158,14 @@ public class NutInputStream implements AutoCloseable {
         return readBytes(length);
     }
 
+    public Timestamp readTimestamp(int timeBaseCount) throws IOException {
+        long tmp = readValue();
+        int timebaseId = (int) (tmp % timeBaseCount);
+        long pts = tmp / timeBaseCount;
+
+        return new Timestamp(timebaseId, pts);
+    }
+
     /**
      * Returns next byte, which will be read with any read*() method
      *

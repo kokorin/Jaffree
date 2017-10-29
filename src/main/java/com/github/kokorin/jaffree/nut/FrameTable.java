@@ -33,7 +33,7 @@ public class FrameTable {
      * If FLAG_SIZE_MSB is not set then this field has no meaning.
      * MUST be <16384.
      */
-    public final long dataSizeMul;
+    public final int dataSizeMul;
 
     /**
      * The less significant part of the size of the following frame.
@@ -41,7 +41,7 @@ public class FrameTable {
      * the following frame.
      * MUST be <16384.
      */
-    public final long dataSizeLsb;
+    public final int dataSizeLsb;
 
     /**
      * If FLAG_CODED_PTS is set in the flags of the current frame then this
@@ -83,7 +83,7 @@ public class FrameTable {
     public static final FrameTable INVALID = new FrameTable(EnumSet.of(Flag.INVALID), 0, 0, 0, 0, 0, 0, 0);
 
 
-    public FrameTable(Set<Flag> flags, int streamId, long dataSizeMul, long dataSizeLsb, long ptsDelta, long reservedCount, long matchTimeDelta, long headerIdx) {
+    public FrameTable(Set<Flag> flags, int streamId, int dataSizeMul, int dataSizeLsb, long ptsDelta, long reservedCount, long matchTimeDelta, long headerIdx) {
         this.flags = flags;
         this.streamId = streamId;
         this.dataSizeMul = dataSizeMul;
@@ -176,6 +176,14 @@ public class FrameTable {
                 if ((flag.code & value) > 0) {
                     result.add(flag);
                 }
+            }
+            return result;
+        }
+
+        public static long toBitCode(Set<Flag> flags) {
+            long result = 0;
+            for (Flag flag : flags) {
+                result += flag.code;
             }
             return result;
         }
