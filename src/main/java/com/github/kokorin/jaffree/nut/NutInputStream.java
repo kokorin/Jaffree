@@ -18,6 +18,7 @@
 package com.github.kokorin.jaffree.nut;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -129,23 +130,22 @@ public class NutInputStream implements AutoCloseable {
      */
     public String readVariableString() throws IOException {
         byte[] bytes = readVariableBytes();
-        return toString(bytes);
+        return new String(bytes);
     }
 
     /**
      * Reads input till char \0 not found
      */
     public String readCString() throws IOException {
-        byte[] buffer = new byte[1024];
-        int length = 0;
+        try (ByteArrayOutputStream buffer = new ByteArrayOutputStream(32)) {
 
-        int b;
-        while ((b = input.read()) != 0) {
-            buffer[length] = (byte) b;
-            length++;
+            int b;
+            while ((b = input.read()) != 0) {
+                buffer.write(b);
+            }
+
+            return new String(buffer.toByteArray());
         }
-
-        return toString(buffer, length);
     }
 
     /**
@@ -155,14 +155,7 @@ public class NutInputStream implements AutoCloseable {
      */
     public byte[] readVariableBytes() throws IOException {
         int length = (int) readValue();
-        byte[] result = new byte[length];
-
-        for (int i = 0; i < length; i++) {
-            result[i] = (byte) input.read();
-            position++;
-        }
-
-        return result;
+        return readBytes(length);
     }
 
     /**
@@ -219,19 +212,5 @@ public class NutInputStream implements AutoCloseable {
     @Override
     public void close() throws IOException {
         input.close();
-    }
-
-    private static String toString(byte[] bytes) {
-        return toString(bytes, bytes.length);
-    }
-
-    private static String toString(byte[] bytes, int length) {
-        char[] result = new char[length];
-
-        for (int i = 0; i < length; i++) {
-            result[i] = (char) bytes[i];
-        }
-
-        return String.valueOf(result);
     }
 }
