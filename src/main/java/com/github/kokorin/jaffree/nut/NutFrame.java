@@ -23,14 +23,16 @@ public class NutFrame {
     public final byte[] data;
     public final DataItem[] sideData;
     public final DataItem[] metaData;
+    public final boolean keyframe;
     public final boolean eor;
 
-    public NutFrame(int streamId, long pts, byte[] data, DataItem[] sideData, DataItem[] metaData, boolean eor) {
+    public NutFrame(int streamId, long pts, byte[] data, DataItem[] sideData, DataItem[] metaData, boolean keyframe, boolean eor) {
         this.streamId = streamId;
         this.pts = pts;
         this.data = data;
         this.sideData = sideData;
         this.metaData = metaData;
+        this.keyframe = keyframe;
         this.eor = eor;
     }
 
@@ -42,6 +44,7 @@ public class NutFrame {
                 ", data=" + (data != null ? data.length : "null") +
                 ", sideData=" + (sideData != null ? sideData.length : "null") +
                 ", metaData=" + (metaData != null ? metaData.length : "null") +
+                ", keyframe=" + keyframe +
                 ", eor=" + eor +
                 '}';
     }

@@ -1,7 +1,11 @@
 package com.github.kokorin.jaffree.nut;
 
+import com.github.kokorin.jaffree.nut.FrameCode.Flag;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Set;
 
 public class NutWriter {
@@ -11,6 +15,7 @@ public class NutWriter {
     private MainHeader mainHeader;
     private StreamHeader[] streamHeaders;
     private Info[] infos;
+    private long[] lastPts;
 
     private boolean initialized = false;
 
@@ -22,14 +27,23 @@ public class NutWriter {
     }
 
     public void setMainHeader(MainHeader mainHeader) {
+        if (initialized) {
+            throw new RuntimeException("NutWriter is already initialized!");
+        }
         this.mainHeader = mainHeader;
     }
 
     public void setStreamHeaders(StreamHeader[] streamHeaders) {
+        if (initialized) {
+            throw new RuntimeException("NutWriter is already initialized!");
+        }
         this.streamHeaders = streamHeaders;
     }
 
     public void setInfos(Info[] infos) {
+        if (initialized) {
+            throw new RuntimeException("NutWriter is already initialized!");
+        }
         this.infos = infos;
     }
 
@@ -38,12 +52,22 @@ public class NutWriter {
             return;
         }
 
+        lastPts = new long[mainHeader.streamCount];
+
+        writeMainHeader();
+        if (streamHeaders == null) {
+            throw new RuntimeException("StreamHeaders must be specified before");
+        }
+        for (StreamHeader streamHeader : streamHeaders) {
+            writeStreamHeader(streamHeader);
+        }
+
         initialized = true;
     }
 
     private void writeMainHeader() throws IOException {
         if (mainHeader == null) {
-            throw new IllegalArgumentException("MainHeader must be specified before");
+            throw new RuntimeException("MainHeader must be specified before");
         }
 
         buffer.reset();
@@ -67,32 +91,32 @@ public class NutWriter {
 
         int fields, streamId = 0, size;
         long ptsDelta = 0, dataSizeMul = 1;
-        Set<FrameTable.Flag> flags;
+        Set<Flag> flags;
 
         for (int i = 0; i < 256; ) {
             fields = 0;
-            FrameTable frameTable = mainHeader.frameTables[i];
-            flags = frameTable.flags;
+            FrameCode frameCode = mainHeader.frameCodes[i];
+            flags = frameCode.flags;
 
-            if (frameTable.ptsDelta != ptsDelta) {
+            if (frameCode.ptsDelta != ptsDelta) {
                 fields = 1;
             }
-            ptsDelta = frameTable.ptsDelta;
+            ptsDelta = frameCode.ptsDelta;
 
-            if (frameTable.dataSizeMul != dataSizeMul) {
+            if (frameCode.dataSizeMul != dataSizeMul) {
                 fields = 2;
             }
-            dataSizeMul = frameTable.dataSizeMul;
+            dataSizeMul = frameCode.dataSizeMul;
 
-            if (frameTable.streamId != streamId) {
+            if (frameCode.streamId != streamId) {
                 fields = 3;
             }
-            streamId = frameTable.streamId;
+            streamId = frameCode.streamId;
 
-            if (frameTable.dataSizeLsb != 0) {
+            if (frameCode.dataSizeLsb != 0) {
                 fields = 4;
             }
-            size = frameTable.dataSizeLsb;
+            size = frameCode.dataSizeLsb;
 
             int count;
             for (count = 0; i < 256; count++, i++) {
@@ -101,21 +125,21 @@ public class NutWriter {
                     continue;
                 }
 
-                frameTable = mainHeader.frameTables[i];
-                boolean flagsAreEqual = frameTable.flags.containsAll(flags) && frameTable.flags.size() == flags.size();
+                frameCode = mainHeader.frameCodes[i];
+                boolean flagsAreEqual = frameCode.flags.containsAll(flags) && frameCode.flags.size() == flags.size();
                 if (!flagsAreEqual) {
                     break;
                 }
-                if (frameTable.streamId != streamId) {
+                if (frameCode.streamId != streamId) {
                     break;
                 }
-                if (frameTable.dataSizeMul != dataSizeMul) {
+                if (frameCode.dataSizeMul != dataSizeMul) {
                     break;
                 }
-                if (frameTable.dataSizeLsb != size + count) {
+                if (frameCode.dataSizeLsb != size + count) {
                     break;
                 }
-                if (frameTable.ptsDelta != ptsDelta) {
+                if (frameCode.ptsDelta != ptsDelta) {
                     break;
                 }
             }
@@ -124,7 +148,7 @@ public class NutWriter {
                 fields = 6;
             }
 
-            bufOutput.writeValue(FrameTable.Flag.toBitCode(flags));
+            bufOutput.writeValue(Flag.toBitCode(flags));
             bufOutput.writeValue(fields);
             if (fields > 0) {
                 bufOutput.writeSignedValue(ptsDelta);
@@ -149,6 +173,7 @@ public class NutWriter {
         bufOutput.writeValue(0); // elision header_count_minus1
         bufOutput.writeValue(0); // main_flags
 
+        bufOutput.flush();
         writePacket(NutConst.MAIN_STARTCODE, buffer.toByteArray());
     }
 
@@ -179,11 +204,151 @@ public class NutWriter {
             bufOutput.writeValue(streamHeader.audio.channelCount);
         }
 
+        bufOutput.flush();
         writePacket(NutConst.STREAM_STARTCODE, buffer.toByteArray());
     }
 
-    public void writeFrame(NutFrame frame) throws IOException {
+    public void writeFrame(NutFrame fd) throws IOException {
+        initialize();
 
+        // TODO repetitions of Main and Stream Headers?
+        // TODO handle EOR - End Of Relevance
+
+        StreamHeader sc = streamHeaders[fd.streamId];
+
+        int i, ftnum = -1, size = 0, msb_pts = (1 << sc.msbPtsShift);
+        Set<Flag> coded_flags = Collections.emptySet();
+        long coded_pts, pts_delta = fd.pts - lastPts[fd.streamId];
+        boolean checksum = false;
+
+        if (Math.abs(pts_delta) < (msb_pts / 2) - 1) {
+            coded_pts = fd.pts & (msb_pts - 1);
+        } else {
+            coded_pts = fd.pts + msb_pts;
+        }
+
+        if (fd.data.length > 2 * mainHeader.maxDistance) {
+            checksum = true;
+        }
+        if (Math.abs(pts_delta) > sc.maxPtsDistance) {
+            checksum = true;
+        }
+
+        for (i = 0; i < 256; i++) {
+            int len = 1; // frame code
+            FrameCode ft = mainHeader.frameCodes[i];
+
+            Set<Flag> flags = ft.flags;
+            if (flags.contains(Flag.INVALID)) {
+                continue;
+            }
+
+            Set<Flag> fdFlags = EnumSet.noneOf(Flag.class);
+            if (fd.keyframe) {
+                fdFlags.add(Flag.KEYFRAME);
+            }
+            if (fd.eor) {
+                fdFlags.add(Flag.EOR);
+            }
+
+            if (flags.contains(Flag.CODED_FLAGS)) {
+                flags = EnumSet.copyOf(fdFlags);
+
+                if (ft.streamId != fd.streamId) {
+                    flags.add(Flag.STREAM_ID);
+                }
+                if (ft.ptsDelta != pts_delta) {
+                    flags.add(Flag.CODED_PTS);
+                }
+                if (ft.dataSizeLsb != fd.data.length) {
+                    flags.add(Flag.SIZE_MSB);
+                }
+                if (checksum) {
+                    flags.add(Flag.CHECKSUM);
+                }
+                flags.add(Flag.CODED_FLAGS);
+            }
+
+
+            // if ((flags ^ fd -> flags) & NUT_API_FLAGS) continue;
+            Set<Flag> xor = Flag.xor(flags, fdFlags);
+            if (xor.contains(Flag.KEYFRAME) || xor.contains(Flag.EOR)) {
+                continue;
+            }
+
+            if (!flags.contains(Flag.STREAM_ID) && ft.streamId != fd.streamId) {
+                continue;
+            }
+
+            if (!flags.contains(Flag.CODED_PTS) && ft.ptsDelta != pts_delta) {
+                continue;
+            }
+
+            if (flags.contains(Flag.SIZE_MSB)) {
+                if ((fd.data.length - ft.dataSizeLsb) % ft.dataSizeMul != 0) {
+                    continue;
+                }
+            } else {
+                if (ft.dataSizeLsb != fd.data.length) {
+                    continue;
+                }
+            }
+
+            if (!flags.contains(Flag.CHECKSUM) && checksum) {
+                continue;
+            }
+
+            // TODO use constant 8 instead of v_len(long)
+            // it doesn't fully follow specification, but is simple enough
+            if (flags.contains(Flag.CODED_FLAGS)) {
+                len += 8;
+            }
+            if (flags.contains(Flag.STREAM_ID)) {
+                len += 8;
+            }
+            if (flags.contains(Flag.CODED_PTS)) {
+                len += 8;
+            }
+            if (flags.contains(Flag.SIZE_MSB)) {
+                len += 8;
+            }
+            if (flags.contains(Flag.CHECKSUM)) {
+                len += 4;
+            }
+
+            if (size == 0 || len < size) {
+                ftnum = i;
+                coded_flags = flags;
+                size = len;
+            }
+        }
+
+        if (ftnum == -1) {
+            throw new IllegalArgumentException("Can't find appropriate FrameCode for " + fd);
+        }
+
+        output.resetCrc32();
+        output.writeByte(ftnum);
+        FrameCode ft = mainHeader.frameCodes[ftnum];
+        if (coded_flags.contains(Flag.CODED_FLAGS)) {
+            Set<Flag> codedXor = Flag.xor(coded_flags, ft.flags);
+            output.writeValue(Flag.toBitCode(codedXor));
+        }
+        if (coded_flags.contains(Flag.STREAM_ID)) {
+            output.writeValue(fd.streamId);
+        }
+        if (coded_flags.contains(Flag.CODED_PTS)) {
+            output.writeValue(coded_pts);
+        }
+        if (coded_flags.contains(Flag.SIZE_MSB)) {
+            output.writeValue((fd.data.length - ft.dataSizeLsb) / ft.dataSizeMul);
+        }
+        if (coded_flags.contains(Flag.CHECKSUM)) {
+            output.writeCrc32();
+        }
+
+        // TODO elision headers?
+        output.writeBytes(fd.data);
     }
 
 
@@ -198,7 +363,9 @@ public class NutWriter {
         Timestamp timestamp = new Timestamp(info.timebaseId, info.chapterStartPts);
         bufOutput.writeTimestamp(mainHeader.timeBases.length, timestamp);
         bufOutput.writeValue(info.chapterLengthPts);
+        writeDataItems(info.metaData, bufOutput);
 
+        bufOutput.flush();
         writePacket(NutConst.INFO_STARTCODE, buffer.toByteArray());
     }
 
@@ -258,5 +425,6 @@ public class NutWriter {
         output.resetCrc32();
         output.writeBytes(data);
         output.writeCrc32();
+        output.flush();
     }
 }

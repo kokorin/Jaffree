@@ -131,12 +131,12 @@ public class NutReader {
             timeBases[i] = new Rational(numerator, denominator);
         }
 
-        Set<FrameTable.Flag> flags;
+        Set<FrameCode.Flag> flags;
         int streamId = 0, dataSizeMul = 1, size;
         long fields, ptsDelta = 0, reserved, count, matchTimeDelta = 1L - (1L << 62), elisionHeaderIdx = 0;
-        FrameTable[] frameTables = new FrameTable[256];
+        FrameCode[] frameCodes = new FrameCode[256];
         for (int i = 0; i < 256; ) {
-            flags = FrameTable.Flag.fromBitCode(input.readValue());
+            flags = FrameCode.Flag.fromBitCode(input.readValue());
             fields = input.readValue();
 
             if (fields > 0) {
@@ -177,16 +177,16 @@ public class NutReader {
             }
 
             for (int j = 0; j < count && i < 256; j++, i++) {
-                final FrameTable ft;
+                final FrameCode ft;
 
                 if (i == 'N') {
-                    ft = FrameTable.INVALID;
+                    ft = FrameCode.INVALID;
                     j--;
                 } else {
-                    ft = new FrameTable(flags, streamId, dataSizeMul, size + j, ptsDelta, reserved, matchTimeDelta, elisionHeaderIdx);
+                    ft = new FrameCode(flags, streamId, dataSizeMul, size + j, ptsDelta, reserved, matchTimeDelta, elisionHeaderIdx);
                 }
 
-                frameTables[i] = ft;
+                frameCodes[i] = ft;
             }
         }
 
@@ -202,7 +202,7 @@ public class NutReader {
         // Set<MainHeader.Flag> mainFlags = MainHeader.Flag.fromBitCode(input.readValue());
         Set<MainHeader.Flag> mainFlags = Collections.emptySet();
 
-        return new MainHeader(majorVersion, minorVersion, streamCount, maxDistance, timeBases, frameTables, elisionHeaderSize, mainFlags);
+        return new MainHeader(majorVersion, minorVersion, streamCount, maxDistance, timeBases, frameCodes, elisionHeaderSize, mainFlags);
     }
 
     private StreamHeader readStreamHeader() throws IOException {
@@ -247,9 +247,9 @@ public class NutReader {
         }
 
         int frameCode = input.readByte();
-        FrameTable frameTable = mainHeader.frameTables[frameCode];
+        FrameCode frameTable = mainHeader.frameCodes[frameCode];
 
-        Set<FrameTable.Flag> flags = frameTable.flags;
+        Set<FrameCode.Flag> flags = frameTable.flags;
         int streamId = frameTable.streamId;
         final StreamHeader streamHeader;
         final long pts;
@@ -262,25 +262,19 @@ public class NutReader {
         DataItem[] sideData = null;
         DataItem[] metaData = null;
 
-        if (flags.contains(FrameTable.Flag.CODED)) {
+        if (flags.contains(FrameCode.Flag.CODED_FLAGS)) {
             flags = EnumSet.copyOf(flags);
-            Set<FrameTable.Flag> codedFlags = FrameTable.Flag.fromBitCode(input.readValue());
+            Set<FrameCode.Flag> codedFlags = FrameCode.Flag.fromBitCode(input.readValue());
             // flags = flags XOR codedFlags
-            for (FrameTable.Flag codedFlag : codedFlags) {
-                if (flags.contains(codedFlag)) {
-                    flags.remove(codedFlag);
-                } else {
-                    flags.add(codedFlag);
-                }
-            }
+            flags = FrameCode.Flag.xor(flags, codedFlags);
         }
 
-        if (flags.contains(FrameTable.Flag.STREAM_ID)) {
+        if (flags.contains(FrameCode.Flag.STREAM_ID)) {
             streamId = (int) input.readValue();
         }
         streamHeader = streamHeaders[streamId];
 
-        if (flags.contains(FrameTable.Flag.CODED_PTS)) {
+        if (flags.contains(FrameCode.Flag.CODED_PTS)) {
             /*
             If coded_pts < ( 1 << msb_pts_shift ) then it is an lsb
             pts, otherwise it is a full pts + ( 1 << msb_pts_shift ).
@@ -303,36 +297,35 @@ public class NutReader {
             pts = lastPts[streamId] + frameTable.ptsDelta;
         }
 
-        if (flags.contains(FrameTable.Flag.SIZE_MSB)) {
+        if (flags.contains(FrameCode.Flag.SIZE_MSB)) {
             dataSizeMsb = input.readValue();
         }
 
         // MatchTimeDelta is present in NUT specification, but is absent in FFMPEG NUT implementation
-        if (flags.contains(FrameTable.Flag.MATCH_TIME)) {
+        if (flags.contains(FrameCode.Flag.MATCH_TIME)) {
             matchTimeDelta = input.readSignedValue();
         }
 
         // ElisionHeaders are present in NUT specification, but are absent in FFMPEG NUT implementation
-        if (flags.contains(FrameTable.Flag.HEADER_IDX)) {
+        if (flags.contains(FrameCode.Flag.HEADER_IDX)) {
             int elisionHeaderIdx = (int) input.readValue();
             elisionHeaderSize = mainHeader.elisionHeaderSize[elisionHeaderIdx];
         }
 
-        if (flags.contains(FrameTable.Flag.RESERVED)) {
+        if (flags.contains(FrameCode.Flag.RESERVED)) {
             reservedValues = input.readValue();
         }
 
         for (int i = 0; i < reservedValues; i++) {
-            // TODO can we optimize reading to byte-array?
             input.readValue(); // ignore reserved
         }
 
         // checksum is ignored
-        if (flags.contains(FrameTable.Flag.CHECKSUM)) {
+        if (flags.contains(FrameCode.Flag.CHECKSUM)) {
             long checksum = input.readInt();
         }
 
-        if (flags.contains(FrameTable.Flag.SM_DATA)) {
+        if (flags.contains(FrameCode.Flag.SM_DATA)) {
             sideData = readDataItems();
             metaData = readDataItems();
         }
@@ -348,10 +341,11 @@ public class NutReader {
 
         byte[] data = input.readBytes(dataSize);
         input.skipBytes(elisionHeaderSize);
-        boolean eor = flags.contains(FrameTable.Flag.EOR);
+        boolean keyframe = flags.contains(FrameCode.Flag.KEYFRAME);
+        boolean eor = flags.contains(FrameCode.Flag.EOR);
 
         lastPts[streamId] = pts;
-        return new NutFrame(streamId, pts, data, sideData, metaData, eor);
+        return new NutFrame(streamId, pts, data, sideData, metaData, keyframe, eor);
     }
 
     private Info readInfo() throws IOException {

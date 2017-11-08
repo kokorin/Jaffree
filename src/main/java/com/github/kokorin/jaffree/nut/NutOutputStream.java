@@ -116,7 +116,11 @@ public class NutOutputStream implements AutoCloseable {
     }
 
     public void writeCrc32() throws IOException{
-        writeValue(crc32.getValue());
+        writeInt(crc32.getValue());
+    }
+
+    public void flush() throws IOException {
+        output.flush();
     }
 
     @Override

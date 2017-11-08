@@ -49,7 +49,7 @@ public class MainHeader {
     public final long maxDistance;
 
     public final Rational[] timeBases;
-    public final FrameTable[] frameTables;
+    public final FrameCode[] frameCodes;
 
     /**
      * For frames with a final size <= 4096 this header is prepended to the
@@ -68,13 +68,13 @@ public class MainHeader {
     public final Set<Flag> flags;
 
     public MainHeader(long majorVersion, long minorVersion, int streamCount, long maxDistance,
-                      Rational[] timeBases, FrameTable[] frameTables, long[] elisionHeaderSize, Set<Flag> flags) {
+                      Rational[] timeBases, FrameCode[] frameCodes, long[] elisionHeaderSize, Set<Flag> flags) {
         this.majorVersion = majorVersion;
         this.minorVersion = minorVersion;
         this.streamCount = streamCount;
         this.maxDistance = maxDistance;
         this.timeBases = timeBases;
-        this.frameTables = frameTables;
+        this.frameCodes = frameCodes;
         this.elisionHeaderSize = elisionHeaderSize;
         this.flags = Collections.unmodifiableSet(flags);
     }

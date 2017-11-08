@@ -20,7 +20,7 @@ package com.github.kokorin.jaffree.nut;
 import java.util.EnumSet;
 import java.util.Set;
 
-public class FrameTable {
+public class FrameCode {
     public final Set<Flag> flags;
 
     public final int streamId;
@@ -80,10 +80,10 @@ public class FrameTable {
     public final long headerIdx;
 
 
-    public static final FrameTable INVALID = new FrameTable(EnumSet.of(Flag.INVALID), 0, 0, 0, 0, 0, 0, 0);
+    public static final FrameCode INVALID = new FrameCode(EnumSet.of(Flag.INVALID), 0, 0, 0, 0, 0, 0, 0);
 
 
-    public FrameTable(Set<Flag> flags, int streamId, int dataSizeMul, int dataSizeLsb, long ptsDelta, long reservedCount, long matchTimeDelta, long headerIdx) {
+    public FrameCode(Set<Flag> flags, int streamId, int dataSizeMul, int dataSizeLsb, long ptsDelta, long reservedCount, long matchTimeDelta, long headerIdx) {
         this.flags = flags;
         this.streamId = streamId;
         this.dataSizeMul = dataSizeMul;
@@ -157,7 +157,7 @@ public class FrameTable {
         /**
          * If set, coded_flags are stored in the frame header.
          */
-        CODED(1 << 12),
+        CODED_FLAGS(1 << 12),
 
         /**
          * If set, frame_code is invalid.
@@ -185,6 +185,20 @@ public class FrameTable {
             for (Flag flag : flags) {
                 result += flag.code;
             }
+            return result;
+        }
+
+        public static Set<Flag> xor(Set<Flag> op1, Set<Flag> op2) {
+            Set<Flag> result = EnumSet.copyOf(op1);
+
+            for (FrameCode.Flag codedFlag : op2) {
+                if (result.contains(codedFlag)) {
+                    result.remove(codedFlag);
+                } else {
+                    result.add(codedFlag);
+                }
+            }
+
             return result;
         }
     }
