@@ -342,7 +342,7 @@ public class NutReader {
         byte[] data = input.readBytes(dataSize);
         input.skipBytes(elisionHeaderSize);
         boolean keyframe = flags.contains(FrameCode.Flag.KEYFRAME);
-        boolean eor = flags.contains(FrameCode.Flag.EOR);
+        boolean eor = flags.contains(FrameCode.Flag.EOR) || dataSize == 0;
 
         lastPts[streamId] = pts;
         return new NutFrame(streamId, pts, data, sideData, metaData, keyframe, eor);

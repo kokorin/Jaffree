@@ -20,7 +20,6 @@ package com.github.kokorin.jaffree.nut;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.zip.CRC32;
 
 public class NutOutputStream implements AutoCloseable {
     private final OutputStream output;

@@ -142,6 +142,7 @@ public class NutInputStream implements AutoCloseable {
             int b;
             while ((b = input.read()) != 0) {
                 buffer.write(b);
+                position++;
             }
 
             return new String(buffer.toByteArray());

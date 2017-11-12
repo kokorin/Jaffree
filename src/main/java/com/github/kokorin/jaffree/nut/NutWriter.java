@@ -16,6 +16,8 @@ public class NutWriter {
     private StreamHeader[] streamHeaders;
     private Info[] infos;
     private long[] lastPts;
+    // true if last frame of the corresponding stream was EOR frame
+    private boolean[] eor;
 
     private boolean initialized = false;
 
@@ -53,13 +55,22 @@ public class NutWriter {
         }
 
         lastPts = new long[mainHeader.streamCount];
+        eor = new boolean[mainHeader.streamCount];
 
+        output.writeCString(NutConst.FILE_ID);
         writeMainHeader();
         if (streamHeaders == null) {
             throw new RuntimeException("StreamHeaders must be specified before");
         }
         for (StreamHeader streamHeader : streamHeaders) {
             writeStreamHeader(streamHeader);
+        }
+
+        if (infos == null) {
+            throw new IllegalArgumentException("Info array must be specified");
+        }
+        for (Info info : infos) {
+            writeInfo(info);
         }
 
         initialized = true;
@@ -298,7 +309,6 @@ public class NutWriter {
                 continue;
             }
 
-            // TODO use constant 8 instead of v_len(long)
             // it doesn't fully follow specification, but is simple enough
             if (flags.contains(Flag.CODED_FLAGS)) {
                 len += 8;
@@ -349,6 +359,12 @@ public class NutWriter {
 
         // TODO elision headers?
         output.writeBytes(fd.data);
+
+        lastPts[fd.streamId] = fd.pts;
+    }
+
+    private void writeEorFrame(int streamId) throws IOException {
+
     }
 
 
@@ -415,7 +431,7 @@ public class NutWriter {
         long forwardPtr = data.length + 4; // checksum footer it 4 bytes long
         output.resetCrc32();
 
-        output.writeValue(startcode);
+        output.writeLong(startcode);
         output.writeValue(forwardPtr);
 
         if (forwardPtr > 4096) {

@@ -1,18 +1,22 @@
 package com.github.kokorin.jaffree.nut;
 
+import com.github.kokorin.jaffree.LogLevel;
 import com.github.kokorin.jaffree.ffmpeg.FFmpeg;
 import com.github.kokorin.jaffree.ffmpeg.UrlInput;
 import com.github.kokorin.jaffree.ffmpeg.UrlOutput;
+import com.github.kokorin.jaffree.ffprobe.FFprobe;
+import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class NutReaderTest {
+public class NutTest {
 
     public static Path BIN;
     public static Path SAMPLES = Paths.get("target/samples");
@@ -41,20 +45,51 @@ public class NutReaderTest {
     }
 
     @Test
-    public void checkNextByte() throws Exception {
-        try (FileInputStream input = new FileInputStream(VIDEO_NUT.toFile())) {
-            NutInputStream nutInputStream = new NutInputStream(input);
-            byte b = nutInputStream.checkNextByte();
-
-            for (int i = 0; i < 1000; i++) {
-                Assert.assertEquals("checkNextByte must not increase read position", b ,nutInputStream.checkNextByte());
-            }
-        }
+    public void read() throws Exception {
+        assertNutStructure(VIDEO_NUT);
     }
 
     @Test
-    public void read() throws Exception {
-        try (FileInputStream input = new FileInputStream(VIDEO_NUT.toFile())) {
+    public void readWrite() throws Exception {
+        Path outputPath = Files.createTempFile("output", ".nut");
+
+        try (FileInputStream input = new FileInputStream(VIDEO_NUT.toFile());
+             FileOutputStream output = new FileOutputStream(outputPath.toFile())) {
+            NutReader reader = new NutReader(new NutInputStream(input));
+            NutWriter writer = new NutWriter(new NutOutputStream(output));
+
+            MainHeader mainHeader = reader.getMainHeader();
+            StreamHeader[] streamHeaders = reader.getStreamHeaders();
+            Info[] infos = reader.getInfos();
+
+            writer.setMainHeader(mainHeader);
+            writer.setStreamHeaders(streamHeaders);
+            writer.setInfos(infos);
+
+            NutFrame frame;
+            while ((frame = reader.readFrame()) != null) {
+                writer.writeFrame(frame);
+            }
+        }
+
+        Assert.assertTrue(Files.exists(outputPath));
+        Assert.assertTrue(Files.size(outputPath) > 1000);
+
+        assertNutStructure(outputPath);
+
+        FFprobeResult result = FFprobe.atPath(BIN)
+                .setInputPath(outputPath)
+                .setShowError(true)
+                .setCountFrames(true)
+                .setShowLog(LogLevel.DEBUG)
+                .execute();
+
+        Assert.assertNotNull(result);
+        Assert.assertNull(result.getError());
+    }
+
+    private static void assertNutStructure(Path nut) throws Exception {
+        try (FileInputStream input = new FileInputStream(nut.toFile())) {
             NutReader reader = new NutReader(new NutInputStream(input));
 
             MainHeader mainHeader = reader.getMainHeader();
@@ -90,5 +125,6 @@ public class NutReaderTest {
             Assert.assertTrue(videoFrameCount > 300);
             Assert.assertTrue(audioFrameCount > 300);
         }
+
     }
 }
