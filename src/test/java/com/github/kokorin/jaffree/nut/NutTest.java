@@ -54,9 +54,9 @@ public class NutTest {
         Path outputPath = Files.createTempFile("output", ".nut");
 
         try (FileInputStream input = new FileInputStream(VIDEO_NUT.toFile());
-             FileOutputStream output = new FileOutputStream(outputPath.toFile())) {
+             NutWriter writer = new NutWriter(new NutOutputStream(new FileOutputStream(outputPath.toFile())))) {
             NutReader reader = new NutReader(new NutInputStream(input));
-            NutWriter writer = new NutWriter(new NutOutputStream(output));
+
 
             MainHeader mainHeader = reader.getMainHeader();
             StreamHeader[] streamHeaders = reader.getStreamHeaders();

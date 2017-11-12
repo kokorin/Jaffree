@@ -8,7 +8,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 
-public class NutWriter {
+public class NutWriter implements AutoCloseable {
     private final NutOutputStream output;
     private final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
@@ -72,6 +72,10 @@ public class NutWriter {
         for (Info info : infos) {
             writeInfo(info);
         }
+
+        Timestamp firstSynpointTs = new Timestamp(0, 0);
+        SyncPoint firstSyncponit = new SyncPoint(firstSynpointTs, 0);
+        writeSyncPoint(firstSyncponit);
 
         initialized = true;
     }
@@ -228,7 +232,7 @@ public class NutWriter {
         StreamHeader sc = streamHeaders[fd.streamId];
 
         int i, ftnum = -1, size = 0, msb_pts = (1 << sc.msbPtsShift);
-        Set<Flag> coded_flags = Collections.emptySet();
+        Set<Flag> codedFlags = Collections.emptySet();
         long coded_pts, pts_delta = fd.pts - lastPts[fd.streamId];
         boolean checksum = false;
 
@@ -328,7 +332,7 @@ public class NutWriter {
 
             if (size == 0 || len < size) {
                 ftnum = i;
-                coded_flags = flags;
+                codedFlags = flags;
                 size = len;
             }
         }
@@ -340,20 +344,20 @@ public class NutWriter {
         output.resetCrc32();
         output.writeByte(ftnum);
         FrameCode ft = mainHeader.frameCodes[ftnum];
-        if (coded_flags.contains(Flag.CODED_FLAGS)) {
-            Set<Flag> codedXor = Flag.xor(coded_flags, ft.flags);
+        if (codedFlags.contains(Flag.CODED_FLAGS)) {
+            Set<Flag> codedXor = Flag.xor(codedFlags, ft.flags);
             output.writeValue(Flag.toBitCode(codedXor));
         }
-        if (coded_flags.contains(Flag.STREAM_ID)) {
+        if (codedFlags.contains(Flag.STREAM_ID)) {
             output.writeValue(fd.streamId);
         }
-        if (coded_flags.contains(Flag.CODED_PTS)) {
+        if (codedFlags.contains(Flag.CODED_PTS)) {
             output.writeValue(coded_pts);
         }
-        if (coded_flags.contains(Flag.SIZE_MSB)) {
+        if (codedFlags.contains(Flag.SIZE_MSB)) {
             output.writeValue((fd.data.length - ft.dataSizeLsb) / ft.dataSizeMul);
         }
-        if (coded_flags.contains(Flag.CHECKSUM)) {
+        if (codedFlags.contains(Flag.CHECKSUM)) {
             output.writeCrc32();
         }
 
@@ -361,10 +365,33 @@ public class NutWriter {
         output.writeBytes(fd.data);
 
         lastPts[fd.streamId] = fd.pts;
+        eor[fd.streamId] = codedFlags.contains(Flag.EOR);
+
+        if (eor[fd.streamId]) {
+            System.out.printf("EOR!");
+        }
+    }
+
+    @Override
+    public void close() throws Exception {
+        try (AutoCloseable toClose = output) {
+            for (int streamId = 0; streamId < eor.length; streamId++) {
+                if (!eor[streamId]) {
+                    writeEorFrame(streamId);
+                }
+            }
+
+            writeMainHeader();
+            for (StreamHeader streamHeader : streamHeaders) {
+                writeStreamHeader(streamHeader);
+            }
+
+        }
     }
 
     private void writeEorFrame(int streamId) throws IOException {
-
+        NutFrame frame = new NutFrame(streamId, lastPts[streamId], new byte[0], null, null, true, true);
+        writeFrame(frame);
     }
 
 
@@ -383,6 +410,21 @@ public class NutWriter {
 
         bufOutput.flush();
         writePacket(NutConst.INFO_STARTCODE, buffer.toByteArray());
+    }
+
+    private void writeSyncPoint(SyncPoint syncpoint) throws IOException {
+        buffer.reset();
+        // Temp buffer, used to calculate data size
+        NutOutputStream bufOutput = new NutOutputStream(buffer);
+
+        bufOutput.writeTimestamp(mainHeader.timeBases.length, syncpoint.globalKeyPts);
+        bufOutput.writeValue(syncpoint.backKeyPts);
+        if (syncpoint.transmitTs != null) {
+            bufOutput.writeTimestamp(mainHeader.timeBases.length, syncpoint.transmitTs);
+        }
+
+        bufOutput.flush();
+        writePacket(NutConst.SYNCPOINT_STARTCODE, buffer.toByteArray());
     }
 
     private void writeDataItems(DataItem[] items, NutOutputStream output) throws IOException {
