@@ -24,6 +24,7 @@ import java.io.OutputStream;
 public class NutOutputStream implements AutoCloseable {
     private final OutputStream output;
     private final CRC32 crc32 = new CRC32();
+    private long position = 0;
 
     public NutOutputStream(OutputStream output) {
         if (!(output instanceof BufferedOutputStream)) {
@@ -34,7 +35,7 @@ public class NutOutputStream implements AutoCloseable {
     }
 
     public void writeValue(long value) throws IOException {
-        value &= 0x7FFFFFFFFFFFFFFFL; // FIXME: Can only encode up to 63 bits ATM.
+        value &= 0x7FFFFFFFFFFFFFFFL;
         int i;
         for (i = 7; ; i += 7) {
             if (value >> i == 0) {
@@ -46,11 +47,13 @@ public class NutOutputStream implements AutoCloseable {
             int b = (int) (0x80 | (value >> i));
             output.write(b);
             crc32.update(b);
+            position++;
         }
 
         int b = (int) (value & 0x7F);
         output.write(b);
         crc32.update(b);
+        position++;
     }
 
     public void writeSignedValue(long signed) throws IOException {
@@ -69,6 +72,7 @@ public class NutOutputStream implements AutoCloseable {
             int b = (int) ((value >> (8 * i)) & 0xFF);
             output.write(b);
             crc32.update(b);
+            position++;
         }
     }
 
@@ -77,12 +81,14 @@ public class NutOutputStream implements AutoCloseable {
             int b = (int) ((value >> (8 * i)) & 0xFF);
             output.write(b);
             crc32.update(b);
+            position++;
         }
     }
 
     public void writeByte(int value) throws IOException {
         output.write(value);
         crc32.update(value);
+        position++;
     }
 
     public void writeVariablesString(String data) throws IOException{
@@ -108,6 +114,7 @@ public class NutOutputStream implements AutoCloseable {
     public void writeBytes(byte[] data) throws IOException {
         output.write(data);
         crc32.update(data);
+        position += data.length;
     }
 
     public void resetCrc32() {
@@ -116,6 +123,10 @@ public class NutOutputStream implements AutoCloseable {
 
     public void writeCrc32() throws IOException{
         writeInt(crc32.getValue());
+    }
+
+    public long getPosition() {
+        return position;
     }
 
     public void flush() throws IOException {

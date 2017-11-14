@@ -18,6 +18,7 @@ public class NutWriter implements AutoCloseable {
     private long[] lastPts;
     // true if last frame of the corresponding stream was EOR frame
     private boolean[] eor;
+    private long lastSyncPointPosition = 0;
 
     private boolean initialized = false;
 
@@ -73,9 +74,7 @@ public class NutWriter implements AutoCloseable {
             writeInfo(info);
         }
 
-        Timestamp firstSynpointTs = new Timestamp(0, 0);
-        SyncPoint firstSyncponit = new SyncPoint(firstSynpointTs, 0);
-        writeSyncPoint(firstSyncponit);
+        writeSyncPoint();
 
         initialized = true;
     }
@@ -226,8 +225,18 @@ public class NutWriter implements AutoCloseable {
     public void writeFrame(NutFrame fd) throws IOException {
         initialize();
 
-        // TODO repetitions of Main and Stream Headers?
-        // TODO handle EOR - End Of Relevance
+        // TODO  check below errors:
+        /*
+        Press [q] to stop, [?] for help
+[null @ 0000000000e59940] Application provided invalid, non monotonically increasing dts to muxer in stream 1: 844800 >= 419840
+[null @ 0000000000e59940] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1732501 >= 858858
+[null @ 0000000000e59940] Application provided invalid, non monotonically increasing dts to muxer in stream 1: 844800 >= 420864
+[null @ 0000000000e59940] Application provided invalid, non monotonically increasing dts to muxer in stream 1: 844800 >= 421888
+[null @ 0000000000e59940] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1732501 >= 861861
+[null @ 0000000000e59940] Application provided invalid, non monotonically increasing dts to muxer in stream 1: 844800 >= 422912
+[null @ 0000000000e59940] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1732501 >= 864864
+[null @ 0000000000e59940] Application provided invalid, non monotonically increasing dts to muxer in stream 1: 844800 >= 423936
+         */
 
         StreamHeader sc = streamHeaders[fd.streamId];
 
@@ -341,6 +350,11 @@ public class NutWriter implements AutoCloseable {
             throw new IllegalArgumentException("Can't find appropriate FrameCode for " + fd);
         }
 
+        // Distance btween synpoints (in bytes) should be no more that maxDistance
+        if (lastSyncPointPosition + mainHeader.maxDistance < output.getPosition() + size + fd.data.length){
+            writeSyncPoint();
+        }
+
         output.resetCrc32();
         output.writeByte(ftnum);
         FrameCode ft = mainHeader.frameCodes[ftnum];
@@ -386,6 +400,7 @@ public class NutWriter implements AutoCloseable {
                 writeStreamHeader(streamHeader);
             }
 
+            writeSyncPoint();
         }
     }
 
@@ -412,16 +427,39 @@ public class NutWriter implements AutoCloseable {
         writePacket(NutConst.INFO_STARTCODE, buffer.toByteArray());
     }
 
-    private void writeSyncPoint(SyncPoint syncpoint) throws IOException {
+    private void writeSyncPoint() throws IOException {
+        long maxPts = lastPts[0];
+        int maxI = 0;
+        for (int i = 1; i < mainHeader.timeBases.length; i++) {
+            long pts = convertTimestamp(lastPts[i], mainHeader.timeBases[i], mainHeader.timeBases[maxI]);
+            if (pts > maxPts) {
+                maxPts = pts;
+                maxI = i;
+            }
+        }
+        Timestamp globalKeyPts = new Timestamp(maxI, maxPts);
+        long backPtr = (output.getPosition() - lastSyncPointPosition) / 16;
+        SyncPoint syncPoint = new SyncPoint(globalKeyPts, backPtr);
+
+        for (int i = 0; i < mainHeader.timeBases.length; i++) {
+            if (i == maxI) {
+                continue;
+            }
+            long pts = convertTimestamp(maxPts, mainHeader.timeBases[maxI], mainHeader.timeBases[i]);
+            //lastPts[i] = pts;
+        }
+
+
         buffer.reset();
         // Temp buffer, used to calculate data size
         NutOutputStream bufOutput = new NutOutputStream(buffer);
 
-        bufOutput.writeTimestamp(mainHeader.timeBases.length, syncpoint.globalKeyPts);
-        bufOutput.writeValue(syncpoint.backKeyPts);
-        if (syncpoint.transmitTs != null) {
-            bufOutput.writeTimestamp(mainHeader.timeBases.length, syncpoint.transmitTs);
+        bufOutput.writeTimestamp(mainHeader.timeBases.length, syncPoint.globalKeyPts);
+        bufOutput.writeValue(syncPoint.backKeyPts);
+        if (syncPoint.transmitTs != null) {
+            bufOutput.writeTimestamp(mainHeader.timeBases.length, syncPoint.transmitTs);
         }
+        lastSyncPointPosition = output.getPosition();
 
         bufOutput.flush();
         writePacket(NutConst.SYNCPOINT_STARTCODE, buffer.toByteArray());
@@ -484,5 +522,14 @@ public class NutWriter implements AutoCloseable {
         output.writeBytes(data);
         output.writeCrc32();
         output.flush();
+    }
+
+    private static long convertTimestamp(long timestamp, Rational timeBaseFrom, Rational timeBaseTo) {
+        long ln = timeBaseFrom.numerator * timestamp;
+        long sn = timeBaseTo.denominator;
+        long d1 = timeBaseFrom.denominator;
+        long d2 = timeBaseTo.numerator;
+        return (ln / d1 * sn + ln % d1 * sn / d1) / d2;
+
     }
 }
