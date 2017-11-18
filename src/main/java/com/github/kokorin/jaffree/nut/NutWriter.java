@@ -4,9 +4,7 @@ import com.github.kokorin.jaffree.nut.FrameCode.Flag;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.Set;
+import java.util.*;
 
 public class NutWriter implements AutoCloseable {
     private final NutOutputStream output;
@@ -223,20 +221,47 @@ public class NutWriter implements AutoCloseable {
     }
 
     public void writeFrame(NutFrame fd) throws IOException {
+        StreamHeader fdStream = streamHeaders[fd.streamId];
+        long millis = Util.toMillis(fd.pts, mainHeader.timeBases[fdStream.timeBaseId]);
+        frameList.add(new TimestampFrame(millis, fd));
+
+        if (frameList.size() >= 30) {
+            TimestampFrame tsFrame = frameList.first();
+            writeFrameInternal(tsFrame.frame);
+            frameList.remove(tsFrame);
+        }
+    }
+
+    private final SortedSet<TimestampFrame> frameList = new TreeSet<>(new Comparator<TimestampFrame>() {
+        @Override
+        public int compare(TimestampFrame o1, TimestampFrame o2) {
+            return Long.compare(o1.timestampMillis, o2.timestampMillis);
+        }
+    });
+    private static class TimestampFrame {
+        public final long timestampMillis;
+        public final NutFrame frame;
+
+        public TimestampFrame(long timestampMillis, NutFrame frame) {
+            this.timestampMillis = timestampMillis;
+            this.frame = frame;
+        }
+    }
+    private void writeFrameInternal(NutFrame fd) throws IOException {
         initialize();
 
-        // TODO  check below errors:
-        /*
-        Press [q] to stop, [?] for help
-[null @ 0000000000e59940] Application provided invalid, non monotonically increasing dts to muxer in stream 1: 844800 >= 419840
-[null @ 0000000000e59940] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1732501 >= 858858
-[null @ 0000000000e59940] Application provided invalid, non monotonically increasing dts to muxer in stream 1: 844800 >= 420864
-[null @ 0000000000e59940] Application provided invalid, non monotonically increasing dts to muxer in stream 1: 844800 >= 421888
-[null @ 0000000000e59940] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1732501 >= 861861
-[null @ 0000000000e59940] Application provided invalid, non monotonically increasing dts to muxer in stream 1: 844800 >= 422912
-[null @ 0000000000e59940] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1732501 >= 864864
-[null @ 0000000000e59940] Application provided invalid, non monotonically increasing dts to muxer in stream 1: 844800 >= 423936
-         */
+        long maxTs = 0;
+        for (int i = 0; i < mainHeader.timeBases.length; i++) {
+            long ts = Util.toMillis(lastPts[i], mainHeader.timeBases[i]);
+            if (ts > maxTs) {
+                maxTs = ts;
+            }
+        }
+        StreamHeader fdStream = streamHeaders[fd.streamId];
+        long fdTs = Util.toMillis(fd.pts, mainHeader.timeBases[fdStream.timeBaseId]);
+        if (fdTs < maxTs) {
+            throw new RuntimeException("Unordered frames! maxTs: " + maxTs + ", but current: " + fdTs);
+        }
 
         StreamHeader sc = streamHeaders[fd.streamId];
 
@@ -350,7 +375,7 @@ public class NutWriter implements AutoCloseable {
             throw new IllegalArgumentException("Can't find appropriate FrameCode for " + fd);
         }
 
-        // Distance btween synpoints (in bytes) should be no more that maxDistance
+        // Distance between synpoints (in bytes) should be no more that maxDistance
         if (lastSyncPointPosition + mainHeader.maxDistance < output.getPosition() + size + fd.data.length){
             writeSyncPoint();
         }
@@ -389,6 +414,10 @@ public class NutWriter implements AutoCloseable {
     @Override
     public void close() throws Exception {
         try (AutoCloseable toClose = output) {
+            for (TimestampFrame timestampFrame : frameList) {
+                writeFrameInternal(timestampFrame.frame);
+            }
+
             for (int streamId = 0; streamId < eor.length; streamId++) {
                 if (!eor[streamId]) {
                     writeEorFrame(streamId);
@@ -431,9 +460,9 @@ public class NutWriter implements AutoCloseable {
         long maxPts = lastPts[0];
         int maxI = 0;
         for (int i = 1; i < mainHeader.timeBases.length; i++) {
-            long pts = convertTimestamp(lastPts[i], mainHeader.timeBases[i], mainHeader.timeBases[maxI]);
+            long pts = Util.convertTimestamp(lastPts[i], mainHeader.timeBases[i], mainHeader.timeBases[maxI]);
             if (pts > maxPts) {
-                maxPts = pts;
+                maxPts = lastPts[i];
                 maxI = i;
             }
         }
@@ -445,18 +474,17 @@ public class NutWriter implements AutoCloseable {
             if (i == maxI) {
                 continue;
             }
-            long pts = convertTimestamp(maxPts, mainHeader.timeBases[maxI], mainHeader.timeBases[i]);
-            //lastPts[i] = pts;
+            long pts = Util.convertTimestamp(maxPts, mainHeader.timeBases[maxI], mainHeader.timeBases[i]);
+            lastPts[i] = pts;
         }
-
 
         buffer.reset();
         // Temp buffer, used to calculate data size
         NutOutputStream bufOutput = new NutOutputStream(buffer);
 
         bufOutput.writeTimestamp(mainHeader.timeBases.length, syncPoint.globalKeyPts);
-        bufOutput.writeValue(syncPoint.backKeyPts);
-        if (syncPoint.transmitTs != null) {
+        bufOutput.writeValue(syncPoint.backPtrDiv16);
+        if (mainHeader.flags.contains(MainHeader.Flag.BROADCAST_MODE)) {
             bufOutput.writeTimestamp(mainHeader.timeBases.length, syncPoint.transmitTs);
         }
         lastSyncPointPosition = output.getPosition();
@@ -522,14 +550,5 @@ public class NutWriter implements AutoCloseable {
         output.writeBytes(data);
         output.writeCrc32();
         output.flush();
-    }
-
-    private static long convertTimestamp(long timestamp, Rational timeBaseFrom, Rational timeBaseTo) {
-        long ln = timeBaseFrom.numerator * timestamp;
-        long sn = timeBaseTo.denominator;
-        long d1 = timeBaseFrom.denominator;
-        long d2 = timeBaseTo.numerator;
-        return (ln / d1 * sn + ln % d1 * sn / d1) / d2;
-
     }
 }

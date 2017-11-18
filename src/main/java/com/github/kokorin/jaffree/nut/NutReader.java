@@ -86,9 +86,16 @@ public class NutReader {
                         infos[i] = info;
                     }
                 }
+            } else if (packetHeader.startcode == NutConst.SYNCPOINT_STARTCODE) {
+                SyncPoint syncPoint = readSyncPoint();
+                long pts = syncPoint.globalKeyPts.pts;
+                Rational ptsTimebase = mainHeader.timeBases[syncPoint.globalKeyPts.timebaseId];
+                for (int i = 0; i < mainHeader.timeBases.length; i++) {
+                    lastPts[i] = Util.convertTimestamp(pts, ptsTimebase, mainHeader.timeBases[i]);
+                }
             }
 
-            // Intentionally ignore these headers: INDEX & SYNCPOINT (and reserved headers also)
+            // Intentionally ignore these headers: INDEX (and reserved headers also)
 
             input.skipBytes(nextPacketPosition - input.getPosition() - 4);
             readPacketFooter();
@@ -239,6 +246,17 @@ public class NutReader {
                 flags, codecSpcificData, video, audio);
     }
 
+    private SyncPoint readSyncPoint() throws IOException {
+        Timestamp pts = input.readTimestamp(mainHeader.timeBases.length);
+        long backPtrDiv16 = input.readValue();
+        Timestamp transmitTs = pts;
+        if (mainHeader.flags.contains(MainHeader.Flag.BROADCAST_MODE)) {
+            transmitTs = input.readTimestamp(mainHeader.timeBases.length);
+        }
+
+        return new SyncPoint(pts, backPtrDiv16, transmitTs);
+    }
+
     public NutFrame readFrame() throws IOException {
         readToFrame();
 
@@ -285,7 +303,7 @@ public class NutReader {
              */
             long codedPts = input.readValue();
             int shift = streamHeader.msbPtsShift;
-            if (Unsigned.compareUnsigned(codedPts, 1L << shift) >= 0) {
+            if (Util.compareUnsigned(codedPts, 1L << shift) >= 0) {
                 pts = codedPts - (1L << shift);
             } else {
                 long mask = (1L << shift) - 1;

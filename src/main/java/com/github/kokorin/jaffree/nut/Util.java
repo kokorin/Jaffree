@@ -20,8 +20,8 @@ package com.github.kokorin.jaffree.nut;
 import static java.lang.Long.MIN_VALUE;
 import static java.lang.Long.compare;
 
-public class Unsigned {
-    private Unsigned() {
+public class Util {
+    private Util() {
     }
 
     /**
@@ -42,4 +42,16 @@ public class Unsigned {
         return compare(x + MIN_VALUE, y + MIN_VALUE);
     }
 
+
+    public static long convertTimestamp(long pts, Rational timeBaseFrom, Rational timeBaseTo) {
+        long ln = timeBaseFrom.numerator * pts;
+        long sn = timeBaseTo.denominator;
+        long d1 = timeBaseFrom.denominator;
+        long d2 = timeBaseTo.numerator;
+        return (ln / d1 * sn + ln % d1 * sn / d1) / d2;
+    }
+
+    public static long toMillis(long pts, Rational timebase) {
+        return 1000L * pts * timebase.numerator / timebase.denominator;
+    }
 }

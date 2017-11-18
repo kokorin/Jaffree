@@ -1,9 +1,7 @@
 package com.github.kokorin.jaffree.nut;
 
 import com.github.kokorin.jaffree.LogLevel;
-import com.github.kokorin.jaffree.ffmpeg.FFmpeg;
-import com.github.kokorin.jaffree.ffmpeg.UrlInput;
-import com.github.kokorin.jaffree.ffmpeg.UrlOutput;
+import com.github.kokorin.jaffree.ffmpeg.*;
 import com.github.kokorin.jaffree.ffprobe.FFprobe;
 import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
 import org.junit.Assert;
@@ -57,7 +55,6 @@ public class NutTest {
              NutWriter writer = new NutWriter(new NutOutputStream(new FileOutputStream(outputPath.toFile())))) {
             NutReader reader = new NutReader(new NutInputStream(input));
 
-
             MainHeader mainHeader = reader.getMainHeader();
             StreamHeader[] streamHeaders = reader.getStreamHeaders();
             Info[] infos = reader.getInfos();
@@ -77,15 +74,27 @@ public class NutTest {
 
         assertNutStructure(outputPath);
 
-        FFprobeResult result = FFprobe.atPath(BIN)
+        FFprobeResult probe = FFprobe.atPath(BIN)
                 .setInputPath(outputPath)
                 .setShowError(true)
                 .setCountFrames(true)
                 .setShowLog(LogLevel.DEBUG)
                 .execute();
 
-        Assert.assertNotNull(result);
-        Assert.assertNull(result.getError());
+        Assert.assertNotNull(probe);
+        Assert.assertNull(probe.getError());
+
+        FFmpegResult mpeg = FFmpeg.atPath(BIN)
+                .addInput(UrlInput.fromPath(outputPath))
+                .addOutput(new NullOutput())
+                .setProgressListener(new ProgressListener() {
+                    @Override
+                    public void onProgress(FFmpegProgress progress) {
+                        System.out.println(progress.getFrame());
+                    }
+                })
+                .execute();
+        Assert.assertNotNull(mpeg);
     }
 
     private static void assertNutStructure(Path nut) throws Exception {
