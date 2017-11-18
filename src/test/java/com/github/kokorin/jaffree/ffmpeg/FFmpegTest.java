@@ -186,8 +186,8 @@ public class FFmpegTest {
         Assert.assertNotNull(result);
 
         long outputSize = Files.size(outputPath);
-        Assert.assertTrue(outputSize > 900_000 * 8);
-        Assert.assertTrue(outputSize < 1_100_000 * 8);
+        Assert.assertTrue(outputSize > 900_000);
+        Assert.assertTrue(outputSize < 1_100_000);
     }
 
     @Test

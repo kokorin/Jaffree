@@ -17,11 +17,6 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-import com.github.kokorin.jaffree.SizeUnit;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 public class FFmpegResult {
     private final long videoSize;
     private final long audioSize;
@@ -39,70 +34,45 @@ public class FFmpegResult {
         this.muxingOverheadRatio = muxingOverheadRatio;
     }
 
+    /**
+     * @return size in bytes
+     */
     public long getVideoSize() {
         return videoSize;
     }
 
+    /**
+     * @return size in bytes
+     */
     public long getAudioSize() {
         return audioSize;
     }
 
+    /**
+     * @return size in bytes
+     */
     public long getSubtitleSize() {
         return subtitleSize;
     }
 
+    /**
+     * @return size in bytes
+     */
     public long getOtherStreamsSize() {
         return otherStreamsSize;
     }
 
+    /**
+     * @return size in bytes
+     */
     public long getGlobalHeadersSize() {
         return globalHeadersSize;
     }
 
+    /**
+     * @return value in range [0..1]
+     */
     public double getMuxingOverheadRatio() {
         return muxingOverheadRatio;
     }
-
-    // video:24326kB audio:1997kB subtitle:0kB other streams:0kB global headers:0kB muxing overhead: 0.532625%
-    private static final String SIZE_PATTERN = "(\\d+)([kKmMgGibB]+)";
-    private static final Pattern RESULT_PATTERN = Pattern.compile(
-            "^video:\\s*" + SIZE_PATTERN + "\\s*" +
-            "audio:\\s*" + SIZE_PATTERN + "\\s*" +
-            "subtitle:\\s*" + SIZE_PATTERN + "\\s*" +
-            "other streams:\\s*" + SIZE_PATTERN + "\\s*" +
-            "global headers:\\s*" + SIZE_PATTERN + "\\s*" +
-            "muxing overhead: ([\\.\\de\\+-]+)%\\s*$"
-    );
-
-    public static FFmpegResult fromString(String value) {
-        if (value == null) {
-            return null;
-        }
-
-        Matcher matcher = RESULT_PATTERN.matcher(value);
-        if (!matcher.matches()) {
-            return null;
-        }
-
-        long videoSize = Long.parseLong(matcher.group(1)) * parseSizeUnit(matcher.group(2)).multiplier();
-        long audioSize = Long.parseLong(matcher.group(3)) * parseSizeUnit(matcher.group(4)).multiplier();
-        long subtitleSize = Long.parseLong(matcher.group(5)) * parseSizeUnit(matcher.group(6)).multiplier();
-        long otherStreamsSize = Long.parseLong(matcher.group(7)) * parseSizeUnit(matcher.group(8)).multiplier();
-        long globalHeadersSize = Long.parseLong(matcher.group(9)) * parseSizeUnit(matcher.group(10)).multiplier();
-        double muxingOverheadRatio = Double.parseDouble(matcher.group(11)) * 0.01;
-
-        return new FFmpegResult(videoSize, audioSize, subtitleSize, otherStreamsSize, globalHeadersSize, muxingOverheadRatio);
-    }
-
-    private static SizeUnit parseSizeUnit(String value) {
-        for (SizeUnit unit : SizeUnit.values()) {
-            if (unit.name().equalsIgnoreCase(value)) {
-                return unit;
-            }
-        }
-
-        throw new RuntimeException("Failed to parse size unit: " + value);
-    }
-
-
 }
