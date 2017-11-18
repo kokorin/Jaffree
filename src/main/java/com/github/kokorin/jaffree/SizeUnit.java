@@ -22,17 +22,18 @@ public enum SizeUnit {
     M(1_000_000L),
     G(1_000_000_000L),
 
-    Ki(1_024),
-    Mi(1_024 * 1_024),
-    Gi(1_024 * 1_024 * 1_024),
+    Ki(1_024L),
+    Mi(1_024L * 1_024),
+    Gi(1_024L * 1_024 * 1_024),
 
+    B(8L),
     KB(1_000L * 8),
     MB(1_000_000L * 8),
     GB(1_000_000_000L * 8),
 
-    KiB(1_024 * 8),
-    MiB(1_024 * 1_024 * 8),
-    GiB(1_024 * 1_024 * 1_024 * 8),
+    KiB(1_024L * 8),
+    MiB(1_024L * 1_024 * 8),
+    GiB(1_024L * 1_024 * 1_024 * 8),
     ;
     private long multiplier;
 
@@ -42,5 +43,14 @@ public enum SizeUnit {
 
     public long multiplier() {
         return multiplier;
+    }
+
+    // TODO rewrite this method, pay attention to exactness and overflow
+    public long convertTo(long value, SizeUnit unit) {
+        return (long) (1. * value * this.multiplier / unit.multiplier);
+    }
+
+    public long toBytes(long value) {
+        return convertTo(value, B);
     }
 }

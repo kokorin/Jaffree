@@ -117,7 +117,7 @@ public class UrlOutput extends UrlInOut<UrlOutput> implements Output {
      * @return this
      */
     public UrlOutput setSizeLimit(long sizeLimit, SizeUnit unit) {
-        this.sizeLimit = sizeLimit * unit.multiplier();
+        this.sizeLimit = unit.toBytes(sizeLimit);
         return this;
     }
 
