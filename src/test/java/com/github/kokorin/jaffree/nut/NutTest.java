@@ -95,6 +95,8 @@ public class NutTest {
                 })
                 .execute();
         Assert.assertNotNull(mpeg);
+        Assert.assertTrue(mpeg.getVideoSize() > 100_000);
+        Assert.assertTrue(mpeg.getAudioSize() > 10_000);
     }
 
     private static void assertNutStructure(Path nut) throws Exception {

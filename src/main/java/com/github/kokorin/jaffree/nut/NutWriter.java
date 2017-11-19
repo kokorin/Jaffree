@@ -20,6 +20,10 @@ public class NutWriter implements AutoCloseable {
 
     private boolean initialized = false;
 
+    private long frameOrderingBufferMillis = 200;
+
+    private final List<TsFrame> frameOrderingBuffer = new ArrayList<>();
+
     private static final long MAJOR_VERSION = 3;
     private static final long MINOR_VERSION = 0;
 
@@ -46,6 +50,14 @@ public class NutWriter implements AutoCloseable {
             throw new RuntimeException("NutWriter is already initialized!");
         }
         this.infos = infos;
+    }
+
+    /**
+     * By default 200 milliseconds.
+     * @param frameOrderingBufferMillis size of frame ordering buffer in milliseconds
+     */
+    public void setFrameOrderingBufferMillis(long frameOrderingBufferMillis) {
+        this.frameOrderingBufferMillis = frameOrderingBufferMillis;
     }
 
     private void initialize() throws IOException {
@@ -220,63 +232,61 @@ public class NutWriter implements AutoCloseable {
         writePacket(NutConst.STREAM_STARTCODE, buffer.toByteArray());
     }
 
-    public void writeFrame(NutFrame fd) throws IOException {
-        StreamHeader fdStream = streamHeaders[fd.streamId];
-        long millis = Util.toMillis(fd.pts, mainHeader.timeBases[fdStream.timeBaseId]);
-        frameList.add(new TimestampFrame(millis, fd));
+    public void writeFrame(NutFrame frame) throws IOException {
+        StreamHeader stream = streamHeaders[frame.streamId];
+        long millis = Util.toMillis(frame.pts, mainHeader.timeBases[stream.timeBaseId]);
+        frameOrderingBuffer.add(new TsFrame(millis, frame));
+        Collections.sort(frameOrderingBuffer, TsFrame.COMPARATOR);
 
-        if (frameList.size() >= 30) {
-            TimestampFrame tsFrame = frameList.first();
+        long lastFrameMillis = frameOrderingBuffer.get(frameOrderingBuffer.size() - 1).tsMillis;
+        // Check if we have to remove some frames from buffer and to write them to ouput
+        Iterator<TsFrame> frameIterator = frameOrderingBuffer.iterator();
+        while (frameIterator.hasNext()) {
+            TsFrame tsFrame = frameIterator.next();
+            // current frame can't be written yet, as well as all subsequent
+            if (lastFrameMillis - tsFrame.tsMillis <= frameOrderingBufferMillis) {
+                break;
+            }
+
             writeFrameInternal(tsFrame.frame);
-            frameList.remove(tsFrame);
+            frameIterator.remove();
         }
     }
 
-    private final SortedSet<TimestampFrame> frameList = new TreeSet<>(new Comparator<TimestampFrame>() {
-        @Override
-        public int compare(TimestampFrame o1, TimestampFrame o2) {
-            return Long.compare(o1.timestampMillis, o2.timestampMillis);
-        }
-    });
-    private static class TimestampFrame {
-        public final long timestampMillis;
-        public final NutFrame frame;
-
-        public TimestampFrame(long timestampMillis, NutFrame frame) {
-            this.timestampMillis = timestampMillis;
-            this.frame = frame;
-        }
-    }
-    private void writeFrameInternal(NutFrame fd) throws IOException {
+    private void writeFrameInternal(NutFrame frame) throws IOException {
         initialize();
 
-        long maxTs = 0;
-        for (int i = 0; i < mainHeader.timeBases.length; i++) {
-            long ts = Util.toMillis(lastPts[i], mainHeader.timeBases[i]);
-            if (ts > maxTs) {
-                maxTs = ts;
+        // EOR frames by specification use TS of the previous frame in the same stream.
+        // TODO do we need this check?
+        if (!frame.eor) {
+            long maxTs = 0;
+            for (int i = 0; i < mainHeader.timeBases.length; i++) {
+                long ts = Util.toMillis(lastPts[i], mainHeader.timeBases[i]);
+                if (ts > maxTs) {
+                    maxTs = ts;
+                }
+            }
+            StreamHeader steam = streamHeaders[frame.streamId];
+            long framedTs = Util.toMillis(frame.pts, mainHeader.timeBases[steam.timeBaseId]);
+            if (framedTs < maxTs) {
+                throw new RuntimeException("Unordered frames! Try to increase frameOrderingBufferMillis. maxTs: " + maxTs + ", but current: " + framedTs);
             }
         }
-        StreamHeader fdStream = streamHeaders[fd.streamId];
-        long fdTs = Util.toMillis(fd.pts, mainHeader.timeBases[fdStream.timeBaseId]);
-        if (fdTs < maxTs) {
-            throw new RuntimeException("Unordered frames! maxTs: " + maxTs + ", but current: " + fdTs);
-        }
 
-        StreamHeader sc = streamHeaders[fd.streamId];
+        StreamHeader sc = streamHeaders[frame.streamId];
 
         int i, ftnum = -1, size = 0, msb_pts = (1 << sc.msbPtsShift);
         Set<Flag> codedFlags = Collections.emptySet();
-        long coded_pts, pts_delta = fd.pts - lastPts[fd.streamId];
+        long coded_pts, pts_delta = frame.pts - lastPts[frame.streamId];
         boolean checksum = false;
 
         if (Math.abs(pts_delta) < (msb_pts / 2) - 1) {
-            coded_pts = fd.pts & (msb_pts - 1);
+            coded_pts = frame.pts & (msb_pts - 1);
         } else {
-            coded_pts = fd.pts + msb_pts;
+            coded_pts = frame.pts + msb_pts;
         }
 
-        if (fd.data.length > 2 * mainHeader.maxDistance) {
+        if (frame.data.length > 2 * mainHeader.maxDistance) {
             checksum = true;
         }
         if (Math.abs(pts_delta) > sc.maxPtsDistance) {
@@ -293,23 +303,23 @@ public class NutWriter implements AutoCloseable {
             }
 
             Set<Flag> fdFlags = EnumSet.noneOf(Flag.class);
-            if (fd.keyframe) {
+            if (frame.keyframe) {
                 fdFlags.add(Flag.KEYFRAME);
             }
-            if (fd.eor) {
+            if (frame.eor) {
                 fdFlags.add(Flag.EOR);
             }
 
             if (flags.contains(Flag.CODED_FLAGS)) {
                 flags = EnumSet.copyOf(fdFlags);
 
-                if (ft.streamId != fd.streamId) {
+                if (ft.streamId != frame.streamId) {
                     flags.add(Flag.STREAM_ID);
                 }
                 if (ft.ptsDelta != pts_delta) {
                     flags.add(Flag.CODED_PTS);
                 }
-                if (ft.dataSizeLsb != fd.data.length) {
+                if (ft.dataSizeLsb != frame.data.length) {
                     flags.add(Flag.SIZE_MSB);
                 }
                 if (checksum) {
@@ -325,7 +335,7 @@ public class NutWriter implements AutoCloseable {
                 continue;
             }
 
-            if (!flags.contains(Flag.STREAM_ID) && ft.streamId != fd.streamId) {
+            if (!flags.contains(Flag.STREAM_ID) && ft.streamId != frame.streamId) {
                 continue;
             }
 
@@ -334,11 +344,11 @@ public class NutWriter implements AutoCloseable {
             }
 
             if (flags.contains(Flag.SIZE_MSB)) {
-                if ((fd.data.length - ft.dataSizeLsb) % ft.dataSizeMul != 0) {
+                if ((frame.data.length - ft.dataSizeLsb) % ft.dataSizeMul != 0) {
                     continue;
                 }
             } else {
-                if (ft.dataSizeLsb != fd.data.length) {
+                if (ft.dataSizeLsb != frame.data.length) {
                     continue;
                 }
             }
@@ -372,11 +382,11 @@ public class NutWriter implements AutoCloseable {
         }
 
         if (ftnum == -1) {
-            throw new IllegalArgumentException("Can't find appropriate FrameCode for " + fd);
+            throw new IllegalArgumentException("Can't find appropriate FrameCode for " + frame);
         }
 
         // Distance between synpoints (in bytes) should be no more that maxDistance
-        if (lastSyncPointPosition + mainHeader.maxDistance < output.getPosition() + size + fd.data.length){
+        if (lastSyncPointPosition + mainHeader.maxDistance < output.getPosition() + size + frame.data.length){
             writeSyncPoint();
         }
 
@@ -388,25 +398,25 @@ public class NutWriter implements AutoCloseable {
             output.writeValue(Flag.toBitCode(codedXor));
         }
         if (codedFlags.contains(Flag.STREAM_ID)) {
-            output.writeValue(fd.streamId);
+            output.writeValue(frame.streamId);
         }
         if (codedFlags.contains(Flag.CODED_PTS)) {
             output.writeValue(coded_pts);
         }
         if (codedFlags.contains(Flag.SIZE_MSB)) {
-            output.writeValue((fd.data.length - ft.dataSizeLsb) / ft.dataSizeMul);
+            output.writeValue((frame.data.length - ft.dataSizeLsb) / ft.dataSizeMul);
         }
         if (codedFlags.contains(Flag.CHECKSUM)) {
             output.writeCrc32();
         }
 
         // TODO elision headers?
-        output.writeBytes(fd.data);
+        output.writeBytes(frame.data);
 
-        lastPts[fd.streamId] = fd.pts;
-        eor[fd.streamId] = codedFlags.contains(Flag.EOR);
+        lastPts[frame.streamId] = frame.pts;
+        eor[frame.streamId] = codedFlags.contains(Flag.EOR);
 
-        if (eor[fd.streamId]) {
+        if (eor[frame.streamId]) {
             System.out.printf("EOR!");
         }
     }
@@ -414,15 +424,22 @@ public class NutWriter implements AutoCloseable {
     @Override
     public void close() throws Exception {
         try (AutoCloseable toClose = output) {
-            for (TimestampFrame timestampFrame : frameList) {
-                writeFrameInternal(timestampFrame.frame);
+            // writeEorFrame uses lastPts, it is updated by writeFrameInternal
+            for (TsFrame tsFrame : frameOrderingBuffer) {
+                writeFrameInternal(tsFrame.frame);
             }
+            frameOrderingBuffer.clear();
 
             for (int streamId = 0; streamId < eor.length; streamId++) {
                 if (!eor[streamId]) {
                     writeEorFrame(streamId);
                 }
             }
+
+            for (TsFrame tsFrame : frameOrderingBuffer) {
+                writeFrameInternal(tsFrame.frame);
+            }
+            frameOrderingBuffer.clear();
 
             writeMainHeader();
             for (StreamHeader streamHeader : streamHeaders) {
@@ -550,5 +567,23 @@ public class NutWriter implements AutoCloseable {
         output.writeBytes(data);
         output.writeCrc32();
         output.flush();
+    }
+
+
+    private static class TsFrame {
+        public final long tsMillis;
+        public final NutFrame frame;
+
+        private static final Comparator<TsFrame> COMPARATOR = new Comparator<TsFrame>() {
+            @Override
+            public int compare(TsFrame o1, TsFrame o2) {
+                return Long.compare(o1.tsMillis, o2.tsMillis);
+            }
+        };
+
+        public TsFrame(long tsMillis, NutFrame frame) {
+            this.tsMillis = tsMillis;
+            this.frame = frame;
+        }
     }
 }
