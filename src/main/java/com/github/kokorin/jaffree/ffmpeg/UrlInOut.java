@@ -20,11 +20,8 @@ package com.github.kokorin.jaffree.ffmpeg;
 import com.github.kokorin.jaffree.Option;
 import com.github.kokorin.jaffree.StreamType;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 public abstract class UrlInOut<T extends UrlInOut> {
@@ -277,9 +274,7 @@ public abstract class UrlInOut<T extends UrlInOut> {
     }
 
     static String formatDuration(long durationMillis) {
-        NumberFormat format = DecimalFormat.getNumberInstance(Locale.ROOT);
-        format.setMaximumFractionDigits(3);
-        return format.format(durationMillis * 0.001);
+        return String.format("%d.%03d", durationMillis / 1000, Math.abs(durationMillis) % 1000);
     }
 
     protected static class StreamSpecifierWithValue {
