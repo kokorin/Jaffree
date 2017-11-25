@@ -84,15 +84,14 @@ public class NutTest {
         Assert.assertNotNull(probe);
         Assert.assertNull(probe.getError());
 
+        // During this test you can see in console some warnings like the following:
+        // [null @ 0000000000dca4e0] Application provided invalid, non monotonically increasing dts to muxer in stream 1: 7371776 >= 7371776
+        // [null @ 0000000000dca4e0] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 15050833 >= 15048033
+        // This is because of EOR frames in NUT (the have the same timestamp as previous frames in the same stream), so it's OK
+
         FFmpegResult mpeg = FFmpeg.atPath(BIN)
                 .addInput(UrlInput.fromPath(outputPath))
                 .addOutput(new NullOutput())
-                .setProgressListener(new ProgressListener() {
-                    @Override
-                    public void onProgress(FFmpegProgress progress) {
-                        System.out.println(progress.getFrame());
-                    }
-                })
                 .execute();
         Assert.assertNotNull(mpeg);
         Assert.assertTrue(mpeg.getVideoSize() > 100_000);
