@@ -52,7 +52,7 @@ public class FrameInput implements Input {
 
     @Override
     public void beforeExecute(FFmpeg ffmpeg) {
-        ffmpeg.setStdInWriter(new MatroskaFrameWriter(producer));
+        ffmpeg.setStdInWriter(new NutFrameWriter(producer));
         ffmpeg.setStdOutReader(new LoggingStdReader<FFmpegResult>());
     }
 
@@ -62,9 +62,10 @@ public class FrameInput implements Input {
 
         result.addAll(additionalOptions);
         result.addAll(Arrays.asList(
-                new Option("-f", "matroska"),
-                new Option("-vcodec", "rawvideo"),
-                new Option("-acodec", "pcm_s32be"),
+                new Option("-f", "nut"),
+                //new Option("-vcodec", "rawvideo"),
+                //new Option("-pix_fmt", "wwer"),
+                //new Option("-acodec", "pcm_s32be"),
                 new Option("-i", "-")
         ));
 

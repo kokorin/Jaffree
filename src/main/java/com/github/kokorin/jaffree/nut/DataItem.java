@@ -27,4 +27,13 @@ public class DataItem {
         this.value = value;
         this.type = type;
     }
+
+    @Override
+    public String toString() {
+        return "DataItem{" +
+                "name='" + name + '\'' +
+                ", value=" + value +
+                ", type='" + type + '\'' +
+                '}';
+    }
 }

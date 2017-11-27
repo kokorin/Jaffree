@@ -17,6 +17,7 @@
 
 package com.github.kokorin.jaffree.nut;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 
@@ -77,6 +78,20 @@ public class MainHeader {
         this.frameCodes = frameCodes;
         this.elisionHeaderSize = elisionHeaderSize;
         this.flags = Collections.unmodifiableSet(flags);
+    }
+
+    @Override
+    public String toString() {
+        return "MainHeader{" +
+                "majorVersion=" + majorVersion +
+                ", minorVersion=" + minorVersion +
+                ", streamCount=" + streamCount +
+                ", maxDistance=" + maxDistance +
+                ", timeBases=" + Arrays.toString(timeBases) +
+                ", frameCodes=" + Arrays.toString(frameCodes) +
+                ", elisionHeaderSize=" + Arrays.toString(elisionHeaderSize) +
+                ", flags=" + flags +
+                '}';
     }
 
     public enum Flag {

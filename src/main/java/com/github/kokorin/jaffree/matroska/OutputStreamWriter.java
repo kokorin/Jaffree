@@ -36,7 +36,7 @@ public class OutputStreamWriter implements DataWriter {
 
     public OutputStreamWriter(OutputStream outputStream) {
         this.outputStream = outputStream;
-        //TODO close channel
+        //TODO writeFooter channel
         this.channel = Channels.newChannel(outputStream);
     }
 

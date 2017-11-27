@@ -6,7 +6,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.*;
 
-public class NutWriter implements AutoCloseable {
+public class NutWriter {
     private final NutOutputStream output;
     private final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
@@ -19,6 +19,7 @@ public class NutWriter implements AutoCloseable {
     private long lastSyncPointPosition = 0;
 
     private boolean initialized = false;
+    private boolean closed = false;
 
     private long frameOrderingBufferMillis = 200;
 
@@ -31,11 +32,20 @@ public class NutWriter implements AutoCloseable {
         this.output = output;
     }
 
-    public void setMainHeader(MainHeader mainHeader) {
+    public void setMainHeader(int streamCount, long maxDistance, Rational[] timebases, FrameCode[] frameCodes) {
         if (initialized) {
             throw new RuntimeException("NutWriter is already initialized!");
         }
-        this.mainHeader = mainHeader;
+        this.mainHeader = new MainHeader(
+                MAJOR_VERSION,
+                MINOR_VERSION,
+                streamCount,
+                maxDistance,
+                timebases,
+                frameCodes,
+                new long[0],
+                EnumSet.noneOf(MainHeader.Flag.class)
+        );
     }
 
     public void setStreamHeaders(StreamHeader[] streamHeaders) {
@@ -54,6 +64,7 @@ public class NutWriter implements AutoCloseable {
 
     /**
      * By default 200 milliseconds.
+     *
      * @param frameOrderingBufferMillis size of frame ordering buffer in milliseconds
      */
     public void setFrameOrderingBufferMillis(long frameOrderingBufferMillis) {
@@ -232,7 +243,22 @@ public class NutWriter implements AutoCloseable {
         writePacket(NutConst.STREAM_STARTCODE, buffer.toByteArray());
     }
 
+    /**
+     * Writes frame to underlying OutputStream.
+     * <p>
+     * Note: When all frames are passed to this method the caller MUST invoke {@link #writeFooter()}
+     * <p>
+     * Note: frames are not written immediately to stream, instead they are buffered, reordered and than written.
+     *
+     * @param frame frame to write
+     * @throws IOException
+     * @see #setFrameOrderingBufferMillis(long)
+     */
     public void writeFrame(NutFrame frame) throws IOException {
+        if (closed) {
+            throw new RuntimeException("NutWriter is ");
+        }
+
         StreamHeader stream = streamHeaders[frame.streamId];
         long millis = Util.toMillis(frame.pts, mainHeader.timeBases[stream.timeBaseId]);
         frameOrderingBuffer.add(new TsFrame(millis, frame));
@@ -386,7 +412,7 @@ public class NutWriter implements AutoCloseable {
         }
 
         // Distance between synpoints (in bytes) should be no more that maxDistance
-        if (lastSyncPointPosition + mainHeader.maxDistance < output.getPosition() + size + frame.data.length){
+        if (lastSyncPointPosition + mainHeader.maxDistance < output.getPosition() + size + frame.data.length) {
             writeSyncPoint();
         }
 
@@ -421,33 +447,32 @@ public class NutWriter implements AutoCloseable {
         }
     }
 
-    @Override
-    public void close() throws Exception {
-        try (AutoCloseable toClose = output) {
-            // writeEorFrame uses lastPts, it is updated by writeFrameInternal
-            for (TsFrame tsFrame : frameOrderingBuffer) {
-                writeFrameInternal(tsFrame.frame);
-            }
-            frameOrderingBuffer.clear();
-
-            for (int streamId = 0; streamId < eor.length; streamId++) {
-                if (!eor[streamId]) {
-                    writeEorFrame(streamId);
-                }
-            }
-
-            for (TsFrame tsFrame : frameOrderingBuffer) {
-                writeFrameInternal(tsFrame.frame);
-            }
-            frameOrderingBuffer.clear();
-
-            writeMainHeader();
-            for (StreamHeader streamHeader : streamHeaders) {
-                writeStreamHeader(streamHeader);
-            }
-
-            writeSyncPoint();
+    public void writeFooter() throws Exception {
+        // writeEorFrame uses lastPts, it is updated by writeFrameInternal
+        for (TsFrame tsFrame : frameOrderingBuffer) {
+            writeFrameInternal(tsFrame.frame);
         }
+        frameOrderingBuffer.clear();
+
+        for (int streamId = 0; streamId < eor.length; streamId++) {
+            if (!eor[streamId]) {
+                writeEorFrame(streamId);
+            }
+        }
+
+        for (TsFrame tsFrame : frameOrderingBuffer) {
+            writeFrameInternal(tsFrame.frame);
+        }
+        frameOrderingBuffer.clear();
+
+        writeMainHeader();
+        for (StreamHeader streamHeader : streamHeaders) {
+            writeStreamHeader(streamHeader);
+        }
+
+        writeSyncPoint();
+
+        closed = true;
     }
 
     private void writeEorFrame(int streamId) throws IOException {

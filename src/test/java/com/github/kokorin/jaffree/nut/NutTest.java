@@ -51,15 +51,16 @@ public class NutTest {
     public void readWrite() throws Exception {
         Path outputPath = Files.createTempFile("output", ".nut");
 
-        try (FileInputStream input = new FileInputStream(VIDEO_NUT.toFile());
-             NutWriter writer = new NutWriter(new NutOutputStream(new FileOutputStream(outputPath.toFile())))) {
-            NutReader reader = new NutReader(new NutInputStream(input));
+        try (NutInputStream inputStream = new NutInputStream(new FileInputStream(VIDEO_NUT.toFile()));
+             NutOutputStream outputStream = new NutOutputStream(new FileOutputStream(outputPath.toFile()))) {
+            NutReader reader = new NutReader(inputStream);
+            NutWriter writer = new NutWriter(outputStream);
 
             MainHeader mainHeader = reader.getMainHeader();
             StreamHeader[] streamHeaders = reader.getStreamHeaders();
             Info[] infos = reader.getInfos();
 
-            writer.setMainHeader(mainHeader);
+            writer.setMainHeader(mainHeader.streamCount, mainHeader.maxDistance, mainHeader.timeBases, mainHeader.frameCodes);
             writer.setStreamHeaders(streamHeaders);
             writer.setInfos(infos);
 
@@ -96,6 +97,45 @@ public class NutTest {
         Assert.assertNotNull(mpeg);
         Assert.assertTrue(mpeg.getVideoSize() > 100_000);
         Assert.assertTrue(mpeg.getAudioSize() > 10_000);
+    }
+
+    @Test
+    public void dumpNutHeaders() throws Exception {
+        Path rawNut = Files.createTempFile("raw_video", ".nut");
+
+        FFmpeg.atPath(BIN)
+                .addInput(UrlInput.fromPath(VIDEO_MP4))
+                .setOverwriteOutput(true)
+                .addOutput(UrlOutput.toPath(rawNut)
+                        .setFormat("nut")
+                        .addOption("-vcodec", "rawvideo")
+                        .addOption("-pix_fmt", "rgb24")
+                        .addOption("-acodec", "pcm_s32be")
+                )
+                .execute();
+
+        try (FileInputStream input = new FileInputStream(rawNut.toFile())) {
+            NutReader reader = new NutReader(new NutInputStream(input));
+            reader.readFrame();
+
+            System.out.println("-------");
+            System.out.println(reader.getMainHeader());
+
+            System.out.println("-------");
+            for (Info info : reader.getInfos()) {
+                System.out.println(info);
+            }
+
+            System.out.println("-------");
+            for (StreamHeader streamHeader : reader.getStreamHeaders()) {
+                System.out.println(streamHeader);
+            }
+
+            System.out.println("-------");
+            for (FrameCode fCode : reader.getMainHeader().frameCodes) {
+                System.out.println(fCode);
+            }
+        }
     }
 
     private static void assertNutStructure(Path nut) throws Exception {

@@ -17,6 +17,8 @@
 
 package com.github.kokorin.jaffree.nut;
 
+import java.util.Arrays;
+
 public class Info {
     /**
      * Id of stream to which this info should be applied.
@@ -36,5 +38,17 @@ public class Info {
         this.chapterLengthPts = chapterLength;
         this.timebaseId = timebaseId;
         this.metaData = metaData;
+    }
+
+    @Override
+    public String toString() {
+        return "Info{" +
+                "streamId=" + streamId +
+                ", chapterId=" + chapterId +
+                ", chapterStartPts=" + chapterStartPts +
+                ", chapterLengthPts=" + chapterLengthPts +
+                ", timebaseId=" + timebaseId +
+                ", metaData=" + Arrays.toString(metaData) +
+                '}';
     }
 }

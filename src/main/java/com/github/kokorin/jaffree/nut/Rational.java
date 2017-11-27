@@ -25,4 +25,13 @@ public class Rational {
         this.numerator = numerator;
         this.denominator = denominator;
     }
+
+    @Override
+    public String toString() {
+        return "Rational{" +
+                numerator +
+                "/" +
+                denominator +
+                '}';
+    }
 }

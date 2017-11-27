@@ -17,6 +17,7 @@
 
 package com.github.kokorin.jaffree.nut;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 
@@ -50,6 +51,23 @@ public class StreamHeader {
         this.audio = audio;
     }
 
+    @Override
+    public String toString() {
+        return "StreamHeader{" +
+                "streamId=" + streamId +
+                ", streamType=" + streamType +
+                ", fourcc=" + Arrays.toString(fourcc) +
+                ", timeBaseId=" + timeBaseId +
+                ", msbPtsShift=" + msbPtsShift +
+                ", maxPtsDistance=" + maxPtsDistance +
+                ", decodeDelay=" + decodeDelay +
+                ", flags=" + flags +
+                ", codecSpecificData=" + Arrays.toString(codecSpecificData) +
+                ", video=" + video +
+                ", audio=" + audio +
+                '}';
+    }
+
     public static class Video {
         public final int width;
         public final int height;
@@ -64,6 +82,17 @@ public class StreamHeader {
             this.sampleHeight = sampleHeight;
             this.type = type;
         }
+
+        @Override
+        public String toString() {
+            return "Video{" +
+                    "width=" + width +
+                    ", height=" + height +
+                    ", sampleWidth=" + sampleWidth +
+                    ", sampleHeight=" + sampleHeight +
+                    ", type=" + type +
+                    '}';
+        }
     }
 
     public static class Audio {
@@ -73,6 +102,14 @@ public class StreamHeader {
         public Audio(Rational samplerate, int channelCount) {
             this.samplerate = samplerate;
             this.channelCount = channelCount;
+        }
+
+        @Override
+        public String toString() {
+            return "Audio{" +
+                    "samplerate=" + samplerate +
+                    ", channelCount=" + channelCount +
+                    '}';
         }
     }
 

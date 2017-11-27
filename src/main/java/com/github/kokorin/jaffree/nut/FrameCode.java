@@ -94,6 +94,20 @@ public class FrameCode {
         this.headerIdx = headerIdx;
     }
 
+    @Override
+    public String toString() {
+        return "FrameCode{" +
+                "flags=" + flags +
+                ", streamId=" + streamId +
+                ", dataSizeMul=" + dataSizeMul +
+                ", dataSizeLsb=" + dataSizeLsb +
+                ", ptsDelta=" + ptsDelta +
+                ", reservedCount=" + reservedCount +
+                ", matchTimeDelta=" + matchTimeDelta +
+                ", headerIdx=" + headerIdx +
+                '}';
+    }
+
     public enum Flag {
         KEYFRAME(1),
 

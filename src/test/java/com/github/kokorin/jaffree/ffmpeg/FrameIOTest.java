@@ -337,7 +337,7 @@ public class FrameIOTest {
     }
 
     @Test
-    public void testWriteUncompressedMkvToDiskAndCompareColorSpace() throws Exception {
+    public void testWriteUncompressedVideoToDiskAndCompareColorSpace() throws Exception {
         final Path tempDir = Files.createTempDirectory("jaffree");
         Path expected = tempDir.resolve("expected.mkv");
         Path actual = tempDir.resolve("actual.mkv");
@@ -427,7 +427,7 @@ public class FrameIOTest {
     }
 
     @Test
-    public void testWriteUncompressedMkvToStdInAndSaveGif() throws Exception {
+    public void testWriteUncompressedVideoToStdInAndSaveGif() throws Exception {
         final Path tempDir = Files.createTempDirectory("jaffree");
         Path output = tempDir.resolve("test.gif");
         System.out.println("Will write to " + tempDir);
@@ -439,6 +439,7 @@ public class FrameIOTest {
             @Override
             public List<Track> produceTracks() {
                 return Collections.singletonList(new Track()
+                        .setId(0)
                         .setType(Track.Type.VIDEO)
                         .setWidth(320)
                         .setHeight(240)
@@ -459,6 +460,7 @@ public class FrameIOTest {
                 graphics.setPaint(new Color(frameCounter * 1.0f / frameCount, 0, 0));
                 graphics.fillRect(0, 0, 320, 240);
 
+                frame.setTrack(0);
                 frame.setImage(image);
                 frame.setTimecode(frameCounter * 1000 / 10);
                 frameCounter++;
