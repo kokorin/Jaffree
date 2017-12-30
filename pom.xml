@@ -50,12 +50,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.github.kokorin</groupId>
-            <artifactId>jebml</artifactId>
-            <version>2.3.1</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>${sl4j.version}</version>

@@ -101,6 +101,7 @@ public class FrameIOTest {
                 return Collections.singletonList(new Track()
                         .setId(0)
                         .setType(Track.Type.VIDEO)
+                        .setTimebase(1_000L)
                         .setWidth(320)
                         .setHeight(240)
                 );
@@ -224,6 +225,7 @@ public class FrameIOTest {
             public List<Track> produceTracks() {
                 return Collections.singletonList(new Track()
                         .setType(Track.Type.AUDIO)
+                        .setTimebase(44100L)
                         .setSampleRate(44100)
                         .setChannels(1)
                 );
@@ -237,11 +239,11 @@ public class FrameIOTest {
 
                 AudioFrame frame = new AudioFrame();
 
-                long timecode = frameCounter * 1000 / 10;
+                long timestamp = frameCounter * 1000 / 10;
                 frame.setTimecode(frameCounter * 4410);
                 int[] samples = new int[4410];
                 for (int i = 0; i < samples.length; i++) {
-                    samples[i] = (int)(Integer.MAX_VALUE * Math.sin(300. * (timecode + i * 100 / samples.length)));
+                    samples[i] = (int)(Integer.MAX_VALUE * Math.sin(300. * (timestamp + i * 100 / samples.length)));
                 }
                 frame.setSamples(samples);
                 frame.setDuration(100);
