@@ -1,6 +1,5 @@
 import com.github.kokorin.jaffree.ffmpeg.*;
 import com.github.kokorin.jaffree.ffmpeg.Frame;
-import com.github.kokorin.jaffree.ffmpeg.Track.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,14 +46,19 @@ public class BouncingBall {
             private Color ballColor = new Color(255, 0, 0);
 
             @Override
-            public List<Track> produceTracks() {
+            public List<Stream> produceStreams() {
                 return Arrays.asList(
-                        new Track().setType(Type.VIDEO)
-                                .setId(1)
+                        new Stream().setType(Stream.Type.VIDEO)
+                                .setId(0)
+                                .setTimebase(1000L)
                                 .setWidth(width)
                                 .setHeight(height),
-                        new Track().setType(Type.AUDIO)
-                                .setId(2)
+                        new Stream().setType(Stream.Type.AUDIO)
+                                .setId(1)
+                                // Better to use the same value as sampleRate,
+                                // but this was written before NUT replaced MKV
+                                // and now I'm lazy to fix it
+                                .setTimebase(1000L)
                                 .setSampleRate(sampleRate)
                                 .setChannels(1)
                 );
@@ -115,10 +119,10 @@ public class BouncingBall {
                     graphics.setPaint(ballColor);
                     graphics.fillOval(ballCenterX - ballRadius, ballCenterY - ballRadius, ballRadius * 2, ballRadius * 2);
 
-                    VideoFrame videoFrame = new VideoFrame();
-                    videoFrame.setTimecode(nextVideoTimecode);
-                    videoFrame.setTrack(1);
-                    videoFrame.setImage(image);
+                    Frame videoFrame = new Frame()
+                            .setStreamId(0)
+                            .setPts(nextVideoTimecode)
+                            .setImage(image);
 
                     if (collisionVideoTimecode <= nextVideoTimecode) {
                         Random random = new Random();
@@ -145,10 +149,10 @@ public class BouncingBall {
                     }
 
 
-                    AudioFrame audioFrame = new AudioFrame();
-                    audioFrame.setTimecode(nextAudioTimecode);
-                    audioFrame.setTrack(2);
-                    audioFrame.setSamples(samples);
+                    Frame audioFrame = new Frame()
+                            .setStreamId(1)
+                            .setPts(nextAudioTimecode)
+                            .setSamples(samples);
 
                     nextAudioTimecode += 1000 / fps;
                     return audioFrame;
