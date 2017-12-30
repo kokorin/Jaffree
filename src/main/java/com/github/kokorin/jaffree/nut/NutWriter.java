@@ -441,10 +441,6 @@ public class NutWriter {
 
         lastPts[frame.streamId] = frame.pts;
         eor[frame.streamId] = codedFlags.contains(Flag.EOR);
-
-        if (eor[frame.streamId]) {
-            System.out.printf("EOR!");
-        }
     }
 
     public void writeFooter() throws Exception {

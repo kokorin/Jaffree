@@ -85,6 +85,10 @@ public class NutFrameReader<T> implements StdReader<T> {
                         .setHeight(streamHeader.video.height);
             } else if (streamHeader.streamType == StreamHeader.Type.AUDIO) {
                 Rational samplerate = streamHeader.audio.samplerate;
+                if (samplerate.denominator != 1) {
+                    LOGGER.warn("Samplerate denominator is'n equal to 1 (?). This may lead to incorrect audio decoding", samplerate);
+                }
+
                 track = new Track()
                         .setType(Track.Type.AUDIO)
                         .setSampleRate(samplerate.numerator / samplerate.denominator)

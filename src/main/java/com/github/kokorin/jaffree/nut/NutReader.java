@@ -44,7 +44,7 @@ public class NutReader {
 
     public Info[] getInfos() throws IOException {
         readToFrame();
-        return infos;
+        return Arrays.copyOf(infos, infos.length);
     }
 
     // package-private for tests

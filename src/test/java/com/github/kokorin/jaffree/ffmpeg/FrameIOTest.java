@@ -1,20 +1,5 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
-import com.github.kokorin.jaffree.Option;
-import com.github.kokorin.jaffree.StreamType;
-import com.github.kokorin.jaffree.ffprobe.FFprobe;
-import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
-import com.github.kokorin.jaffree.ffprobe.Stream;
-import com.github.kokorin.jaffree.matroska.ExtraDocTypes;
-import com.github.kokorin.jaffree.matroska.InputStreamSource;
-import com.github.kokorin.jaffree.matroska.OutputStreamWriter;
-import com.github.kokorin.jaffree.process.StdReader;
-import org.apache.commons.io.IOUtils;
-import org.ebml.io.FileDataSource;
-import org.ebml.matroska.MatroskaFile;
-import org.ebml.matroska.MatroskaFileFrame;
-import org.ebml.matroska.MatroskaFileTrack;
-import org.ebml.matroska.MatroskaFileWriter;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -24,13 +9,16 @@ import javax.imageio.ImageIO;
 import javax.sound.sampled.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -38,7 +26,6 @@ public class FrameIOTest {
     public static Path BIN;
     public static Path SAMPLES = Paths.get("target/samples");
     public static Path VIDEO_MP4 = SAMPLES.resolve("MPEG-4/video.mp4");
-    public static Path VIDEO_MKV = SAMPLES.resolve("Matroska/atlantis405-test.mkv");
 
     @BeforeClass
     public static void setUp() throws Exception {
@@ -53,244 +40,7 @@ public class FrameIOTest {
     }
 
     @Test
-    public void testReadCompressed() throws Exception {
-        MatroskaFile mkvFile = new MatroskaFile(new FileDataSource(VIDEO_MKV.toString()));
-        mkvFile.readFile();
-
-        MatroskaFileTrack[] fileTracks = mkvFile.getTrackList();
-        Assert.assertNotNull(fileTracks);
-        Assert.assertEquals(2, fileTracks.length);
-    }
-
-
-    @Test
-    public void testJebml() throws Exception {
-        try (FileInputStream inputStream = new FileInputStream(VIDEO_MKV.toFile())) {
-            MatroskaFile mkvStream = new MatroskaFile(new InputStreamSource(inputStream));
-            mkvStream.readFile();
-
-            MatroskaFileTrack[] streamTracks = mkvStream.getTrackList();
-            Assert.assertNotNull(streamTracks);
-            Assert.assertEquals(2, streamTracks.length);
-        }
-    }
-
-    @Test
-    public void testJebmlDemuxAndMux() throws Exception {
-        Path tempDir = Files.createTempDirectory("jaffree");
-        final Path output = tempDir.resolve("test.mkv");
-        System.out.println(output);
-
-        try (OutputStream out = new FileOutputStream(output.toFile())) {
-            MatroskaFile mkvReader = new MatroskaFile(new FileDataSource(VIDEO_MKV.toString()));
-            mkvReader.readFile();
-
-            MatroskaFileWriter mkvWrtier = new MatroskaFileWriter(new OutputStreamWriter(out));
-
-            for (MatroskaFileTrack track : mkvReader.getTrackList()) {
-                MatroskaFileTrack write = new MatroskaFileTrack();
-                write.setName(track.getName());
-                write.setCodecID(track.getCodecID());
-                write.setTrackNo(track.getTrackNo());
-                write.setVideo(track.getVideo());
-                write.setAudio(track.getAudio());
-                write.setTrackType(track.getTrackType());
-
-                mkvWrtier.addTrack(track);
-            }
-
-            for (MatroskaFileFrame frame = mkvReader.getNextFrame(); frame != null; frame = mkvReader.getNextFrame()) {
-                MatroskaFileFrame write = new MatroskaFileFrame(frame);
-                write.setTrackNo(write.getTrackNo());
-                mkvWrtier.addFrame(write);
-            }
-
-            mkvWrtier.close();
-        }
-
-        Assert.assertTrue(Files.exists(output));
-
-        FFprobeResult probe = FFprobe.atPath(BIN)
-                .setShowStreams(true)
-                .setShowError(true)
-                .setInputPath(output)
-                .execute();
-
-        Assert.assertNotNull(probe);
-        Assert.assertEquals(2, probe.getStreams().getStream().size());
-        Stream stream1 = probe.getStreams().getStream().get(0);
-        Stream stream2 = probe.getStreams().getStream().get(1);
-
-        Assert.assertEquals("audio", stream1.getCodecType());
-        Assert.assertEquals("video", stream2.getCodecType());
-    }
-
-    @Test
-    @Ignore("It seems that std output differs from file output")
-    public void testStdOutTheSameAsFileOut() throws Exception {
-        Path tempDir = Files.createTempDirectory("jaffree");
-        final Path output = tempDir.resolve("test.mkv");
-
-        FFmpegResult resultFile = FFmpeg.atPath(BIN)
-                .addInput(
-                        UrlInput.fromPath(VIDEO_MP4)
-                                .setDuration(5, TimeUnit.SECONDS)
-                )
-                .addOutput(
-                        UrlOutput.toPath(output)
-                                .setCodec(StreamType.VIDEO, "rawvideo")
-                                .addOption("-pix_fmt", "yuv420p")
-                                .disableStream(StreamType.AUDIO)
-                )
-                .execute();
-
-        Assert.assertNotNull(resultFile);
-
-        final StdReader<FFmpegResult> stdReader = new StdReader<FFmpegResult>() {
-            @Override
-            public FFmpegResult read(InputStream stdOut) {
-                try (InputStream fileStream = new FileInputStream(output.toFile());) {
-                    boolean equals = IOUtils.contentEquals(fileStream, stdOut);
-                    if (!equals) {
-                        throw new RuntimeException("File output isn't the same as std");
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-                return null;
-            }
-        };
-
-        Output compareOutput = new Output() {
-            @Override
-            public void beforeExecute(FFmpeg ffmpeg) {
-                ffmpeg.setStdOutReader(stdReader);
-            }
-
-            @Override
-            public List<Option> buildOptions() {
-                return Arrays.asList(
-                        new Option("-f", "matroska"),
-                        new Option("-vcodec", "rawvideo"),
-                        new Option("-pix_fmt", "yuv420p"),
-                        new Option("-an"),
-                        new Option("-")
-                );
-            }
-        };
-
-        FFmpegResult resultStdOut = FFmpeg.atPath(BIN)
-                .addInput(
-                        UrlInput.fromPath(VIDEO_MP4)
-                                .setDuration(5, TimeUnit.SECONDS)
-                )
-                .addOutput(compareOutput)
-                .execute();
-    }
-
-    @Test
-    public void testReadUncompressedStreamDumpedToDisk() throws Exception {
-        ExtraDocTypes.init();
-        Path tempDir = Files.createTempDirectory("jaffree");
-        final Path output = tempDir.resolve("test.mkv");
-        System.out.println("Will write to " + output);
-
-        final StdReader<FFmpegResult> stdToDiskReader = new StdReader<FFmpegResult>() {
-            @Override
-            public FFmpegResult read(InputStream stdOut) {
-                try (OutputStream fileStream = new FileOutputStream(output.toFile())) {
-                    IOUtils.copy(stdOut, fileStream);
-                } catch (IOException e) {
-                    throw new RuntimeException("Failed to write output to disk", e);
-                }
-                return null;
-            }
-        };
-
-        Output compareOutput = new Output() {
-            @Override
-            public void beforeExecute(FFmpeg ffmpeg) {
-                ffmpeg.setStdOutReader(stdToDiskReader);
-            }
-
-            @Override
-            public List<Option> buildOptions() {
-                return Arrays.asList(
-                        new Option("-f", "matroska"),
-                        new Option("-vcodec", "rawvideo"),
-                        new Option("-pix_fmt", "yuv420p"),
-                        new Option("-acodec", "pcm_s32be"),
-                        new Option("-")
-                );
-            }
-        };
-
-        FFmpegResult resultStdOut = FFmpeg.atPath(BIN)
-                .addInput(
-                        UrlInput.fromPath(VIDEO_MP4)
-                                .setDuration(5, TimeUnit.SECONDS)
-                )
-                .addOutput(compareOutput)
-                .execute();
-
-        Assert.assertNotNull(resultStdOut);
-        Assert.assertTrue(Files.exists(output));
-
-        //Use JEBML with FileDataSource
-        MatroskaFile mkvFile = new MatroskaFile(new FileDataSource(output.toString()));
-        mkvFile.readFile();
-
-        MatroskaFileTrack[] tracks = mkvFile.getTrackList();
-        Assert.assertNotNull(tracks);
-        Assert.assertEquals(2, tracks.length);
-
-        //Use JEBML with InputStreamSource
-        try (FileInputStream inputStream = new FileInputStream(output.toFile())) {
-            MatroskaFile mkvStream = new MatroskaFile(new InputStreamSource(inputStream));
-            mkvStream.readFile();
-
-            MatroskaFileTrack[] streamTracks = mkvStream.getTrackList();
-            Assert.assertNotNull(streamTracks);
-            Assert.assertEquals(2, streamTracks.length);
-        }
-    }
-
-    @Test
-    public void testReadUncompressedMkvFromStdOut() throws Exception {
-        final AtomicLong trackCounter = new AtomicLong();
-        final AtomicLong frameCounter = new AtomicLong();
-        FrameConsumer consumer = new FrameConsumer() {
-            @Override
-            public void consumeTracks(List<Track> tracks) {
-                trackCounter.set(tracks.size());
-            }
-
-            @Override
-            public void consume(Frame frame) {
-                frameCounter.incrementAndGet();
-            }
-        };
-
-        FFmpegResult result = FFmpeg.atPath(BIN)
-                .addInput(
-                        UrlInput.fromPath(VIDEO_MP4)
-                                .setDuration(5, TimeUnit.SECONDS)
-                )
-                .addOutput(
-                        FrameOutput.withConsumer(consumer)
-                                .extractVideo(true)
-                                .extractAudio(false)
-                )
-                .execute();
-
-        Assert.assertNotNull(result);
-        Assert.assertEquals(1, trackCounter.get());
-        Assert.assertTrue(frameCounter.get() > 10);
-    }
-
-    @Test
-    public void testReadUncompressedMkvFromStdOutAndSaveFrames() throws Exception {
+    public void dumpFrames() throws Exception {
         final Path tempDir = Files.createTempDirectory("jaffree");
         System.out.println("Will write to " + tempDir);
 
@@ -337,97 +87,7 @@ public class FrameIOTest {
     }
 
     @Test
-    public void testWriteUncompressedVideoToDiskAndCompareColorSpace() throws Exception {
-        final Path tempDir = Files.createTempDirectory("jaffree");
-        Path expected = tempDir.resolve("expected.mkv");
-        Path actual = tempDir.resolve("actual.mkv");
-
-        System.out.println("Will write to " + tempDir);
-
-        FrameProducer producer = new FrameProducer() {
-            private long frameCounter = 0;
-
-            @Override
-            public List<Track> produceTracks() {
-                return Collections.singletonList(new Track()
-                        .setType(Track.Type.VIDEO)
-                        .setWidth(320)
-                        .setHeight(240)
-                );
-            }
-
-            @Override
-            public Frame produce() {
-                if (frameCounter > 30) {
-                    return null;
-                }
-                System.out.println("Creating frame " + frameCounter);
-
-                VideoFrame frame = new VideoFrame();
-
-                BufferedImage image = new BufferedImage(320, 240, BufferedImage.TYPE_INT_RGB);
-                Graphics2D graphics = image.createGraphics();
-                graphics.setPaint(new Color(frameCounter * 1.0f / 30, 0, 0));
-                graphics.fillRect(0, 0, 320, 240);
-
-                frame.setImage(image);
-                frame.setTimecode(frameCounter * 1000 / 10);
-                frameCounter++;
-
-                return frame;
-            }
-        };
-
-        try (FileOutputStream outputStream = new FileOutputStream(actual.toFile())) {
-            new MatroskaFrameWriter(producer).write(outputStream);
-        }
-
-        Assert.assertTrue(Files.exists(actual));
-
-
-        FFmpegResult result = FFmpeg.atPath(BIN)
-                .addInput(
-                        UrlInput.fromPath(VIDEO_MP4)
-                                .setDuration(5, TimeUnit.SECONDS)
-                )
-                .addOutput(
-                        UrlOutput.toPath(expected)
-                                .setCodec(StreamType.VIDEO, "rawvideo")
-                                .addOption("-pix_fmt", "yuv420p")
-                                .disableStream(StreamType.AUDIO)
-                )
-                .execute();
-
-        Assert.assertNotNull(result);
-
-        FFprobeResult expectedProbe = FFprobe.atPath(BIN)
-                .setShowStreams(true)
-                .setShowError(true)
-                .setInputPath(expected)
-                .execute();
-
-        Assert.assertNotNull(expectedProbe);
-        Stream expectedStream = expectedProbe.getStreams().getStream().get(0);
-
-        //Use JEBML with FileDataSource
-        MatroskaFile mkvFile = new MatroskaFile(new FileDataSource(expected.toString()));
-        mkvFile.readFile();
-
-        FFprobeResult actualProbe = FFprobe.atPath(BIN)
-                .setShowStreams(true)
-                .setShowError(true)
-                .setInputPath(actual)
-                .execute();
-
-        Assert.assertNotNull(actualProbe);
-        Stream actualStream = actualProbe.getStreams().getStream().get(0);
-
-        Assert.assertEquals(expectedStream.getColorSpace(), actualStream.getColorSpace());
-
-    }
-
-    @Test
-    public void testWriteUncompressedVideoToStdInAndSaveGif() throws Exception {
+    public void createGif() throws Exception {
         final Path tempDir = Files.createTempDirectory("jaffree");
         Path output = tempDir.resolve("test.gif");
         System.out.println("Will write to " + tempDir);
@@ -483,7 +143,7 @@ public class FrameIOTest {
 
     @Test
     @Ignore("This test plays sound via javax.sound")
-    public void testReadAudioSamples() throws Exception {
+    public void readAndPlayAudio() throws Exception {
         final AtomicLong trackCounter = new AtomicLong();
         final AtomicLong frameCounter = new AtomicLong();
 
@@ -541,7 +201,7 @@ public class FrameIOTest {
                 )
                 .addOutput(
                         FrameOutput.withConsumer(consumer)
-                                .extractVideo(true)
+                                .extractVideo(false)
                                 .extractAudio(true)
                 )
                 .execute();
@@ -552,7 +212,7 @@ public class FrameIOTest {
     }
 
     @Test
-    public void testWriteAudioSamples() throws Exception {
+    public void createMp3() throws Exception {
         final Path tempDir = Files.createTempDirectory("jaffree");
         Path output = tempDir.resolve("test.mp3");
         System.out.println("Will write to " + tempDir);
@@ -574,18 +234,18 @@ public class FrameIOTest {
                 if (frameCounter > 30) {
                     return null;
                 }
-                System.out.println("Creating frame " + frameCounter);
 
                 AudioFrame frame = new AudioFrame();
 
                 long timecode = frameCounter * 1000 / 10;
-                frame.setTimecode(timecode);
+                frame.setTimecode(frameCounter * 4410);
                 int[] samples = new int[4410];
                 for (int i = 0; i < samples.length; i++) {
                     samples[i] = (int)(Integer.MAX_VALUE * Math.sin(300. * (timecode + i * 100 / samples.length)));
                 }
                 frame.setSamples(samples);
                 frame.setDuration(100);
+                frame.setTrack(0);
                 frameCounter++;
 
                 return frame;
@@ -602,5 +262,83 @@ public class FrameIOTest {
                 .execute();
 
         Assert.assertNotNull(result);
+    }
+
+    @Test
+    public void writeAndRead() {
+        int sampleRate = 44100;
+        int samplesPerFrame = 4410;
+        final Track track = new Track()
+                .setId(0)
+                .setType(Track.Type.AUDIO)
+                .setSampleRate(sampleRate)
+                .setChannels(1);
+        final List<AudioFrame> frames = new CopyOnWriteArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            AudioFrame frame = new AudioFrame();
+            frame.setTrack(track.getId());
+            frame.setTimecode(i * samplesPerFrame);
+            frame.setSamples(new int[samplesPerFrame]);
+            frames.add(frame);
+        }
+
+        FrameProducer producer = new FrameProducer() {
+            Iterator<AudioFrame> frameIterator = frames.iterator();
+
+            @Override
+            public List<Track> produceTracks() {
+                return Collections.singletonList(track);
+            }
+
+            @Override
+            public Frame produce() {
+                if (frameIterator.hasNext()) {
+                    return frameIterator.next();
+                }
+                return null;
+            }
+        };
+
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+        NutFrameWriter writer = new NutFrameWriter(producer);
+        writer.write(buffer);
+
+        final List<Track> actualTracks = new CopyOnWriteArrayList<>();
+        final List<Frame> actualFrames = new CopyOnWriteArrayList<>();
+        FrameConsumer consumer = new FrameConsumer() {
+            @Override
+            public void consumeTracks(List<Track> tracks) {
+                actualTracks.addAll(tracks);
+            }
+
+            @Override
+            public void consume(Frame frame) {
+                if (frame != null) {
+                    actualFrames.add(frame);
+                }
+            }
+        };
+
+        ByteArrayInputStream input = new ByteArrayInputStream(buffer.toByteArray());
+        NutFrameReader<?> reader = new NutFrameReader<>(consumer);
+        reader.read(input);
+
+        Assert.assertEquals(1, actualTracks.size());
+        Assert.assertEquals(track.getId(), actualTracks.get(0).getId());
+        Assert.assertEquals(track.getType(), actualTracks.get(0).getType());
+        Assert.assertEquals(track.getSampleRate(), actualTracks.get(0).getSampleRate());
+        Assert.assertEquals(track.getChannels(), actualTracks.get(0).getChannels());
+
+        Assert.assertEquals(frames.size(), actualFrames.size());
+        for (int i = 0; i < frames.size(); i++) {
+            AudioFrame frame = frames.get(i);
+            Frame actualFrame = actualFrames.get(i);
+            Assert.assertTrue(actualFrame instanceof AudioFrame);
+
+            AudioFrame actualAudioFrame = (AudioFrame) actualFrame;
+            Assert.assertEquals(frame.getTrack(), actualAudioFrame.getTrack());
+            Assert.assertArrayEquals(frame.getSamples(), actualAudioFrame.getSamples());
+        }
     }
 }

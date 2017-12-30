@@ -67,6 +67,7 @@ public class NutFrameWriter implements StdWriter {
                 throw new RuntimeException("Track ids must start with 0 and increase by 1 subsequently!");
             }
             final StreamHeader streamHeader;
+            final Rational timebase;
 
             switch (track.getType()) {
                 case VIDEO:
@@ -89,6 +90,7 @@ public class NutFrameWriter implements StdWriter {
                             ),
                             null
                     );
+                    timebase = new Rational(1, 1000);
                     break;
                 case AUDIO:
                     streamHeader = new StreamHeader(
@@ -103,17 +105,18 @@ public class NutFrameWriter implements StdWriter {
                             new byte[0],
                             null,
                             new StreamHeader.Audio(
-                                    new Rational(1, track.getSampleRate()),
+                                    new Rational(track.getSampleRate(), 1),
                                     track.getChannels()
                             )
                     );
+                    timebase = new Rational(1, track.getSampleRate());
                     break;
                 default:
                     throw new RuntimeException("Unknown Track Type: " + track.getType());
             }
 
             streamHeaders[i] = streamHeader;
-            timebases[i] = new Rational(1, 1000);
+            timebases[i] = timebase;
         }
 
         int framecodesLength = 256;
