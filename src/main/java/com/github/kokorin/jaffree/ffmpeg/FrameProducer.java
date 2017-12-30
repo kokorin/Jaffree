@@ -20,7 +20,7 @@ package com.github.kokorin.jaffree.ffmpeg;
 import java.util.List;
 
 public interface FrameProducer {
-    List<Track> produceTracks();
+    List<Stream> produceStreams();
 
     /**
      * Called repeatedly to get frames. When there is no more frame, method should return {@code}null{@code} value

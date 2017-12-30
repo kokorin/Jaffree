@@ -17,36 +17,53 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-public abstract class Frame {
-    private int track;
-    private long timecode;
-    private long duration;
+import java.awt.image.BufferedImage;
 
-    public int getTrack() {
-        return track;
+public class Frame {
+    private int streamId;
+    private long pts;
+    private BufferedImage image;
+    private int[] samples;
+
+    public int getStreamId() {
+        return streamId;
     }
 
-    public void setTrack(int track) {
-        this.track = track;
-    }
-
-    public long getTimecode() {
-        return timecode;
-    }
-
-    public void setTimecode(long timecode) {
-        this.timecode = timecode;
+    public Frame setStreamId(int streamId) {
+        this.streamId = streamId;
+        return this;
     }
 
     /**
-     * Duration in milliseconds
-     * @return
+     * PTS in corresponding {@link Stream} timebase.
+     * E.g. Track's timebase is 44100 (audio track), timecode is 4410 - it means 0.1 second (100 milliseconds)
+     *
+     * @return timecode
      */
-    public long getDuration() {
-        return duration;
+    public long getPts() {
+        return pts;
     }
 
-    public void setDuration(long durationMillis) {
-        this.duration = durationMillis;
+    public Frame setPts(long pts) {
+        this.pts = pts;
+        return this;
+    }
+
+    public BufferedImage getImage() {
+        return image;
+    }
+
+    public Frame setImage(BufferedImage image) {
+        this.image = image;
+        return this;
+    }
+
+    public int[] getSamples() {
+        return samples;
+    }
+
+    public Frame setSamples(int[] samples) {
+        this.samples = samples;
+        return this;
     }
 }

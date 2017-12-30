@@ -47,24 +47,26 @@ public class FrameIOTest {
         final AtomicLong trackCounter = new AtomicLong();
         final AtomicLong frameCounter = new AtomicLong();
         FrameConsumer consumer = new FrameConsumer() {
+
             @Override
-            public void consumeTracks(List<Track> tracks) {
+            public void consumeStreams(List<Stream> tracks) {
                 trackCounter.set(tracks.size());
             }
 
             @Override
             public void consume(Frame frame) {
+                if (frame == null) {
+                    return;
+                }
+
                 long n = frameCounter.incrementAndGet();
-                if (frame instanceof VideoFrame) {
-                    VideoFrame videoFrame = (VideoFrame) frame;
-                    String filename = String.format("frame%05d.png", n);
-                    try {
-                        boolean written = ImageIO.write(videoFrame.getImage(), "png", tempDir.resolve(filename).toFile());
-                        Assert.assertTrue(written);
-                        System.out.println(filename);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
+                String filename = String.format("frame%05d.png", n);
+                try {
+                    boolean written = ImageIO.write(frame.getImage(), "png", tempDir.resolve(filename).toFile());
+                    Assert.assertTrue(written);
+                    System.out.println(filename);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
             }
         };
@@ -97,10 +99,10 @@ public class FrameIOTest {
             private long frameCounter = 0;
 
             @Override
-            public List<Track> produceTracks() {
-                return Collections.singletonList(new Track()
+            public List<Stream> produceStreams() {
+                return Collections.singletonList(new Stream()
                         .setId(0)
-                        .setType(Track.Type.VIDEO)
+                        .setType(Stream.Type.VIDEO)
                         .setTimebase(1_000L)
                         .setWidth(320)
                         .setHeight(240)
@@ -114,19 +116,16 @@ public class FrameIOTest {
                 }
                 System.out.println("Creating frame " + frameCounter);
 
-                VideoFrame frame = new VideoFrame();
-
                 BufferedImage image = new BufferedImage(320, 240, BufferedImage.TYPE_INT_RGB);
                 Graphics2D graphics = image.createGraphics();
                 graphics.setPaint(new Color(frameCounter * 1.0f / frameCount, 0, 0));
                 graphics.fillRect(0, 0, 320, 240);
-
-                frame.setTrack(0);
-                frame.setImage(image);
-                frame.setTimecode(frameCounter * 1000 / 10);
                 frameCounter++;
 
-                return frame;
+                return new Frame()
+                        .setStreamId(0)
+                        .setImage(image)
+                        .setPts(frameCounter * 1000 / 10);
             }
         };
 
@@ -150,12 +149,15 @@ public class FrameIOTest {
 
         FrameConsumer consumer = new FrameConsumer() {
             SourceDataLine line = null;
+            List<Stream> tracks;
 
             @Override
-            public void consumeTracks(List<Track> tracks) {
+            public void consumeStreams(List<Stream> tracks) {
                 trackCounter.set(tracks.size());
-                for (Track track : tracks) {
-                    if (line == null && track.getType() == Track.Type.AUDIO) {
+                this.tracks = tracks;
+
+                for (Stream track : tracks) {
+                    if (line == null && track.getType() == Stream.Type.AUDIO) {
                         AudioFormat audioFormat = new AudioFormat(track.getSampleRate(), 8, track.getChannels(), true, false);
                         try {
                             line = AudioSystem.getSourceDataLine(audioFormat);
@@ -177,12 +179,10 @@ public class FrameIOTest {
 
             @Override
             public void consume(Frame frame) {
-                if (frame instanceof AudioFrame) {
+                if (tracks.get(frame.getStreamId()).getType() == Stream.Type.AUDIO) {
                     frameCounter.incrementAndGet();
 
-                    AudioFrame audioFrame = (AudioFrame) frame;
-                    //audioFrame.getDuration();
-                    int[] samples = audioFrame.getSamples();
+                    int[] samples = frame.getSamples();
                     byte[] bytes = new byte[samples.length];
 
                     int coeff = Integer.MAX_VALUE / Byte.MAX_VALUE;
@@ -222,9 +222,9 @@ public class FrameIOTest {
             private long frameCounter = 0;
 
             @Override
-            public List<Track> produceTracks() {
-                return Collections.singletonList(new Track()
-                        .setType(Track.Type.AUDIO)
+            public List<Stream> produceStreams() {
+                return Collections.singletonList(new Stream()
+                        .setType(Stream.Type.AUDIO)
                         .setTimebase(44100L)
                         .setSampleRate(44100)
                         .setChannels(1)
@@ -237,20 +237,18 @@ public class FrameIOTest {
                     return null;
                 }
 
-                AudioFrame frame = new AudioFrame();
 
                 long timestamp = frameCounter * 1000 / 10;
-                frame.setTimecode(frameCounter * 4410);
                 int[] samples = new int[4410];
                 for (int i = 0; i < samples.length; i++) {
-                    samples[i] = (int)(Integer.MAX_VALUE * Math.sin(300. * (timestamp + i * 100 / samples.length)));
+                    samples[i] = (int) (Integer.MAX_VALUE * Math.sin(300. * (timestamp + i * 100 / samples.length)));
                 }
-                frame.setSamples(samples);
-                frame.setDuration(100);
-                frame.setTrack(0);
                 frameCounter++;
 
-                return frame;
+                return new Frame()
+                        .setStreamId(0)
+                        .setPts(frameCounter * 4410)
+                        .setSamples(samples);
             }
         };
 
@@ -270,26 +268,26 @@ public class FrameIOTest {
     public void writeAndRead() {
         int sampleRate = 44100;
         int samplesPerFrame = 4410;
-        final Track track = new Track()
+        final Stream track = new Stream()
                 .setId(0)
-                .setType(Track.Type.AUDIO)
+                .setType(Stream.Type.AUDIO)
                 .setSampleRate(sampleRate)
-                .setTimebase((long)sampleRate)
+                .setTimebase((long) sampleRate)
                 .setChannels(1);
-        final List<AudioFrame> frames = new CopyOnWriteArrayList<>();
+        final List<Frame> frames = new CopyOnWriteArrayList<>();
         for (int i = 0; i < 10; i++) {
-            AudioFrame frame = new AudioFrame();
-            frame.setTrack(track.getId());
-            frame.setTimecode(i * samplesPerFrame);
-            frame.setSamples(new int[samplesPerFrame]);
+            Frame frame = new Frame()
+                    .setStreamId(track.getId())
+                    .setPts(i * samplesPerFrame)
+                    .setSamples(new int[samplesPerFrame]);
             frames.add(frame);
         }
 
         FrameProducer producer = new FrameProducer() {
-            Iterator<AudioFrame> frameIterator = frames.iterator();
+            Iterator<Frame> frameIterator = frames.iterator();
 
             @Override
-            public List<Track> produceTracks() {
+            public List<Stream> produceStreams() {
                 return Collections.singletonList(track);
             }
 
@@ -307,11 +305,11 @@ public class FrameIOTest {
         NutFrameWriter writer = new NutFrameWriter(producer);
         writer.write(buffer);
 
-        final List<Track> actualTracks = new CopyOnWriteArrayList<>();
+        final List<Stream> actualTracks = new CopyOnWriteArrayList<>();
         final List<Frame> actualFrames = new CopyOnWriteArrayList<>();
         FrameConsumer consumer = new FrameConsumer() {
             @Override
-            public void consumeTracks(List<Track> tracks) {
+            public void consumeStreams(List<Stream> tracks) {
                 actualTracks.addAll(tracks);
             }
 
@@ -336,13 +334,12 @@ public class FrameIOTest {
 
         Assert.assertEquals(frames.size(), actualFrames.size());
         for (int i = 0; i < frames.size(); i++) {
-            AudioFrame frame = frames.get(i);
+            Frame frame = frames.get(i);
             Frame actualFrame = actualFrames.get(i);
-            Assert.assertTrue(actualFrame instanceof AudioFrame);
 
-            AudioFrame actualAudioFrame = (AudioFrame) actualFrame;
-            Assert.assertEquals(frame.getTrack(), actualAudioFrame.getTrack());
-            Assert.assertArrayEquals(frame.getSamples(), actualAudioFrame.getSamples());
+            Assert.assertEquals(frame.getStreamId(), actualFrame.getStreamId());
+            Assert.assertArrayEquals(frame.getSamples(), actualFrame.getSamples());
+            // TODO compare images
         }
     }
 }

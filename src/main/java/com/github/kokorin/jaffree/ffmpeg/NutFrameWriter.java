@@ -57,12 +57,12 @@ public class NutFrameWriter implements StdWriter {
     // package private for test
     void write(NutWriter writer) throws IOException {
 
-        List<Track> tracks = producer.produceTracks();
+        List<Stream> tracks = producer.produceStreams();
         StreamHeader[] streamHeaders = new StreamHeader[tracks.size()];
         Rational[] timebases = new Rational[tracks.size()];
 
         for (int i = 0; i < streamHeaders.length; i++) {
-            Track track = tracks.get(i);
+            Stream track = tracks.get(i);
             if (track.getId() != i) {
                 throw new RuntimeException("Track ids must start with 0 and increase by 1 subsequently!");
             }
@@ -140,15 +140,14 @@ public class NutFrameWriter implements StdWriter {
         Frame frame;
         while ((frame = producer.produce()) != null) {
             final byte[] data;
-            StreamHeader streamHeader = streamHeaders[frame.getTrack()];
+            StreamHeader streamHeader = streamHeaders[frame.getStreamId()];
             switch (streamHeader.streamType) {
                 case VIDEO:
-                    VideoFrame videoFrame = (VideoFrame) frame;
                     data = new byte[streamHeader.video.width * streamHeader.video.width * 3];
                     // TODO will it work faster if we use Raster and Buffers?
                     for (int y = 0; y < streamHeader.video.height; y++) {
                         for (int x = 0; x < streamHeader.video.width; x++) {
-                            int rgb = videoFrame.getImage().getRGB(x, y);
+                            int rgb = frame.getImage().getRGB(x, y);
                             int position = 3 * (x + y * streamHeader.video.width);
                             data[position] = (byte) ((rgb >> 16) & 0xFF);
                             data[position + 1] = (byte) ((rgb >> 8) & 0xFF);
@@ -158,18 +157,17 @@ public class NutFrameWriter implements StdWriter {
                     break;
 
                 case AUDIO:
-                    AudioFrame audioFrame = (AudioFrame) frame;
-                    data = new byte[audioFrame.getSamples().length * 4];
-                    ByteBuffer.wrap(data).asIntBuffer().put(audioFrame.getSamples());
+                    data = new byte[frame.getSamples().length * 4];
+                    ByteBuffer.wrap(data).asIntBuffer().put(frame.getSamples());
                     break;
 
                 default:
-                    throw new RuntimeException("Unexpected track: " + frame.getTrack());
+                    throw new RuntimeException("Unexpected track: " + frame.getStreamId());
             }
 
             NutFrame nutFrame = new NutFrame(
-                    frame.getTrack(),
-                    frame.getTimecode(),
+                    frame.getStreamId(),
+                    frame.getPts(),
                     data,
                     new DataItem[0],
                     new DataItem[0],

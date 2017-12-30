@@ -47,8 +47,8 @@ public class NutFrameReader<T> implements StdReader<T> {
         try {
             MainHeader mainHeader = nutReader.getMainHeader();
             StreamHeader[] streamHeaders = nutReader.getStreamHeaders();
-            List<Track> tracks = parseTracks(mainHeader, streamHeaders);
-            frameConsumer.consumeTracks(tracks);
+            List<Stream> tracks = parseTracks(mainHeader, streamHeaders);
+            frameConsumer.consumeStreams(tracks);
 
             LOGGER.debug("Tracks: {}", streamHeaders);
 
@@ -57,7 +57,7 @@ public class NutFrameReader<T> implements StdReader<T> {
                 LOGGER.trace("NutFrame: {}", nutFrame);
 
                 int trackNo = nutFrame.streamId;
-                Frame frame = parseFrame(mainHeader, streamHeaders[trackNo], nutFrame);
+                Frame frame = parseFrame(streamHeaders[trackNo], nutFrame);
                 if (frame == null) {
                     continue;
                 }
@@ -73,14 +73,14 @@ public class NutFrameReader<T> implements StdReader<T> {
         return null;
     }
 
-    public static List<Track> parseTracks(MainHeader mainHeader, StreamHeader[] streamHeaders) {
-        List<Track> result = new ArrayList<>();
+    public static List<Stream> parseTracks(MainHeader mainHeader, StreamHeader[] streamHeaders) {
+        List<Stream> result = new ArrayList<>();
 
         for (StreamHeader streamHeader : streamHeaders) {
-            Track track = null;
+            Stream track = null;
             if (streamHeader.streamType == StreamHeader.Type.VIDEO) {
-                track = new Track()
-                        .setType(Track.Type.VIDEO)
+                track = new Stream()
+                        .setType(Stream.Type.VIDEO)
                         .setWidth(streamHeader.video.width)
                         .setHeight(streamHeader.video.height);
             } else if (streamHeader.streamType == StreamHeader.Type.AUDIO) {
@@ -89,8 +89,8 @@ public class NutFrameReader<T> implements StdReader<T> {
                     LOGGER.warn("Samplerate denominator is'n equal to 1 (?). This may lead to incorrect audio decoding", samplerate);
                 }
 
-                track = new Track()
-                        .setType(Track.Type.AUDIO)
+                track = new Stream()
+                        .setType(Stream.Type.AUDIO)
                         .setSampleRate(samplerate.numerator / samplerate.denominator)
                         .setChannels(streamHeader.audio.channelCount);
             }
@@ -108,7 +108,7 @@ public class NutFrameReader<T> implements StdReader<T> {
 
     private static int[] RGB24_BAND_OFFSETS = {0, 1, 2};
 
-    public static Frame parseFrame(MainHeader mainHeader, StreamHeader track, NutFrame frame) {
+    public static Frame parseFrame(StreamHeader track, NutFrame frame) {
         if (frame == null || frame.data == null || frame.data.length == 0 || frame.eor) {
             return null;
         }
@@ -130,10 +130,8 @@ public class NutFrameReader<T> implements StdReader<T> {
             BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
             image.setData(raster);
 
-            VideoFrame videoResult = new VideoFrame();
-            videoResult.setImage(image);
-
-            result = videoResult;
+            result = new Frame()
+                    .setImage(image);
         } else if (track.streamType == StreamHeader.Type.AUDIO) {
             ByteBuffer data = ByteBuffer.wrap(frame.data);
 
@@ -141,18 +139,13 @@ public class NutFrameReader<T> implements StdReader<T> {
             int[] samples = new int[intData.limit()];
             intData.get(samples);
 
-            AudioFrame audioResult = new AudioFrame();
-            audioResult.setSamples(samples);
-
-            result = audioResult;
+            result = new Frame()
+                    .setSamples(samples);
         }
 
         if (result != null) {
-            Rational timebase = mainHeader.timeBases[track.timeBaseId];
-            result.setTrack(track.streamId);
-            result.setTimecode(1000 * frame.pts * timebase.numerator / timebase.denominator);
-            //TODO check if we need track duration
-            result.setDuration(0);
+            result.setStreamId(track.streamId)
+                    .setPts(frame.pts);
         }
 
         return result;

@@ -173,9 +173,10 @@ FrameProducer producer = new FrameProducer() {
     private long frameCounter = 0;
 
     @Override
-    public List<Track> produceTracks() {
-        return Collections.singletonList(new Track()
-                .setType(Track.Type.VIDEO)
+    public List<Stream> produceStreams() {
+        return Collections.singletonList(new Stream()
+                .setType(Stream.Type.VIDEO)
+                .setTimebase(1000L)
                 .setWidth(320)
                 .setHeight(240)
         );
@@ -196,7 +197,7 @@ FrameProducer producer = new FrameProducer() {
         graphics.fillRect(0, 0, 320, 240);
 
         frame.setImage(image);
-        frame.setTimecode(frameCounter * 1000 / 10);
+        frame.setPts(frameCounter * 1000 / 10);
         frameCounter++;
 
         return frame;
@@ -233,23 +234,24 @@ final AtomicLong frameCounter = new AtomicLong();
 
 FrameConsumer consumer = new FrameConsumer() {
     @Override
-    public void consumeTracks(List<Track> tracks) {
+    public void consumeStreams(List<Stream> tracks) {
         trackCounter.set(tracks.size());
     }
 
     @Override
     public void consume(Frame frame) {
+        if (frame == null) {
+            return;
+        }
+
         long n = frameCounter.incrementAndGet();
-        if (frame instanceof VideoFrame) {
-            VideoFrame videoFrame = (VideoFrame) frame;
-            String filename = String.format("frame%05d.png", n);
-            try {
-                boolean written = ImageIO.write(videoFrame.getImage(), "png", tempDir.resolve(filename).toFile());
-                Assert.assertTrue(written);
-                System.out.println(filename);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+        String filename = String.format("frame%05d.png", n);
+        try {
+            boolean written = ImageIO.write(frame.getImage(), "png", tempDir.resolve(filename).toFile());
+            Assert.assertTrue(written);
+            System.out.println(filename);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 };
@@ -262,6 +264,7 @@ FFmpegResult result = FFmpeg.atPath(BIN)
         .addOutput(
                 FrameOutput.withConsumer(consumer)
                         .extractVideo(true)
+                        .extractAudio(false)
         )
         .execute();
 ```
