@@ -36,7 +36,7 @@ public class Mosaic {
             final FFmpeg ffmpeg = FFmpeg.atPath(ffmpegBin)
                     .addInput(UrlInput
                             .fromUrl(input)
-                            .setDuration(100_000))
+                            .setDuration(70_000))
                     .addOutput(FrameOutput
                             .withConsumer(frameIterator.getConsumer())
                             .addOption("-ac", "1")
@@ -80,8 +80,8 @@ public class Mosaic {
             private final long videoFrameDuration = 1000 / 25;
             private final long audioFrameDuration = 500;
 
-            private final List<Deque<VideoFrame>> videoQueues = new ArrayList<>(Collections.nCopies(frameIterators.size(), (Deque<VideoFrame>) null));
-            private final List<Deque<AudioFrame>> audioQueues = new ArrayList<>(Collections.nCopies(frameIterators.size(), (Deque<AudioFrame>) null));
+            private final List<Deque<Frame>> videoQueues = new ArrayList<>(Collections.nCopies(frameIterators.size(), (Deque<Frame>) null));
+            private final List<Deque<Frame>> audioQueues = new ArrayList<>(Collections.nCopies(frameIterators.size(), (Deque<Frame>) null));
             private final long[] audioSamplesRead = new long[frameIterators.size()];
             private long audioSamplesWritten = 0;
             private long timecode = 0;
@@ -89,18 +89,20 @@ public class Mosaic {
             private long nextAudioFrameTimecode = 0;
 
             @Override
-            public List<Track> produceTracks() {
+            public List<Stream> produceStreams() {
                 return Arrays.asList(
-                        new Track()
-                                .setType(Track.Type.VIDEO)
+                        new Stream()
+                                .setId(0)
+                                .setType(Stream.Type.VIDEO)
+                                .setTimebase(1000L)
                                 .setWidth(mosaicWidth)
-                                .setHeight(mosaicHeight)
-                                .setId(1),
-                        new Track()
-                                .setType(Track.Type.AUDIO)
+                                .setHeight(mosaicHeight)                        ,
+                        new Stream()
+                                .setId(1)
+                                .setType(Stream.Type.AUDIO)
+                                .setTimebase((long)sampleRate)
                                 .setChannels(1)
                                 .setSampleRate(sampleRate)
-                                .setId(2)
                 );
             }
 
@@ -120,19 +122,28 @@ public class Mosaic {
                 return result;
             }
 
-            public VideoFrame produceVideoFrame() {
-                VideoFrame[] videoFrames = new VideoFrame[frameIterators.size()];
+            public Frame produceVideoFrame() {
+                Frame[] videoFrames = new Frame[frameIterators.size()];
 
                 for (int i = 0; i < videoQueues.size(); i++) {
-                    Deque<VideoFrame> frameDeque = videoQueues.get(i);
-                    VideoFrame prevFrame = null;
+                    Deque<Frame> frameDeque = videoQueues.get(i);
+                    Frame prevFrame = null;
                     while (!frameDeque.isEmpty()) {
-                        VideoFrame frame = frameDeque.pollFirst();
+                        Frame frame = frameDeque.pollFirst();
                         if (frame == null) {
                             break;
                         }
 
-                        if (frame.getTimecode() <= nextVideoFrameTimecode) {
+                        Stream stream = null;
+                        for (Stream testStream : frameIterators.get(i).getTracks()) {
+                            if (testStream.getId() == frame.getStreamId()) {
+                                stream = testStream;
+                                break;
+                            }
+                        }
+
+                        long frameTs = 1000L * frame.getPts() / stream.getTimebase();
+                        if (frameTs <= nextVideoFrameTimecode) {
                             prevFrame = frame;
                             continue;
                         }
@@ -156,7 +167,7 @@ public class Mosaic {
                 boolean atLeastHasOneElement = false;
 
                 for (int i = 0; i < videoFrames.length; i++) {
-                    VideoFrame videoFrame = videoFrames[i];
+                    Frame videoFrame = videoFrames[i];
                     if (videoFrame == null) {
                         continue;
                     }
@@ -181,7 +192,7 @@ public class Mosaic {
 
                     mosaicGraphics.drawImage(element,
                             dx1, dy1, dx2, dy2,
-                            0, 0, elementWidth, elementHeight,
+                            0, 0, element.getWidth(), element.getHeight(),
                             observer
                     );
                 }
@@ -190,10 +201,10 @@ public class Mosaic {
                     return null;
                 }
 
-                VideoFrame result = new VideoFrame();
+                Frame result = new Frame();
                 result.setImage(mosaic);
-                result.setTimecode(nextVideoFrameTimecode);
-                result.setTrack(1);
+                result.setPts(nextVideoFrameTimecode);
+                result.setStreamId(0);
 
                 nextVideoFrameTimecode += videoFrameDuration;
 
@@ -206,28 +217,14 @@ public class Mosaic {
                 int[] samples = new int[(int) (sampleRate * audioFrameDuration / 1000)];
 
                 for (int i = 0; i < audioQueues.size(); i++) {
-                    Deque<AudioFrame> deque = audioQueues.get(i);
+                    Deque<Frame> deque = audioQueues.get(i);
                     // Video without audio
                     if (deque == null) {
                         continue;
                     }
 
                     while (!deque.isEmpty()) {
-                        AudioFrame frame = deque.pollFirst();
-
-                        List<Track> tracks = frameIterators.get(i).getTracks();
-                        Track track = null;
-                        for (Track testTrack : tracks) {
-                            if (testTrack.getId() == frame.getTrack()) {
-                                track = testTrack;
-                                break;
-                            }
-                        }
-
-                        if (track == null) {
-                            break;
-                        }
-
+                        Frame frame = deque.pollFirst();
                         // ffmpeg resamples audio track and set channels to 1
                         int[] srcSamples = frame.getSamples();
 
@@ -256,10 +253,10 @@ public class Mosaic {
                     }
                 }
 
-                AudioFrame result = new AudioFrame();
+                Frame result = new Frame();
                 result.setSamples(samples);
-                result.setTimecode(nextAudioFrameTimecode);
-                result.setTrack(2);
+                result.setPts(sampleRate * nextAudioFrameTimecode / 1000);
+                result.setStreamId(1);
 
                 audioSamplesWritten += samples.length;
                 nextAudioFrameTimecode += audioFrameDuration;
@@ -275,24 +272,32 @@ public class Mosaic {
 
                     while (frameIterator.hasNext()) {
                         Frame frame = frameIterator.next();
+                        Stream stream = null;
+                        for (Stream testStream : frameIterator.getTracks()) {
+                            if (testStream.getId() == frame.getStreamId()) {
+                                stream = testStream;
+                                break;
+                            }
+                        }
 
-                        if (frame instanceof VideoFrame) {
-                            Deque<VideoFrame> videoQueue = videoQueues.get(i);
+                        if (stream.getType() == Stream.Type.VIDEO) {
+                            Deque<Frame> videoQueue = videoQueues.get(i);
                             if (videoQueue == null) {
                                 videoQueue = new LinkedList<>();
                                 videoQueues.set(i, videoQueue);
                             }
-                            videoQueue.addLast((VideoFrame) frame);
-                        } else if (frame instanceof AudioFrame) {
-                            Deque<AudioFrame> audioQueue = audioQueues.get(i);
+                            videoQueue.addLast(frame);
+                        } else if (stream.getType() == Stream.Type.AUDIO) {
+                            Deque<Frame> audioQueue = audioQueues.get(i);
                             if (audioQueue == null) {
                                 audioQueue = new LinkedList<>();
                                 audioQueues.set(i, audioQueue);
                             }
-                            audioQueue.addLast((AudioFrame) frame);
+                            audioQueue.addLast(frame);
                         }
 
-                        if (frame.getTimecode() > readUpToTimecode) {
+                        long frameTs = 1000L * frame.getPts() / stream.getTimebase();
+                        if (frameTs > readUpToTimecode) {
                             break;
                         }
                     }
@@ -328,11 +333,11 @@ public class Mosaic {
     public static class FrameIterator implements Iterator<Frame> {
         private volatile boolean hasNext = true;
         private volatile Frame next = null;
-        private volatile List<Track> tracks;
+        private volatile List<Stream> tracks;
 
         private final FrameConsumer consumer = new FrameConsumer() {
             @Override
-            public void consumeTracks(List<Track> tracks) {
+            public void consumeStreams(List<Stream> tracks) {
                 FrameIterator.this.tracks = tracks;
             }
 
@@ -369,7 +374,7 @@ public class Mosaic {
             return consumer;
         }
 
-        public List<Track> getTracks() {
+        public List<Stream> getTracks() {
             return tracks;
         }
 

@@ -15,16 +15,25 @@
  *
  */
 
-package com.github.kokorin.jaffree.ffmpeg;
+package com.github.kokorin.jaffree.nut;
 
-public class AudioFrame extends Frame {
-    private int[] samples;
+public class DataItem {
+    public final String name;
+    public final Object value;
+    public final String type;
 
-    public int[] getSamples() {
-        return samples;
+    public DataItem(String name, Object value, String type) {
+        this.name = name;
+        this.value = value;
+        this.type = type;
     }
 
-    public void setSamples(int[] samples) {
-        this.samples = samples;
+    @Override
+    public String toString() {
+        return "DataItem{" +
+                "name='" + name + '\'' +
+                ", value=" + value +
+                ", type='" + type + '\'' +
+                '}';
     }
 }

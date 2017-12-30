@@ -20,7 +20,7 @@ package com.github.kokorin.jaffree.ffmpeg;
 import java.util.List;
 
 public interface FrameConsumer {
-    void consumeTracks(List<Track> tracks);
+    void consumeStreams(List<Stream> streams);
 
     /**
      * Called for every frame in video file. When there is no more frame this method is called one more time

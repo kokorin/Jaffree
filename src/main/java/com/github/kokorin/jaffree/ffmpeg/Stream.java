@@ -1,29 +1,25 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
-public class Track {
+public class Stream {
     private int id;
-    private String title;
     private Type type;
+    private Long timebase;
     private Integer width;
     private Integer height;
     private Long sampleRate;
     private Integer channels;
 
+    public enum Type {
+        VIDEO,
+        AUDIO
+    }
+
     public int getId() {
         return id;
     }
 
-    public Track setId(int id) {
+    public Stream setId(int id) {
         this.id = id;
-        return this;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public Track setTitle(String title) {
-        this.title = title;
         return this;
     }
 
@@ -31,8 +27,17 @@ public class Track {
         return type;
     }
 
-    public Track setType(Type type) {
+    public Stream setType(Type type) {
         this.type = type;
+        return this;
+    }
+
+    public Long getTimebase() {
+        return timebase;
+    }
+
+    public Stream setTimebase(Long timebase) {
+        this.timebase = timebase;
         return this;
     }
 
@@ -40,7 +45,7 @@ public class Track {
         return width;
     }
 
-    public Track setWidth(int width) {
+    public Stream setWidth(int width) {
         this.width = width;
         return this;
     }
@@ -49,7 +54,7 @@ public class Track {
         return height;
     }
 
-    public Track setHeight(int height) {
+    public Stream setHeight(int height) {
         this.height = height;
         return this;
     }
@@ -58,7 +63,7 @@ public class Track {
         return sampleRate;
     }
 
-    public Track setSampleRate(long sampleRate) {
+    public Stream setSampleRate(long sampleRate) {
         this.sampleRate = sampleRate;
         return this;
     }
@@ -67,13 +72,8 @@ public class Track {
         return channels;
     }
 
-    public Track setChannels(int channels) {
+    public Stream setChannels(int channels) {
         this.channels = channels;
         return this;
-    }
-
-    public enum Type {
-        VIDEO,
-        AUDIO
     }
 }

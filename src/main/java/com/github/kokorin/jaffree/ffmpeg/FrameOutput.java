@@ -18,7 +18,6 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.Option;
-import com.github.kokorin.jaffree.matroska.ExtraDocTypes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,10 +28,6 @@ public class FrameOutput implements Output {
     private final List<Option> additionalOptions = new ArrayList<>();
 
     private final FrameConsumer consumer;
-
-    static {
-        ExtraDocTypes.init();
-    }
 
     public FrameOutput(FrameConsumer consumer) {
         this.consumer = consumer;
@@ -64,18 +59,18 @@ public class FrameOutput implements Output {
 
     @Override
     public void beforeExecute(FFmpeg ffmpeg) {
-        ffmpeg.setStdOutReader(new FrameReader<FFmpegResult>(consumer));
+        ffmpeg.setStdOutReader(new NutFrameReader<FFmpegResult>(consumer));
     }
 
     @Override
     public List<Option> buildOptions() {
         List<Option> result = new ArrayList<>();
 
-        result.add(new Option("-f", "matroska"));
+        result.add(new Option("-f", "nut"));
 
         if (video) {
             result.add(new Option("-vcodec", "rawvideo"));
-            result.add(new Option("-pix_fmt", "yuv420p"));
+            result.add(new Option("-pix_fmt", "rgb24"));
         } else {
             result.add(new Option("-vn"));
         }

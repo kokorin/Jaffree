@@ -15,18 +15,23 @@
  *
  */
 
-package com.github.kokorin.jaffree.ffmpeg;
+package com.github.kokorin.jaffree.nut;
 
-import java.awt.image.BufferedImage;
+public class Rational {
+    public final long numerator;
+    public final long denominator;
 
-public class VideoFrame extends Frame {
-    private BufferedImage image;
-
-    public BufferedImage getImage() {
-        return image;
+    public Rational(long numerator, long denominator) {
+        this.numerator = numerator;
+        this.denominator = denominator;
     }
 
-    public void setImage(BufferedImage image) {
-        this.image = image;
+    @Override
+    public String toString() {
+        return "Rational{" +
+                numerator +
+                "/" +
+                denominator +
+                '}';
     }
 }

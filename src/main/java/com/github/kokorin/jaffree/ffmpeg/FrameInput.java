@@ -18,7 +18,6 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.Option;
-import com.github.kokorin.jaffree.matroska.ExtraDocTypes;
 import com.github.kokorin.jaffree.process.LoggingStdReader;
 
 import java.util.ArrayList;
@@ -30,10 +29,6 @@ public class FrameInput implements Input {
     private final List<Option> additionalOptions = new ArrayList<>();
 
     private FrameProducer producer;
-
-    static {
-        ExtraDocTypes.init();
-    }
 
     public FrameInput setProducer(FrameProducer producer) {
         this.producer = producer;
@@ -52,7 +47,7 @@ public class FrameInput implements Input {
 
     @Override
     public void beforeExecute(FFmpeg ffmpeg) {
-        ffmpeg.setStdInWriter(new FrameWriter(producer));
+        ffmpeg.setStdInWriter(new NutFrameWriter(producer));
         ffmpeg.setStdOutReader(new LoggingStdReader<FFmpegResult>());
     }
 
@@ -62,9 +57,10 @@ public class FrameInput implements Input {
 
         result.addAll(additionalOptions);
         result.addAll(Arrays.asList(
-                new Option("-f", "matroska"),
-                new Option("-vcodec", "rawvideo"),
-                new Option("-acodec", "pcm_s32be"),
+                new Option("-f", "nut"),
+                //new Option("-vcodec", "rawvideo"),
+                //new Option("-pix_fmt", "wwer"),
+                //new Option("-acodec", "pcm_s32be"),
                 new Option("-i", "-")
         ));
 
