@@ -80,11 +80,7 @@ public class MatroskaFrameWriter implements StdWriter {
 
             if (mkvTrack != null) {
                 mkvTrack.setTrackNo(track.getId());
-                String title = track.getTitle();
-                if (title == null) {
-                    title = "unnamed";
-                }
-                mkvTrack.setName(title);
+                mkvTrack.setName("unnamed");
 
                 mkv.addTrack(mkvTrack);
             }

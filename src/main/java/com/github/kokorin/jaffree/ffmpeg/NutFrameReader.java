@@ -47,7 +47,7 @@ public class NutFrameReader<T> implements StdReader<T> {
         try {
             MainHeader mainHeader = nutReader.getMainHeader();
             StreamHeader[] streamHeaders = nutReader.getStreamHeaders();
-            List<Track> tracks = parseTracks(streamHeaders);
+            List<Track> tracks = parseTracks(mainHeader, streamHeaders);
             frameConsumer.consumeTracks(tracks);
 
             LOGGER.debug("Tracks: {}", streamHeaders);
@@ -73,7 +73,7 @@ public class NutFrameReader<T> implements StdReader<T> {
         return null;
     }
 
-    public static List<Track> parseTracks(StreamHeader[] streamHeaders) {
+    public static List<Track> parseTracks(MainHeader mainHeader, StreamHeader[] streamHeaders) {
         List<Track> result = new ArrayList<>();
 
         for (StreamHeader streamHeader : streamHeaders) {
@@ -96,8 +96,9 @@ public class NutFrameReader<T> implements StdReader<T> {
             }
 
             if (track != null) {
+                Rational timebase = mainHeader.timeBases[streamHeader.timeBaseId];
                 track.setId(streamHeader.streamId)
-                        .setTitle("stream_" + streamHeader.streamId);
+                        .setTimebase(timebase.denominator / timebase.numerator);
                 result.add(track);
             }
         }
@@ -106,6 +107,7 @@ public class NutFrameReader<T> implements StdReader<T> {
     }
 
     private static int[] RGB24_BAND_OFFSETS = {0, 1, 2};
+
     public static Frame parseFrame(MainHeader mainHeader, StreamHeader track, NutFrame frame) {
         if (frame == null || frame.data == null || frame.data.length == 0 || frame.eor) {
             return null;
@@ -123,7 +125,7 @@ public class NutFrameReader<T> implements StdReader<T> {
             }
 
             DataBuffer buffer = new DataBufferByte(frame.data, frame.data.length);
-            SampleModel sampleModel = new ComponentSampleModel(DataBuffer.TYPE_BYTE, width, height, 3, width*3, RGB24_BAND_OFFSETS);
+            SampleModel sampleModel = new ComponentSampleModel(DataBuffer.TYPE_BYTE, width, height, 3, width * 3, RGB24_BAND_OFFSETS);
             Raster raster = Raster.createRaster(sampleModel, buffer, null);
             BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
             image.setData(raster);

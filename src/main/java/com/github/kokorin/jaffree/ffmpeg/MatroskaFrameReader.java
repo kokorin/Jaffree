@@ -92,8 +92,7 @@ public class MatroskaFrameReader<T> implements StdReader<T> {
             }
 
             if (track != null) {
-                track.setId(mkvTrack.getTrackNo())
-                        .setTitle(mkvTrack.getName());
+                track.setId(mkvTrack.getTrackNo());
                 result.add(track);
             }
         }

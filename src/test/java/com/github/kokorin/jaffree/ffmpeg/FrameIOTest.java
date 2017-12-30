@@ -272,6 +272,7 @@ public class FrameIOTest {
                 .setId(0)
                 .setType(Track.Type.AUDIO)
                 .setSampleRate(sampleRate)
+                .setTimebase((long)sampleRate)
                 .setChannels(1);
         final List<AudioFrame> frames = new CopyOnWriteArrayList<>();
         for (int i = 0; i < 10; i++) {
@@ -327,6 +328,7 @@ public class FrameIOTest {
         Assert.assertEquals(1, actualTracks.size());
         Assert.assertEquals(track.getId(), actualTracks.get(0).getId());
         Assert.assertEquals(track.getType(), actualTracks.get(0).getType());
+        Assert.assertEquals(track.getTimebase(), actualTracks.get(0).getTimebase());
         Assert.assertEquals(track.getSampleRate(), actualTracks.get(0).getSampleRate());
         Assert.assertEquals(track.getChannels(), actualTracks.get(0).getChannels());
 
