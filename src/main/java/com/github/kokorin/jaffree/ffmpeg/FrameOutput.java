@@ -24,6 +24,7 @@ import java.util.List;
 
 public class FrameOutput implements Output {
     private boolean video = true;
+    private boolean alpha = false;
     private boolean audio = true;
     private final List<Option> additionalOptions = new ArrayList<>();
 
@@ -35,6 +36,16 @@ public class FrameOutput implements Output {
 
     public FrameOutput extractVideo(boolean video) {
         this.video = video;
+        return this;
+    }
+
+    /**
+     * whether to extract video alpha channel (transparency)
+     * @param alpha extract alpha
+     * @return this
+     */
+    public FrameOutput extractAlpha(boolean alpha) {
+        this.alpha = alpha;
         return this;
     }
 
@@ -59,7 +70,7 @@ public class FrameOutput implements Output {
 
     @Override
     public void beforeExecute(FFmpeg ffmpeg) {
-        ffmpeg.setStdOutReader(new NutFrameReader<FFmpegResult>(consumer));
+        ffmpeg.setStdOutReader(new NutFrameReader<FFmpegResult>(consumer, alpha));
     }
 
     @Override
@@ -70,7 +81,8 @@ public class FrameOutput implements Output {
 
         if (video) {
             result.add(new Option("-vcodec", "rawvideo"));
-            result.add(new Option("-pix_fmt", "rgb24"));
+            String pixelFormat = alpha ? "rgba" : "rgb24";
+            result.add(new Option("-pix_fmt", pixelFormat));
         } else {
             result.add(new Option("-vn"));
         }
