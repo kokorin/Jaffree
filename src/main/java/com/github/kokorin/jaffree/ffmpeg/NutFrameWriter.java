@@ -20,6 +20,8 @@ package com.github.kokorin.jaffree.ffmpeg;
 import com.github.kokorin.jaffree.nut.*;
 import com.github.kokorin.jaffree.process.StdWriter;
 
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
@@ -28,17 +30,20 @@ import java.util.List;
 
 public class NutFrameWriter implements StdWriter {
     private final FrameProducer producer;
+    private final boolean alpha;
 
-    // StreamHeader{streamId=0, streamType=VIDEO, fourcc=[82, 71, 66, 24]}
-    // StreamHeader{streamId=1, streamType=AUDIO, fourcc=[32, 68, 83, 80]}
-    private static final byte[] FOURCC_RGB24 = {(byte) 82, (byte) 71, (byte) 66, (byte) 24};
-    // private static final byte[] FOURCC_RGB24 = {(byte) 'r', (byte) 'g', (byte) 'b', (byte) 24};
-    private static final byte[] FOURCC_PCM_S32BE = {(byte) 32, (byte) 68, (byte) 83, (byte) 80};
-
-    private static int[] RGB24_BAND_OFFSETS = {0, 1, 2};
+    private static final byte[] FOURCC_ABGR = {'A', 'B', 'G', 'R'};
+    private static final byte[] FOURCC_BGR24 = {'B', 'G', 'R', 24};
+    //PCM Signed Differential?
+    private static final byte[] FOURCC_PCM_S32BE = {32, 'D', 'S', 'P'};
 
     public NutFrameWriter(FrameProducer producer) {
+        this(producer, false);
+    }
+
+    public NutFrameWriter(FrameProducer producer, boolean alpha) {
         this.producer = producer;
+        this.alpha = alpha;
     }
 
     @Override
@@ -73,7 +78,7 @@ public class NutFrameWriter implements StdWriter {
                     streamHeader = new StreamHeader(
                             track.getId(),
                             StreamHeader.Type.VIDEO,
-                            FOURCC_RGB24,
+                            alpha ? FOURCC_ABGR : FOURCC_BGR24,
                             i,
                             0,
                             60_000,
@@ -143,17 +148,16 @@ public class NutFrameWriter implements StdWriter {
             StreamHeader streamHeader = streamHeaders[frame.getStreamId()];
             switch (streamHeader.streamType) {
                 case VIDEO:
-                    data = new byte[streamHeader.video.width * streamHeader.video.width * 3];
-                    // TODO will it work faster if we use Raster and Buffers?
-                    for (int y = 0; y < streamHeader.video.height; y++) {
-                        for (int x = 0; x < streamHeader.video.width; x++) {
-                            int rgb = frame.getImage().getRGB(x, y);
-                            int position = 3 * (x + y * streamHeader.video.width);
-                            data[position] = (byte) ((rgb >> 16) & 0xFF);
-                            data[position + 1] = (byte) ((rgb >> 8) & 0xFF);
-                            data[position + 2] = (byte) (rgb & 0xFF);
-                        }
+                    BufferedImage image = frame.getImage();
+
+                    if (alpha && BufferedImage.TYPE_4BYTE_ABGR != image.getType()) {
+                        throw new RuntimeException("Type of BufferedImage must be TYPE_4BYTE_ABGR");
                     }
+                    if (!alpha && BufferedImage.TYPE_3BYTE_BGR != image.getType()) {
+                        throw new RuntimeException("Type of BufferedImage must be TYPE_3BYTE_BGR");
+                    }
+
+                    data = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
                     break;
 
                 case AUDIO:

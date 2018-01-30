@@ -22,6 +22,8 @@ import com.github.kokorin.jaffree.process.StdReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.*;
+import java.awt.color.ColorSpace;
 import java.awt.image.*;
 import java.io.IOException;
 import java.io.InputStream;
@@ -112,9 +114,6 @@ public class NutFrameReader<T> implements StdReader<T> {
         return result;
     }
 
-    private static int[] RGB24_BAND_OFFSETS = {0, 1, 2};
-    private static int[] RGBA_BAND_OFFSETS = {0, 1, 2, 3};
-
     private Frame parseFrame(StreamHeader track, NutFrame frame) {
         if (frame == null || frame.data == null || frame.data.length == 0 || frame.eor) {
             return null;
@@ -133,19 +132,34 @@ public class NutFrameReader<T> implements StdReader<T> {
             }
 
             DataBuffer buffer = new DataBufferByte(frame.data, frame.data.length);
+            ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_sRGB);
 
-            final SampleModel sampleModel;
-            final BufferedImage image;
+            final ColorModel colorModel;
+            final WritableRaster raster;
+
             if (!alpha) {
-                sampleModel = new ComponentSampleModel(DataBuffer.TYPE_BYTE, width, height, 3, width * 3, RGB24_BAND_OFFSETS);
-                image = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
+                int[] nBits = {8, 8, 8};
+                int[] bOffs = {2, 1, 0};
+                colorModel = new ComponentColorModel(cs, nBits, false, false,
+                        Transparency.OPAQUE,
+                        DataBuffer.TYPE_BYTE);
+                raster = Raster.createInterleavedRaster(buffer,
+                        width, height,
+                        width * 3, 3,
+                        bOffs, null);
             } else {
-                sampleModel = new ComponentSampleModel(DataBuffer.TYPE_BYTE, width, height, 4, width * 4, RGBA_BAND_OFFSETS);
-                image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+                int[] nBits = {8, 8, 8, 8};
+                int[] bOffs = {3, 2, 1, 0};
+                colorModel = new ComponentColorModel(cs, nBits, true, false,
+                        Transparency.TRANSLUCENT,
+                        DataBuffer.TYPE_BYTE);
+                raster = Raster.createInterleavedRaster(buffer,
+                        width, height,
+                        width * 4, 4,
+                        bOffs, null);
             }
 
-            Raster raster = Raster.createRaster(sampleModel, buffer, null);
-            image.setData(raster);
+            BufferedImage image = new BufferedImage(colorModel, raster, false, null);
 
             result = new Frame()
                     .setImage(image);

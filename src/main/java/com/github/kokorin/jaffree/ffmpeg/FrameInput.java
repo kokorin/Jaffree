@@ -30,8 +30,20 @@ public class FrameInput implements Input {
 
     private FrameProducer producer;
 
+    private boolean alpha;
+
     public FrameInput setProducer(FrameProducer producer) {
         this.producer = producer;
+        return this;
+    }
+
+    /**
+     * Whether produced video stream should contain alpha channel
+     * @param alpha alpha
+     * @return this
+     */
+    public FrameInput produceAlpha(boolean alpha) {
+        this.alpha = alpha;
         return this;
     }
 
@@ -47,7 +59,7 @@ public class FrameInput implements Input {
 
     @Override
     public void beforeExecute(FFmpeg ffmpeg) {
-        ffmpeg.setStdInWriter(new NutFrameWriter(producer));
+        ffmpeg.setStdInWriter(new NutFrameWriter(producer, alpha));
         ffmpeg.setStdOutReader(new LoggingStdReader<FFmpegResult>());
     }
 
@@ -58,9 +70,6 @@ public class FrameInput implements Input {
         result.addAll(additionalOptions);
         result.addAll(Arrays.asList(
                 new Option("-f", "nut"),
-                //new Option("-vcodec", "rawvideo"),
-                //new Option("-pix_fmt", "wwer"),
-                //new Option("-acodec", "pcm_s32be"),
                 new Option("-i", "-")
         ));
 

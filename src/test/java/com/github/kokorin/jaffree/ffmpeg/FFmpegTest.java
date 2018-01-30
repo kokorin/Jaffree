@@ -277,7 +277,7 @@ public class FFmpegTest {
         FrameConsumer frameConsumer = new FrameConsumer() {
             @Override
             public void consumeStreams(List<com.github.kokorin.jaffree.ffmpeg.Stream> streams) {
-
+                System.out.println(streams + "");
             }
 
             @Override

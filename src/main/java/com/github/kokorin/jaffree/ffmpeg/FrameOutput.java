@@ -81,7 +81,7 @@ public class FrameOutput implements Output {
 
         if (video) {
             result.add(new Option("-vcodec", "rawvideo"));
-            String pixelFormat = alpha ? "rgba" : "rgb24";
+            String pixelFormat = alpha ? "abgr" : "bgr24";
             result.add(new Option("-pix_fmt", pixelFormat));
         } else {
             result.add(new Option("-vn"));
