@@ -159,7 +159,7 @@ public class Mosaic {
                     }
                 }
 
-                BufferedImage mosaic = new BufferedImage(mosaicWidth, mosaicHeight, BufferedImage.TYPE_INT_RGB);
+                BufferedImage mosaic = new BufferedImage(mosaicWidth, mosaicHeight, BufferedImage.TYPE_3BYTE_BGR);
                 Graphics mosaicGraphics = mosaic.getGraphics();
                 mosaicGraphics.setColor(new Color(0));
                 mosaicGraphics.fillRect(0, 0, mosaicWidth, mosaicHeight);
