@@ -3,6 +3,9 @@ package com.github.kokorin.jaffree.nut;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.nio.ByteBuffer;
+import java.util.Arrays;
+
 public class UtilTest {
     @Test
     public void convertTimestamp() throws Exception {
@@ -18,4 +21,11 @@ public class UtilTest {
         Assert.assertEquals(1000L, result);
     }
 
+    @Test
+    public void byteBuffer() {
+        int v = 0x01020304;
+        byte[] bytes = new byte[4];
+        ByteBuffer.wrap(bytes).asIntBuffer().put(v);
+        System.out.println(Arrays.toString(bytes));
+    }
 }

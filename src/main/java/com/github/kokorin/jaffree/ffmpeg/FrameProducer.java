@@ -23,8 +23,13 @@ public interface FrameProducer {
     List<Stream> produceStreams();
 
     /**
-     * Called repeatedly to get frames. When there is no more frame, method should return {@code}null{@code} value
-     * @return
+     * Called repeatedly to get frames. When there is no more frame, method should return {@code}null{@code} value.
+     * <p>
+     * Method must return video frames with {@link java.awt.image.BufferedImage BufferedImage}s either in
+     * {@link java.awt.image.BufferedImage#TYPE_4BYTE_ABGR TYPE_4BYTE_ABGR},
+     * or {@link java.awt.image.BufferedImage#TYPE_3BYTE_BGR TYPE_3BYTE_BGR} formats
+     *
+     * @return Frame
      */
     Frame produce();
 }

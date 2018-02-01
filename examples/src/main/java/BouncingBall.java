@@ -112,7 +112,7 @@ public class BouncingBall {
 
 
                 if (nextVideoTimecode <= nextAudioTimecode) {
-                    BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+                    BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
                     Graphics2D graphics = image.createGraphics();
                     graphics.setPaint(new Color(0, 0, 0));
                     graphics.fillRect(0, 0, width, height);

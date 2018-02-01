@@ -109,7 +109,7 @@ public class NutTest {
                 .addOutput(UrlOutput.toPath(rawNut)
                         .setFormat("nut")
                         .addOption("-vcodec", "rawvideo")
-                        .addOption("-pix_fmt", "rgb24")
+                        .addOption("-pix_fmt", "bgr24")
                         .addOption("-acodec", "pcm_s32be")
                 )
                 .execute();

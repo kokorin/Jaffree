@@ -116,7 +116,7 @@ public class FrameIOTest {
                 }
                 System.out.println("Creating frame " + frameCounter);
 
-                BufferedImage image = new BufferedImage(320, 240, BufferedImage.TYPE_INT_RGB);
+                BufferedImage image = new BufferedImage(320, 240, BufferedImage.TYPE_3BYTE_BGR);
                 Graphics2D graphics = image.createGraphics();
                 graphics.setPaint(new Color(frameCounter * 1.0f / frameCount, 0, 0));
                 graphics.fillRect(0, 0, 320, 240);

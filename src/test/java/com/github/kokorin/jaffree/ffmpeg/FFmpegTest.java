@@ -7,6 +7,7 @@ import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
 import com.github.kokorin.jaffree.ffprobe.Stream;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.nio.file.Files;
@@ -266,6 +267,37 @@ public class FFmpegTest {
         Assert.assertEquals("audio", streamTypes.get(0).getCodecType());
         Assert.assertEquals("audio", streamTypes.get(1).getCodecType());
         Assert.assertEquals("video", streamTypes.get(2).getCodecType());
+    }
+
+    @Test
+    @Ignore("This test requires manual verification of result frames")
+    public void testAlpha() throws Exception {
+        Path videoWithAlpha = SAMPLES.resolve("Alpha/Biking_Girl_Alpha.mov");
+
+        FrameConsumer frameConsumer = new FrameConsumer() {
+            @Override
+            public void consumeStreams(List<com.github.kokorin.jaffree.ffmpeg.Stream> streams) {
+                System.out.println(streams + "");
+            }
+
+            @Override
+            public void consume(Frame frame) {
+                System.out.println(frame + "");
+            }
+        };
+
+        FFmpegResult result = FFmpeg.atPath(BIN)
+                .addInput(UrlInput
+                        .fromPath(videoWithAlpha)
+                        .setDuration(1_000)
+                )
+                .addOutput(FrameOutput
+                        .withConsumer(frameConsumer)
+                        .extractAlpha(true)
+                        .extractAudio(false))
+                .execute();
+
+        Assert.assertNotNull(result);
     }
 
     private static double getDuration(Path path) {
