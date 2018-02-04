@@ -111,9 +111,9 @@ public class NutTest {
                 .setOverwriteOutput(true)
                 .addOutput(UrlOutput.toPath(rawNut)
                         .setFormat("nut")
-                        .addOption("-vcodec", "rawvideo")
-                        .addOption("-pix_fmt", "bgr24")
-                        .addOption("-acodec", "pcm_s32be")
+                        .addArguments("-vcodec", "rawvideo")
+                        .addArguments("-pix_fmt", "bgr24")
+                        .addArguments("-acodec", "pcm_s32be")
                 )
                 .execute();
 

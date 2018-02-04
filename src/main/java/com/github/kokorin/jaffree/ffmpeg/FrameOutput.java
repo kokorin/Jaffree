@@ -17,19 +17,18 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-import com.github.kokorin.jaffree.Option;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class FrameOutput implements Output {
     private boolean video = true;
     private boolean alpha = false;
     private boolean audio = true;
-    private final List<Option> additionalOptions = new ArrayList<>();
+    private final List<String> additionalArguments = new ArrayList<>();
     private ServerSocket serverSocket;
 
     private final FrameConsumer consumer;
@@ -59,13 +58,13 @@ public class FrameOutput implements Output {
         return this;
     }
 
-    public FrameOutput addOption(String key) {
-        additionalOptions.add(new Option(key));
+    public FrameOutput addArgument(String key) {
+        additionalArguments.add(key);
         return this;
     }
 
-    public FrameOutput addOption(String key, String value) {
-        additionalOptions.add(new Option(key, value));
+    public FrameOutput addArguments(String key, String value) {
+        additionalArguments.addAll(Arrays.asList(key, value));
         return this;
     }
 
@@ -80,30 +79,30 @@ public class FrameOutput implements Output {
     }
 
     @Override
-    public List<Option> buildOptions() {
+    public List<String> buildArguments() {
         allocateSocket();
 
-        List<Option> result = new ArrayList<>();
+        List<String> result = new ArrayList<>();
 
-        result.add(new Option("-f", "nut"));
+        result.addAll(Arrays.asList("-f", "nut"));
 
         if (video) {
-            result.add(new Option("-vcodec", "rawvideo"));
+            result.addAll(Arrays.asList("-vcodec", "rawvideo"));
             String pixelFormat = alpha ? "abgr" : "bgr24";
-            result.add(new Option("-pix_fmt", pixelFormat));
+            result.addAll(Arrays.asList("-pix_fmt", pixelFormat));
         } else {
-            result.add(new Option("-vn"));
+            result.add("-vn");
         }
 
         if (audio) {
-            result.add(new Option("-acodec", "pcm_s32be"));
+            result.addAll(Arrays.asList("-acodec", "pcm_s32be"));
         } else {
-            result.add(new Option("-an"));
+            result.add("-an");
         }
 
-        result.addAll(additionalOptions);
+        result.addAll(additionalArguments);
 
-        result.add(new Option("tcp://127.0.0.1:" + serverSocket.getLocalPort()));
+        result.add("tcp://127.0.0.1:" + serverSocket.getLocalPort());
 
         return result;
     }

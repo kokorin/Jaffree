@@ -1,6 +1,5 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
-import com.github.kokorin.jaffree.Option;
 import com.github.kokorin.jaffree.StreamSpecifier;
 import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffprobe.FFprobe;
@@ -191,7 +190,7 @@ public class FFmpegFilterTest {
                 ))
 
                 //On ubuntu ffmpeg uses AAC encoder in experimental mode, this option allows using AAC
-                .addOption(new Option("-strict", "-2"))
+                .addArguments("-strict", "-2")
 
                 .addOutput(UrlOutput.toPath(outputPath)
                         .addMap("v")

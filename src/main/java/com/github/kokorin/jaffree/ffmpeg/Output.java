@@ -17,10 +17,8 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-import com.github.kokorin.jaffree.Option;
-
 import java.util.List;
 
-public interface Output  {
-    List<Option> buildOptions();
+public interface Output {
+    List<String> buildArguments();
 }

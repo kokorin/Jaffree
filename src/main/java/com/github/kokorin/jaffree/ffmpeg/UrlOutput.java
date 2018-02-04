@@ -17,12 +17,12 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-import com.github.kokorin.jaffree.Option;
 import com.github.kokorin.jaffree.SizeUnit;
 import com.github.kokorin.jaffree.StreamType;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -140,6 +140,19 @@ public class UrlOutput extends UrlInOut<UrlOutput> implements Output {
     }
 
     /**
+     * Maps all streams from the input file.
+     * <p>
+     * Each input stream is identified by the input file index input_file_id. Index starts at 0.
+     *
+     * @param inputFileIndex  index of input file
+     * @return this
+     */
+    public UrlOutput addMap(int inputFileIndex) {
+        this.maps.add(new MapDefault(false, inputFileIndex, null, false));
+        return this;
+    }
+
+    /**
      * Designate one or more input streams as a source for the output file.
      * <p>
      * Each input stream is identified by the input file index input_file_id and the input stream index
@@ -182,29 +195,29 @@ public class UrlOutput extends UrlInOut<UrlOutput> implements Output {
     }
 
     @Override
-    public List<Option> buildOptions() {
-        List<Option> result = new ArrayList<>();
+    public List<String> buildArguments() {
+        List<String> result = new ArrayList<>();
 
         if (outputPosition != null) {
-            result.add(new Option("-to", formatDuration(outputPosition)));
+            result.addAll(Arrays.asList("-to", formatDuration(outputPosition)));
         }
 
         if (sizeLimit != null) {
-            result.add(new Option("-fs", sizeLimit.toString()));
+            result.addAll(Arrays.asList("-fs", sizeLimit.toString()));
         }
 
         for (StreamType disabledStream : disabledStreams) {
-            addOption("-" + disabledStream.code() + "n");
+            addArgument("-" + disabledStream.code() + "n");
         }
 
-        result.addAll(buildCommonOptions());
+        result.addAll(buildCommonArguments());
 
         for (Map map : maps) {
-            result.add(new Option("-map", map.getOptionValue()));
+            result.addAll(Arrays.asList("-map", map.toValue()));
         }
 
         // must be the last option
-        result.add(new Option(url));
+        result.add(url);
 
         return result;
     }
@@ -218,7 +231,7 @@ public class UrlOutput extends UrlInOut<UrlOutput> implements Output {
     }
 
     private static interface Map {
-        String getOptionValue();
+        String toValue();
     }
 
     private static class MapDefault implements Map {
@@ -235,7 +248,7 @@ public class UrlOutput extends UrlInOut<UrlOutput> implements Output {
         }
 
         @Override
-        public String getOptionValue() {
+        public String toValue() {
             StringBuilder result = new StringBuilder();
 
             if (negative) {
@@ -264,7 +277,7 @@ public class UrlOutput extends UrlInOut<UrlOutput> implements Output {
         }
 
         @Override
-        public String getOptionValue() {
+        public String toValue() {
             return "[" + linkLabel + "]";
         }
     }

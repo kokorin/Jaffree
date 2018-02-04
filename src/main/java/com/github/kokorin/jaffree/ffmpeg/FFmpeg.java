@@ -17,7 +17,6 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-import com.github.kokorin.jaffree.Option;
 import com.github.kokorin.jaffree.process.LoggingStdReader;
 import com.github.kokorin.jaffree.process.ProcessHandler;
 import org.slf4j.Logger;
@@ -25,6 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -32,7 +32,7 @@ import java.util.concurrent.Executors;
 public class FFmpeg {
     private final List<Input> inputs = new ArrayList<>();
     private final List<Output> outputs = new ArrayList<>();
-    private final List<Option> additionalOptions = new ArrayList<>();
+    private final List<String> additionalArguments = new ArrayList<>();
     private boolean overwriteOutput;
     private ProgressListener progressListener;
     //-progress url (global)
@@ -57,8 +57,13 @@ public class FFmpeg {
         return this;
     }
 
-    public FFmpeg addOption(Option option) {
-        additionalOptions.add(option);
+    public FFmpeg addArgument(String argument) {
+        additionalArguments.add(argument);
+        return this;
+    }
+
+    public FFmpeg addArguments(String key, String value) {
+        additionalArguments.addAll(Arrays.asList(key, value));
         return this;
     }
 
@@ -132,10 +137,10 @@ public class FFmpeg {
                 }
             }
 
-           return new ProcessHandler<FFmpegResult>(executable, contextName)
+            return new ProcessHandler<FFmpegResult>(executable, contextName)
                     .setStdErrReader(new FFmpegResultReader(progressListener))
                     .setStdOutReader(new LoggingStdReader<FFmpegResult>())
-                    .execute(buildOptions());
+                    .execute(buildArguments());
 
         } finally {
             if (service != null) {
@@ -144,39 +149,33 @@ public class FFmpeg {
         }
     }
 
-    protected List<Option> buildOptions() {
-        List<Option> result = new ArrayList<>();
+    protected List<String> buildArguments() {
+        List<String> result = new ArrayList<>();
 
         for (Input input : inputs) {
-            List<Option> inputOptions = input.buildOptions();
-            if (inputOptions != null) {
-                result.addAll(inputOptions);
-            }
+            result.addAll(input.buildArguments());
         }
 
         if (overwriteOutput) {
             //Overwrite output files without asking.
-            result.add(new Option("-y"));
+            result.add("-y");
         } else {
             // Do not overwrite output files, and exit immediately if a specified output file already exists.
-            result.add(new Option("-n"));
+            result.add("-n");
         }
 
         if (complexFilter != null) {
-            result.add(new Option("-filter_complex", complexFilter.getValue()));
+            result.addAll(Arrays.asList("-filter_complex", complexFilter.getValue()));
         }
 
         if (filter != null) {
-            result.add(new Option("-filter", filter));
+            result.addAll(Arrays.asList("-filter", filter));
         }
 
-        result.addAll(additionalOptions);
+        result.addAll(additionalArguments);
 
         for (Output output : outputs) {
-            List<Option> outputOptions = output.buildOptions();
-            if (outputOptions != null) {
-                result.addAll(outputOptions);
-            }
+            result.addAll(output.buildArguments());
         }
 
         return result;

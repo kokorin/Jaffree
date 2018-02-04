@@ -17,7 +17,6 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-import com.github.kokorin.jaffree.Option;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -28,7 +27,7 @@ import java.util.List;
 
 public class FrameInput implements Input {
 
-    private final List<Option> additionalOptions = new ArrayList<>();
+    private final List<String> additionalArguments = new ArrayList<>();
 
     private FrameProducer producer;
 
@@ -42,6 +41,7 @@ public class FrameInput implements Input {
 
     /**
      * Whether produced video stream should contain alpha channel
+     *
      * @param alpha alpha
      * @return this
      */
@@ -50,13 +50,13 @@ public class FrameInput implements Input {
         return this;
     }
 
-    public FrameInput addOption(Option option) {
-        additionalOptions.add(option);
+    public FrameInput addArgument(String key) {
+        additionalArguments.add(key);
         return this;
     }
 
-    public FrameInput addOption(String key, String value) {
-        additionalOptions.add(new Option(key, value));
+    public FrameInput addArguments(String key, String value) {
+        additionalArguments.addAll(Arrays.asList(key, value));
         return this;
     }
 
@@ -66,16 +66,13 @@ public class FrameInput implements Input {
     }
 
     @Override
-    public List<Option> buildOptions() {
+    public List<String> buildArguments() {
         allocateSocket();
 
-        List<Option> result = new ArrayList<>();
+        List<String> result = new ArrayList<>();
 
-        result.addAll(additionalOptions);
-        result.addAll(Arrays.asList(
-                new Option("-f", "nut"),
-                new Option("-i", "tcp://127.0.0.1:" + serverSocket.getLocalPort())
-        ));
+        result.addAll(additionalArguments);
+        result.addAll(Arrays.asList("-f", "nut", "-i", "tcp://127.0.0.1:" + serverSocket.getLocalPort()));
 
         return result;
     }

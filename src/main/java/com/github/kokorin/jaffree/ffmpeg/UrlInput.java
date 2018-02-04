@@ -17,10 +17,9 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-import com.github.kokorin.jaffree.Option;
-
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class UrlInput extends UrlInOut<UrlInput> implements Input {
@@ -55,22 +54,22 @@ public class UrlInput extends UrlInOut<UrlInput> implements Input {
     }
 
     @Override
-    public List<Option> buildOptions() {
-        List<Option> result = new ArrayList<>();
+    public List<String> buildArguments() {
+        List<String> result = new ArrayList<>();
 
         if (streamLoop != null) {
-            result.add(new Option("-stream_loop", streamLoop.toString()));
+            result.addAll(Arrays.asList("-stream_loop", streamLoop.toString()));
         }
 
         if (readAtFrameRate) {
-            result.add(new Option("-re"));
+            result.add("-re");
         }
 
-        result.addAll(buildCommonOptions());
+        result.addAll(buildCommonArguments());
 
         // must be the last option
         if (url != null) {
-            result.add(new Option("-i", url));
+            result.addAll(Arrays.asList("-i", url));
         }
 
         return result;

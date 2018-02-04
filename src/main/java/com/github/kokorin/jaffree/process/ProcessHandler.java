@@ -17,7 +17,6 @@
 
 package com.github.kokorin.jaffree.process;
 
-import com.github.kokorin.jaffree.Option;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,8 +65,12 @@ public class ProcessHandler<T> {
         return this;
     }
 
-    public T execute(List<Option> options) {
-        List<String> command = buildCommand(executable, options);
+    public T execute(List<String> options) {
+        List<String> command = new ArrayList<>();
+        command.add(executable.toString());
+        command.addAll(options);
+
+        LOGGER.info("Command constructed:\n{}", joinArguments(command));
 
         final Process process;
         try {
@@ -227,36 +230,21 @@ public class ProcessHandler<T> {
             return name;
         }
 
-        return  contextName + "-" + name;
+        return contextName + "-" + name;
     }
 
-    protected static List<String> buildCommand(Path executable, List<Option> options) {
-        LOGGER.debug("Constructing command");
-        List<String> result = new ArrayList<>();
-
-        result.add(executable.toString());
-
-        for (Option option : options) {
-            result.add(option.getName());
-            if (option.getValue() != null) {
-                result.add(option.getValue());
+    protected static String joinArguments(List<String> arguments) {
+        StringBuilder result = new StringBuilder();
+        boolean first = true;
+        for (String argument : arguments) {
+            if (!first) {
+                result.append(" ");
             }
+            String quote = argument.contains(" ") ? "\"" : "";
+            result.append(quote).append(argument).append(quote);
+            first = false;
         }
 
-        if (LOGGER.isInfoEnabled()) {
-            StringBuilder commandBuilder = new StringBuilder();
-            boolean first = true;
-            for (String argument : result) {
-                if (!first) {
-                    commandBuilder.append(" ");
-                }
-                String quote = argument.contains(" ") ? "\"" : "";
-                commandBuilder.append(quote).append(argument).append(quote);
-                first = false;
-            }
-            LOGGER.info("Command constructed:\n{}", commandBuilder.toString());
-        }
-
-        return result;
+        return result.toString();
     }
 }

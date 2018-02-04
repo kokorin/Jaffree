@@ -39,8 +39,8 @@ public class Mosaic {
                             .setDuration(15_000))
                     .addOutput(FrameOutput
                             .withConsumer(frameIterator.getConsumer())
-                            .addOption("-ac", "1")
-                            .addOption("-ar", Integer.toString(sampleRate))
+                            .addArguments("-ac", "1")
+                            .addArguments("-ar", Integer.toString(sampleRate))
                     )
                     .setContextName("input" + i);
 
