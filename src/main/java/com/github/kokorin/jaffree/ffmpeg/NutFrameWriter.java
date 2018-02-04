@@ -25,6 +25,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.EnumSet;
@@ -33,7 +34,7 @@ import java.util.List;
 public class NutFrameWriter implements Runnable {
     private final FrameProducer producer;
     private final boolean alpha;
-    private final int port;
+    private final ServerSocket serverSocket;
 
     private static final byte[] FOURCC_ABGR = {'A', 'B', 'G', 'R'};
     private static final byte[] FOURCC_BGR24 = {'B', 'G', 'R', 24};
@@ -42,41 +43,22 @@ public class NutFrameWriter implements Runnable {
 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NutFrameWriter.class);
-    private static final int MAX_CONNECT_ATTEMPTS = 10;
 
-    public NutFrameWriter(FrameProducer producer, boolean alpha, int port) {
+    public NutFrameWriter(FrameProducer producer, boolean alpha, ServerSocket serverSocket) {
         this.producer = producer;
         this.alpha = alpha;
-        this.port = port;
+        this.serverSocket = serverSocket;
     }
 
     @Override
     public void run() {
-        boolean connected = false;
 
-        for (int i = 0; i < MAX_CONNECT_ATTEMPTS; i++) {
-            try {
-                Thread.sleep(100);
-            } catch (Exception e) {
-                LOGGER.warn("Interrupted", e);
-                break;
-            }
-
-            try (Socket socket = new Socket("127.0.0.1", port);
-                 OutputStream output = socket.getOutputStream()) {
-                connected = true;
-                write(output);
-            } catch (IOException e) {
-                LOGGER.warn("Attempt {}/{} to establish socket connection with port {} has failed", i, MAX_CONNECT_ATTEMPTS, port, e);
-            }
-
-            if (connected) {
-                break;
-            }
-        }
-
-        if (!connected) {
-            throw new RuntimeException("Max connect attempt has reached, no more attempts");
+        try (ServerSocket serverSocket = this.serverSocket;
+             Socket socket = serverSocket.accept();
+             OutputStream output = socket.getOutputStream()) {
+            write(output);
+        } catch (IOException e) {
+            LOGGER.warn("Failed to write to socket: " + serverSocket, e);
         }
     }
 

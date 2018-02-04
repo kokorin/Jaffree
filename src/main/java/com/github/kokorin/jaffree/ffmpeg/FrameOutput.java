@@ -19,6 +19,9 @@ package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.Option;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +30,7 @@ public class FrameOutput implements Output {
     private boolean alpha = false;
     private boolean audio = true;
     private final List<Option> additionalOptions = new ArrayList<>();
-    private int port;
+    private ServerSocket serverSocket;
 
     private final FrameConsumer consumer;
 
@@ -70,19 +73,15 @@ public class FrameOutput implements Output {
         return consumer;
     }
 
-    void setPort(int port) {
-        this.port = port;
-    }
-
     Runnable createReader() {
-        checkPort();
+        allocateSocket();
 
-        return new NutFrameReader(consumer, alpha, port);
+        return new NutFrameReader(consumer, alpha, serverSocket);
     }
 
     @Override
     public List<Option> buildOptions() {
-        checkPort();
+        allocateSocket();
 
         List<Option> result = new ArrayList<>();
 
@@ -104,15 +103,20 @@ public class FrameOutput implements Output {
 
         result.addAll(additionalOptions);
 
-        //result.add(new Option("-"));
-        result.add(new Option("tcp://127.0.0.1:" + port + "?listen=1"));
+        result.add(new Option("tcp://127.0.0.1:" + serverSocket.getLocalPort()));
 
         return result;
     }
 
-    private void checkPort() {
-        if (port == 0) {
-            throw new RuntimeException("TCP Port must be set!");
+    private void allocateSocket() {
+        if (serverSocket != null) {
+            return;
+        }
+
+        try {
+            serverSocket = new ServerSocket(0, 1, InetAddress.getLoopbackAddress());
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to allocate scoket", e);
         }
     }
 

@@ -26,6 +26,7 @@ import java.awt.color.ColorSpace;
 import java.awt.image.*;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
@@ -35,44 +36,24 @@ import java.util.List;
 public class NutFrameReader implements Runnable {
     private final FrameConsumer frameConsumer;
     private final boolean alpha;
-    private final int port;
+    private final ServerSocket serverSocket;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NutFrameReader.class);
-    private static final int MAX_CONNECT_ATTEMPTS = 10;
 
-    public NutFrameReader(FrameConsumer frameConsumer, boolean alpha, int port) {
+    public NutFrameReader(FrameConsumer frameConsumer, boolean alpha, ServerSocket serverSocket) {
         this.frameConsumer = frameConsumer;
         this.alpha = alpha;
-        this.port = port;
+        this.serverSocket = serverSocket;
     }
 
     @Override
     public void run() {
-        boolean connected = false;
-
-        for (int i = 0; i < MAX_CONNECT_ATTEMPTS; i++) {
-            try {
-                Thread.sleep(100);
-            } catch (Exception e) {
-                LOGGER.warn("Interrupted", e);
-                break;
-            }
-
-            try (Socket socket = new Socket("127.0.0.1", port);
-                 InputStream input = socket.getInputStream()) {
-                connected = true;
-                read(input);
-            } catch (IOException e) {
-                LOGGER.warn("Attempt {}/{} to establish socket connection with port {} has failed", i, MAX_CONNECT_ATTEMPTS, port, e);
-            }
-
-            if (connected) {
-                break;
-            }
-        }
-
-        if (!connected) {
-            throw new RuntimeException("Max connect attempt has reached, no more attempts");
+        try (ServerSocket serverSocket = this.serverSocket;
+             Socket socket = serverSocket.accept();
+             InputStream input = socket.getInputStream()) {
+            read(input);
+        } catch (IOException e) {
+            throw  new RuntimeException("Failed to read from socket " + serverSocket, e);
         }
     }
 

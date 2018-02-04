@@ -44,8 +44,6 @@ public class FFmpeg {
 
     private String contextName = null;
 
-    private int port = 24986;
-
     private final Path executable;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FFmpeg.class);
@@ -55,9 +53,6 @@ public class FFmpeg {
     }
 
     public FFmpeg addInput(Input input) {
-        if (input instanceof FrameInput) {
-            ((FrameInput) input).setPort(port++);
-        }
         inputs.add(input);
         return this;
     }
@@ -78,9 +73,6 @@ public class FFmpeg {
     }
 
     public FFmpeg addOutput(Output output) {
-        if (output instanceof FrameOutput) {
-            ((FrameOutput) output).setPort(port++);
-        }
         outputs.add(output);
         return this;
     }

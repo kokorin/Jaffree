@@ -36,7 +36,7 @@ public class Mosaic {
             final FFmpeg ffmpeg = FFmpeg.atPath(ffmpegBin)
                     .addInput(UrlInput
                             .fromUrl(input)
-                            .setDuration(70_000))
+                            .setDuration(15_000))
                     .addOutput(FrameOutput
                             .withConsumer(frameIterator.getConsumer())
                             .addOption("-ac", "1")
