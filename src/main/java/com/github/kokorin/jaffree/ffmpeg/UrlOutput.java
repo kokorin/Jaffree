@@ -71,8 +71,6 @@ public class UrlOutput extends UrlInOut<UrlOutput> implements Output {
      * @param positionMillis outputPosition in milliseconds
      * @return this
      * @see #setDuration(long)
-     * <p>
-     * TODO do we need this method? It seems, that it has the same effect as UrlInOut#setDuration
      */
     public UrlOutput setOutputPosition(long positionMillis) {
         this.outputPosition = outputPosition;
@@ -88,8 +86,6 @@ public class UrlOutput extends UrlInOut<UrlOutput> implements Output {
      * @param unit     unit
      * @return this
      * @see #setDuration(long)
-     * <p>
-     * TODO do we need this method? It seems, that it has the same effect as UrlInOut#setDuration
      */
     public UrlOutput setOutputPosition(long position, TimeUnit unit) {
         this.outputPosition = unit.toMillis(position);
@@ -183,10 +179,6 @@ public class UrlOutput extends UrlInOut<UrlOutput> implements Output {
     public UrlOutput addMap(String linkLabel) {
         this.maps.add(new MapLabel(linkLabel));
         return this;
-    }
-
-    @Override
-    public void beforeExecute(FFmpeg ffmpeg) {
     }
 
     @Override

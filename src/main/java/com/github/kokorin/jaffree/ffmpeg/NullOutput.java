@@ -28,11 +28,6 @@ import java.util.List;
  */
 public class NullOutput implements Output {
     @Override
-    public void beforeExecute(FFmpeg ffmpeg) {
-
-    }
-
-    @Override
     public List<Option> buildOptions() {
         return Arrays.asList(new Option("-c", "copy"), new Option("-f", "null"), new Option("-"));
     }

@@ -322,7 +322,7 @@ public class Mosaic {
             }
         }
 
-        if (ffmpegBin == null) {
+        if (ffmpegBin == null || inputs.isEmpty()) {
             LOGGER.error("Usage: java -cp examples.jar Mosaic -ffmpeg_bin </path/to/ffmpeg/bin>");
             return;
         }

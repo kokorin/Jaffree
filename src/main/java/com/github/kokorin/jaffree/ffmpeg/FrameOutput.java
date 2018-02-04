@@ -27,6 +27,7 @@ public class FrameOutput implements Output {
     private boolean alpha = false;
     private boolean audio = true;
     private final List<Option> additionalOptions = new ArrayList<>();
+    private int port;
 
     private final FrameConsumer consumer;
 
@@ -41,6 +42,7 @@ public class FrameOutput implements Output {
 
     /**
      * whether to extract video alpha channel (transparency)
+     *
      * @param alpha extract alpha
      * @return this
      */
@@ -54,8 +56,8 @@ public class FrameOutput implements Output {
         return this;
     }
 
-    public FrameOutput addOption(Option option) {
-        additionalOptions.add(option);
+    public FrameOutput addOption(String key) {
+        additionalOptions.add(new Option(key));
         return this;
     }
 
@@ -68,13 +70,20 @@ public class FrameOutput implements Output {
         return consumer;
     }
 
-    @Override
-    public void beforeExecute(FFmpeg ffmpeg) {
-        ffmpeg.setStdOutReader(new NutFrameReader<FFmpegResult>(consumer, alpha));
+    void setPort(int port) {
+        this.port = port;
+    }
+
+    Runnable createReader() {
+        checkPort();
+
+        return new NutFrameReader(consumer, alpha, port);
     }
 
     @Override
     public List<Option> buildOptions() {
+        checkPort();
+
         List<Option> result = new ArrayList<>();
 
         result.add(new Option("-f", "nut"));
@@ -95,9 +104,16 @@ public class FrameOutput implements Output {
 
         result.addAll(additionalOptions);
 
-        result.add(new Option("-"));
+        //result.add(new Option("-"));
+        result.add(new Option("tcp://127.0.0.1:" + port + "?listen=1"));
 
         return result;
+    }
+
+    private void checkPort() {
+        if (port == 0) {
+            throw new RuntimeException("TCP Port must be set!");
+        }
     }
 
     public static FrameOutput withConsumer(FrameConsumer consumer) {

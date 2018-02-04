@@ -18,7 +18,6 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.nut.*;
-import com.github.kokorin.jaffree.process.StdReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,28 +26,58 @@ import java.awt.color.ColorSpace;
 import java.awt.image.*;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NutFrameReader<T> implements StdReader<T> {
+public class NutFrameReader implements Runnable {
     private final FrameConsumer frameConsumer;
     private final boolean alpha;
+    private final int port;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NutFrameReader.class);
+    private static final int MAX_CONNECT_ATTEMPTS = 10;
 
-    public NutFrameReader(FrameConsumer frameConsumer) {
-        this(frameConsumer, false);
-    }
-
-    public NutFrameReader(FrameConsumer frameConsumer, boolean alpha) {
+    public NutFrameReader(FrameConsumer frameConsumer, boolean alpha, int port) {
         this.frameConsumer = frameConsumer;
         this.alpha = alpha;
+        this.port = port;
     }
 
     @Override
-    public T read(InputStream stdOut) {
+    public void run() {
+        boolean connected = false;
+
+        for (int i = 0; i < MAX_CONNECT_ATTEMPTS; i++) {
+            try {
+                Thread.sleep(100);
+            } catch (Exception e) {
+                LOGGER.warn("Interrupted", e);
+                break;
+            }
+
+            try (Socket socket = new Socket("127.0.0.1", port);
+                 InputStream input = socket.getInputStream()) {
+                connected = true;
+                read(input);
+            } catch (IOException e) {
+                LOGGER.warn("Attempt {}/{} to establish socket connection with port {} has failed", i, MAX_CONNECT_ATTEMPTS, port, e);
+            }
+
+            if (connected) {
+                break;
+            }
+        }
+
+        if (!connected) {
+            throw new RuntimeException("Max connect attempt has reached, no more attempts");
+        }
+    }
+
+    // package-private for test
+    void read(InputStream stdOut) {
         NutInputStream stream = new NutInputStream(stdOut);
         NutReader nutReader = new NutReader(stream);
 
@@ -77,8 +106,6 @@ public class NutFrameReader<T> implements StdReader<T> {
         }
 
         frameConsumer.consume(null);
-
-        return null;
     }
 
     private static List<Stream> parseTracks(MainHeader mainHeader, StreamHeader[] streamHeaders) {

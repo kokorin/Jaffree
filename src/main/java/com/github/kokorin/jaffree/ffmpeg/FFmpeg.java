@@ -18,15 +18,16 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.Option;
+import com.github.kokorin.jaffree.process.LoggingStdReader;
 import com.github.kokorin.jaffree.process.ProcessHandler;
-import com.github.kokorin.jaffree.process.StdReader;
-import com.github.kokorin.jaffree.process.StdWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class FFmpeg {
     private final List<Input> inputs = new ArrayList<>();
@@ -41,10 +42,9 @@ public class FFmpeg {
     // TODO audio and video specific filters: -vf and -af
     private String filter;
 
-    private StdWriter stdInWriter;
-    private StdReader<FFmpegResult> stdOutReader;
-    private StdReader<FFmpegResult> stdErrReader;
     private String contextName = null;
+
+    private int port = 24986;
 
     private final Path executable;
 
@@ -55,6 +55,9 @@ public class FFmpeg {
     }
 
     public FFmpeg addInput(Input input) {
+        if (input instanceof FrameInput) {
+            ((FrameInput) input).setPort(port++);
+        }
         inputs.add(input);
         return this;
     }
@@ -75,6 +78,9 @@ public class FFmpeg {
     }
 
     public FFmpeg addOutput(Output output) {
+        if (output instanceof FrameOutput) {
+            ((FrameOutput) output).setPort(port++);
+        }
         outputs.add(output);
         return this;
     }
@@ -100,47 +106,50 @@ public class FFmpeg {
         return progressListener;
     }
 
-    void setStdInWriter(StdWriter stdInWriter) {
-        this.stdInWriter = stdInWriter;
-    }
-
-    void setStdOutReader(StdReader<FFmpegResult> stdOutReader) {
-        this.stdOutReader = stdOutReader;
-    }
-
-    void setStdErrReader(StdReader<FFmpegResult> stdErrReader) {
-        this.stdErrReader = stdErrReader;
-    }
-
+    /**
+     * Set context name to prepend all log messages. Makes logs more clear in case of multiple ffmpeg processes
+     *
+     * @param contextName context name
+     * @return this
+     */
     public FFmpeg setContextName(String contextName) {
         this.contextName = contextName;
         return this;
     }
 
     public FFmpegResult execute() {
+        List<Runnable> readersAndWriters = new ArrayList<>();
+
         for (Input input : inputs) {
-            input.beforeExecute(this);
+            if (input instanceof FrameInput) {
+                readersAndWriters.add(((FrameInput) input).createWriter());
+            }
         }
         for (Output output : outputs) {
-            output.beforeExecute(this);
+            if (output instanceof FrameOutput) {
+                readersAndWriters.add(((FrameOutput) output).createReader());
+            }
         }
 
-        ProcessHandler<FFmpegResult> processHandler = new ProcessHandler<>(executable, contextName);
+        ExecutorService service = null;
+        try {
+            if (!readersAndWriters.isEmpty()) {
+                service = Executors.newFixedThreadPool(readersAndWriters.size());
+                for (Runnable runnable : readersAndWriters) {
+                    service.submit(runnable);
+                }
+            }
 
-        if (stdInWriter != null) {
-            processHandler.setStdInWriter(stdInWriter);
+           return new ProcessHandler<FFmpegResult>(executable, contextName)
+                    .setStdErrReader(new FFmpegResultReader(progressListener))
+                    .setStdOutReader(new LoggingStdReader<FFmpegResult>())
+                    .execute(buildOptions());
+
+        } finally {
+            if (service != null) {
+                service.shutdownNow();
+            }
         }
-
-        if (stdErrReader == null) {
-            stdErrReader = new FFmpegResultReader(progressListener);
-        }
-        processHandler.setStdErrReader(stdErrReader);
-
-        if (stdOutReader != null) {
-            processHandler.setStdOutReader(stdOutReader);
-        }
-
-        return processHandler.execute(buildOptions());
     }
 
     protected List<Option> buildOptions() {

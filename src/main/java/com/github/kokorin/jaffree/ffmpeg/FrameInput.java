@@ -18,7 +18,6 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.Option;
-import com.github.kokorin.jaffree.process.LoggingStdReader;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,6 +30,7 @@ public class FrameInput implements Input {
     private FrameProducer producer;
 
     private boolean alpha;
+    private int port;
 
     public FrameInput setProducer(FrameProducer producer) {
         this.producer = producer;
@@ -57,23 +57,34 @@ public class FrameInput implements Input {
         return this;
     }
 
-    @Override
-    public void beforeExecute(FFmpeg ffmpeg) {
-        ffmpeg.setStdInWriter(new NutFrameWriter(producer, alpha));
-        ffmpeg.setStdOutReader(new LoggingStdReader<FFmpegResult>());
+    void setPort(int port) {
+        this.port = port;
+    }
+
+    Runnable createWriter() {
+        checkPort();
+        return new NutFrameWriter(producer, alpha, port);
     }
 
     @Override
     public List<Option> buildOptions() {
+        checkPort();
+
         List<Option> result = new ArrayList<>();
 
         result.addAll(additionalOptions);
         result.addAll(Arrays.asList(
                 new Option("-f", "nut"),
-                new Option("-i", "-")
+                new Option("-i", "tcp://127.0.0.1:" + port + "?listen=1")
         ));
 
         return result;
+    }
+
+    private void checkPort() {
+        if (port == 0) {
+            throw new RuntimeException("TCP Port must be set!");
+        }
     }
 
     public static FrameInput withProducer(FrameProducer producer) {

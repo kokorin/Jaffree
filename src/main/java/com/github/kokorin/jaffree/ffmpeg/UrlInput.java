@@ -55,10 +55,6 @@ public class UrlInput extends UrlInOut<UrlInput> implements Input {
     }
 
     @Override
-    public void beforeExecute(FFmpeg ffmpeg) {
-    }
-
-    @Override
     public List<Option> buildOptions() {
         List<Option> result = new ArrayList<>();
 

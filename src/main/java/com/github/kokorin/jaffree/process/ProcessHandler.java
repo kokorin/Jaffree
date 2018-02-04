@@ -108,9 +108,10 @@ public class ProcessHandler<T> {
                             LOGGER.warn("Failed to process stderr", e);
                             exceptionRef.set(e);
                             stop();
+                        } finally {
+                            LOGGER.debug("StdErr thread has finished");
+                            workingThreadCount.decrementAndGet();
                         }
-                        LOGGER.debug("StdErr thread has finished");
-                        workingThreadCount.decrementAndGet();
                     }
                 }, getThreadName("stderr"));
                 stdErrThread.setDaemon(true);
@@ -125,14 +126,16 @@ public class ProcessHandler<T> {
                         LOGGER.debug("StdIn thread has started");
                         try {
                             stdInWriter.write(stdIn);
+                            // Explicitly close stdIn to notify process, that there will be no more data
                             stdIn.close();
                         } catch (Exception e) {
                             LOGGER.warn("Failed to process stdin", e);
                             exceptionRef.set(e);
                             stop();
+                        } finally {
+                            LOGGER.debug("StdIn thread has finished");
+                            workingThreadCount.decrementAndGet();
                         }
-                        LOGGER.debug("StdIn thread has finished");
-                        workingThreadCount.decrementAndGet();
                     }
                 }, getThreadName("stdin"));
                 stdInThread.setDaemon(true);
@@ -151,9 +154,10 @@ public class ProcessHandler<T> {
                         LOGGER.warn("Failed to process stdout", e);
                         exceptionRef.set(e);
                         stop();
+                    } finally {
+                        LOGGER.debug("StdOut thread has finished");
+                        workingThreadCount.decrementAndGet();
                     }
-                    LOGGER.debug("StdOut thread has finished");
-                    workingThreadCount.decrementAndGet();
                 }
             }, getThreadName("stdout reader"));
             stdOutThread.setDaemon(true);
