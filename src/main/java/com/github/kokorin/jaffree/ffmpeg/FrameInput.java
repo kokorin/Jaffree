@@ -17,20 +17,22 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-import com.github.kokorin.jaffree.Option;
-import com.github.kokorin.jaffree.process.LoggingStdReader;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class FrameInput implements Input {
 
-    private final List<Option> additionalOptions = new ArrayList<>();
+    private final List<String> additionalArguments = new ArrayList<>();
 
     private FrameProducer producer;
 
     private boolean alpha;
+    private ServerSocket serverSocket;
 
     public FrameInput setProducer(FrameProducer producer) {
         this.producer = producer;
@@ -39,6 +41,7 @@ public class FrameInput implements Input {
 
     /**
      * Whether produced video stream should contain alpha channel
+     *
      * @param alpha alpha
      * @return this
      */
@@ -47,33 +50,43 @@ public class FrameInput implements Input {
         return this;
     }
 
-    public FrameInput addOption(Option option) {
-        additionalOptions.add(option);
+    public FrameInput addArgument(String key) {
+        additionalArguments.add(key);
         return this;
     }
 
-    public FrameInput addOption(String key, String value) {
-        additionalOptions.add(new Option(key, value));
+    public FrameInput addArguments(String key, String value) {
+        additionalArguments.addAll(Arrays.asList(key, value));
         return this;
     }
 
-    @Override
-    public void beforeExecute(FFmpeg ffmpeg) {
-        ffmpeg.setStdInWriter(new NutFrameWriter(producer, alpha));
-        ffmpeg.setStdOutReader(new LoggingStdReader<FFmpegResult>());
+    Runnable createWriter() {
+        allocateSocket();
+        return new NutFrameWriter(producer, alpha, serverSocket);
     }
 
     @Override
-    public List<Option> buildOptions() {
-        List<Option> result = new ArrayList<>();
+    public List<String> buildArguments() {
+        allocateSocket();
 
-        result.addAll(additionalOptions);
-        result.addAll(Arrays.asList(
-                new Option("-f", "nut"),
-                new Option("-i", "-")
-        ));
+        List<String> result = new ArrayList<>();
+
+        result.addAll(additionalArguments);
+        result.addAll(Arrays.asList("-f", "nut", "-i", "tcp://127.0.0.1:" + serverSocket.getLocalPort()));
 
         return result;
+    }
+
+    private void allocateSocket() {
+        if (serverSocket != null) {
+            return;
+        }
+
+        try {
+            serverSocket = new ServerSocket(0, 1, InetAddress.getLoopbackAddress());
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to allocate scoket", e);
+        }
     }
 
     public static FrameInput withProducer(FrameProducer producer) {

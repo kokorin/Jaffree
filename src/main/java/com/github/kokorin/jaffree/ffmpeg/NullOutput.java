@@ -17,8 +17,6 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-import com.github.kokorin.jaffree.Option;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -28,12 +26,7 @@ import java.util.List;
  */
 public class NullOutput implements Output {
     @Override
-    public void beforeExecute(FFmpeg ffmpeg) {
-
-    }
-
-    @Override
-    public List<Option> buildOptions() {
-        return Arrays.asList(new Option("-c", "copy"), new Option("-f", "null"), new Option("-"));
+    public List<String> buildArguments() {
+        return Arrays.asList("-c", "copy", "-f", "null", "-");
     }
 }

@@ -18,36 +18,52 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.nut.*;
-import com.github.kokorin.jaffree.process.StdWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.EnumSet;
 import java.util.List;
 
-public class NutFrameWriter implements StdWriter {
+public class NutFrameWriter implements Runnable {
     private final FrameProducer producer;
     private final boolean alpha;
+    private final ServerSocket serverSocket;
 
     private static final byte[] FOURCC_ABGR = {'A', 'B', 'G', 'R'};
     private static final byte[] FOURCC_BGR24 = {'B', 'G', 'R', 24};
     //PCM Signed Differential?
     private static final byte[] FOURCC_PCM_S32BE = {32, 'D', 'S', 'P'};
 
-    public NutFrameWriter(FrameProducer producer) {
-        this(producer, false);
-    }
 
-    public NutFrameWriter(FrameProducer producer, boolean alpha) {
+    private static final Logger LOGGER = LoggerFactory.getLogger(NutFrameWriter.class);
+
+    public NutFrameWriter(FrameProducer producer, boolean alpha, ServerSocket serverSocket) {
         this.producer = producer;
         this.alpha = alpha;
+        this.serverSocket = serverSocket;
     }
 
     @Override
-    public void write(OutputStream stdIn) {
+    public void run() {
+
+        try (ServerSocket serverSocket = this.serverSocket;
+             Socket socket = serverSocket.accept();
+             OutputStream output = socket.getOutputStream()) {
+            write(output);
+        } catch (IOException e) {
+            LOGGER.warn("Failed to write to socket: " + serverSocket, e);
+        }
+    }
+
+    // package-private for test
+    void write(OutputStream stdIn) {
         try {
             NutWriter writer = new NutWriter(new NutOutputStream(stdIn));
             write(writer);

@@ -36,11 +36,11 @@ public class Mosaic {
             final FFmpeg ffmpeg = FFmpeg.atPath(ffmpegBin)
                     .addInput(UrlInput
                             .fromUrl(input)
-                            .setDuration(70_000))
+                            .setDuration(15_000))
                     .addOutput(FrameOutput
                             .withConsumer(frameIterator.getConsumer())
-                            .addOption("-ac", "1")
-                            .addOption("-ar", Integer.toString(sampleRate))
+                            .addArguments("-ac", "1")
+                            .addArguments("-ar", Integer.toString(sampleRate))
                     )
                     .setContextName("input" + i);
 
@@ -322,7 +322,7 @@ public class Mosaic {
             }
         }
 
-        if (ffmpegBin == null) {
+        if (ffmpegBin == null || inputs.isEmpty()) {
             LOGGER.error("Usage: java -cp examples.jar Mosaic -ffmpeg_bin </path/to/ffmpeg/bin>");
             return;
         }

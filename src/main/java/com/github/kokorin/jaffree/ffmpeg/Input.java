@@ -17,11 +17,8 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-import com.github.kokorin.jaffree.Option;
-
 import java.util.List;
 
 public interface Input {
-    void beforeExecute(FFmpeg ffmpeg);
-    List<Option> buildOptions();
+    List<String> buildArguments();
 }

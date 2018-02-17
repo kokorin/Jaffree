@@ -64,7 +64,7 @@ public class FFmpegTest {
                         .toPath(outputPath)
                         .setCodec(StreamType.AUDIO, "mp3")
                         .disableStream(StreamType.VIDEO)
-                        .addOption("-id3v2_version", "3")
+                        .addArguments("-id3v2_version", "3")
                 )
                 .execute();
 

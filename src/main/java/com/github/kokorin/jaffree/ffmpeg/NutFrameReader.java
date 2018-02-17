@@ -18,7 +18,6 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.nut.*;
-import com.github.kokorin.jaffree.process.StdReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,28 +26,39 @@ import java.awt.color.ColorSpace;
 import java.awt.image.*;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NutFrameReader<T> implements StdReader<T> {
+public class NutFrameReader implements Runnable {
     private final FrameConsumer frameConsumer;
     private final boolean alpha;
+    private final ServerSocket serverSocket;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NutFrameReader.class);
 
-    public NutFrameReader(FrameConsumer frameConsumer) {
-        this(frameConsumer, false);
-    }
-
-    public NutFrameReader(FrameConsumer frameConsumer, boolean alpha) {
+    public NutFrameReader(FrameConsumer frameConsumer, boolean alpha, ServerSocket serverSocket) {
         this.frameConsumer = frameConsumer;
         this.alpha = alpha;
+        this.serverSocket = serverSocket;
     }
 
     @Override
-    public T read(InputStream stdOut) {
+    public void run() {
+        try (ServerSocket serverSocket = this.serverSocket;
+             Socket socket = serverSocket.accept();
+             InputStream input = socket.getInputStream()) {
+            read(input);
+        } catch (IOException e) {
+            throw  new RuntimeException("Failed to read from socket " + serverSocket, e);
+        }
+    }
+
+    // package-private for test
+    void read(InputStream stdOut) {
         NutInputStream stream = new NutInputStream(stdOut);
         NutReader nutReader = new NutReader(stream);
 
@@ -77,8 +87,6 @@ public class NutFrameReader<T> implements StdReader<T> {
         }
 
         frameConsumer.consume(null);
-
-        return null;
     }
 
     private static List<Stream> parseTracks(MainHeader mainHeader, StreamHeader[] streamHeaders) {

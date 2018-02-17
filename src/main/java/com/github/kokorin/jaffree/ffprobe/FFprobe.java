@@ -18,7 +18,6 @@
 package com.github.kokorin.jaffree.ffprobe;
 
 import com.github.kokorin.jaffree.LogLevel;
-import com.github.kokorin.jaffree.Option;
 import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.process.LoggingStdReader;
 import com.github.kokorin.jaffree.process.ProcessHandler;
@@ -30,6 +29,7 @@ import javax.xml.bind.JAXB;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class FFprobe {
@@ -358,93 +358,93 @@ public class FFprobe {
         return new ProcessHandler<FFprobeResult>(executable, null)
                 .setStdOutReader(createStdOutReader())
                 .setStdErrReader(createStdErrReader())
-                .execute(buildOptions());
+                .execute(buildArguments());
     }
 
-    protected List<Option> buildOptions() {
-        List<Option> result = new ArrayList<>();
+    protected List<String> buildArguments() {
+        List<String> result = new ArrayList<>();
 
         // Force bitexact output, useful to produce output which is not dependent on the specific build.
         // -bitexact and -show_program_version or -show_library_versions options are incompatible
         boolean bitExact = !showProgramVersion && !showLibraryVersions && !showVersions;
         if (bitExact) {
-            result.add(new Option("-bitexact"));
+            result.add("-bitexact");
         }
 
         if (printFormat != null) {
-            result.add(new Option("-print_format", printFormat));
+            result.addAll(Arrays.asList("-print_format", printFormat));
         }
 
-        //ffprobe.add(new Option("-hide_banner"));
+        //ffprobe.add("-hide_banner");
 
         if (selectStreams != null) {
-            result.add(new Option("-select_streams", selectStreams));
+            result.addAll(Arrays.asList("-select_streams", selectStreams));
         }
         if (showData) {
-            result.add(new Option("-show_data"));
+            result.add("-show_data");
         }
         if (showDataHash != null) {
-            result.add(new Option("-show_data_hash", showDataHash));
+            result.addAll(Arrays.asList("-show_data_hash", showDataHash));
         }
         if (showError) {
-            result.add(new Option("-show_error"));
+            result.add("-show_error");
         }
         if (showFormat) {
-            result.add(new Option("-show_format"));
+            result.add("-show_format");
         }
         if (showFormatEntry != null) {
-            result.add(new Option("-show_format_entry", showFormatEntry));
+            result.addAll(Arrays.asList("-show_format_entry", showFormatEntry));
         }
         if (showEntries != null) {
-            result.add(new Option("-show_entries", showEntries));
+            result.addAll(Arrays.asList("-show_entries", showEntries));
         }
         if (showPackets) {
-            result.add(new Option("-show_packets"));
+            result.add("-show_packets");
         }
         if (showFrames) {
-            result.add(new Option("-show_frames"));
+            result.add("-show_frames");
         }
         if (showLog != null) {
-            result.add(new Option("-show_log", Integer.toString(showLog.code())));
+            result.addAll(Arrays.asList("-show_log", Integer.toString(showLog.code())));
         }
         if (showStreams) {
-            result.add(new Option("-show_streams"));
+            result.add("-show_streams");
         }
         if (showPrograms) {
-            result.add(new Option("-show_programs"));
+            result.add("-show_programs");
         }
         if (showChapters) {
-            result.add(new Option("-show_chapters"));
+            result.add("-show_chapters");
         }
         if (countFrames) {
-            result.add(new Option("-count_frames"));
+            result.add("-count_frames");
         }
         if (countPackets) {
-            result.add(new Option("-count_packets"));
+            result.add("-count_packets");
         }
         if (readIntervals != null) {
-            result.add(new Option("-read_intervals", readIntervals));
+            result.addAll(Arrays.asList("-read_intervals", readIntervals));
         }
         if (showPrivateData) {
-            result.add(new Option("-show_private_data"));
+            result.add("-show_private_data");
         } else {
-            result.add(new Option("-noprivate"));
+            result.add("-noprivate");
         }
         if (showProgramVersion) {
-            result.add(new Option("-show_program_version"));
+            result.add("-show_program_version");
         }
         if (showLibraryVersions) {
-            result.add(new Option("-show_library_versions"));
+            result.add("-show_library_versions");
         }
         if (showVersions) {
-            result.add(new Option("-show_versions"));
+            result.add("-show_versions");
         }
         if (showPixelFormats) {
-            result.add(new Option("-show_pixel_formats"));
+            result.add("-show_pixel_formats");
         }
 
         if (inputPath != null) {
-            result.add(new Option("-i", inputPath.toString()));
+            result.addAll(Arrays.asList("-i", inputPath.toString()));
         }
 
         return result;

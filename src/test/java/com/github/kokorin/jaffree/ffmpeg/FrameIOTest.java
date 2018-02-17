@@ -302,7 +302,7 @@ public class FrameIOTest {
 
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
-        NutFrameWriter writer = new NutFrameWriter(producer);
+        NutFrameWriter writer = new NutFrameWriter(producer, false, null);
         writer.write(buffer);
 
         final List<Stream> actualTracks = new CopyOnWriteArrayList<>();
@@ -322,7 +322,7 @@ public class FrameIOTest {
         };
 
         ByteArrayInputStream input = new ByteArrayInputStream(buffer.toByteArray());
-        NutFrameReader<?> reader = new NutFrameReader<>(consumer);
+        NutFrameReader reader = new NutFrameReader(consumer, false, null);
         reader.read(input);
 
         Assert.assertEquals(1, actualTracks.size());

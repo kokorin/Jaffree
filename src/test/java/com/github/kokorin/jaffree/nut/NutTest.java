@@ -104,13 +104,16 @@ public class NutTest {
         Path rawNut = Files.createTempFile("raw_video", ".nut");
 
         FFmpeg.atPath(BIN)
-                .addInput(UrlInput.fromPath(VIDEO_MP4))
+                .addInput(
+                        UrlInput.fromPath(VIDEO_MP4)
+                                .setDuration(1000)
+                )
                 .setOverwriteOutput(true)
                 .addOutput(UrlOutput.toPath(rawNut)
                         .setFormat("nut")
-                        .addOption("-vcodec", "rawvideo")
-                        .addOption("-pix_fmt", "bgr24")
-                        .addOption("-acodec", "pcm_s32be")
+                        .addArguments("-vcodec", "rawvideo")
+                        .addArguments("-pix_fmt", "bgr24")
+                        .addArguments("-acodec", "pcm_s32be")
                 )
                 .execute();
 

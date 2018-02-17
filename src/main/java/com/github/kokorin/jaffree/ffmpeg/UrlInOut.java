@@ -17,10 +17,10 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-import com.github.kokorin.jaffree.Option;
 import com.github.kokorin.jaffree.StreamType;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -38,7 +38,7 @@ public abstract class UrlInOut<T extends UrlInOut> {
     //
 
     private final List<StreamSpecifierWithValue> codecs = new ArrayList<>();
-    private final List<Option> additionalOptions = new ArrayList<>();
+    private final List<String> additionalArguments = new ArrayList<>();
 
     /**
      * Force input or output file format. The format is normally auto detected for input files and
@@ -206,64 +206,64 @@ public abstract class UrlInOut<T extends UrlInOut> {
     }
 
     /**
-     * Add custom option.
+     * Add custom arguments.
      * Intended for cases, that are not yet supported by jaffree
      *
-     * @param key   option's key to add
-     * @param value option's value to add
+     * @param key   key to add
+     * @param value value to add
      * @return this
      */
-    public T addOption(String key, String value) {
-        additionalOptions.add(new Option(key, value));
+    public T addArguments(String key, String value) {
+        additionalArguments.addAll(Arrays.asList(key, value));
         return thisAsT();
     }
 
     /**
-     * Add custom option.
+     * Add custom argument.
      * Intended for cases, that are not yet supported by jaffree
      *
-     * @param key option's key to add
+     * @param argument argument to add
      * @return this
      */
-    public T addOption(String key) {
-        additionalOptions.add(new Option(key));
+    public T addArgument(String argument) {
+        additionalArguments.add(argument);
         return thisAsT();
     }
 
-    public abstract List<Option> buildOptions();
+    public abstract List<String> buildArguments();
 
-    protected List<Option> buildCommonOptions() {
-        List<Option> result = new ArrayList<>();
+    protected List<String> buildCommonArguments() {
+        List<String> result = new ArrayList<>();
 
         if (format != null) {
-            result.add(new Option("-f", format));
+            result.addAll(Arrays.asList("-f", format));
         }
 
         if (duration != null) {
-            result.add(new Option("-t", formatDuration(duration)));
+            result.addAll(Arrays.asList("-t", formatDuration(duration)));
         }
 
         if (position != null) {
-            result.add(new Option("-ss", formatDuration(position)));
+            result.addAll(Arrays.asList("-ss", formatDuration(position)));
         }
 
         if (positionEof != null) {
-            result.add(new Option("-sseof", formatDuration(positionEof)));
+            result.addAll(Arrays.asList("-sseof", formatDuration(positionEof)));
         }
 
         if (frameRate != null) {
-            result.add(frameRate.toOption("-r"));
+            result.addAll(frameRate.toArguments("-r"));
         }
 
         if (frameSize != null) {
-            result.add(frameSize.toOption("-s"));
+            result.addAll(frameSize.toArguments("-s"));
         }
 
         for (StreamSpecifierWithValue codec : codecs) {
-            result.add(codec.toOption("-codec"));
+            result.addAll(codec.toArguments("-codec"));
         }
 
-        result.addAll(additionalOptions);
+        result.addAll(additionalArguments);
 
         return result;
     }
@@ -286,12 +286,12 @@ public abstract class UrlInOut<T extends UrlInOut> {
             this.value = value;
         }
 
-        public Option toOption(String key) {
+        public List<String> toArguments(String key) {
             if (streamSpecifier == null) {
-                return new Option(key, value);
+                return Arrays.asList(key, value);
             }
 
-            return new Option(key + ":" + streamSpecifier, value);
+            return Arrays.asList(key + ":" + streamSpecifier, value);
         }
     }
 }
