@@ -189,18 +189,18 @@ FrameProducer producer = new FrameProducer() {
         }
         System.out.println("Creating frame " + frameCounter);
 
-        VideoFrame frame = new VideoFrame();
-
         BufferedImage image = new BufferedImage(320, 240, BufferedImage.TYPE_3BYTE_BGR);
         Graphics2D graphics = image.createGraphics();
         graphics.setPaint(new Color(frameCounter * 1.0f / 30, 0, 0));
         graphics.fillRect(0, 0, 320, 240);
 
-        frame.setImage(image);
-        frame.setPts(frameCounter * 1000 / 10);
+        Frame videoFrame = new Frame()
+                .setStreamId(0)
+                .setPts(frameCounter * 1000 / 10)
+                .setImage(image);
         frameCounter++;
 
-        return frame;
+        return videoFrame;
     }
 };
 
