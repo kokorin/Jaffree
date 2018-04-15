@@ -50,6 +50,13 @@ public class PacketSideData {
     @XmlAttribute(name = "side_data_size")
     protected Integer sideDataSize;
 
+    // This attributes are added manually because they were absent in ffprobe.xsd
+    // See https://trac.ffmpeg.org/ticket/7139
+    @XmlAttribute(name = "displaymatrix")
+    protected String displayMatrix;
+    @XmlAttribute(name = "rotation")
+    protected Integer rotation;
+
     /**
      * Gets the value of the sideDataType property.
      * 
@@ -98,4 +105,19 @@ public class PacketSideData {
         this.sideDataSize = value;
     }
 
+    public String getDisplayMatrix() {
+        return displayMatrix;
+    }
+
+    public void setDisplayMatrix(String displayMatrix) {
+        this.displayMatrix = displayMatrix;
+    }
+
+    public Integer getRotation() {
+        return rotation;
+    }
+
+    public void setRotation(Integer rotation) {
+        this.rotation = rotation;
+    }
 }

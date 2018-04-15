@@ -314,4 +314,26 @@ public class FFprobeTest {
         Assert.assertNotNull(result);
         Assert.assertFalse(result.getPixelFormats().getPixelFormat().isEmpty());
     }
+
+    @Test
+    @Ignore("Test uses local file, that can't be downloaded in general case")
+    public void testSideListAttributes() throws Exception {
+        FFprobeResult result = FFprobe.atPath(BIN)
+                .setInputPath(SAMPLES.resolve("VID_20180317_232636.mp4"))
+                .setShowStreams(true)
+                .setShowData(true)
+                .setSelectStreams(StreamType.VIDEO)
+                .execute();
+
+        Assert.assertNotNull(result);
+
+        Stream stream = result.getStreams().getStream().get(0);
+        Assert.assertNotNull(stream);
+
+        PacketSideData sideData = stream.getSideDataList().getSideData().get(0);
+        Assert.assertNotNull(sideData);
+        Assert.assertNotNull(sideData.getDisplayMatrix());
+        Assert.assertNotEquals("New lines must be kept by parser", -1, sideData.getDisplayMatrix().indexOf('\n'));
+        Assert.assertNotNull(sideData.getRotation());
+    }
 }

@@ -15,5 +15,7 @@
  *
  */
 
-@javax.xml.bind.annotation.XmlSchema(namespace = "http://www.ffmpeg.org/schema/ffprobe")
+@XmlSchema(namespace = "http://www.ffmpeg.org/schema/ffprobe")
 package com.github.kokorin.jaffree.ffprobe;
+
+import javax.xml.bind.annotation.XmlSchema;
