@@ -22,6 +22,7 @@ import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.process.LoggingStdReader;
 import com.github.kokorin.jaffree.process.ProcessHandler;
 import com.github.kokorin.jaffree.process.StdReader;
+import com.github.kokorin.jaffree.process.ThrowingStdReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,10 +50,11 @@ public class FFprobe {
     // for example when creating XSD-compliant XML output.
     private final boolean showPrivateData = false;
 
+    private final LogLevel logLevel = LogLevel.ERROR;
+
     private String selectStreams;
     private boolean showData;
     private String showDataHash;
-    private boolean showError;
     private boolean showFormat;
     private String showFormatEntry;
     //TODO extract type
@@ -123,17 +125,6 @@ public class FFprobe {
      */
     public FFprobe setShowDataHash(String algorithm) {
         this.showDataHash = algorithm;
-        return this;
-    }
-
-    /**
-     * Show information about the error found when trying to probe the inputPath.
-     *
-     * @param showError
-     * @return this
-     */
-    public FFprobe setShowError(boolean showError) {
-        this.showError = showError;
         return this;
     }
 
@@ -375,7 +366,9 @@ public class FFprobe {
             result.addAll(Arrays.asList("-print_format", printFormat));
         }
 
-        //ffprobe.add("-hide_banner");
+        if (logLevel != null) {
+            result.addAll(Arrays.asList("-loglevel", Integer.toString(logLevel.code())));
+        }
 
         if (selectStreams != null) {
             result.addAll(Arrays.asList("-select_streams", selectStreams));
@@ -385,9 +378,6 @@ public class FFprobe {
         }
         if (showDataHash != null) {
             result.addAll(Arrays.asList("-show_data_hash", showDataHash));
-        }
-        if (showError) {
-            result.add("-show_error");
         }
         if (showFormat) {
             result.add("-show_format");
@@ -460,7 +450,11 @@ public class FFprobe {
     }
 
     protected StdReader<FFprobeResult> createStdErrReader() {
-        return new LoggingStdReader<>();
+        if (logLevel.code() > LogLevel.WARNING.code()) {
+            return new LoggingStdReader<>();
+        }
+
+        return new ThrowingStdReader<>();
     }
 
     public static FFprobe atPath(Path pathToDir) {

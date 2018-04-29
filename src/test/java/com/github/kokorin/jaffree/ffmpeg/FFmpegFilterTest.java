@@ -135,7 +135,6 @@ public class FFmpegFilterTest {
         FFprobeResult probe = FFprobe.atPath(BIN)
                 .setInputPath(outputPath)
                 .setShowStreams(true)
-                .setShowError(true)
                 .execute();
 
         Assert.assertNotNull(probe);
@@ -203,7 +202,6 @@ public class FFmpegFilterTest {
         FFprobeResult probe = FFprobe.atPath(BIN)
                 .setInputPath(outputPath)
                 .setShowStreams(true)
-                .setShowError(true)
                 .execute();
 
         double duration = 0.0;

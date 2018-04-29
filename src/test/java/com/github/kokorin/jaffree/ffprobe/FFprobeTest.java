@@ -1,12 +1,11 @@
 package com.github.kokorin.jaffree.ffprobe;
 
 import com.github.kokorin.jaffree.LogLevel;
+import com.github.kokorin.jaffree.StackTraceMatcher;
 import com.github.kokorin.jaffree.StreamSpecifier;
 import com.github.kokorin.jaffree.StreamType;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
+import org.junit.rules.ExpectedException;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -18,6 +17,9 @@ public class FFprobeTest {
     public static Path VIDEO_MP4 = SAMPLES.resolve("MPEG-4/video.mp4");
     public static Path ERROR_MP4 = SAMPLES.resolve("non_existent.mp4");
     public static Path TRANSPORT_VOB = SAMPLES.resolve("MPEG-VOB/transport-stream/capture.neimeng");
+
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
 
     @BeforeClass
     public static void setUp() throws Exception {
@@ -83,21 +85,6 @@ public class FFprobeTest {
         Assert.assertNotNull(result);
         Assert.assertNotNull(result.getPackets().getPacket().get(0).getDataHash());
     }
-
-    //private boolean showError;
-
-    @Test
-    public void testShowError() throws Exception {
-
-        FFprobeResult result = FFprobe.atPath(BIN)
-                .setInputPath(ERROR_MP4)
-                .setShowError(true)
-                .execute();
-
-        Assert.assertNotNull(result);
-        Assert.assertNotNull(result.getError());
-    }
-
 
     //private boolean showFormat;
 
@@ -335,5 +322,27 @@ public class FFprobeTest {
         Assert.assertNotNull(sideData.getDisplayMatrix());
         Assert.assertNotEquals("New lines must be kept by parser", -1, sideData.getDisplayMatrix().indexOf('\n'));
         Assert.assertNotNull(sideData.getRotation());
+    }
+
+    @Test
+    @Ignore("Test uses local file, that can't be downloaded in general case")
+    public void testError() throws Exception {
+        FFprobeResult result = FFprobe.atPath(BIN)
+                .setInputPath(SAMPLES.resolve("nonexistent"))
+                .setShowStreams(true)
+                .setShowData(true)
+                .setSelectStreams(StreamType.VIDEO)
+                .execute();
+
+        Assert.assertNotNull(result);
+    }
+
+    @Test
+    public void testExceptionIsThrownIfFfprobeExitsWithError() {
+        expectedException.expect(new StackTraceMatcher("No such file or directory"));
+
+        FFprobeResult result = FFprobe.atPath(BIN)
+                .setInputPath(Paths.get("nonexistent.mp4"))
+                .execute();
     }
 }

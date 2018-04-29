@@ -29,7 +29,7 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
-public class FFmpegResultReader implements StdReader<FFmpegResult>{
+public class FFmpegResultReader implements StdReader<FFmpegResult> {
     private final ProgressListener progressListener;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FFmpegResultReader.class);
@@ -42,6 +42,8 @@ public class FFmpegResultReader implements StdReader<FFmpegResult>{
     public FFmpegResult read(InputStream stdOut) {
         //just read stdOut fully
         BufferedReader reader = new BufferedReader(new InputStreamReader(stdOut));
+        String errorMessage = null;
+
         String line;
         FFmpegResult result = null;
 
@@ -52,6 +54,7 @@ public class FFmpegResultReader implements StdReader<FFmpegResult>{
                     FFmpegProgress progress = parseProgress(line);
                     if (progress != null) {
                         progressListener.onProgress(progress);
+                        errorMessage = null;
                         continue;
                     }
                 }
@@ -60,10 +63,24 @@ public class FFmpegResultReader implements StdReader<FFmpegResult>{
 
                 if (possibleResult != null) {
                     result = possibleResult;
+                    errorMessage = null;
+                    continue;
                 }
+
+                if (line.startsWith("[")) {
+                    // After encoding has ended ffmpeg adds extra codec-specific data like following
+                    // [libx264 @ 00000000012057c0] frame I:17    Avg QP:19.81  size:  2020
+                    continue;
+                }
+
+               errorMessage = line;
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+
+        if (errorMessage != null) {
+            throw new RuntimeException(errorMessage);
         }
 
         return result;
@@ -169,8 +186,7 @@ public class FFmpegResultReader implements StdReader<FFmpegResult>{
             double muxingOverheadRatio = parseDouble(muxOverhead, 0.) * 0.01;
 
             if (videoSize != 0 || audioSize != 0 || subtitleSize != 0 || otherStreamsSize != 0
-                    || globalHeadersSize != 0 || muxingOverheadRatio != 0)
-            {
+                    || globalHeadersSize != 0 || muxingOverheadRatio != 0) {
                 return new FFmpegResult(videoSize, audioSize, subtitleSize, otherStreamsSize, globalHeadersSize, muxingOverheadRatio);
             }
         } catch (Exception e) {

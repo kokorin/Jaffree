@@ -17,8 +17,10 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
+import com.github.kokorin.jaffree.LogLevel;
 import com.github.kokorin.jaffree.process.LoggingStdReader;
 import com.github.kokorin.jaffree.process.ProcessHandler;
+import com.github.kokorin.jaffree.process.StdReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +32,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class FFmpeg {
+    private final LogLevel logLevel = LogLevel.INFO;
+
     private final List<Input> inputs = new ArrayList<>();
     private final List<Output> outputs = new ArrayList<>();
     private final List<String> additionalArguments = new ArrayList<>();
@@ -138,8 +142,8 @@ public class FFmpeg {
             }
 
             return new ProcessHandler<FFmpegResult>(executable, contextName)
-                    .setStdErrReader(new FFmpegResultReader(progressListener))
-                    .setStdOutReader(new LoggingStdReader<FFmpegResult>())
+                    .setStdErrReader(createStdErrReader())
+                    .setStdOutReader(createStdOutReader())
                     .execute(buildArguments());
 
         } finally {
@@ -149,8 +153,20 @@ public class FFmpeg {
         }
     }
 
+    protected StdReader<FFmpegResult> createStdErrReader() {
+        return new FFmpegResultReader(progressListener);
+    }
+
+    protected StdReader<FFmpegResult> createStdOutReader() {
+        return new LoggingStdReader<>();
+    }
+
     protected List<String> buildArguments() {
         List<String> result = new ArrayList<>();
+
+        if (logLevel != null) {
+            result.addAll(Arrays.asList("-loglevel", Integer.toString(logLevel.code())));
+        }
 
         for (Input input : inputs) {
             result.addAll(input.buildArguments());

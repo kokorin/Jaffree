@@ -205,19 +205,22 @@ public class ProcessHandler<T> {
         }
 
         Exception exception = exceptionRef.get();
-        if (status == 0) {
+        if (result == null) {
             if (exception != null) {
-                LOGGER.warn("Process execution has ended successfully, but exception has been caught: ", exception);
+                throw new RuntimeException("Failed to execute (no result)", exception);
             }
-            return result;
+
+            throw new RuntimeException("Process execution has ended without result or exception, but status is " + status);
         }
 
-        if (result != null) {
-            LOGGER.warn("Process has ended with non zero status: {} and exception", status, exception);
-            return result;
+        if (exception != null) {
+            LOGGER.warn("Process execution has ended with result and with exception : ", exception);
+        }
+        if (status != 0) {
+            LOGGER.warn("Process execution has ended with result, but status is {}", status);
         }
 
-        throw new RuntimeException("Process has ended with no result and non zero status: " + status, exception);
+        return result;
     }
 
     public void stop() {

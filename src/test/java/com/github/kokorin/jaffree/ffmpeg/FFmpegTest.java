@@ -1,14 +1,13 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.SizeUnit;
+import com.github.kokorin.jaffree.StackTraceMatcher;
 import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffprobe.FFprobe;
 import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
 import com.github.kokorin.jaffree.ffprobe.Stream;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
+import org.junit.rules.ExpectedException;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -25,6 +24,9 @@ public class FFmpegTest {
     public static Path SMALL_MP4 = SAMPLES.resolve("MPEG-4/turn-on-off.mp4");
     public static Path ERROR_MP4 = SAMPLES.resolve("non_existent.mp4");
     public static Path TRANSPORT_VOB = SAMPLES.resolve("MPEG-VOB/transport-stream/capture.neimeng");
+
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
 
     @BeforeClass
     public static void setUp() throws Exception {
@@ -73,7 +75,6 @@ public class FFmpegTest {
         FFprobeResult probe = FFprobe.atPath(BIN)
                 .setInputPath(outputPath)
                 .setShowStreams(true)
-                .setShowError(true)
                 .execute();
 
         Assert.assertNotNull(probe);
@@ -256,7 +257,6 @@ public class FFmpegTest {
 
         FFprobeResult probe = FFprobe.atPath(BIN)
                 .setShowStreams(true)
-                .setShowError(true)
                 .setInputPath(outputPath)
                 .execute();
         Assert.assertNull(probe.getError());
@@ -300,10 +300,20 @@ public class FFmpegTest {
         Assert.assertNotNull(result);
     }
 
+
+    @Test
+    public void testExceptionIsThrownIfFfmpegExitsWithError() {
+        expectedException.expect(new StackTraceMatcher("No such file or directory"));
+
+        FFmpegResult result = FFmpeg.atPath(BIN)
+                .addInput(UrlInput.fromPath(Paths.get("nonexistent.mp4")))
+                //.addOutput()
+                .execute();
+    }
+
     private static double getDuration(Path path) {
         FFprobeResult probe = FFprobe.atPath(BIN)
                 .setShowStreams(true)
-                .setShowError(true)
                 .setInputPath(path)
                 .execute();
         Assert.assertNull(probe.getError());

@@ -77,7 +77,6 @@ public class NutTest {
 
         FFprobeResult probe = FFprobe.atPath(BIN)
                 .setInputPath(outputPath)
-                .setShowError(true)
                 .setCountFrames(true)
                 .setShowLog(LogLevel.DEBUG)
                 .execute();
