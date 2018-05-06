@@ -48,7 +48,7 @@ public class NutTest {
     }
 
     @Test
-    public void readWrite() throws Exception {
+    public void readAndWrite() throws Exception {
         Path outputPath = Files.createTempFile("output", ".nut");
 
         try (NutInputStream inputStream = new NutInputStream(new FileInputStream(VIDEO_NUT.toFile()));

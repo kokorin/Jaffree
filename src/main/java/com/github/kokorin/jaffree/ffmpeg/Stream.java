@@ -59,6 +59,10 @@ public class Stream {
         return this;
     }
 
+    public Stream setResolution(int width, int height) {
+        return setWidth(width).setHeight(height);
+    }
+
     public Long getSampleRate() {
         return sampleRate;
     }

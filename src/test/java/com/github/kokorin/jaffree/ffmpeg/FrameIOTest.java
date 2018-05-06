@@ -15,12 +15,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class FrameIOTest {
     public static Path BIN;
@@ -342,4 +344,88 @@ public class FrameIOTest {
             // TODO compare images
         }
     }
+
+    public void testNutGenerationAndConsuption(final int duration, final int fps, final long timebase, final int width, final int height) throws Exception {
+        Assert.assertEquals(0, timebase % fps);
+        Path mp4Path = Files.createTempFile("highResolution", ".mp4");
+
+        final AtomicReference<FFmpegProgress> progressRef = new AtomicReference<>();
+
+        // TODO convert outputPath to MP4 with ffmpeg and check how long will it take
+        FFmpeg.atPath(BIN)
+                .addInput(FrameInput.withProducer(new FrameProducer() {
+                            private BufferedImage image;
+                            private long frame = 0;
+                            private long lastSecond = -1;
+
+                            @Override
+                            public List<Stream> produceStreams() {
+                                return Arrays.asList(
+                                        new Stream()
+                                                .setId(0)
+                                                .setType(Stream.Type.VIDEO)
+                                                .setWidth(width)
+                                                .setHeight(height)
+                                                .setTimebase(timebase)
+                                );
+                            }
+
+                            @Override
+                            public Frame produce() {
+                                if (frame > duration * fps) {
+                                    return null;
+                                }
+
+                                long currentSecond = frame / fps;
+                                if (lastSecond != currentSecond) {
+                                    image = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
+                                    Graphics2D g2d = image.createGraphics();
+                                    g2d.setPaint(Color.white);
+                                    g2d.setFont(new Font("Serif", Font.BOLD, height * 4 / 5));
+                                    String s = currentSecond + "";
+                                    FontMetrics fm = g2d.getFontMetrics();
+                                    int x = (image.getWidth() - fm.stringWidth(s)) / 2;
+                                    int y = height * 3 / 4;//image.getHeight() - (image.getHeight() - fm.getHeight()) / 2;
+                                    g2d.drawString(s, x, y);
+                                    g2d.dispose();
+
+                                    lastSecond = currentSecond;
+                                }
+
+                                Frame result = new Frame()
+                                        .setStreamId(0)
+                                        .setPts(frame * timebase / fps)
+                                        .setImage(image);
+                                frame++;
+
+                                return result;
+                            }
+                        })
+                                .setVideoFrameRate(fps)
+                )
+                .addOutput(UrlOutput.toPath(mp4Path))
+                .setOverwriteOutput(true)
+                .setProgressListener(new ProgressListener() {
+                    @Override
+                    public void onProgress(FFmpegProgress progress) {
+                        progressRef.set(progress);
+                    }
+                })
+                .execute();
+
+        Assert.assertNotNull(progressRef.get());
+        // +1 frame for EOF
+        int expectedFrames = duration * fps;
+        Assert.assertTrue("duration="+ duration + ", fps=" + fps + ", timebase=" + timebase
+                        + ", width=" + width + ", height=" + height + ", frames=" + progressRef.get().getFrame(),
+                expectedFrames == progressRef.get().getFrame() || expectedFrames + 1 == progressRef.get().getFrame());
+    }
+
+    @Test
+    public void videoFramerateHighResolution() throws Exception {
+        testNutGenerationAndConsuption(10, 25, 1000, 480, 240);
+        testNutGenerationAndConsuption(10, 25, 1000, 1280, 720);
+        testNutGenerationAndConsuption(10, 25, 1000, 2560, 1440);
+    }
+
 }

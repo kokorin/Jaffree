@@ -18,6 +18,9 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -25,14 +28,20 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * <b>It's strongly recommended</b> to specify {@link #setVideoFrameRate(Integer)}  for video producing
+ */
 public class FrameInput implements Input {
 
     private final List<String> additionalArguments = new ArrayList<>();
 
     private FrameProducer producer;
 
+    private Integer videoFrameRate;
     private boolean alpha;
     private ServerSocket serverSocket;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(FrameInput.class);
 
     public FrameInput setProducer(FrameProducer producer) {
         this.producer = producer;
@@ -60,6 +69,19 @@ public class FrameInput implements Input {
         return this;
     }
 
+    /**
+     * <b>It's strongly recommended</b> to specify videoFrameRate for video producing.
+     * <p>
+     * Otherwise conversion can be very slow (20-50 times slower) and even can result in corrupted video
+     *
+     * @param videoFrameRate video frames per second
+     * @return this
+     */
+    public FrameInput setVideoFrameRate(Integer videoFrameRate) {
+        this.videoFrameRate = videoFrameRate;
+        return this;
+    }
+
     Runnable createWriter() {
         allocateSocket();
         return new NutFrameWriter(producer, alpha, serverSocket);
@@ -72,6 +94,14 @@ public class FrameInput implements Input {
         List<String> result = new ArrayList<>();
 
         result.addAll(additionalArguments);
+
+        if (videoFrameRate != null) {
+            result.addAll(Arrays.asList("-r", Integer.toString(videoFrameRate)));
+        } else {
+            LOGGER.warn("It's strongly recommended to specify video frame rate, " +
+                    "otherwise video encoding may be slower (by 20-50 times) and may produce corrupted video");
+        }
+
         result.addAll(Arrays.asList("-f", "nut", "-i", "tcp://127.0.0.1:" + serverSocket.getLocalPort()));
 
         return result;
