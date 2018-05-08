@@ -68,7 +68,7 @@ public class NutFrameReader implements Runnable {
             List<Stream> tracks = parseTracks(mainHeader, streamHeaders);
             frameConsumer.consumeStreams(tracks);
 
-            LOGGER.debug("Tracks: {}", streamHeaders);
+            LOGGER.debug("Streams: {}", (Object) streamHeaders);
 
             NutFrame nutFrame;
             while ((nutFrame = nutReader.readFrame()) != null) {
@@ -76,6 +76,8 @@ public class NutFrameReader implements Runnable {
 
                 int trackNo = nutFrame.streamId;
                 Frame frame = parseFrame(streamHeaders[trackNo], nutFrame);
+                LOGGER.trace("Parsed frame: {}", frame);
+
                 if (frame == null) {
                     continue;
                 }

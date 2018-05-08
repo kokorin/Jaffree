@@ -28,8 +28,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class FFmpeg {
     private final LogLevel logLevel = LogLevel.INFO;
@@ -132,25 +130,11 @@ public class FFmpeg {
             }
         }
 
-        ExecutorService service = null;
-        try {
-            if (!readersAndWriters.isEmpty()) {
-                service = Executors.newFixedThreadPool(readersAndWriters.size());
-                for (Runnable runnable : readersAndWriters) {
-                    service.submit(runnable);
-                }
-            }
-
-            return new ProcessHandler<FFmpegResult>(executable, contextName)
-                    .setStdErrReader(createStdErrReader())
-                    .setStdOutReader(createStdOutReader())
-                    .execute(buildArguments());
-
-        } finally {
-            if (service != null) {
-                service.shutdownNow();
-            }
-        }
+        return new ProcessHandler<FFmpegResult>(executable, contextName)
+                .setStdErrReader(createStdErrReader())
+                .setStdOutReader(createStdOutReader())
+                .setRunnables(readersAndWriters)
+                .execute(buildArguments());
     }
 
     protected StdReader<FFmpegResult> createStdErrReader() {

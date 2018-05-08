@@ -77,8 +77,9 @@ public class NutFrameWriter implements Runnable {
 
     // package private for test
     void write(NutWriter writer) throws IOException {
-
         List<Stream> tracks = producer.produceStreams();
+        LOGGER.debug("Streams: {}", tracks.toArray());
+
         StreamHeader[] streamHeaders = new StreamHeader[tracks.size()];
         Rational[] timebases = new Rational[tracks.size()];
 
@@ -160,6 +161,8 @@ public class NutFrameWriter implements Runnable {
 
         Frame frame;
         while ((frame = producer.produce()) != null) {
+            LOGGER.trace("Frame: {}", frame);
+
             final byte[] data;
             StreamHeader streamHeader = streamHeaders[frame.getStreamId()];
             switch (streamHeader.streamType) {
@@ -195,6 +198,7 @@ public class NutFrameWriter implements Runnable {
                     false
             );
 
+            LOGGER.trace("NutFrame: {}", nutFrame);
             writer.writeFrame(nutFrame);
         }
     }
