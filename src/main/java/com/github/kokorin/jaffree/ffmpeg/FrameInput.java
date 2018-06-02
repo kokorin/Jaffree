@@ -24,28 +24,24 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
- * <b>It's strongly recommended</b> to specify {@link #setVideoFrameRate(Integer)}  for video producing
+ * <b>It's strongly recommended</b> to specify {@link #setFrameRate(Number)}  for video producing
  */
-public class FrameInput implements Input {
-
-    private final List<String> additionalArguments = new ArrayList<>();
-
-    private FrameProducer producer;
-
-    private Integer videoFrameRate;
+public class FrameInput extends BaseInput<FrameInput> implements Input {
     private boolean alpha;
-    private ServerSocket serverSocket;
+    private boolean frameRateSet;
+
+    private final FrameProducer producer;
+    private final ServerSocket serverSocket;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FrameInput.class);
 
-    public FrameInput setProducer(FrameProducer producer) {
+    public FrameInput(FrameProducer producer) {
         this.producer = producer;
-        return this;
+        this.serverSocket = allocateSocket();
+        setFormat("nut");
+        setInput("tcp://127.0.0.1:" + serverSocket.getLocalPort());
     }
 
     /**
@@ -59,67 +55,50 @@ public class FrameInput implements Input {
         return this;
     }
 
-    public FrameInput addArgument(String key) {
-        additionalArguments.add(key);
-        return this;
-    }
-
-    public FrameInput addArguments(String key, String value) {
-        additionalArguments.addAll(Arrays.asList(key, value));
-        return this;
+    /**
+     * <b>It's strongly recommended</b> to specify videoFrameRate for video producing.
+     * <p>
+     * Otherwise conversion can be very slow (20-50 times slower) and even can result in corrupted video
+     *
+     * @param value video frames per second
+     * @return this
+     */
+    @Override
+    public FrameInput setFrameRate(Number value) {
+        return super.setFrameRate(value);
     }
 
     /**
      * <b>It's strongly recommended</b> to specify videoFrameRate for video producing.
      * <p>
      * Otherwise conversion can be very slow (20-50 times slower) and even can result in corrupted video
-     *
-     * @param videoFrameRate video frames per second
+     * @param streamSpecifier stream specifier
+     * @param value video frames per second
      * @return this
      */
-    public FrameInput setVideoFrameRate(Integer videoFrameRate) {
-        this.videoFrameRate = videoFrameRate;
-        return this;
+    @Override
+    public FrameInput setFrameRate(String streamSpecifier, Number value) {
+        frameRateSet = true;
+        return super.setFrameRate(streamSpecifier, value);
     }
 
     Runnable createWriter() {
-        allocateSocket();
-        return new NutFrameWriter(producer, alpha, serverSocket);
-    }
-
-    @Override
-    public List<String> buildArguments() {
-        allocateSocket();
-
-        List<String> result = new ArrayList<>();
-
-        result.addAll(additionalArguments);
-
-        if (videoFrameRate != null) {
-            result.addAll(Arrays.asList("-r", Integer.toString(videoFrameRate)));
-        } else {
+        if (!frameRateSet) {
             LOGGER.warn("It's strongly recommended to specify video frame rate, " +
                     "otherwise video encoding may be slower (by 20-50 times) and may produce corrupted video");
         }
-
-        result.addAll(Arrays.asList("-f", "nut", "-i", "tcp://127.0.0.1:" + serverSocket.getLocalPort()));
-
-        return result;
+        return new NutFrameWriter(producer, alpha, serverSocket);
     }
 
-    private void allocateSocket() {
-        if (serverSocket != null) {
-            return;
-        }
-
+    private static ServerSocket allocateSocket() {
         try {
-            serverSocket = new ServerSocket(0, 1, InetAddress.getLoopbackAddress());
+            return new ServerSocket(0, 1, InetAddress.getLoopbackAddress());
         } catch (IOException e) {
             throw new RuntimeException("Failed to allocate scoket", e);
         }
     }
 
     public static FrameInput withProducer(FrameProducer producer) {
-        return new FrameInput().setProducer(producer);
+        return new FrameInput(producer);
     }
 }

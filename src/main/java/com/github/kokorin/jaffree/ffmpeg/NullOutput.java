@@ -17,16 +17,19 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-import java.util.Arrays;
-import java.util.List;
+import com.github.kokorin.jaffree.OS;
 
 /**
  * In some cases usage of ffprobe is not enough. Use this output when you don't care about ffmpeg output and
  * you only want to analyze input file.
+ * <p>
+ * Pay attention that it may be required also to set {@link FFmpeg#setOverwriteOutput(boolean)} to true
  */
-public class NullOutput implements Output {
-    @Override
-    public List<String> buildArguments() {
-        return Arrays.asList("-c", "copy", "-f", "null", "-");
+public class NullOutput extends BaseOutput<NullOutput> implements Output {
+    public NullOutput() {
+        copyAllCodecs();
+        setFormat("null");
+        String output = OS.IS_WINDOWS ? "NUL" : "/dev/null";
+        setOutput(output);
     }
 }

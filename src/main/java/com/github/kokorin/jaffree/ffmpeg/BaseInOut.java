@@ -19,25 +19,24 @@ package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.StreamType;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-public abstract class UrlInOut<T extends UrlInOut> {
+public abstract class BaseInOut<T extends BaseInOut> {
     private String format;
     private Long duration;
     private Long position;
     private Long positionEof;
 
-    private StreamSpecifierWithValue frameRate;
-    private StreamSpecifierWithValue frameSize;
 
     //-ar[:stream_specifier] freq (input/output,per-stream)
     //-ac[:stream_specifier] channels (input/output,per-stream)
     //
 
-    private final List<StreamSpecifierWithValue> codecs = new ArrayList<>();
+    private final Map<String, Object> frameRates = new LinkedHashMap<>();
+    private final Map<String, Object> frameSizes = new LinkedHashMap<>();
+    private final Map<String, Object> codecs = new LinkedHashMap<>();
+    private final Map<String, Object> pixelformats = new LinkedHashMap<>();
     private final List<String> additionalArguments = new ArrayList<>();
 
     /**
@@ -132,15 +131,6 @@ public abstract class UrlInOut<T extends UrlInOut> {
         return thisAsT();
     }
 
-    public T setCodec(StreamType type, String codecName) {
-        return setCodec(type.code(), codecName);
-    }
-
-    public T setCodec(String streamSpecifier, String codecName) {
-        codecs.add(new StreamSpecifierWithValue(streamSpecifier, codecName));
-        return thisAsT();
-    }
-
     /**
      * Set frame rate.
      * <p>
@@ -151,7 +141,7 @@ public abstract class UrlInOut<T extends UrlInOut> {
      * @param value Hz value, fraction or abbreviation
      * @return this
      */
-    public T setFrameRate(String value) {
+    public T setFrameRate(Number value) {
         return setFrameRate(null, value);
     }
 
@@ -166,8 +156,8 @@ public abstract class UrlInOut<T extends UrlInOut> {
      * @param value           Hz value, fraction or abbreviation
      * @return this
      */
-    public T setFrameRate(String streamSpecifier, String value) {
-        this.frameRate = new StreamSpecifierWithValue(streamSpecifier, value);
+    public T setFrameRate(String streamSpecifier, Number value) {
+        this.frameRates.put(streamSpecifier, value);
         return thisAsT();
     }
 
@@ -183,7 +173,7 @@ public abstract class UrlInOut<T extends UrlInOut> {
      * @param height frame height
      * @return this
      */
-    public T setFrameSize(String width, String height) {
+    public T setFrameSize(Number width, Number height) {
         return setFrameSize(null, width, height);
     }
 
@@ -200,8 +190,42 @@ public abstract class UrlInOut<T extends UrlInOut> {
      * @param height          frame height
      * @return this
      */
-    public T setFrameSize(String streamSpecifier, String width, String height) {
-        this.frameSize = new StreamSpecifierWithValue(streamSpecifier, width + "x" + height);
+    public T setFrameSize(String streamSpecifier, Number width, Number height) {
+        return setFrameSize(streamSpecifier, width + "x" + height);
+    }
+
+    /**
+     * Set frame size
+     * <p>
+     * As an input option, this is a shortcut for the video_size private option, recognized by some demuxers
+     * for which the frame size is either not stored in the file or is configurable
+     * <p>
+     * As an output option, this inserts the scale video filter to the end of the corresponding filtergraph.
+     *
+     * @param streamSpecifier stream specifier
+     * @param resolution width + "x" + height
+     * @return this
+     */
+    public T setFrameSize(String streamSpecifier, String resolution) {
+        this.frameSizes.put(streamSpecifier, resolution);
+        return thisAsT();
+    }
+
+    public T setCodec(StreamType type, String codecName) {
+        return setCodec(type.code(), codecName);
+    }
+
+    public T setCodec(String streamSpecifier, String codecName) {
+        codecs.put(streamSpecifier, codecName);
+        return thisAsT();
+    }
+
+    public T setPixelFormat(String format) {
+        return setPixelFormat(null, format);
+    }
+
+    public T setPixelFormat(String streamSpecifier, String value) {
+        pixelformats.put(streamSpecifier, value);
         return thisAsT();
     }
 
@@ -232,7 +256,7 @@ public abstract class UrlInOut<T extends UrlInOut> {
 
     public abstract List<String> buildArguments();
 
-    protected List<String> buildCommonArguments() {
+    protected final List<String> buildCommonArguments() {
         List<String> result = new ArrayList<>();
 
         if (format != null) {
@@ -251,17 +275,10 @@ public abstract class UrlInOut<T extends UrlInOut> {
             result.addAll(Arrays.asList("-sseof", formatDuration(positionEof)));
         }
 
-        if (frameRate != null) {
-            result.addAll(frameRate.toArguments("-r"));
-        }
-
-        if (frameSize != null) {
-            result.addAll(frameSize.toArguments("-s"));
-        }
-
-        for (StreamSpecifierWithValue codec : codecs) {
-            result.addAll(codec.toArguments("-codec"));
-        }
+        result.addAll(toArguments("-r", frameRates));
+        result.addAll(toArguments("-s", frameSizes));
+        result.addAll(toArguments("-c", codecs));
+        result.addAll(toArguments("-pix_fmt", pixelformats));
 
         result.addAll(additionalArguments);
 
@@ -269,7 +286,7 @@ public abstract class UrlInOut<T extends UrlInOut> {
     }
 
     @SuppressWarnings("unchecked")
-    private T thisAsT() {
+    protected final T thisAsT() {
         return (T) this;
     }
 
@@ -277,21 +294,27 @@ public abstract class UrlInOut<T extends UrlInOut> {
         return String.format("%d.%03d", durationMillis / 1000, Math.abs(durationMillis) % 1000);
     }
 
-    protected static class StreamSpecifierWithValue {
-        public final String streamSpecifier;
-        public final String value;
+    protected static List<String> toArguments(String key, Map<String, Object> args) {
+        List<String> result = new ArrayList<>();
+        for (Map.Entry<String, Object> arg : args.entrySet()) {
+            String specifier = arg.getKey();
+            Object valueObj = arg.getValue();
+            String value = valueObj != null ? valueObj.toString() : null;
 
-        public StreamSpecifierWithValue(String streamSpecifier, String value) {
-            this.streamSpecifier = streamSpecifier;
-            this.value = value;
-        }
-
-        public List<String> toArguments(String key) {
-            if (streamSpecifier == null) {
-                return Arrays.asList(key, value);
+            if (value == null) {
+                continue;
             }
 
-            return Arrays.asList(key + ":" + streamSpecifier, value);
+            if (specifier == null || specifier.isEmpty()) {
+                result.add(key);
+                result.add(value);
+                continue;
+            }
+
+            result.add(key + ":" + specifier);
+            result.add(value);
         }
+
+        return result;
     }
 }

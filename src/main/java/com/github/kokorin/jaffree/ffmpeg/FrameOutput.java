@@ -17,109 +17,53 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
+import com.github.kokorin.jaffree.StreamType;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
-public class FrameOutput implements Output {
-    private boolean video = true;
-    private boolean alpha = false;
-    private boolean audio = true;
-    private final List<String> additionalArguments = new ArrayList<>();
-    private ServerSocket serverSocket;
-
+public class FrameOutput extends BaseOutput<FrameOutput> implements Output {
     private final FrameConsumer consumer;
+    private final boolean alpha;
+    private final ServerSocket serverSocket;
 
-    public FrameOutput(FrameConsumer consumer) {
+    public FrameOutput(FrameConsumer consumer, boolean alpha) {
         this.consumer = consumer;
-    }
-
-    public FrameOutput extractVideo(boolean video) {
-        this.video = video;
-        return this;
-    }
-
-    /**
-     * whether to extract video alpha channel (transparency)
-     *
-     * @param alpha extract alpha
-     * @return this
-     */
-    public FrameOutput extractAlpha(boolean alpha) {
         this.alpha = alpha;
-        return this;
-    }
+        this.serverSocket = allocateSocket();
 
-    public FrameOutput extractAudio(boolean audio) {
-        this.audio = audio;
-        return this;
-    }
+        setOutput("tcp://127.0.0.1:" + serverSocket.getLocalPort());
+        setFormat("nut");
 
-    public FrameOutput addArgument(String key) {
-        additionalArguments.add(key);
-        return this;
-    }
+        // default arguments
+        setCodec(StreamType.VIDEO, "rawvideo");
+        String pixelFormat = alpha ? "abgr" : "bgr24";
+        setPixelFormat(pixelFormat);
 
-    public FrameOutput addArguments(String key, String value) {
-        additionalArguments.addAll(Arrays.asList(key, value));
-        return this;
+        setCodec(StreamType.AUDIO, "pcm_s32be");
     }
-
     public FrameConsumer getConsumer() {
         return consumer;
     }
 
     Runnable createReader() {
-        allocateSocket();
-
         return new NutFrameReader(consumer, alpha, serverSocket);
     }
 
-    @Override
-    public List<String> buildArguments() {
-        allocateSocket();
-
-        List<String> result = new ArrayList<>();
-
-        result.addAll(Arrays.asList("-f", "nut"));
-
-        if (video) {
-            result.addAll(Arrays.asList("-vcodec", "rawvideo"));
-            String pixelFormat = alpha ? "abgr" : "bgr24";
-            result.addAll(Arrays.asList("-pix_fmt", pixelFormat));
-        } else {
-            result.add("-vn");
-        }
-
-        if (audio) {
-            result.addAll(Arrays.asList("-acodec", "pcm_s32be"));
-        } else {
-            result.add("-an");
-        }
-
-        result.addAll(additionalArguments);
-
-        result.add("tcp://127.0.0.1:" + serverSocket.getLocalPort());
-
-        return result;
-    }
-
-    private void allocateSocket() {
-        if (serverSocket != null) {
-            return;
-        }
-
+    private static ServerSocket allocateSocket() {
         try {
-            serverSocket = new ServerSocket(0, 1, InetAddress.getLoopbackAddress());
+            return new ServerSocket(0, 1, InetAddress.getLoopbackAddress());
         } catch (IOException e) {
-            throw new RuntimeException("Failed to allocate scoket", e);
+            throw new RuntimeException("Failed to allocate socket", e);
         }
     }
 
     public static FrameOutput withConsumer(FrameConsumer consumer) {
-        return new FrameOutput(consumer);
+        return new FrameOutput(consumer, false);
+    }
+
+    public static FrameOutput withConsumerAlpha(FrameConsumer consumer) {
+        return new FrameOutput(consumer, true);
     }
 }

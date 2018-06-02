@@ -1,5 +1,6 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
+import com.github.kokorin.jaffree.StreamType;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -80,8 +81,7 @@ public class FrameIOTest {
                 )
                 .addOutput(
                         FrameOutput.withConsumer(consumer)
-                                .extractVideo(true)
-                                .extractAudio(false)
+                                .disableStream(StreamType.AUDIO)
                 )
                 .execute();
 
@@ -204,8 +204,7 @@ public class FrameIOTest {
                 )
                 .addOutput(
                         FrameOutput.withConsumer(consumer)
-                                .extractVideo(false)
-                                .extractAudio(true)
+                                .disableStream(StreamType.VIDEO)
                 )
                 .execute();
 
@@ -353,7 +352,8 @@ public class FrameIOTest {
 
         // TODO convert outputPath to MP4 with ffmpeg and check how long will it take
         FFmpeg.atPath(BIN)
-                .addInput(FrameInput.withProducer(new FrameProducer() {
+                .addInput(FrameInput.withProducer(
+                        new FrameProducer() {
                             private BufferedImage image;
                             private long frame = 0;
                             private long lastSecond = -1;
@@ -401,7 +401,7 @@ public class FrameIOTest {
                                 return result;
                             }
                         })
-                                .setVideoFrameRate(fps)
+                        .setFrameRate(fps)
                 )
                 .addOutput(UrlOutput.toPath(mp4Path))
                 .setOverwriteOutput(true)
@@ -416,7 +416,7 @@ public class FrameIOTest {
         Assert.assertNotNull(progressRef.get());
         // +1 frame for EOF
         int expectedFrames = duration * fps;
-        Assert.assertTrue("duration="+ duration + ", fps=" + fps + ", timebase=" + timebase
+        Assert.assertTrue("duration=" + duration + ", fps=" + fps + ", timebase=" + timebase
                         + ", width=" + width + ", height=" + height + ", frames=" + progressRef.get().getFrame(),
                 expectedFrames == progressRef.get().getFrame() || expectedFrames + 1 == progressRef.get().getFrame());
     }

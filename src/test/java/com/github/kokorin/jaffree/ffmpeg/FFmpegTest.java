@@ -238,6 +238,30 @@ public class FFmpegTest {
     }
 
     @Test
+    public void testNullOutput() throws Exception {
+        final AtomicLong time = new AtomicLong();
+
+        FFmpegResult result = FFmpeg.atPath(BIN)
+                .addInput(UrlInput
+                        .fromPath(VIDEO_MP4)
+                )
+                .addOutput(
+                        new NullOutput()
+                )
+                .setOverwriteOutput(true)
+                .setProgressListener(new ProgressListener() {
+                    @Override
+                    public void onProgress(FFmpegProgress progress) {
+                        time.set(progress.getTime());
+                    }
+                })
+                .execute();
+
+        Assert.assertNotNull(result);
+        Assert.assertTrue(time.get() > 165_000);
+    }
+
+    @Test
     public void testMap() throws Exception {
         Path tempDir = Files.createTempDirectory("jaffree");
         Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
@@ -292,9 +316,9 @@ public class FFmpegTest {
                         .setDuration(1_000)
                 )
                 .addOutput(FrameOutput
-                        .withConsumer(frameConsumer)
-                        .extractAlpha(true)
-                        .extractAudio(false))
+                        .withConsumerAlpha(frameConsumer)
+                        .disableStream(StreamType.AUDIO)
+                )
                 .execute();
 
         Assert.assertNotNull(result);
