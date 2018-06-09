@@ -23,7 +23,7 @@ import com.github.kokorin.jaffree.StreamType;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-public class BaseOutput<T extends BaseInOut & Output> extends BaseInOut<T> implements Output {
+public class BaseOutput<T extends BaseOutput & Output> extends BaseInOut<T> implements Output {
     private String output;
     private Long outputPosition;
     private Long sizeLimit;
@@ -55,7 +55,7 @@ public class BaseOutput<T extends BaseInOut & Output> extends BaseInOut<T> imple
     //-sample_fmt[:stream_specifier] sample_fmt (output,per-stream)
 
 
-    protected T setOutput(String output) {
+    public T setOutput(String output) {
         this.output = output;
         return thisAsT();
     }
