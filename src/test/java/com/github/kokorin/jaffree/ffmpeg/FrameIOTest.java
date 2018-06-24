@@ -91,6 +91,46 @@ public class FrameIOTest {
     }
 
     @Test
+    public void countFrames() throws Exception {
+        final AtomicLong trackCounter = new AtomicLong();
+        final AtomicLong frameCounter = new AtomicLong();
+        FrameConsumer consumer = new FrameConsumer() {
+
+            @Override
+            public void consumeStreams(List<Stream> tracks) {
+                trackCounter.set(tracks.size());
+            }
+
+            @Override
+            public void consume(Frame frame) {
+                if (frame == null) {
+                    return;
+                }
+
+                frameCounter.incrementAndGet();
+            }
+        };
+
+        FFmpegResult result = FFmpeg.atPath(BIN)
+                .addInput(
+                        UrlInput.fromPath(VIDEO_MP4)
+                )
+                .addOutput(
+                        FrameOutput.withConsumer(consumer)
+                                .disableStream(StreamType.AUDIO)
+                                //.disableStream(StreamType.ATTACHMENT)
+                                .disableStream(StreamType.DATA)
+                                .disableStream(StreamType.SUBTITLE)
+                                .setFrameCount(StreamType.VIDEO, 42L)
+                )
+                .execute();
+
+        Assert.assertNotNull(result);
+        Assert.assertEquals(1, trackCounter.get());
+        Assert.assertEquals(42L, frameCounter.get());
+    }
+
+    @Test
     public void createGif() throws Exception {
         final Path tempDir = Files.createTempDirectory("jaffree");
         Path output = tempDir.resolve("test.gif");

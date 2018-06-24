@@ -27,8 +27,9 @@ public class BaseOutput<T extends BaseOutput & Output> extends BaseInOut<T> impl
     private String output;
     private Long outputPosition;
     private Long sizeLimit;
+    private final Map<String, Object> frames = new HashMap<>();
     private final Set<StreamType> disabledStreams = new LinkedHashSet<>();
-    private final List<Map> maps = new ArrayList<>();
+    private final List<Mapping> maps = new ArrayList<>();
 
     //-timestamp date (output)
     //-metadata[:metadata_specifier] key=value (output,per-metadata)
@@ -42,7 +43,6 @@ public class BaseOutput<T extends BaseOutput & Output> extends BaseInOut<T> impl
     //-filter_script[:stream_specifier] filename (output,per-stream)
     //-pre[:stream_specifier] preset_name (output,per-stream)
     //-attach filename (output)
-    //-vframes number (output)
     //-aspect[:stream_specifier] aspect (output,per-stream)
     //-vn (output)
     //-pass[:stream_specifier] n (output,per-stream)
@@ -114,6 +114,8 @@ public class BaseOutput<T extends BaseOutput & Output> extends BaseInOut<T> impl
         return thisAsT();
     }
 
+
+
     /**
      * Sets special "copy" codec for all streams
      * @return this
@@ -151,6 +153,21 @@ public class BaseOutput<T extends BaseOutput & Output> extends BaseInOut<T> impl
     }
 
     /**
+     * Stop writing to the stream after framecount frames.
+     * @param streamType Stream Type
+     * @param frameCount frame count
+     * @return this
+     */
+    public T setFrameCount(StreamType streamType, Long frameCount) {
+        String key = null;
+        if (streamType != null) {
+            key = streamType.code();
+        }
+        frames.put(key, frameCount);
+        return thisAsT();
+    }
+
+    /**
      * Maps all streams from the input file.
      * <p>
      * Each input stream is identified by the input file index input_file_id. Index starts at 0.
@@ -159,7 +176,7 @@ public class BaseOutput<T extends BaseOutput & Output> extends BaseInOut<T> impl
      * @return this
      */
     public T addMap(int inputFileIndex) {
-        this.maps.add(new MapDefault(false, inputFileIndex, null, false));
+        this.maps.add(new DefaultMapping(false, inputFileIndex, null, false));
         return thisAsT();
     }
 
@@ -174,7 +191,7 @@ public class BaseOutput<T extends BaseOutput & Output> extends BaseInOut<T> impl
      * @return this
      */
     public T addMap(int inputFileIndex, StreamType streamType) {
-        this.maps.add(new MapDefault(false, inputFileIndex, streamType.code(), false));
+        this.maps.add(new DefaultMapping(false, inputFileIndex, streamType.code(), false));
         return thisAsT();
     }
 
@@ -189,7 +206,7 @@ public class BaseOutput<T extends BaseOutput & Output> extends BaseInOut<T> impl
      * @return this
      */
     public T addMap(int inputFileIndex, String streamSpecifier) {
-        this.maps.add(new MapDefault(false, inputFileIndex, streamSpecifier, false));
+        this.maps.add(new DefaultMapping(false, inputFileIndex, streamSpecifier, false));
         return thisAsT();
     }
 
@@ -201,7 +218,7 @@ public class BaseOutput<T extends BaseOutput & Output> extends BaseInOut<T> impl
      * @return this
      */
     public T addMap(String linkLabel) {
-        this.maps.add(new MapLabel(linkLabel));
+        this.maps.add(new LabelMapping(linkLabel));
         return thisAsT();
     }
 
@@ -224,9 +241,11 @@ public class BaseOutput<T extends BaseOutput & Output> extends BaseInOut<T> impl
             addArgument("-" + disabledStream.code() + "n");
         }
 
+        result.addAll(toArguments("-frames", frames));
+
         result.addAll(buildCommonArguments());
 
-        for (Map map : maps) {
+        for (Mapping map : maps) {
             result.addAll(Arrays.asList("-map", map.toValue()));
         }
 
@@ -239,17 +258,17 @@ public class BaseOutput<T extends BaseOutput & Output> extends BaseInOut<T> impl
         return result;
     }
 
-    private static interface Map {
+    private static interface Mapping {
         String toValue();
     }
 
-    private static class MapDefault implements Map {
+    private static class DefaultMapping implements Mapping {
         public boolean negative;
         public int inputFileId;
         public String streamSpecifier;
         public boolean optional;
 
-        public MapDefault(boolean negative, int inputFileId, String streamSpecifier, boolean optional) {
+        public DefaultMapping(boolean negative, int inputFileId, String streamSpecifier, boolean optional) {
             this.negative = negative;
             this.inputFileId = inputFileId;
             this.streamSpecifier = streamSpecifier;
@@ -278,10 +297,10 @@ public class BaseOutput<T extends BaseOutput & Output> extends BaseInOut<T> impl
         }
     }
 
-    private static class MapLabel implements Map {
+    private static class LabelMapping implements Mapping {
         public String linkLabel;
 
-        public MapLabel(String linkLabel) {
+        public LabelMapping(String linkLabel) {
             this.linkLabel = linkLabel;
         }
 
