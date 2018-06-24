@@ -43,7 +43,7 @@ if (result.getError() != null) {
     return;
 }
 
-for (Stream stream : probe.getStreams().getStream()) {
+for (Stream stream : probe.getStreams()) {
     //TODO analyze stream data
 }
 ```
