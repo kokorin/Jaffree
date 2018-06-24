@@ -17,6 +17,7 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
+import com.github.kokorin.jaffree.Rational;
 import com.github.kokorin.jaffree.nut.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

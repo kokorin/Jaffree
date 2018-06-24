@@ -17,6 +17,8 @@
 
 package com.github.kokorin.jaffree.nut;
 
+import com.github.kokorin.jaffree.Rational;
+
 import static java.lang.Long.MIN_VALUE;
 import static java.lang.Long.compare;
 

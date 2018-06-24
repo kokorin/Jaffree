@@ -1,19 +1,3 @@
-/*
- *    Copyright  2017 Denis Kokorin
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
- *
- */
 
 package com.github.kokorin.jaffree.ffprobe;
 
@@ -28,31 +12,31 @@ import java.util.List;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="packetType">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="tag" type="{http://www.ffmpeg.org/schema/ffprobe}tagType" maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;element name="side_data_list" type="{http://www.ffmpeg.org/schema/ffprobe}packetSideDataListType" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="codec_type" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="stream_index" use="required" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="pts" type="{http://www.w3.org/2001/XMLSchema}long" />
- *       &lt;attribute name="pts_time" type="{http://www.w3.org/2001/XMLSchema}float" />
- *       &lt;attribute name="dts" type="{http://www.w3.org/2001/XMLSchema}long" />
- *       &lt;attribute name="dts_time" type="{http://www.w3.org/2001/XMLSchema}float" />
- *       &lt;attribute name="duration" type="{http://www.w3.org/2001/XMLSchema}long" />
- *       &lt;attribute name="duration_time" type="{http://www.w3.org/2001/XMLSchema}float" />
- *       &lt;attribute name="convergence_duration" type="{http://www.w3.org/2001/XMLSchema}long" />
- *       &lt;attribute name="convergence_duration_time" type="{http://www.w3.org/2001/XMLSchema}float" />
- *       &lt;attribute name="size" use="required" type="{http://www.w3.org/2001/XMLSchema}long" />
- *       &lt;attribute name="pos" type="{http://www.w3.org/2001/XMLSchema}long" />
- *       &lt;attribute name="flags" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="data" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="data_hash" type="{http://www.w3.org/2001/XMLSchema}string" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="packetType"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="tag" type="{http://www.ffmpeg.org/schema/ffprobe}tagType" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *         &lt;element name="side_data_list" type="{http://www.ffmpeg.org/schema/ffprobe}packetSideDataListType" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="codec_type" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="stream_index" use="required" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="pts" type="{http://www.w3.org/2001/XMLSchema}long" /&gt;
+ *       &lt;attribute name="pts_time" type="{http://www.w3.org/2001/XMLSchema}float" /&gt;
+ *       &lt;attribute name="dts" type="{http://www.w3.org/2001/XMLSchema}long" /&gt;
+ *       &lt;attribute name="dts_time" type="{http://www.w3.org/2001/XMLSchema}float" /&gt;
+ *       &lt;attribute name="duration" type="{http://www.w3.org/2001/XMLSchema}long" /&gt;
+ *       &lt;attribute name="duration_time" type="{http://www.w3.org/2001/XMLSchema}float" /&gt;
+ *       &lt;attribute name="convergence_duration" type="{http://www.w3.org/2001/XMLSchema}long" /&gt;
+ *       &lt;attribute name="convergence_duration_time" type="{http://www.w3.org/2001/XMLSchema}float" /&gt;
+ *       &lt;attribute name="size" use="required" type="{http://www.w3.org/2001/XMLSchema}long" /&gt;
+ *       &lt;attribute name="pos" type="{http://www.w3.org/2001/XMLSchema}long" /&gt;
+ *       &lt;attribute name="flags" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="data" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="data_hash" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -65,8 +49,9 @@ import java.util.List;
 public class Packet {
 
     protected List<Tag> tag;
-    @XmlElement(name = "side_data_list")
-    protected PacketSideDataList sideDataList;
+    @XmlElementWrapper(name = "side_data_list")
+    @XmlElement(name = "side_data")
+    protected List<PacketSideData> sideDataList;
     @XmlAttribute(name = "codec_type", required = true)
     protected String codecType;
     @XmlAttribute(name = "stream_index", required = true)
@@ -125,30 +110,6 @@ public class Packet {
             tag = new ArrayList<Tag>();
         }
         return this.tag;
-    }
-
-    /**
-     * Gets the value of the sideDataList property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link PacketSideDataList }
-     *     
-     */
-    public PacketSideDataList getSideDataList() {
-        return sideDataList;
-    }
-
-    /**
-     * Sets the value of the sideDataList property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link PacketSideDataList }
-     *     
-     */
-    public void setSideDataList(PacketSideDataList value) {
-        this.sideDataList = value;
     }
 
     /**
@@ -493,6 +454,17 @@ public class Packet {
      */
     public void setDataHash(String value) {
         this.dataHash = value;
+    }
+
+    public List<PacketSideData> getSideDataList() {
+        if (sideDataList == null) {
+            sideDataList = new ArrayList<PacketSideData>();
+        }
+        return sideDataList;
+    }
+
+    public void setSideDataList(List<PacketSideData> sideDataList) {
+        this.sideDataList = sideDataList;
     }
 
 }

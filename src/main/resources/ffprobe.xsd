@@ -78,6 +78,12 @@
     <xsd:complexType name="packetSideDataType">
         <xsd:attribute name="side_data_type"              type="xsd:string"/>
         <xsd:attribute name="side_data_size"              type="xsd:int"   />
+        <!--
+            This attributes are added manually because they were absent in ffprobe.xsd
+            See https://trac.ffmpeg.org/ticket/7139
+        -->
+        <xsd:attribute name="displaymatrix"               type="xsd:string"/>
+        <xsd:attribute name="rotation"                    type="xsd:int"   />
     </xsd:complexType>
 
     <xsd:complexType name="frameType">

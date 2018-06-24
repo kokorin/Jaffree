@@ -1,19 +1,3 @@
-/*
- *    Copyright  2017 Denis Kokorin
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
- *
- */
 
 package com.github.kokorin.jaffree.ffprobe;
 
@@ -29,20 +13,20 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="pixelFormatFlagsType">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;attribute name="big_endian" use="required" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="palette" use="required" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="bitstream" use="required" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="hwaccel" use="required" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="planar" use="required" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="rgb" use="required" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="pseudopal" use="required" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="alpha" use="required" type="{http://www.w3.org/2001/XMLSchema}int" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="pixelFormatFlagsType"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;attribute name="big_endian" use="required" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="palette" use="required" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="bitstream" use="required" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="hwaccel" use="required" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="planar" use="required" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="rgb" use="required" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="pseudopal" use="required" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="alpha" use="required" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 

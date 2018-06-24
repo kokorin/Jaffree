@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<jaxb:bindings
+        version="2.1"
+        xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+        xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+        jaxb:extensionBindingPrefixes="xjc"
+        xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <jaxb:bindings schemaLocation="ffprobe.xsd">
+        <jaxb:schemaBindings>
+            <jaxb:package name="com.github.kokorin.jaffree.ffprobe"/>
+        </jaxb:schemaBindings>
+
+
+        <jaxb:bindings node="//xs:complexType[@name='ffprobeType']">
+            <jaxb:class name="FFprobeResult"/>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xs:complexType[@name='chapterType']">
+            <jaxb:class name="Chapter"/>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xs:complexType[@name='errorType']">
+            <jaxb:class name="Error"/>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xs:complexType[@name='formatType']">
+            <jaxb:class name="Format"/>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xs:complexType[@name='frameSideDataType']">
+            <jaxb:class name="FrameSideData"/>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xs:complexType[@name='frameType']">
+            <jaxb:class name="Frame"/>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xs:complexType[@name='libraryVersionType']">
+            <jaxb:class name="LibraryVersion"/>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xs:complexType[@name='logType']">
+            <jaxb:class name="Log"/>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xs:complexType[@name='packetSideDataType']">
+            <jaxb:class name="PacketSideData"/>
+            <jaxb:bindings node="//xs:attribute[@name='displaymatrix']">
+                <jaxb:property name="displayMatrix"/>
+            </jaxb:bindings>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xs:complexType[@name='packetType']">
+            <jaxb:class name="Packet"/>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xs:complexType[@name='pixelFormatComponentType']">
+            <jaxb:class name="PixelFormatComponent"/>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xs:complexType[@name='pixelFormatFlagsType']">
+            <jaxb:class name="PixelFormatFlags"/>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xs:complexType[@name='pixelFormatType']">
+            <jaxb:class name="PixelFormat"/>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xs:complexType[@name='programType']">
+            <jaxb:class name="Program"/>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xs:complexType[@name='programVersionType']">
+            <jaxb:class name="ProgramVersion"/>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xs:complexType[@name='streamDispositionType']">
+            <jaxb:class name="StreamDisposition"/>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xs:complexType[@name='streamType']">
+            <jaxb:class name="Stream"/>
+            <jaxb:bindings node="//xs:attribute[@name='codec_time_base']">
+                <jaxb:property>
+                    <jaxb:baseType>
+                        <xjc:javaType name="com.github.kokorin.jaffree.Rational"
+                                      adapter="com.github.kokorin.jaffree.ffprobe.RationalAdapter"/>
+                    </jaxb:baseType>
+                </jaxb:property>
+            </jaxb:bindings>
+            <jaxb:bindings node="//xs:attribute[@name='r_frame_rate']">
+                <jaxb:property>
+                    <jaxb:baseType>
+                        <xjc:javaType name="com.github.kokorin.jaffree.Rational"
+                                      adapter="com.github.kokorin.jaffree.ffprobe.RationalAdapter"/>
+                    </jaxb:baseType>
+                </jaxb:property>
+            </jaxb:bindings>
+            <jaxb:bindings node="//xs:attribute[@name='avg_frame_rate']">
+                <jaxb:property>
+                    <jaxb:baseType>
+                        <xjc:javaType name="com.github.kokorin.jaffree.Rational"
+                                      adapter="com.github.kokorin.jaffree.ffprobe.RationalAdapter"/>
+                    </jaxb:baseType>
+                </jaxb:property>
+            </jaxb:bindings>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xs:complexType[@name='subtitleType']">
+            <jaxb:class name="Subtitle"/>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xs:complexType[@name='tagType']">
+            <jaxb:class name="Tag"/>
+        </jaxb:bindings>
+    </jaxb:bindings>
+
+    <jaxb:globalBindings>
+        <!--<xjc:javaType xmlType="Rational" name="com.github.kokorin.jaffree.Rational" adapter="com.github.kokorin.jaffree.xml.RationalAdapter"/>-->
+    </jaxb:globalBindings>
+</jaxb:bindings>

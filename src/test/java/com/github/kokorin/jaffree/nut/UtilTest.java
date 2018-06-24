@@ -1,5 +1,6 @@
 package com.github.kokorin.jaffree.nut;
 
+import com.github.kokorin.jaffree.Rational;
 import org.junit.Assert;
 import org.junit.Test;
 

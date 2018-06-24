@@ -1,19 +1,3 @@
-/*
- *    Copyright  2017 Denis Kokorin
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
- *
- */
 
 package com.github.kokorin.jaffree.ffprobe;
 
@@ -29,14 +13,16 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="packetSideDataType">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;attribute name="side_data_type" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="side_data_size" type="{http://www.w3.org/2001/XMLSchema}int" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="packetSideDataType"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;attribute name="side_data_type" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="side_data_size" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="displaymatrix" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="rotation" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -49,9 +35,6 @@ public class PacketSideData {
     protected String sideDataType;
     @XmlAttribute(name = "side_data_size")
     protected Integer sideDataSize;
-
-    // This attributes are added manually because they were absent in ffprobe.xsd
-    // See https://trac.ffmpeg.org/ticket/7139
     @XmlAttribute(name = "displaymatrix")
     protected String displayMatrix;
     @XmlAttribute(name = "rotation")
@@ -105,19 +88,52 @@ public class PacketSideData {
         this.sideDataSize = value;
     }
 
+    /**
+     * Gets the value of the displayMatrix property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
     public String getDisplayMatrix() {
         return displayMatrix;
     }
 
-    public void setDisplayMatrix(String displayMatrix) {
-        this.displayMatrix = displayMatrix;
+    /**
+     * Sets the value of the displayMatrix property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setDisplayMatrix(String value) {
+        this.displayMatrix = value;
     }
 
+    /**
+     * Gets the value of the rotation property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Integer }
+     *     
+     */
     public Integer getRotation() {
         return rotation;
     }
 
-    public void setRotation(Integer rotation) {
-        this.rotation = rotation;
+    /**
+     * Sets the value of the rotation property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Integer }
+     *     
+     */
+    public void setRotation(Integer value) {
+        this.rotation = value;
     }
+
 }

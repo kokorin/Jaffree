@@ -1,26 +1,9 @@
-/*
- *    Copyright  2017 Denis Kokorin
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
- *
- */
 
 package com.github.kokorin.jaffree.ffprobe;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.*;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -29,25 +12,25 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="ffprobeType">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="program_version" type="{http://www.ffmpeg.org/schema/ffprobe}programVersionType" minOccurs="0"/>
- *         &lt;element name="library_versions" type="{http://www.ffmpeg.org/schema/ffprobe}libraryVersionsType" minOccurs="0"/>
- *         &lt;element name="pixel_formats" type="{http://www.ffmpeg.org/schema/ffprobe}pixelFormatsType" minOccurs="0"/>
- *         &lt;element name="packets" type="{http://www.ffmpeg.org/schema/ffprobe}packetsType" minOccurs="0"/>
- *         &lt;element name="frames" type="{http://www.ffmpeg.org/schema/ffprobe}framesType" minOccurs="0"/>
- *         &lt;element name="packets_and_frames" type="{http://www.ffmpeg.org/schema/ffprobe}packetsAndFramesType" minOccurs="0"/>
- *         &lt;element name="programs" type="{http://www.ffmpeg.org/schema/ffprobe}programsType" minOccurs="0"/>
- *         &lt;element name="streams" type="{http://www.ffmpeg.org/schema/ffprobe}streamsType" minOccurs="0"/>
- *         &lt;element name="chapters" type="{http://www.ffmpeg.org/schema/ffprobe}chaptersType" minOccurs="0"/>
- *         &lt;element name="format" type="{http://www.ffmpeg.org/schema/ffprobe}formatType" minOccurs="0"/>
- *         &lt;element name="error" type="{http://www.ffmpeg.org/schema/ffprobe}errorType" minOccurs="0"/>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="ffprobeType"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="program_version" type="{http://www.ffmpeg.org/schema/ffprobe}programVersionType" minOccurs="0"/&gt;
+ *         &lt;element name="library_versions" type="{http://www.ffmpeg.org/schema/ffprobe}libraryVersionsType" minOccurs="0"/&gt;
+ *         &lt;element name="pixel_formats" type="{http://www.ffmpeg.org/schema/ffprobe}pixelFormatsType" minOccurs="0"/&gt;
+ *         &lt;element name="packets" type="{http://www.ffmpeg.org/schema/ffprobe}packetsType" minOccurs="0"/&gt;
+ *         &lt;element name="frames" type="{http://www.ffmpeg.org/schema/ffprobe}framesType" minOccurs="0"/&gt;
+ *         &lt;element name="packets_and_frames" type="{http://www.ffmpeg.org/schema/ffprobe}packetsAndFramesType" minOccurs="0"/&gt;
+ *         &lt;element name="programs" type="{http://www.ffmpeg.org/schema/ffprobe}programsType" minOccurs="0"/&gt;
+ *         &lt;element name="streams" type="{http://www.ffmpeg.org/schema/ffprobe}streamsType" minOccurs="0"/&gt;
+ *         &lt;element name="chapters" type="{http://www.ffmpeg.org/schema/ffprobe}chaptersType" minOccurs="0"/&gt;
+ *         &lt;element name="format" type="{http://www.ffmpeg.org/schema/ffprobe}formatType" minOccurs="0"/&gt;
+ *         &lt;element name="error" type="{http://www.ffmpeg.org/schema/ffprobe}errorType" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -70,17 +53,37 @@ public class FFprobeResult {
 
     @XmlElement(name = "program_version")
     protected ProgramVersion programVersion;
-    @XmlElement(name = "library_versions")
-    protected LibraryVersions libraryVersions;
-    @XmlElement(name = "pixel_formats")
-    protected PixelFormats pixelFormats;
-    protected Packets packets;
-    protected Frames frames;
-    @XmlElement(name = "packets_and_frames")
-    protected PacketsAndFrames packetsAndFrames;
-    protected Programs programs;
-    protected Streams streams;
-    protected Chapters chapters;
+    @XmlElementWrapper(name = "library_versions")
+    @XmlElement(name = "library_version")
+    protected List<LibraryVersion> libraryVersions;
+    @XmlElementWrapper(name = "pixel_formats")
+    @XmlElement(name = "pixel_format")
+    protected List<PixelFormat> pixelFormats;
+    @XmlElementWrapper
+    @XmlElement(name = "packet")
+    protected List<Packet> packets;
+    @XmlElementWrapper
+    @XmlElements({
+        @XmlElement(name = "frame", type = Frame.class),
+        @XmlElement(name = "subtitle", type = Subtitle.class)
+    })
+    protected List<Object> frames;
+    @XmlElementWrapper(name = "packets_and_frames")
+    @XmlElements({
+        @XmlElement(name = "packet", type = Packet.class),
+        @XmlElement(name = "frame", type = Frame.class),
+        @XmlElement(name = "subtitle", type = Subtitle.class)
+    })
+    protected List<Object> packetsAndFrames;
+    @XmlElementWrapper
+    @XmlElement(name = "program")
+    protected List<Program> programs;
+    @XmlElementWrapper
+    @XmlElement(name = "stream")
+    protected List<Stream> streams;
+    @XmlElementWrapper
+    @XmlElement(name = "chapter")
+    protected List<Chapter> chapters;
     protected Format format;
     protected Error error;
 
@@ -106,198 +109,6 @@ public class FFprobeResult {
      */
     public void setProgramVersion(ProgramVersion value) {
         this.programVersion = value;
-    }
-
-    /**
-     * Gets the value of the libraryVersions property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link LibraryVersions }
-     *     
-     */
-    public LibraryVersions getLibraryVersions() {
-        return libraryVersions;
-    }
-
-    /**
-     * Sets the value of the libraryVersions property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link LibraryVersions }
-     *     
-     */
-    public void setLibraryVersions(LibraryVersions value) {
-        this.libraryVersions = value;
-    }
-
-    /**
-     * Gets the value of the pixelFormats property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link PixelFormats }
-     *     
-     */
-    public PixelFormats getPixelFormats() {
-        return pixelFormats;
-    }
-
-    /**
-     * Sets the value of the pixelFormats property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link PixelFormats }
-     *     
-     */
-    public void setPixelFormats(PixelFormats value) {
-        this.pixelFormats = value;
-    }
-
-    /**
-     * Gets the value of the packets property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Packets }
-     *     
-     */
-    public Packets getPackets() {
-        return packets;
-    }
-
-    /**
-     * Sets the value of the packets property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Packets }
-     *     
-     */
-    public void setPackets(Packets value) {
-        this.packets = value;
-    }
-
-    /**
-     * Gets the value of the frames property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Frames }
-     *     
-     */
-    public Frames getFrames() {
-        return frames;
-    }
-
-    /**
-     * Sets the value of the frames property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Frames }
-     *     
-     */
-    public void setFrames(Frames value) {
-        this.frames = value;
-    }
-
-    /**
-     * Gets the value of the packetsAndFrames property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link PacketsAndFrames }
-     *     
-     */
-    public PacketsAndFrames getPacketsAndFrames() {
-        return packetsAndFrames;
-    }
-
-    /**
-     * Sets the value of the packetsAndFrames property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link PacketsAndFrames }
-     *     
-     */
-    public void setPacketsAndFrames(PacketsAndFrames value) {
-        this.packetsAndFrames = value;
-    }
-
-    /**
-     * Gets the value of the programs property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Programs }
-     *     
-     */
-    public Programs getPrograms() {
-        return programs;
-    }
-
-    /**
-     * Sets the value of the programs property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Programs }
-     *     
-     */
-    public void setPrograms(Programs value) {
-        this.programs = value;
-    }
-
-    /**
-     * Gets the value of the streams property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Streams }
-     *     
-     */
-    public Streams getStreams() {
-        return streams;
-    }
-
-    /**
-     * Sets the value of the streams property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Streams }
-     *     
-     */
-    public void setStreams(Streams value) {
-        this.streams = value;
-    }
-
-    /**
-     * Gets the value of the chapters property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Chapters }
-     *     
-     */
-    public Chapters getChapters() {
-        return chapters;
-    }
-
-    /**
-     * Sets the value of the chapters property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Chapters }
-     *     
-     */
-    public void setChapters(Chapters value) {
-        this.chapters = value;
     }
 
     /**
@@ -346,6 +157,94 @@ public class FFprobeResult {
      */
     public void setError(Error value) {
         this.error = value;
+    }
+
+    public List<LibraryVersion> getLibraryVersions() {
+        if (libraryVersions == null) {
+            libraryVersions = new ArrayList<LibraryVersion>();
+        }
+        return libraryVersions;
+    }
+
+    public void setLibraryVersions(List<LibraryVersion> libraryVersions) {
+        this.libraryVersions = libraryVersions;
+    }
+
+    public List<PixelFormat> getPixelFormats() {
+        if (pixelFormats == null) {
+            pixelFormats = new ArrayList<PixelFormat>();
+        }
+        return pixelFormats;
+    }
+
+    public void setPixelFormats(List<PixelFormat> pixelFormats) {
+        this.pixelFormats = pixelFormats;
+    }
+
+    public List<Packet> getPackets() {
+        if (packets == null) {
+            packets = new ArrayList<Packet>();
+        }
+        return packets;
+    }
+
+    public void setPackets(List<Packet> packets) {
+        this.packets = packets;
+    }
+
+    public List<Object> getFrames() {
+        if (frames == null) {
+            frames = new ArrayList<Object>();
+        }
+        return frames;
+    }
+
+    public void setFrames(List<Object> frames) {
+        this.frames = frames;
+    }
+
+    public List<Object> getPacketsAndFrames() {
+        if (packetsAndFrames == null) {
+            packetsAndFrames = new ArrayList<Object>();
+        }
+        return packetsAndFrames;
+    }
+
+    public void setPacketsAndFrames(List<Object> packetsAndFrames) {
+        this.packetsAndFrames = packetsAndFrames;
+    }
+
+    public List<Program> getPrograms() {
+        if (programs == null) {
+            programs = new ArrayList<Program>();
+        }
+        return programs;
+    }
+
+    public void setPrograms(List<Program> programs) {
+        this.programs = programs;
+    }
+
+    public List<Stream> getStreams() {
+        if (streams == null) {
+            streams = new ArrayList<Stream>();
+        }
+        return streams;
+    }
+
+    public void setStreams(List<Stream> streams) {
+        this.streams = streams;
+    }
+
+    public List<Chapter> getChapters() {
+        if (chapters == null) {
+            chapters = new ArrayList<Chapter>();
+        }
+        return chapters;
+    }
+
+    public void setChapters(List<Chapter> chapters) {
+        this.chapters = chapters;
     }
 
 }

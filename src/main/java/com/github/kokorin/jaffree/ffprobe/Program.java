@@ -1,26 +1,7 @@
-/*
- *    Copyright  2017 Denis Kokorin
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
- *
- */
 
 package com.github.kokorin.jaffree.ffprobe;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,25 +12,25 @@ import java.util.List;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="programType">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="tag" type="{http://www.ffmpeg.org/schema/ffprobe}tagType" maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;element name="streams" type="{http://www.ffmpeg.org/schema/ffprobe}streamsType" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="program_id" use="required" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="program_num" use="required" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="nb_streams" use="required" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="start_time" type="{http://www.w3.org/2001/XMLSchema}float" />
- *       &lt;attribute name="start_pts" type="{http://www.w3.org/2001/XMLSchema}long" />
- *       &lt;attribute name="end_time" type="{http://www.w3.org/2001/XMLSchema}float" />
- *       &lt;attribute name="end_pts" type="{http://www.w3.org/2001/XMLSchema}long" />
- *       &lt;attribute name="pmt_pid" use="required" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="pcr_pid" use="required" type="{http://www.w3.org/2001/XMLSchema}int" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="programType"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="tag" type="{http://www.ffmpeg.org/schema/ffprobe}tagType" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *         &lt;element name="streams" type="{http://www.ffmpeg.org/schema/ffprobe}streamsType" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="program_id" use="required" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="program_num" use="required" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="nb_streams" use="required" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="start_time" type="{http://www.w3.org/2001/XMLSchema}float" /&gt;
+ *       &lt;attribute name="start_pts" type="{http://www.w3.org/2001/XMLSchema}long" /&gt;
+ *       &lt;attribute name="end_time" type="{http://www.w3.org/2001/XMLSchema}float" /&gt;
+ *       &lt;attribute name="end_pts" type="{http://www.w3.org/2001/XMLSchema}long" /&gt;
+ *       &lt;attribute name="pmt_pid" use="required" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="pcr_pid" use="required" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -62,7 +43,9 @@ import java.util.List;
 public class Program {
 
     protected List<Tag> tag;
-    protected Streams streams;
+    @XmlElementWrapper
+    @XmlElement(name = "stream")
+    protected List<Stream> streams;
     @XmlAttribute(name = "program_id", required = true)
     protected int programId;
     @XmlAttribute(name = "program_num", required = true)
@@ -109,30 +92,6 @@ public class Program {
             tag = new ArrayList<Tag>();
         }
         return this.tag;
-    }
-
-    /**
-     * Gets the value of the streams property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Streams }
-     *     
-     */
-    public Streams getStreams() {
-        return streams;
-    }
-
-    /**
-     * Sets the value of the streams property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Streams }
-     *     
-     */
-    public void setStreams(Streams value) {
-        this.streams = value;
     }
 
     /**
@@ -309,6 +268,17 @@ public class Program {
      */
     public void setPcrPid(int value) {
         this.pcrPid = value;
+    }
+
+    public List<Stream> getStreams() {
+        if (streams == null) {
+            streams = new ArrayList<Stream>();
+        }
+        return streams;
+    }
+
+    public void setStreams(List<Stream> streams) {
+        this.streams = streams;
     }
 
 }

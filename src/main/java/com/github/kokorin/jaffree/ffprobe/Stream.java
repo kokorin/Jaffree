@@ -1,23 +1,10 @@
-/*
- *    Copyright  2017 Denis Kokorin
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
- *
- */
 
 package com.github.kokorin.jaffree.ffprobe;
 
+import com.github.kokorin.jaffree.Rational;
+
 import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,63 +15,63 @@ import java.util.List;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="streamType">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="disposition" type="{http://www.ffmpeg.org/schema/ffprobe}streamDispositionType" minOccurs="0"/>
- *         &lt;element name="tag" type="{http://www.ffmpeg.org/schema/ffprobe}tagType" maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;element name="side_data_list" type="{http://www.ffmpeg.org/schema/ffprobe}packetSideDataListType" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="index" use="required" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="codec_name" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="codec_long_name" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="profile" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="codec_type" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="codec_time_base" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="codec_tag" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="codec_tag_string" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="extradata" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="extradata_hash" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="width" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="height" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="coded_width" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="coded_height" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="has_b_frames" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="sample_aspect_ratio" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="display_aspect_ratio" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="pix_fmt" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="level" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="color_range" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="color_space" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="color_transfer" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="color_primaries" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="chroma_location" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="field_order" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="timecode" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="refs" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="sample_fmt" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="sample_rate" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="channels" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="channel_layout" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="bits_per_sample" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="id" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="r_frame_rate" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="avg_frame_rate" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="time_base" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="start_pts" type="{http://www.w3.org/2001/XMLSchema}long" />
- *       &lt;attribute name="start_time" type="{http://www.w3.org/2001/XMLSchema}float" />
- *       &lt;attribute name="duration_ts" type="{http://www.w3.org/2001/XMLSchema}long" />
- *       &lt;attribute name="duration" type="{http://www.w3.org/2001/XMLSchema}float" />
- *       &lt;attribute name="bit_rate" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="max_bit_rate" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="bits_per_raw_sample" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="nb_frames" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="nb_read_frames" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="nb_read_packets" type="{http://www.w3.org/2001/XMLSchema}int" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="streamType"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="disposition" type="{http://www.ffmpeg.org/schema/ffprobe}streamDispositionType" minOccurs="0"/&gt;
+ *         &lt;element name="tag" type="{http://www.ffmpeg.org/schema/ffprobe}tagType" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *         &lt;element name="side_data_list" type="{http://www.ffmpeg.org/schema/ffprobe}packetSideDataListType" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="index" use="required" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="codec_name" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="codec_long_name" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="profile" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="codec_type" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="codec_time_base" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="codec_tag" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="codec_tag_string" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="extradata" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="extradata_hash" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="width" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="height" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="coded_width" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="coded_height" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="has_b_frames" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="sample_aspect_ratio" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="display_aspect_ratio" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="pix_fmt" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="level" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="color_range" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="color_space" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="color_transfer" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="color_primaries" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="chroma_location" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="field_order" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="timecode" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="refs" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="sample_fmt" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="sample_rate" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="channels" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="channel_layout" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="bits_per_sample" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="id" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="r_frame_rate" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="avg_frame_rate" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="time_base" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="start_pts" type="{http://www.w3.org/2001/XMLSchema}long" /&gt;
+ *       &lt;attribute name="start_time" type="{http://www.w3.org/2001/XMLSchema}float" /&gt;
+ *       &lt;attribute name="duration_ts" type="{http://www.w3.org/2001/XMLSchema}long" /&gt;
+ *       &lt;attribute name="duration" type="{http://www.w3.org/2001/XMLSchema}float" /&gt;
+ *       &lt;attribute name="bit_rate" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="max_bit_rate" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="bits_per_raw_sample" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="nb_frames" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="nb_read_frames" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="nb_read_packets" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -99,8 +86,9 @@ public class Stream {
 
     protected StreamDisposition disposition;
     protected List<Tag> tag;
-    @XmlElement(name = "side_data_list")
-    protected PacketSideDataList sideDataList;
+    @XmlElementWrapper(name = "side_data_list")
+    @XmlElement(name = "side_data")
+    protected List<PacketSideData> sideDataList;
     @XmlAttribute(name = "index", required = true)
     protected int index;
     @XmlAttribute(name = "codec_name")
@@ -112,7 +100,8 @@ public class Stream {
     @XmlAttribute(name = "codec_type")
     protected String codecType;
     @XmlAttribute(name = "codec_time_base", required = true)
-    protected String codecTimeBase;
+    @XmlJavaTypeAdapter(RationalAdapter.class)
+    protected Rational codecTimeBase;
     @XmlAttribute(name = "codec_tag", required = true)
     protected String codecTag;
     @XmlAttribute(name = "codec_tag_string", required = true)
@@ -168,9 +157,11 @@ public class Stream {
     @XmlAttribute(name = "id")
     protected String id;
     @XmlAttribute(name = "r_frame_rate", required = true)
-    protected String rFrameRate;
+    @XmlJavaTypeAdapter(RationalAdapter.class)
+    protected Rational rFrameRate;
     @XmlAttribute(name = "avg_frame_rate", required = true)
-    protected String avgFrameRate;
+    @XmlJavaTypeAdapter(RationalAdapter.class)
+    protected Rational avgFrameRate;
     @XmlAttribute(name = "time_base", required = true)
     protected String timeBase;
     @XmlAttribute(name = "start_pts")
@@ -245,30 +236,6 @@ public class Stream {
             tag = new ArrayList<Tag>();
         }
         return this.tag;
-    }
-
-    /**
-     * Gets the value of the sideDataList property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link PacketSideDataList }
-     *     
-     */
-    public PacketSideDataList getSideDataList() {
-        return sideDataList;
-    }
-
-    /**
-     * Sets the value of the sideDataList property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link PacketSideDataList }
-     *     
-     */
-    public void setSideDataList(PacketSideDataList value) {
-        this.sideDataList = value;
     }
 
     /**
@@ -391,7 +358,7 @@ public class Stream {
      *     {@link String }
      *     
      */
-    public String getCodecTimeBase() {
+    public Rational getCodecTimeBase() {
         return codecTimeBase;
     }
 
@@ -403,7 +370,7 @@ public class Stream {
      *     {@link String }
      *     
      */
-    public void setCodecTimeBase(String value) {
+    public void setCodecTimeBase(Rational value) {
         this.codecTimeBase = value;
     }
 
@@ -1063,7 +1030,7 @@ public class Stream {
      *     {@link String }
      *     
      */
-    public String getRFrameRate() {
+    public Rational getRFrameRate() {
         return rFrameRate;
     }
 
@@ -1075,7 +1042,7 @@ public class Stream {
      *     {@link String }
      *     
      */
-    public void setRFrameRate(String value) {
+    public void setRFrameRate(Rational value) {
         this.rFrameRate = value;
     }
 
@@ -1087,7 +1054,7 @@ public class Stream {
      *     {@link String }
      *     
      */
-    public String getAvgFrameRate() {
+    public Rational getAvgFrameRate() {
         return avgFrameRate;
     }
 
@@ -1099,7 +1066,7 @@ public class Stream {
      *     {@link String }
      *     
      */
-    public void setAvgFrameRate(String value) {
+    public void setAvgFrameRate(Rational value) {
         this.avgFrameRate = value;
     }
 
@@ -1365,6 +1332,17 @@ public class Stream {
      */
     public void setNbReadPackets(Integer value) {
         this.nbReadPackets = value;
+    }
+
+    public List<PacketSideData> getSideDataList() {
+        if (sideDataList == null) {
+            sideDataList = new ArrayList<PacketSideData>();
+        }
+        return sideDataList;
+    }
+
+    public void setSideDataList(List<PacketSideData> sideDataList) {
+        this.sideDataList = sideDataList;
     }
 
 }

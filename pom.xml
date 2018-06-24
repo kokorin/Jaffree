@@ -191,6 +191,41 @@
                     <autoReleaseAfterClose>true</autoReleaseAfterClose>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.jvnet.jaxb2.maven2</groupId>
+                <artifactId>maven-jaxb2-plugin</artifactId>
+                <version>0.14.0</version>
+                <executions>
+                    <execution>
+                        <configuration>
+                        </configuration>
+                    </execution>
+                </executions>
+
+                <configuration>
+                    <debugMode>true</debugMode>
+                    <extension>true</extension>
+                    <extensions>true</extensions>
+                    <clearOutputDir>false</clearOutputDir>
+                    <cleanPackageDirectories>false</cleanPackageDirectories>
+                    <generateDirectory>${project.build.sourceDirectory}</generateDirectory>
+                    <plugins>
+                        <plugin>
+                            <groupId>com.github.jaxb-xew-plugin</groupId>
+                            <artifactId>jaxb-xew-plugin</artifactId>
+                            <version>1.10</version>
+                            <scope>runtime</scope>
+                        </plugin>
+                    </plugins>
+
+                    <args>
+                        <arg>-no-header</arg>
+                        <arg>-Xxew</arg>
+                        <arg>-Xxew:instantiate lazy</arg>
+                    </args>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>

@@ -17,6 +17,8 @@
 
 package com.github.kokorin.jaffree.nut;
 
+import com.github.kokorin.jaffree.Rational;
+
 import java.io.IOException;
 import java.util.*;
 

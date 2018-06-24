@@ -1,26 +1,9 @@
-/*
- *    Copyright  2017 Denis Kokorin
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
- *
- */
 
 package com.github.kokorin.jaffree.ffprobe;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.*;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -29,21 +12,21 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="pixelFormatType">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="flags" type="{http://www.ffmpeg.org/schema/ffprobe}pixelFormatFlagsType" minOccurs="0"/>
- *         &lt;element name="components" type="{http://www.ffmpeg.org/schema/ffprobe}pixelFormatComponentsType" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="nb_components" use="required" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="log2_chroma_w" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="log2_chroma_h" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="bits_per_pixel" type="{http://www.w3.org/2001/XMLSchema}int" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="pixelFormatType"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="flags" type="{http://www.ffmpeg.org/schema/ffprobe}pixelFormatFlagsType" minOccurs="0"/&gt;
+ *         &lt;element name="components" type="{http://www.ffmpeg.org/schema/ffprobe}pixelFormatComponentsType" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="nb_components" use="required" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="log2_chroma_w" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="log2_chroma_h" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="bits_per_pixel" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -56,7 +39,9 @@ import javax.xml.bind.annotation.XmlType;
 public class PixelFormat {
 
     protected PixelFormatFlags flags;
-    protected PixelFormatComponents components;
+    @XmlElementWrapper
+    @XmlElement(name = "component")
+    protected List<PixelFormatComponent> components;
     @XmlAttribute(name = "name", required = true)
     protected String name;
     @XmlAttribute(name = "nb_components", required = true)
@@ -90,30 +75,6 @@ public class PixelFormat {
      */
     public void setFlags(PixelFormatFlags value) {
         this.flags = value;
-    }
-
-    /**
-     * Gets the value of the components property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link PixelFormatComponents }
-     *     
-     */
-    public PixelFormatComponents getComponents() {
-        return components;
-    }
-
-    /**
-     * Sets the value of the components property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link PixelFormatComponents }
-     *     
-     */
-    public void setComponents(PixelFormatComponents value) {
-        this.components = value;
     }
 
     /**
@@ -226,6 +187,17 @@ public class PixelFormat {
      */
     public void setBitsPerPixel(Integer value) {
         this.bitsPerPixel = value;
+    }
+
+    public List<PixelFormatComponent> getComponents() {
+        if (components == null) {
+            components = new ArrayList<PixelFormatComponent>();
+        }
+        return components;
+    }
+
+    public void setComponents(List<PixelFormatComponent> components) {
+        this.components = components;
     }
 
 }

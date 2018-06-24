@@ -143,7 +143,7 @@ public class FFmpegFilterTest {
         int width = 0;
         int height = 0;
 
-        for (Stream stream : probe.getStreams().getStream()) {
+        for (Stream stream : probe.getStreams()) {
             if (stream.getWidth() != null) {
                 width = Math.max(width, stream.getWidth());
             }
@@ -205,7 +205,7 @@ public class FFmpegFilterTest {
                 .execute();
 
         double duration = 0.0;
-        for (Stream stream : probe.getStreams().getStream()) {
+        for (Stream stream : probe.getStreams()) {
             duration = Math.max(duration, stream.getDuration());
         }
 
