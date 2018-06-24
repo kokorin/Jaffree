@@ -50,13 +50,13 @@ public class FFmpegResultReader implements StdReader<FFmpegResult> {
         try {
             while ((line = reader.readLine()) != null) {
                 LOGGER.info(line);
-                if (progressListener != null) {
-                    FFmpegProgress progress = parseProgress(line);
-                    if (progress != null) {
+                FFmpegProgress progress = parseProgress(line);
+                if (progress != null) {
+                    if (progressListener != null) {
                         progressListener.onProgress(progress);
                         errorMessage = null;
-                        continue;
                     }
+                    continue;
                 }
 
                 FFmpegResult possibleResult = parsResult(line);
@@ -73,7 +73,7 @@ public class FFmpegResultReader implements StdReader<FFmpegResult> {
                     continue;
                 }
 
-               errorMessage = line;
+                errorMessage = line;
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
