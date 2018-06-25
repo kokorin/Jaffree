@@ -20,13 +20,13 @@ package com.github.kokorin.jaffree.process;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ProcessHandler<T> {
@@ -37,7 +37,6 @@ public class ProcessHandler<T> {
     private StdReader<T> stdErrReader = new GobblingStdReader<>();
     private List<Runnable> runnables = null;
     private boolean redirectErrToOut = false;
-    private volatile boolean stopped = false;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessHandler.class);
 
@@ -96,11 +95,8 @@ public class ProcessHandler<T> {
         T result = null;
         final AtomicReference<T> resultRef = new AtomicReference<>();
         final AtomicReference<T> errResultRef = new AtomicReference<>();
-        final AtomicReference<Exception> exceptionRef = new AtomicReference<>();
-        final AtomicInteger workingThreadCount = new AtomicInteger();
-
+        final Executor<T> executor = new Executor<>(contextName);
         int status = -1;
-        List<Thread> threads = new ArrayList<>();
 
         LOGGER.debug("Starting io interaction with process");
 
@@ -109,103 +105,47 @@ public class ProcessHandler<T> {
              final OutputStream stdIn = process.getOutputStream()) {
 
             if (!redirectErrToOut) {
-                Thread stdErrThread = new Thread(new Runnable() {
+                executor.execute("StdErr", new Runnable(){
                     @Override
                     public void run() {
-                        LOGGER.debug("StdErr thread has started");
-                        try {
-                            T errResult = stdErrReader.read(stdErr);
-                            errResultRef.set(errResult);
-                        } catch (Exception e) {
-                            LOGGER.warn("Failed to process stderr", e);
-                            exceptionRef.set(e);
-                            stop();
-                        } finally {
-                            LOGGER.debug("StdErr thread has finished");
-                            workingThreadCount.decrementAndGet();
-                        }
+                        T errResult = stdErrReader.read(stdErr);
+                        errResultRef.set(errResult);
                     }
-                }, getThreadName("stderr"));
-                stdErrThread.setDaemon(true);
-                workingThreadCount.incrementAndGet();
-                threads.add(stdErrThread);
-                stdErrThread.start();
+                });
             }
 
             if (stdInWriter != null) {
-                Thread stdInThread = new Thread(new Runnable() {
+                executor.execute("StdIn", new Runnable() {
                     @Override
                     public void run() {
-                        LOGGER.debug("StdIn thread has started");
-                        try {
+                        // Explicitly close stdIn to notify process, that there will be no more data
+                        try (Closeable toClose = stdIn) {
                             stdInWriter.write(stdIn);
-                            // Explicitly close stdIn to notify process, that there will be no more data
-                            stdIn.close();
                         } catch (Exception e) {
-                            LOGGER.warn("Failed to process stdin", e);
-                            exceptionRef.set(e);
-                            stop();
-                        } finally {
-                            LOGGER.debug("StdIn thread has finished");
-                            workingThreadCount.decrementAndGet();
+                            throw new RuntimeException("Error while writing to Process", e);
                         }
                     }
-                }, getThreadName("stdin"));
-                stdInThread.setDaemon(true);
-                workingThreadCount.incrementAndGet();
-                threads.add(stdInThread);
-                stdInThread.start();
+                });
             }
 
             if (stdOutReader != null) {
-                Thread stdOutThread = new Thread(new Runnable() {
+                executor.execute("StdOut", new Runnable() {
                     @Override
                     public void run() {
-                        LOGGER.debug("StdOut thread has started");
-                        try {
-                            T result = stdOutReader.read(stdOut);
-                            resultRef.set(result);
-                        } catch (Exception e) {
-                            LOGGER.warn("Failed to process stdout", e);
-                            exceptionRef.set(e);
-                            stop();
-                        } finally {
-                            LOGGER.debug("StdOut thread has finished");
-                            workingThreadCount.decrementAndGet();
-                        }
+                        T result = stdOutReader.read(stdOut);
+                        resultRef.set(result);
                     }
-                }, getThreadName("stdout reader"));
-                stdOutThread.setDaemon(true);
-                workingThreadCount.incrementAndGet();
-                threads.add(stdOutThread);
-                stdOutThread.start();
+                });
             }
 
             if (runnables != null) {
                 for (int i = 0; i < runnables.size(); i++) {
                     final Runnable runnable = runnables.get(i);
-                    Thread thread = new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                runnable.run();
-                            } catch (Exception e) {
-                                LOGGER.warn("Failed to execute runnable: " + runnable, e);
-                                exceptionRef.set(e);
-                            } finally {
-                                LOGGER.debug("Runnable execution has finished: " + runnable);
-                                workingThreadCount.decrementAndGet();
-                            }
-                        }
-                    }, getThreadName("runnable-" + i));
-                    thread.setDaemon(true);
-                    workingThreadCount.incrementAndGet();
-                    threads.add(thread);
-                    thread.start();
+                    executor.execute("runnable-" + i, runnable);
                 }
             }
 
-            while (!stopped && workingThreadCount.get() != 0) {
+            while (executor.isRunning() && executor.getFirstException() != null) {
                 try {
                     LOGGER.trace("Waiting for stopping or threads finish");
                     Thread.sleep(100);
@@ -214,7 +154,7 @@ public class ProcessHandler<T> {
                 }
             }
 
-            if (!stopped) {
+            if (executor.getFirstException() == null) {
                 LOGGER.debug("Waiting for process to finish");
                 status = process.waitFor();
 
@@ -226,18 +166,12 @@ public class ProcessHandler<T> {
         } catch (Exception e) {
             throw new RuntimeException("Failed to handle process execution", e);
         } finally {
-            LOGGER.debug("Interrupting existing threads");
-            for (Thread thread : threads) {
-                if (thread.isAlive() && !thread.isInterrupted()) {
-                    LOGGER.warn("Interrupting ALIVE thread: " + thread);
-                    thread.interrupt();
-                }
-            }
+            executor.stop();
             LOGGER.info("Destroying process");
             process.destroy();
         }
 
-        Exception exception = exceptionRef.get();
+        Exception exception = executor.getFirstException();
         if (result == null) {
             if (exception != null) {
                 throw new RuntimeException("Failed to execute (no result)", exception);
@@ -254,19 +188,6 @@ public class ProcessHandler<T> {
         }
 
         return result;
-    }
-
-    public void stop() {
-        LOGGER.warn("Stop command has been received");
-        stopped = true;
-    }
-
-    private String getThreadName(String name) {
-        if (contextName == null) {
-            return name;
-        }
-
-        return contextName + "-" + name;
     }
 
     protected static String joinArguments(List<String> arguments) {

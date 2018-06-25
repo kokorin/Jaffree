@@ -85,16 +85,16 @@ public class NutFrameWriter implements Runnable {
         Rational[] timebases = new Rational[tracks.size()];
 
         for (int i = 0; i < streamHeaders.length; i++) {
-            Stream track = tracks.get(i);
-            if (track.getId() != i) {
-                throw new RuntimeException("Track ids must start with 0 and increase by 1 subsequently!");
+            Stream stream = tracks.get(i);
+            if (stream.getId() != i) {
+                throw new RuntimeException("Stream ids must start with 0 and increase by 1 subsequently!");
             }
             final StreamHeader streamHeader;
 
-            switch (track.getType()) {
+            switch (stream.getType()) {
                 case VIDEO:
                     streamHeader = new StreamHeader(
-                            track.getId(),
+                            stream.getId(),
                             StreamHeader.Type.VIDEO,
                             alpha ? FOURCC_ABGR : FOURCC_BGR24,
                             i,
@@ -104,8 +104,8 @@ public class NutFrameWriter implements Runnable {
                             EnumSet.noneOf(StreamHeader.Flag.class),
                             new byte[0],
                             new StreamHeader.Video(
-                                    track.getWidth(),
-                                    track.getHeight(),
+                                    stream.getWidth(),
+                                    stream.getHeight(),
                                     1,
                                     1,
                                     StreamHeader.ColourspaceType.UNKNOWN
@@ -115,7 +115,7 @@ public class NutFrameWriter implements Runnable {
                     break;
                 case AUDIO:
                     streamHeader = new StreamHeader(
-                            track.getId(),
+                            stream.getId(),
                             StreamHeader.Type.AUDIO,
                             FOURCC_PCM_S32BE,
                             i,
@@ -126,17 +126,17 @@ public class NutFrameWriter implements Runnable {
                             new byte[0],
                             null,
                             new StreamHeader.Audio(
-                                    new Rational(track.getSampleRate(), 1),
-                                    track.getChannels()
+                                    new Rational(stream.getSampleRate(), 1),
+                                    stream.getChannels()
                             )
                     );
                     break;
                 default:
-                    throw new RuntimeException("Unknown Track Type: " + track.getType());
+                    throw new RuntimeException("Unknown Track Type: " + stream.getType());
             }
 
             streamHeaders[i] = streamHeader;
-            timebases[i] = new Rational(1, track.getTimebase());
+            timebases[i] = new Rational(1, stream.getTimebase());
         }
 
         int framecodesLength = 256;

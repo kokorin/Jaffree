@@ -1,10 +1,9 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
+import com.github.kokorin.jaffree.StackTraceMatcher;
 import com.github.kokorin.jaffree.StreamType;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
+import org.junit.rules.ExpectedException;
 
 import javax.imageio.ImageIO;
 import javax.sound.sampled.*;
@@ -26,6 +25,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class FrameIOTest {
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
+
     public static Path BIN;
     public static Path SAMPLES = Paths.get("target/samples");
     public static Path VIDEO_MP4 = SAMPLES.resolve("MPEG-4/video.mp4");
@@ -128,6 +130,41 @@ public class FrameIOTest {
         Assert.assertNotNull(result);
         Assert.assertEquals(1, trackCounter.get());
         Assert.assertEquals(42L, frameCounter.get());
+    }
+
+    @Test
+    public void testStreamId() throws Exception {
+        expectedException.expect(new StackTraceMatcher("Stream ids must start with 0 and increase by 1 subsequently"));
+
+        FrameProducer producer = new FrameProducer() {
+
+            @Override
+            public List<Stream> produceStreams() {
+                return Collections.singletonList(new Stream()
+                        .setId(1)
+                        .setType(Stream.Type.VIDEO)
+                        .setTimebase(1_000L)
+                        .setWidth(320)
+                        .setHeight(240)
+                );
+            }
+
+            @Override
+            public Frame produce() {
+                return null;
+            }
+        };
+
+        FFmpegResult result = FFmpeg.atPath(BIN)
+                .addInput(
+                        FrameInput.withProducer(producer)
+                )
+                .addOutput(
+                        new NullOutput()
+                )
+                .execute();
+
+        Assert.assertNotNull(result);
     }
 
     @Test
