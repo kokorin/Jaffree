@@ -145,7 +145,7 @@ public class ProcessHandler<T> {
                 }
             }
 
-            while (executor.isRunning() && executor.getFirstException() != null) {
+            while (executor.isRunning() && !executor.isEceptionCaught()) {
                 try {
                     LOGGER.trace("Waiting for stopping or threads finish");
                     Thread.sleep(100);
@@ -154,7 +154,7 @@ public class ProcessHandler<T> {
                 }
             }
 
-            if (executor.getFirstException() == null) {
+            if (!executor.isEceptionCaught()) {
                 LOGGER.debug("Waiting for process to finish");
                 status = process.waitFor();
 

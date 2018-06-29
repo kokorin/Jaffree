@@ -29,7 +29,7 @@ public class Executor<T> {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                LOGGER.debug("StdErr thread has started");
+                LOGGER.debug("{} thread has started", name);
                 try {
                     runnable.run();
                 } catch (Exception e) {
@@ -37,7 +37,7 @@ public class Executor<T> {
                     LOGGER.warn("Failed to process {}, will {}rethrow", name, set ? "" : "NOT ", e);
                 } finally {
                     workingThreadCount.decrementAndGet();
-                    LOGGER.debug("StdErr thread has finished");
+                    LOGGER.debug("{} thread has finished", name);
                 }
             }
         }, getThreadName(name));
@@ -52,13 +52,17 @@ public class Executor<T> {
         return !stopped && workingThreadCount.get() > 0;
     }
 
+    public boolean isEceptionCaught() {
+        return exceptionRef.get() != null;
+    }
+
     public Exception getFirstException() {
         return exceptionRef.get();
     }
 
     public void stop() {
         stopped = true;
-        LOGGER.debug("Interrupting existing threads");
+        LOGGER.debug("Stopping execution");
         for (Thread thread : threads) {
             if (thread.isAlive() && !thread.isInterrupted()) {
                 LOGGER.warn("Interrupting ALIVE thread: {}", thread.getName());
