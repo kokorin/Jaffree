@@ -26,7 +26,9 @@ Inspired by [ffmpeg-cli-wrapper](https://github.com/bramp/ffmpeg-cli-wrapper) by
 
 # Examples
 
-## Iterate over media streams with ffprobe
+## Checking media streams with ffprobe
+
+See details in [examples](/src/test/java/examples/ffprobe/ShowStreams.java).
 
 ```java
 Path BIN = Paths.get("/path/to/ffmpeg_directory/");
@@ -35,13 +37,7 @@ Path VIDEO_MP4 = Paths.get("/path/to/video.mp4");
 FFprobeResult result = FFprobe.atPath(BIN)
         .setInputPath(VIDEO_MP4)
         .setShowStreams(true)
-        .setShowError(true)
         .execute();
-
-if (result.getError() != null) {
-    //TODO handle ffprobe error message
-    return;
-}
 
 for (Stream stream : probe.getStreams()) {
     //TODO analyze stream data
@@ -272,4 +268,4 @@ FFmpegResult result = FFmpeg.atPath(BIN)
 ### Programmatic mosaic video creation
 
 Jaffree allows simultaneous reading from several sources (with one instance per every source). You can find details in
- Mosaic [example](examples/src/main/java/Mosaic.java).
+ Mosaic [example](/src/test/java/examples/programmatic/Mosaic.java).

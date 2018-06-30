@@ -1,3 +1,5 @@
+package examples.programmatic;
+
 import com.github.kokorin.jaffree.ffmpeg.*;
 import com.github.kokorin.jaffree.ffmpeg.Frame;
 import org.slf4j.Logger;
@@ -197,7 +199,7 @@ public class BouncingBall {
         }
 
         if (ffmpegBin == null) {
-            LOGGER.error("Usage: java -jar BouncingBall.jar -ffmpeg_bin </path/to/ffmpeg/bin>");
+            LOGGER.error("Arguments: -ffmpeg_bin </path/to/ffmpeg/bin>");
             return;
         }
 

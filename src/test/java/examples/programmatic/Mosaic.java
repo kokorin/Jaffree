@@ -1,3 +1,5 @@
+package examples.programmatic;
+
 import com.github.kokorin.jaffree.ffmpeg.*;
 import com.github.kokorin.jaffree.ffmpeg.Frame;
 import org.slf4j.Logger;
@@ -323,7 +325,7 @@ public class Mosaic {
         }
 
         if (ffmpegBin == null || inputs.isEmpty()) {
-            LOGGER.error("Usage: java -cp examples.jar Mosaic -ffmpeg_bin </path/to/ffmpeg/bin>");
+            LOGGER.error("Arguments: -ffmpeg_bin </path/to/ffmpeg/bin>");
             return;
         }
 
@@ -368,6 +370,11 @@ public class Mosaic {
             Frame result = next;
             next = null;
             return result;
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException("remove");
         }
 
         public FrameConsumer getConsumer() {
