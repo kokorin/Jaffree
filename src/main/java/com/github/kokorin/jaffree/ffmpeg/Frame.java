@@ -66,4 +66,12 @@ public class Frame {
         this.samples = samples;
         return this;
     }
+
+    @Override
+    public String toString() {
+        return "Frame{" +
+                "streamId=" + streamId +
+                ", pts=" + pts +
+                '}';
+    }
 }

@@ -261,17 +261,17 @@ public class NutWriter {
         }
 
         StreamHeader stream = streamHeaders[frame.streamId];
-        long millis = Util.toMillis(frame.pts, mainHeader.timeBases[stream.timeBaseId]);
-        frameOrderingBuffer.add(new TsFrame(millis, frame));
+        Rational timestamp = mainHeader.timeBases[stream.timeBaseId].multiply(frame.pts);
+        frameOrderingBuffer.add(new TsFrame(timestamp, frame));
         Collections.sort(frameOrderingBuffer, TsFrame.COMPARATOR);
 
-        long lastFrameMillis = frameOrderingBuffer.get(frameOrderingBuffer.size() - 1).tsMillis;
+        Rational lastFrameTimestamp = frameOrderingBuffer.get(frameOrderingBuffer.size() - 1).timestamp;
         // Check if we have to remove some frames from buffer and to write them to ouput
         Iterator<TsFrame> frameIterator = frameOrderingBuffer.iterator();
         while (frameIterator.hasNext()) {
             TsFrame tsFrame = frameIterator.next();
             // current frame can't be written yet, as well as all subsequent
-            if (lastFrameMillis - tsFrame.tsMillis <= frameOrderingBufferMillis) {
+            if (lastFrameTimestamp.subtract(tsFrame.timestamp).lessThanOrEqual(new Rational(frameOrderingBufferMillis, 1000))) {
                 break;
             }
 
@@ -286,16 +286,16 @@ public class NutWriter {
         // EOR frames by specification use TS of the previous frame in the same stream.
         // TODO do we need this check?
         if (!frame.eor) {
-            long maxTs = 0;
+            Rational maxTs = Rational.ZERO;
             for (int i = 0; i < mainHeader.timeBases.length; i++) {
-                long ts = Util.toMillis(lastPts[i], mainHeader.timeBases[i]);
-                if (ts > maxTs) {
+                Rational ts = mainHeader.timeBases[i].multiply(lastPts[i]);
+                if (ts.greaterThan(maxTs)) {
                     maxTs = ts;
                 }
             }
             StreamHeader steam = streamHeaders[frame.streamId];
-            long framedTs = Util.toMillis(frame.pts, mainHeader.timeBases[steam.timeBaseId]);
-            if (framedTs < maxTs) {
+            Rational framedTs = mainHeader.timeBases[steam.timeBaseId].multiply(frame.pts);
+            if (framedTs.lessThan(maxTs)) {
                 throw new RuntimeException("Unordered frames! Try to increase frameOrderingBufferMillis. maxTs: " + maxTs + ", but current: " + framedTs);
             }
         }
@@ -593,18 +593,18 @@ public class NutWriter {
 
 
     private static class TsFrame {
-        public final long tsMillis;
+        public final Rational timestamp;
         public final NutFrame frame;
 
         private static final Comparator<TsFrame> COMPARATOR = new Comparator<TsFrame>() {
             @Override
             public int compare(TsFrame o1, TsFrame o2) {
-                return Long.compare(o1.tsMillis, o2.tsMillis);
+                return o1.timestamp.compareTo(o2.timestamp);
             }
         };
 
-        public TsFrame(long tsMillis, NutFrame frame) {
-            this.tsMillis = tsMillis;
+        public TsFrame(Rational timestamp, NutFrame frame) {
+            this.timestamp = timestamp;
             this.frame = frame;
         }
     }

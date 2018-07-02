@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
+import java.util.concurrent.TimeUnit;
 
 /**
  * <b>It's strongly recommended</b> to specify {@link #setFrameRate(Number)}  for video producing
@@ -31,6 +32,7 @@ import java.net.ServerSocket;
 public class FrameInput extends BaseInput<FrameInput> implements Input {
     private boolean alpha;
     private boolean frameRateSet;
+    private Long frameOrderingBufferMillis;
 
     private final FrameProducer producer;
     private final ServerSocket serverSocket;
@@ -82,12 +84,21 @@ public class FrameInput extends BaseInput<FrameInput> implements Input {
         return super.setFrameRate(streamSpecifier, value);
     }
 
+    public FrameInput setFrameOrderingBuffer(long bufferTime, TimeUnit unit) {
+        return setFrameOrderingBuffer(unit.toMillis(bufferTime));
+    }
+
+    public FrameInput setFrameOrderingBuffer(long bufferTimeMillis) {
+        frameOrderingBufferMillis = bufferTimeMillis;
+        return this;
+    }
+
     Runnable createWriter() {
         if (!frameRateSet) {
             LOGGER.warn("It's strongly recommended to specify video frame rate, " +
                     "otherwise video encoding may be slower (by 20-50 times) and may produce corrupted video");
         }
-        return new NutFrameWriter(producer, alpha, serverSocket);
+        return new NutFrameWriter(producer, alpha, serverSocket, frameOrderingBufferMillis);
     }
 
     private static ServerSocket allocateSocket() {

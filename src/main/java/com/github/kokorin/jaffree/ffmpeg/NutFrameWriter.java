@@ -31,11 +31,13 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Objects;
 
 public class NutFrameWriter implements Runnable {
     private final FrameProducer producer;
     private final boolean alpha;
     private final ServerSocket serverSocket;
+    private final Long frameOrderingBufferMillis;
 
     private static final byte[] FOURCC_ABGR = {'A', 'B', 'G', 'R'};
     private static final byte[] FOURCC_BGR24 = {'B', 'G', 'R', 24};
@@ -46,9 +48,14 @@ public class NutFrameWriter implements Runnable {
     private static final Logger LOGGER = LoggerFactory.getLogger(NutFrameWriter.class);
 
     public NutFrameWriter(FrameProducer producer, boolean alpha, ServerSocket serverSocket) {
+        this(producer, alpha, serverSocket, null);
+    }
+
+    public NutFrameWriter(FrameProducer producer, boolean alpha, ServerSocket serverSocket, Long frameOrderingBufferMillis) {
         this.producer = producer;
         this.alpha = alpha;
         this.serverSocket = serverSocket;
+        this.frameOrderingBufferMillis = frameOrderingBufferMillis;
     }
 
     @Override
@@ -67,6 +74,9 @@ public class NutFrameWriter implements Runnable {
     void write(OutputStream stdIn) {
         try {
             NutWriter writer = new NutWriter(new NutOutputStream(stdIn));
+            if (frameOrderingBufferMillis != null) {
+                writer.setFrameOrderingBufferMillis(frameOrderingBufferMillis);
+            }
             write(writer);
             writer.writeFooter();
         } catch (IOException e) {
@@ -93,6 +103,8 @@ public class NutFrameWriter implements Runnable {
 
             switch (stream.getType()) {
                 case VIDEO:
+                    Objects.requireNonNull(stream.getWidth(), "Width must be specified");
+                    Objects.requireNonNull(stream.getHeight(), "Height must be specified");
                     streamHeader = new StreamHeader(
                             stream.getId(),
                             StreamHeader.Type.VIDEO,
@@ -114,6 +126,7 @@ public class NutFrameWriter implements Runnable {
                     );
                     break;
                 case AUDIO:
+                    Objects.requireNonNull(stream.getSampleRate(), "Samplerate must be specified");
                     streamHeader = new StreamHeader(
                             stream.getId(),
                             StreamHeader.Type.AUDIO,

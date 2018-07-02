@@ -2,6 +2,8 @@ package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.StackTraceMatcher;
 import com.github.kokorin.jaffree.StreamType;
+import com.github.kokorin.jaffree.ffprobe.FFprobe;
+import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
 
@@ -165,6 +167,96 @@ public class FrameIOTest {
                 .execute();
 
         Assert.assertNotNull(result);
+    }
+
+    @Test
+    public void testMultipleStreams() throws Exception {
+        final Path tempDir = Files.createTempDirectory("jaffree");
+        Path output = tempDir.resolve("output.mp4");
+        System.out.println("Will write to " + output);
+
+        FrameProducer producer = new FrameProducer() {
+            private int frame = 0;
+
+            @Override
+            public List<Stream> produceStreams() {
+                return Arrays.asList(
+                        new Stream()
+                                .setId(0)
+                                .setType(Stream.Type.VIDEO)
+                                .setTimebase(10L)
+                                .setWidth(640)
+                                .setHeight(480),
+                        new Stream()
+                                .setId(1)
+                                .setType(Stream.Type.VIDEO)
+                                .setTimebase(10L)
+                                .setWidth(320)
+                                .setHeight(240),
+                        new Stream()
+                                .setId(2)
+                                .setType(Stream.Type.AUDIO)
+                                .setTimebase(44_100L)
+                                .setSampleRate(44_100)
+                                .setChannels(1),
+                        new Stream()
+                                .setId(3)
+                                .setType(Stream.Type.AUDIO)
+                                .setTimebase(44_100L)
+                                .setSampleRate(44_100)
+                                .setChannels(1)
+                );
+            }
+
+            @Override
+            public Frame produce() {
+                if (frame > 400) {
+                    return null;
+                }
+
+                int type = frame % 4;
+                long timestamp = frame / 4;
+                Frame result = new Frame()
+                        .setStreamId(type)
+                        .setPts(timestamp);
+                switch (type) {
+                    case 0:
+                        result.setImage(new BufferedImage(640, 480, BufferedImage.TYPE_3BYTE_BGR));
+                        break;
+                    case 1:
+                        result.setImage(new BufferedImage(320, 240, BufferedImage.TYPE_3BYTE_BGR));
+                        break;
+                    case 2:
+                    case 3:
+                        result.setPts(4410 * timestamp)
+                                .setSamples(new int[4410 * 4]);
+                        break;
+                }
+                frame++;
+
+                return result;
+            }
+        };
+
+        FFmpegResult result = FFmpeg.atPath(BIN)
+                .addInput(
+                        FrameInput.withProducer(producer)
+                                .setFrameRate(10)
+                )
+                .addOutput(
+                        UrlOutput.toPath(output)
+                                .addMap(0)
+                )
+                .execute();
+
+        Assert.assertNotNull(result);
+
+        FFprobeResult probe = FFprobe.atPath(BIN)
+                .setInputPath(output)
+                .setShowStreams(true)
+                .execute();
+
+        Assert.assertEquals(4, probe.getStreams().size());
     }
 
     @Test

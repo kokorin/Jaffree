@@ -18,15 +18,15 @@
 package com.github.kokorin.jaffree;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Objects;
 
 public class Rational extends Number implements Comparable<Rational> {
     public final long numerator;
     public final long denominator;
 
-    public Rational(long value) {
-        this(value, 1L);
-    }
+    public static final Rational ZERO = new Rational(0, 1);
+    public static final Rational ONE = new Rational(1, 1);
 
     public Rational(long numerator, long denominator) {
         if (denominator <= 0) {
@@ -61,6 +61,49 @@ public class Rational extends Number implements Comparable<Rational> {
         return 1. * numerator / denominator;
     }
 
+    public Rational negate() {
+        return new Rational(-numerator, denominator);
+    }
+
+    public Rational add(Number value) {
+        Rational that = toRational(value);
+        return new Rational(
+                this.numerator * that.denominator + that.numerator * this.denominator,
+                this.denominator * that.denominator
+        );
+    }
+
+    public Rational subtract(Number value) {
+        Rational that = toRational(value);
+        return add(that.negate());
+    }
+
+    public Rational multiply(Number value) {
+        Rational that = toRational(value);
+        return new Rational(this.numerator * that.numerator, this.denominator * that.denominator);
+    }
+
+    public boolean lessThan(Number that) {
+        return compareTo(toRational(that)) < 0;
+    }
+
+    public boolean lessThanOrEqual(Number that) {
+        return compareTo(toRational(that)) <= 0;
+    }
+
+    public boolean greaterThan(Number that) {
+        return compareTo(toRational(that)) > 0;
+    }
+
+    public boolean greaterThanOrEqual(Number that) {
+        return compareTo(toRational(that)) >= 0;
+    }
+
+    public Rational simplify() {
+        long gcd = gcd(Math.abs(numerator), denominator);
+        return new Rational(numerator / gcd, denominator / gcd);
+    }
+
     @Override
     public String toString() {
         if (denominator == 1) {
@@ -80,8 +123,11 @@ public class Rational extends Number implements Comparable<Rational> {
 
     @Override
     public int hashCode() {
-
         return Objects.hash(numerator, denominator);
+    }
+
+    public static Rational valueOf(long value) {
+        return new Rational(value, 1L);
     }
 
     public static Rational valueOf(double d) {
@@ -110,5 +156,23 @@ public class Rational extends Number implements Comparable<Rational> {
         } catch (NumberFormatException e) {
             throw new NumberFormatException("For input string: \"" + value + "\"");
         }
+    }
+
+    private static Rational toRational(Number value) {
+        if (value instanceof Rational) {
+            return (Rational) value;
+        }
+
+        if (value instanceof Double || value instanceof Float) {
+            return valueOf(value.doubleValue());
+        }
+
+        return valueOf(value.longValue());
+    }
+
+    private static long gcd(long a, long b) {
+        BigInteger bigA = BigInteger.valueOf(a);
+        BigInteger bigB = BigInteger.valueOf(b);
+        return bigA.gcd(bigB).longValue();
     }
 }

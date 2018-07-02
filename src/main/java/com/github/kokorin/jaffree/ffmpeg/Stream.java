@@ -80,4 +80,12 @@ public class Stream {
         this.channels = channels;
         return this;
     }
+
+    @Override
+    public String toString() {
+        return "Stream{" +
+                "id=" + id +
+                ", type=" + type +
+                '}';
+    }
 }
