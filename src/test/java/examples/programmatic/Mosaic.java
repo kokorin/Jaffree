@@ -16,6 +16,10 @@ import java.util.*;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+/**
+ * Note: for some reason ffmpeg 3.3.1 fails when using amix or amerge filters (in this example)
+ * Use ffmpeg 4.0 at least, amix works (while amerge still fails)
+ */
 public class Mosaic {
     private final Path ffmpegBin;
     private final List<String> inputs;
@@ -33,7 +37,6 @@ public class Mosaic {
         final List<FFmpegResult> results = new CopyOnWriteArrayList<>();
         List<FrameIterator> frameIterators = new ArrayList<>();
 
-        String outputComplexFilter = "";
         for (int i = 0; i < inputs.size(); i++) {
             String input = inputs.get(i);
 
@@ -57,7 +60,7 @@ public class Mosaic {
             final FFmpeg ffmpeg = FFmpeg.atPath(ffmpegBin)
                     .addInput(UrlInput
                             .fromUrl(input)
-                            .setDuration(30_000))
+                            .setDuration(15_000))
                     .addOutput(FrameOutput
                             .withConsumer(frameIterator.getConsumer())
                             .setFrameRate(frameRate)
@@ -85,11 +88,7 @@ public class Mosaic {
             }, "FFmpeg");
             ffmpegThread.setDaemon(true);
             ffmpegThread.start();
-
-            outputComplexFilter += "[0:a:" + i + "]";
         }
-
-        outputComplexFilter += " amix=inputs=" + inputs.size();
 
         FrameProducer frameProducer = produceMosaic(frameIterators);
 
@@ -101,8 +100,11 @@ public class Mosaic {
                                 //.setFrameOrderingBuffer(1000L)
                 )
                 .setOverwriteOutput(true)
-                .addOutput(UrlOutput.toUrl("mosaic.mp4"))
-                .addArguments("-filter_complex", outputComplexFilter)
+                .addOutput(UrlOutput
+                        .toUrl("mosaic.mp4")
+                        //.addMap(0)
+                )
+                .addArguments("-filter_complex", "amix=inputs=" + inputs.size())
                 .setContextName("result")
                 .execute();
     }
