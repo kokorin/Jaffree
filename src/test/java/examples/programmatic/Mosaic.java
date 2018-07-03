@@ -122,7 +122,7 @@ public class Mosaic {
 
             private final Map<Integer, Deque<Frame>> audioQueues = new HashMap<>();
             private long timecode = 0;
-            private Frame[] nextVideoFrames = null;
+            private final Frame[] nextVideoFrames = new Frame[frameIterators.size()];
             private long nextVideoFrameTimecode = 0;
             private long nextAudioFrameTimecode = 0;
 
@@ -157,13 +157,13 @@ public class Mosaic {
             public Frame produce() {
                 Frame result = null;
                 if (nextVideoFrameTimecode <= timecode) {
-                    if (nextVideoFrames == null) {
-                        nextVideoFrames = readNextVideoFrames(nextVideoFrameTimecode);
+                    if (nextVideoFrameTimecode == 0) {
+                        readNextVideoFrames(nextVideoFrameTimecode);
                     }
 
                     result = produceVideoFrame(nextVideoFrames);
                     // We have to read video frames ahead, otherwise we will have no audio frames read
-                    nextVideoFrames = readNextVideoFrames(nextVideoFrameTimecode);
+                   readNextVideoFrames(nextVideoFrameTimecode);
                 } else if (nextAudioFrameTimecode <= timecode) {
                     result = produceAudioFrame();
                 }
@@ -270,11 +270,14 @@ public class Mosaic {
 
             // All video input streams have forced frameRate, so we know that in every stream
             // frames will occur with the same timestamp
-            private Frame[] readNextVideoFrames(long videoTs) {
-                Frame[] result = new Frame[frameIterators.size()];
-
+            private void readNextVideoFrames(long videoTs) {
                 for (int i = 0; i < frameIterators.size(); i++) {
                     FrameIterator iter = frameIterators.get(i);
+
+                    if (!iter.hasNext) {
+                        nextVideoFrames[i] = null;
+                    }
+
                     while (iter.hasNext) {
                         Frame frame = iter.next();
                         if (frame == null) {
@@ -288,7 +291,7 @@ public class Mosaic {
 
                         switch (stream.getType()) {
                             case VIDEO:
-                                result[i] = frame;
+                                nextVideoFrames[i] = frame;
                                 break;
                             case AUDIO:
                                 Deque<Frame> aQueue = audioQueues.get(i);
@@ -305,8 +308,6 @@ public class Mosaic {
                         }
                     }
                 }
-
-                return result;
             }
         };
     }
@@ -328,7 +329,7 @@ public class Mosaic {
         }
 
         if (ffmpegBin == null || inputs.isEmpty()) {
-            LOGGER.error("Arguments: -ffmpeg_bin </path/to/ffmpeg/bin>");
+            System.err.println("Arguments: -ffmpeg_bin </path/to/ffmpeg/bin>");
             return;
         }
 

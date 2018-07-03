@@ -28,7 +28,7 @@ Inspired by [ffmpeg-cli-wrapper](https://github.com/bramp/ffmpeg-cli-wrapper) by
 
 ## Checking media streams with ffprobe
 
-See details in [examples](/src/test/java/examples/ffprobe/ShowStreams.java).
+See whole example [here](/src/test/java/examples/ffprobe/ShowStreams.java).
 
 ```java
 Path BIN = Paths.get("/path/to/ffmpeg_directory/");
@@ -159,11 +159,12 @@ FFmpegResult result = FFmpeg.atPath(BIN)
 
 ### Producing video
 
-Jaffree allows creation of video in pure java code:
+Jaffree allows creation of video in pure java code.
+
+See whole example [here](/src/test/java/examples/programmatic/ProduceGif.java).
 
 ```java
-final Path tempDir = Files.createTempDirectory("jaffree");
-Path output = tempDir.resolve("test.gif");
+Path output = Paths.get("test.gif");
 
 FrameProducer producer = new FrameProducer() {
     private long frameCounter = 0;
@@ -267,5 +268,5 @@ FFmpegResult result = FFmpeg.atPath(BIN)
 
 ### Programmatic mosaic video creation
 
-Jaffree allows simultaneous reading from several sources (with one instance per every source). You can find details in
- Mosaic [example](/src/test/java/examples/programmatic/Mosaic.java).
+Jaffree allows simultaneous reading from several sources (with one instance per every source and target).
+You can find details in  Mosaic [example](/src/test/java/examples/programmatic/Mosaic.java).
