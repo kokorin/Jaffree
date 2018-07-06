@@ -46,6 +46,8 @@ for (Stream stream : probe.getStreams()) {
 
 ## Re-encode and track progress
 
+See whole example [here](/src/test/java/examples/ffmpeg/ReEncode.java).
+
 ```java
 Path BIN = Paths.get("/path/to/ffmpeg_directory/");
 Path VIDEO_MP4 = Paths.get("/path/to/video.mp4");
@@ -220,7 +222,9 @@ Jaffree also allows producing of audio tracks, see BouncingBall [example](exampl
 
 ### Consuming video
 
-Jaffree allows consumption of video in the similar manner:
+Jaffree allows consumption of video in the similar manner.
+
+See whole example [here](/src/test/java/examples/programmatic/ExtractFrames.java).
 
 ```java
 final Path tempDir = Files.createTempDirectory("jaffree");
@@ -244,9 +248,7 @@ FrameConsumer consumer = new FrameConsumer() {
         long n = frameCounter.incrementAndGet();
         String filename = String.format("frame%05d.png", n);
         try {
-            boolean written = ImageIO.write(frame.getImage(), "png", tempDir.resolve(filename).toFile());
-            Assert.assertTrue(written);
-            System.out.println(filename);
+            ImageIO.write(frame.getImage(), "png", tempDir.resolve(filename).toFile());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -15,7 +15,7 @@
     </logger>-->
 
     <logger name="com.github" additivity="false">
-        <level value="trace" />
+        <level value="info" />
         <appender-ref ref="console" />
     </logger>
 
