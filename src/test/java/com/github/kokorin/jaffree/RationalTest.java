@@ -28,8 +28,8 @@ public class RationalTest {
 
     @Test
     public void simplify() {
-        Assert.assertEquals("1/3", new Rational(10, 30).toString());
-        Assert.assertEquals("1/3", new Rational(3, 9).toString());
+        Assert.assertEquals("1/3", new Rational(10, 30).simplify().toString());
+        Assert.assertEquals("1/3", new Rational(3, 9).simplify().toString());
     }
 
     @Test
