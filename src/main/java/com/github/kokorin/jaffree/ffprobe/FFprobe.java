@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import javax.xml.bind.JAXB;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -457,17 +458,16 @@ public class FFprobe {
         return new ThrowingStdReader<>();
     }
 
-    public static FFprobe atPath(Path pathToDir) {
-        String os = System.getProperty("os.name");
-        if (os == null) {
-            throw new RuntimeException("Failed to detect OS");
-        }
+    public static FFprobe atPath() {
+        return atPath(null);
+    }
 
-        Path executable;
-        if (os.toLowerCase().contains("win")) {
-            executable = pathToDir.resolve("ffprobe.exe");
-        } else {
+    public static FFprobe atPath(Path pathToDir) {
+        final Path executable;
+        if (pathToDir != null) {
             executable = pathToDir.resolve("ffprobe");
+        } else {
+            executable = Paths.get("ffprobe");
         }
 
         return new FFprobe(executable);

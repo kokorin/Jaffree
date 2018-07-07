@@ -55,6 +55,22 @@ public class FFmpegTest {
         Assert.assertNotNull(result);
     }
 
+    // For this test to pass ffmpeg must be added to Operation System PATH environment variable
+    @Test
+    public void testEnvPath() throws Exception {
+        Path tempDir = Files.createTempDirectory("jaffree");
+        Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
+
+        FFmpegResult result = FFmpeg.atPath()
+                .addInput(UrlInput.fromPath(VIDEO_MP4))
+                .addOutput(UrlOutput
+                        .toPath(outputPath)
+                        .copyAllCodecs())
+                .execute();
+
+        Assert.assertNotNull(result);
+    }
+
     @Test
     public void testOutputAdditionalOption() throws Exception {
         Path tempDir = Files.createTempDirectory("jaffree");

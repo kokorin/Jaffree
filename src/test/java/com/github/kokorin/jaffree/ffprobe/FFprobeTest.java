@@ -47,6 +47,16 @@ public class FFprobeTest {
         Assert.assertEquals(Rational.valueOf("30000/1001"), stream.getAvgFrameRate());
     }
 
+    // For this test to pass ffmpeg must be added to Operation System PATH environment variable
+    @Test
+    public void testEnvPath() throws Exception {
+        FFprobeResult result = FFprobe.atPath()
+                .setInputPath(VIDEO_MP4)
+                .execute();
+
+        Assert.assertNotNull(result);
+    }
+
     @Test
     public void testShowDataWithShowPackets() throws Exception {
         FFprobeResult result = FFprobe.atPath(BIN)

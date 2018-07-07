@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -181,17 +182,16 @@ public class FFmpeg {
         return result;
     }
 
-    public static FFmpeg atPath(Path pathToDir) {
-        String os = System.getProperty("os.name");
-        if (os == null) {
-            throw new RuntimeException("Failed to detect OS");
-        }
+    public static FFmpeg atPath() {
+        return atPath(null);
+    }
 
-        Path executable;
-        if (os.toLowerCase().contains("win")) {
-            executable = pathToDir.resolve("ffmpeg.exe");
-        } else {
+    public static FFmpeg atPath(Path pathToDir) {
+        final Path executable;
+        if (pathToDir != null) {
             executable = pathToDir.resolve("ffmpeg");
+        } else {
+            executable = Paths.get("ffmpeg");
         }
 
         return new FFmpeg(executable);
