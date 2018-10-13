@@ -20,6 +20,27 @@ It integrates with ffmpeg via `java.lang.Process`.
     <artifactId>slf4j-api</artifactId>
     <version>1.7.25</version>
 </dependency>
+
+<!-- JAXB 2.3.0 for jdk9+ -->
+<dependency>
+    <groupId>javax.xml.bind</groupId>
+    <artifactId>jaxb-api</artifactId>
+    <version>2.3.0</version>
+    <scope>test</scope>
+</dependency>
+<dependency>
+    <groupId>org.glassfish.jaxb</groupId>
+    <artifactId>jaxb-runtime</artifactId>
+    <version>2.3.0</version>
+    <scope>test</scope>
+</dependency>
+<!-- JAXB needs javax.activation module (jdk9) -->
+<dependency>
+    <groupId>javax.activation</groupId>
+    <artifactId>javax.activation-api</artifactId>
+    <version>1.2.0</version>
+    <scope>test</scope>
+</dependency>
 ```
 
 Inspired by [ffmpeg-cli-wrapper](https://github.com/bramp/ffmpeg-cli-wrapper) by [Andrew Brampton](https://blog.bramp.net/)
