@@ -49,13 +49,13 @@ public class FFmpegResultReader implements StdReader<FFmpegResult> {
 
         try {
             while ((line = reader.readLine()) != null) {
-                LOGGER.info(line);
+                LOGGER.debug(line);
                 FFmpegProgress progress = parseProgress(line);
                 if (progress != null) {
                     if (progressListener != null) {
                         progressListener.onProgress(progress);
-                        errorMessage = null;
                     }
+                    errorMessage = null;
                     continue;
                 }
 

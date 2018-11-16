@@ -29,6 +29,9 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 
 public class FFmpeg {
     private final LogLevel logLevel = LogLevel.INFO;
@@ -136,6 +139,31 @@ public class FFmpeg {
                 .setStdOutReader(createStdOutReader())
                 .setRunnables(readersAndWriters)
                 .execute(buildArguments());
+    }
+
+    /**
+     * Runs ffmpeg in separate Thread.
+     * <p>
+     * <b>Note</b>: execution is started immediately, so invocation of <code>Future.cancel(false)</code> has no effect.
+     * Use <code>Future.cancel(true)</code>
+     *
+     * @return ffmpeg result future
+     */
+    public Future<FFmpegResult> executeAsync() {
+        Callable<FFmpegResult> callable = new Callable<FFmpegResult>() {
+            @Override
+            public FFmpegResult call() throws Exception {
+                return execute();
+            }
+        };
+
+        final FutureTask<FFmpegResult> result = new FutureTask<>(callable);
+
+        Thread runner = new Thread(result, "FFmpeg-async-runner");
+        runner.setDaemon(true);
+        runner.start();
+
+        return result;
     }
 
     protected StdReader<FFmpegResult> createStdErrReader() {

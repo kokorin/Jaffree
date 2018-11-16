@@ -13,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -165,6 +166,27 @@ public class FFmpegTest {
 
         double outputDuration = getDuration(outputPath);
         Assert.assertEquals(10.0, outputDuration, 0.1);
+    }
+
+    @Test
+    public void testStopping() throws Exception {
+        Path tempDir = Files.createTempDirectory("jaffree");
+        Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
+
+        FFmpeg ffmpeg = FFmpeg.atPath(BIN)
+                .addInput(UrlInput
+                        .fromPath(VIDEO_MP4)
+                )
+                .addOutput(UrlOutput.toPath(outputPath));
+
+        Future<FFmpegResult> futureResult = ffmpeg.executeAsync();
+
+        Thread.sleep(1_000);
+
+        boolean cancelled = futureResult.cancel(true);
+        Assert.assertTrue(cancelled);
+
+        Thread.sleep(1_000);
     }
 
     @Test

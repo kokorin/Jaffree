@@ -5,59 +5,79 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
-public class Executor<T> {
+public class Executor {
+    private final Thread starter;
     private final String contextName;
-    private final AtomicReference<Exception> exceptionRef = new AtomicReference<>();
-    private final AtomicLong workingThreadCount = new AtomicLong();
+
+    private final List<Exception> exceptions = new CopyOnWriteArrayList<>();
     private final List<Thread> threads = new CopyOnWriteArrayList<>();
+    private final AtomicInteger runningCounter = new AtomicInteger();
+    private final AtomicBoolean starterInterrupted = new AtomicBoolean();
     private volatile boolean stopped = false;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Executor.class);
 
     public Executor(String contextName) {
+        this.starter = Thread.currentThread();
         this.contextName = contextName;
     }
 
+    /**
+     * Executes provided Runnable.
+     * <bNote</b>: interrupts invoking thread if exception appears
+     *
+     * @param name     thread name suffix
+     * @param runnable runnable to execute
+     */
     public void execute(final String name, final Runnable runnable) {
         if (stopped) {
             throw new RuntimeException("Executor has been stopped already!");
         }
 
+        final Thread starter = Thread.currentThread();
+
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
                 LOGGER.debug("{} thread has started", name);
+                runningCounter.incrementAndGet();
                 try {
                     runnable.run();
                 } catch (Exception e) {
-                    boolean set = exceptionRef.compareAndSet(null, e);
-                    LOGGER.warn("Failed to process {}, will {}rethrow", name, set ? "" : "NOT ", e);
+                    LOGGER.debug("Exception: {}, collecting for later report", name, e);
+                    exceptions.add(e);
+
+                    // Starter thread MUST NOT be interrupted multiple times,
+                    // otherwise main thread may be marked for interruption after exiting ProcessHandler logic.
+                    if (!stopped && starterInterrupted.compareAndSet(false, true)) {
+                        starter.interrupt();
+                    }
                 } finally {
-                    workingThreadCount.decrementAndGet();
                     LOGGER.debug("{} thread has finished", name);
+                    runningCounter.decrementAndGet();
                 }
             }
         }, getThreadName(name));
         thread.setDaemon(true);
-        threads.add(thread);
-
-        workingThreadCount.incrementAndGet();
         thread.start();
+
+        threads.add(thread);
     }
 
-    public boolean isRunning() {
-        return !stopped && workingThreadCount.get() > 0;
-    }
+    public Exception getException() {
+        if (exceptions.isEmpty()) {
+            return null;
+        }
 
-    public boolean isEceptionCaught() {
-        return exceptionRef.get() != null;
-    }
+        Exception result = new RuntimeException("Exception during execution", exceptions.get(0));
+        for (int i = 1; i < exceptions.size(); i++) {
+            result.addSuppressed(exceptions.get(i));
+        }
 
-    public Exception getFirstException() {
-        return exceptionRef.get();
+        return result;
     }
 
     public void stop() {
@@ -69,6 +89,10 @@ public class Executor<T> {
                 thread.interrupt();
             }
         }
+    }
+
+    public boolean isRunning() {
+        return runningCounter.get() > 0;
     }
 
     private String getThreadName(String name) {

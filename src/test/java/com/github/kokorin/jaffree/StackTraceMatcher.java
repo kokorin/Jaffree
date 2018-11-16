@@ -18,7 +18,8 @@ public class StackTraceMatcher extends BaseMatcher<Object> {
 
         Throwable throwable = (Throwable) item;
         while (throwable != null) {
-            if (throwable.getMessage().contains(messagePart)) {
+            String message = throwable.getMessage();
+            if (message != null && message.contains(messagePart)) {
                 return true;
             }
             throwable = throwable.getCause();
