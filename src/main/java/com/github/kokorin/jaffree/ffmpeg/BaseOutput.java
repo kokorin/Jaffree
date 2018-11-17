@@ -23,7 +23,7 @@ import com.github.kokorin.jaffree.StreamType;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-public class BaseOutput<T extends BaseOutput & Output> extends BaseInOut<T> implements Output {
+public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements Output {
     private String output;
     private Long outputPosition;
     private Long sizeLimit;

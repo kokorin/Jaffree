@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public abstract class BaseInput<T extends BaseInput & Input> extends BaseInOut<T> implements Input {
+public abstract class BaseInput<T extends BaseInput<T>> extends BaseInOut<T> implements Input {
     private String input;
     private Integer streamLoop;
     private boolean readAtFrameRate = false;
@@ -42,14 +42,14 @@ public abstract class BaseInput<T extends BaseInput & Input> extends BaseInOut<T
      * @param streamLoop
      * @return this
      */
-    public BaseInput setStreamLoop(Integer streamLoop) {
+    public T setStreamLoop(Integer streamLoop) {
         this.streamLoop = streamLoop;
-        return this;
+        return thisAsT();
     }
 
-    public BaseInput setReadAtFrameRate(boolean readAtFrameRate) {
+    public T setReadAtFrameRate(boolean readAtFrameRate) {
         this.readAtFrameRate = readAtFrameRate;
-        return this;
+        return thisAsT();
     }
 
     @Override

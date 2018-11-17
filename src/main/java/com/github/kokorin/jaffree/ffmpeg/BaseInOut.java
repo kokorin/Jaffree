@@ -254,8 +254,6 @@ public abstract class BaseInOut<T extends BaseInOut> {
         return thisAsT();
     }
 
-    public abstract List<String> buildArguments();
-
     protected final List<String> buildCommonArguments() {
         List<String> result = new ArrayList<>();
 

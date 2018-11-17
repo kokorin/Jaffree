@@ -42,6 +42,39 @@ public class FFmpegTest {
     }
 
     @Test
+    public void generics() {
+        UrlOutput urlOutput = UrlOutput.toPath(Paths.get("non_important.flv"))
+                .setOutputPosition(123)
+                .setFormat("nut")
+                .addMap(2)
+                .setOutput(null);
+
+        FrameOutput frameOutput = FrameOutput.withConsumer(null)
+                .setOutputPosition(123)
+                .setFormat("nut")
+                .addMap(2)
+                .setOutput(null);
+
+        NullOutput nullOutput = new NullOutput()
+                .setOutputPosition(123)
+                .setFormat("nut")
+                .addMap(2)
+                .setOutput(null);
+
+        UrlInput urlInput = UrlInput.fromUrl(null)
+                .setStreamLoop(1)
+                .addArgument("arg1")
+                .setInput("");
+
+        FrameInput frameInput = FrameInput.withProducer(null)
+                .setFrameOrderingBuffer(100)
+                .setFrameRate(30)
+                .setStreamLoop(1)
+                .addArgument("arg1")
+                .setInput("");
+    }
+
+    @Test
     public void testSimpleCopy() throws Exception {
         Path tempDir = Files.createTempDirectory("jaffree");
         Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
