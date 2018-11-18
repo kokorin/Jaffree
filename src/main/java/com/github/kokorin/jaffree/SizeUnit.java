@@ -17,6 +17,9 @@
 
 package com.github.kokorin.jaffree;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 public enum SizeUnit {
     K(1_000L),
     M(1_000_000L),
@@ -45,9 +48,11 @@ public enum SizeUnit {
         return multiplier;
     }
 
-    // TODO rewrite this method, pay attention to exactness and overflow
     public long convertTo(long value, SizeUnit unit) {
-        return (long) (1. * value * this.multiplier / unit.multiplier);
+        return BigDecimal.valueOf(value)
+                .multiply(BigDecimal.valueOf(this.multiplier))
+                .divide(BigDecimal.valueOf(unit.multiplier), RoundingMode.CEILING)
+                .longValue();
     }
 
     public long toBytes(long value) {

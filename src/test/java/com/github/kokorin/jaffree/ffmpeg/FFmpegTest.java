@@ -199,6 +199,22 @@ public class FFmpegTest {
 
         double outputDuration = getDuration(outputPath);
         Assert.assertEquals(10.0, outputDuration, 0.1);
+
+        result = FFmpeg.atPath(BIN)
+                .addInput(UrlInput
+                        .fromPath(VIDEO_MP4)
+                        .setDuration(1. / 6., TimeUnit.MINUTES)
+                )
+                .setOverwriteOutput(true)
+                .addOutput(UrlOutput
+                        .toPath(outputPath)
+                        .copyAllCodecs())
+                .execute();
+
+        Assert.assertNotNull(result);
+
+        outputDuration = getDuration(outputPath);
+        Assert.assertEquals(10.0, outputDuration, 0.1);
     }
 
     @Test

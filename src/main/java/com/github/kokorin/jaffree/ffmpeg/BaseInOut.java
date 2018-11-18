@@ -65,14 +65,18 @@ public abstract class BaseInOut<T extends BaseInOut> {
     }
 
     /**
+     * When used as an input option, limit the duration of data read from the input file.
+     * <p>
+     * When used as an output option, stop writing the output after its duration reaches duration.
+     *
      * @param duration duration
      * @param timeUnit unit of duration
      * @return this
      * @see #setDuration(long)
      */
-    public T setDuration(long duration, TimeUnit timeUnit) {
-        this.duration = timeUnit.toMillis(duration);
-        return thisAsT();
+    public T setDuration(Number duration, TimeUnit timeUnit) {
+        long millis = (long) (duration.doubleValue() * timeUnit.toMillis(1));
+        return setDuration(millis);
     }
 
     /**
@@ -95,14 +99,24 @@ public abstract class BaseInOut<T extends BaseInOut> {
     }
 
     /**
+     * When used as an input option, seeks in this input file to position.
+     * <p>
+     * Note that in most formats it is not possible to seek exactly, so ffmpeg will seek
+     * to the closest seek point before position.
+     * When transcoding and -accurate_seek is enabled (the default), this extra segment between
+     * the seek point and position will be decoded and discarded.
+     * When doing stream copy or when -noaccurate_seek is used, it will be preserved.
+     * <p>
+     * When used as an output option (before an output url), decodes but discards input until the timestamps reach position.
+     *
      * @param position position.
      * @param unit     time unit
      * @return this
      * @see #setPosition(long)
      */
-    public T setPosition(long position, TimeUnit unit) {
-        this.position = unit.toMillis(position);
-        return thisAsT();
+    public T setPosition(Number position, TimeUnit unit) {
+        long millis = (long) (position.doubleValue() * unit.toMillis(1));
+        return setPosition(millis);
     }
 
     /**
@@ -126,9 +140,9 @@ public abstract class BaseInOut<T extends BaseInOut> {
      * @return this
      * @see #setPositionEof(long)
      */
-    public T setPositionEof(long positionEof, TimeUnit unit) {
-        this.positionEof = unit.toMillis(positionEof);
-        return thisAsT();
+    public T setPositionEof(Number positionEof, TimeUnit unit) {
+        long millis = (long) (positionEof.doubleValue() * unit.toMillis(1));
+        return setPositionEof(millis);
     }
 
     /**
@@ -203,7 +217,7 @@ public abstract class BaseInOut<T extends BaseInOut> {
      * As an output option, this inserts the scale video filter to the end of the corresponding filtergraph.
      *
      * @param streamSpecifier stream specifier
-     * @param resolution width + "x" + height
+     * @param resolution      width + "x" + height
      * @return this
      */
     public T setFrameSize(String streamSpecifier, String resolution) {

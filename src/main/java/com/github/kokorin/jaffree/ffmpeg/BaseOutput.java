@@ -70,7 +70,7 @@ public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements
      * @see #setDuration(long)
      */
     public T setOutputPosition(long positionMillis) {
-        this.outputPosition = outputPosition;
+        this.outputPosition = positionMillis;
         return thisAsT();
     }
 
@@ -84,9 +84,9 @@ public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements
      * @return this
      * @see #setDuration(long)
      */
-    public T setOutputPosition(long position, TimeUnit unit) {
-        this.outputPosition = unit.toMillis(position);
-        return thisAsT();
+    public T setOutputPosition(Number position, TimeUnit unit) {
+        long millis = (long) (position.doubleValue() * unit.toMillis(1));
+        return setOutputPosition(millis);
     }
 
     /**
@@ -109,9 +109,9 @@ public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements
      * @param unit      size unit
      * @return this
      */
-    public T setSizeLimit(long sizeLimit, SizeUnit unit) {
-        this.sizeLimit = unit.toBytes(sizeLimit);
-        return thisAsT();
+    public T setSizeLimit(Number sizeLimit, SizeUnit unit) {
+        long bytes = (long) (sizeLimit.doubleValue() * unit.toBytes(1));
+        return setSizeLimit(bytes);
     }
 
 
