@@ -105,7 +105,7 @@ public class FrameInput extends BaseInput<FrameInput> implements Input {
         try {
             return new ServerSocket(0, 1, InetAddress.getLoopbackAddress());
         } catch (IOException e) {
-            throw new RuntimeException("Failed to allocate scoket", e);
+            throw new RuntimeException("Failed to allocate socket", e);
         }
     }
 

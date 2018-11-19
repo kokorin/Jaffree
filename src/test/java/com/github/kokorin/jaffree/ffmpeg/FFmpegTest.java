@@ -339,7 +339,7 @@ public class FFmpegTest {
                 .setProgressListener(new ProgressListener() {
                     @Override
                     public void onProgress(FFmpegProgress progress) {
-                        time.set(progress.getTime());
+                        time.set(progress.getTimeMillis());
                     }
                 })
                 .execute();

@@ -31,7 +31,7 @@ public class ReEncode {
                 .setProgressListener(new ProgressListener() {
                     @Override
                     public void onProgress(FFmpegProgress progress) {
-                        duration.set(progress.getTime());
+                        duration.set(progress.getTimeMillis());
                     }
                 })
                 .execute();
@@ -43,7 +43,7 @@ public class ReEncode {
             public void onProgress(FFmpegProgress progress) {
                 long now = System.currentTimeMillis();
                 if (lastReportTs + 1000 < now) {
-                    long percent = 100 * progress.getTime() / duration.get();
+                    long percent = 100 * progress.getTimeMillis() / duration.get();
                     System.out.println("Progress: " + percent + "%");
                 }
             }

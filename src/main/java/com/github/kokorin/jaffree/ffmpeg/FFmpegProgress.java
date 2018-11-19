@@ -17,6 +17,8 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
+import java.util.concurrent.TimeUnit;
+
 public class FFmpegProgress {
     private final long frame;
     private final double fps;
@@ -62,9 +64,14 @@ public class FFmpegProgress {
     /**
      * @return time in milliseconds
      */
-    public long getTime() {
+    public long getTimeMillis() {
         return time;
     }
+
+    public long getTime(TimeUnit timeUnit) {
+        return timeUnit.convert(time, TimeUnit.MILLISECONDS);
+    }
+
 
     public long getDup() {
         return dup;

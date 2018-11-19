@@ -3,6 +3,8 @@ package com.github.kokorin.jaffree.ffmpeg;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.concurrent.TimeUnit;
+
 public class FFmpegResultReaderTest {
     @Test
     public void parseResult() throws Exception {
@@ -51,7 +53,7 @@ public class FFmpegResultReaderTest {
         Assert.assertEquals(25.1, result.getFps(), 0.01);
         Assert.assertEquals(-1.0, result.getQ(), 0.01);
         Assert.assertEquals(26_463_000, result.getSize());
-        Assert.assertEquals(167_200, result.getTime());
+        Assert.assertEquals(167_200, result.getTimeMillis());
         Assert.assertEquals(1296.6, result.getBitrate(), 0.01);
         Assert.assertEquals(1.23e+3, result.getSpeed(), 0.1);
     }
@@ -66,7 +68,9 @@ public class FFmpegResultReaderTest {
         Assert.assertEquals(0.0, result.getFps(), 0.01);
         Assert.assertEquals(-1.0, result.getQ(), 0.01);
         Assert.assertEquals(71_000, result.getSize());
-        Assert.assertEquals(2_790, result.getTime());
+        Assert.assertEquals(2_790, result.getTimeMillis());
+        Assert.assertEquals(2_790, result.getTime(TimeUnit.MILLISECONDS));
+        Assert.assertEquals(2, result.getTime(TimeUnit.SECONDS));
         Assert.assertEquals(207.3, result.getBitrate(), 0.01);
         Assert.assertEquals(11.9, result.getSpeed(), 0.1);
     }
@@ -82,7 +86,7 @@ public class FFmpegResultReaderTest {
         Assert.assertEquals(0.0, result.getFps(), 0.01);
         Assert.assertEquals(-1.0, result.getQ(), 0.01);
         Assert.assertEquals(443_000, result.getSize());
-        Assert.assertEquals(29_710, result.getTime());
+        Assert.assertEquals(29_710, result.getTimeMillis());
         Assert.assertEquals(122.0, result.getBitrate(), 0.01);
         Assert.assertTrue(Double.isNaN(result.getSpeed()));
     }
@@ -97,7 +101,7 @@ public class FFmpegResultReaderTest {
         Assert.assertEquals(0, result.getFps(), 0.01);
         Assert.assertEquals(-1.0, result.getQ(), 0.01);
         Assert.assertEquals(38_000, result.getSize());
-        Assert.assertEquals(7_240, result.getTime());
+        Assert.assertEquals(7_240, result.getTimeMillis());
         Assert.assertEquals(43.4, result.getBitrate(), 0.01);
         Assert.assertEquals(73, result.getDup());
         Assert.assertEquals(0, result.getDrop());
@@ -127,6 +131,9 @@ public class FFmpegResultReaderTest {
 
         Assert.assertNotNull(result);
         Assert.assertEquals(0, result.getSize());
+        Assert.assertEquals(607_800, result.getTimeMillis());
+        Assert.assertEquals(607, result.getTime(TimeUnit.SECONDS));
+        Assert.assertEquals(10, result.getTime(TimeUnit.MINUTES));
         Assert.assertTrue(Double.isNaN(result.getBitrate()));
     }
 
