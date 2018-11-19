@@ -67,6 +67,9 @@ public class FFprobeTest {
 
         Assert.assertNotNull(result);
         Assert.assertNotNull(result.getPackets().get(0).getData());
+        for (Packet packet : result.getPackets()) {
+            Assert.assertNotNull(packet.getCodecType());
+        }
     }
 
 
@@ -94,6 +97,9 @@ public class FFprobeTest {
 
         Assert.assertNotNull(result);
         Assert.assertNotNull(result.getPackets().get(0).getDataHash());
+        for (Packet packet : result.getPackets()) {
+            Assert.assertNotNull(packet.getCodecType());
+        }
     }
 
     //private boolean showFormat;
@@ -197,7 +203,7 @@ public class FFprobeTest {
         Assert.assertEquals(1, result.getStreams().size());
 
         Stream stream = result.getStreams().get(0);
-        Assert.assertEquals("video", stream.getCodecType());
+        Assert.assertEquals(StreamType.VIDEO, stream.getCodecType());
     }
 
     @Test
@@ -210,6 +216,7 @@ public class FFprobeTest {
 
         Assert.assertNotNull(result);
         Assert.assertEquals(1, result.getPackets().size());
+        Assert.assertNotNull(result.getPackets().get(0).getCodecType());
     }
 
     //private boolean showPrograms;
@@ -270,6 +277,9 @@ public class FFprobeTest {
 
         Assert.assertNotNull(result);
         Assert.assertTrue(result.getPackets().size() == 42);
+        for (Packet packet : result.getPackets()) {
+            Assert.assertNotNull(packet.getCodecType());
+        }
     }
 
     //private boolean showProgramVersion;

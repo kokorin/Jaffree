@@ -53,6 +53,14 @@
 
         <jaxb:bindings node="//xs:complexType[@name='packetType']">
             <jaxb:class name="Packet"/>
+            <jaxb:bindings node="//xs:complexType[@name='packetType']//xs:attribute[@name='codec_type']">
+                <jaxb:property>
+                    <jaxb:baseType>
+                        <xjc:javaType name="com.github.kokorin.jaffree.StreamType"
+                                      adapter="com.github.kokorin.jaffree.ffprobe.StreamTypeAdapter"/>
+                    </jaxb:baseType>
+                </jaxb:property>
+            </jaxb:bindings>
         </jaxb:bindings>
 
         <jaxb:bindings node="//xs:complexType[@name='pixelFormatComponentType']">
@@ -102,6 +110,14 @@
                     <jaxb:baseType>
                         <xjc:javaType name="com.github.kokorin.jaffree.Rational"
                                       adapter="com.github.kokorin.jaffree.ffprobe.RationalAdapter"/>
+                    </jaxb:baseType>
+                </jaxb:property>
+            </jaxb:bindings>
+            <jaxb:bindings node="//xs:complexType[@name='streamType']//xs:attribute[@name='codec_type']">
+                <jaxb:property>
+                    <jaxb:baseType>
+                        <xjc:javaType name="com.github.kokorin.jaffree.StreamType"
+                                      adapter="com.github.kokorin.jaffree.ffprobe.StreamTypeAdapter"/>
                     </jaxb:baseType>
                 </jaxb:property>
             </jaxb:bindings>

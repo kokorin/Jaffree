@@ -2,6 +2,7 @@
 package com.github.kokorin.jaffree.ffprobe;
 
 import com.github.kokorin.jaffree.Rational;
+import com.github.kokorin.jaffree.StreamType;
 
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -98,7 +99,8 @@ public class Stream {
     @XmlAttribute(name = "profile")
     protected String profile;
     @XmlAttribute(name = "codec_type")
-    protected String codecType;
+    @XmlJavaTypeAdapter(StreamTypeAdapter.class)
+    protected StreamType codecType;
     @XmlAttribute(name = "codec_time_base", required = true)
     @XmlJavaTypeAdapter(RationalAdapter.class)
     protected Rational codecTimeBase;
@@ -334,7 +336,7 @@ public class Stream {
      *     {@link String }
      *     
      */
-    public String getCodecType() {
+    public StreamType getCodecType() {
         return codecType;
     }
 
@@ -346,7 +348,7 @@ public class Stream {
      *     {@link String }
      *     
      */
-    public void setCodecType(String value) {
+    public void setCodecType(StreamType value) {
         this.codecType = value;
     }
 

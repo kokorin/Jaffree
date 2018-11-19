@@ -1,7 +1,10 @@
 
 package com.github.kokorin.jaffree.ffprobe;
 
+import com.github.kokorin.jaffree.StreamType;
+
 import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,7 +56,8 @@ public class Packet {
     @XmlElement(name = "side_data")
     protected List<PacketSideData> sideDataList;
     @XmlAttribute(name = "codec_type", required = true)
-    protected String codecType;
+    @XmlJavaTypeAdapter(StreamTypeAdapter.class)
+    protected StreamType codecType;
     @XmlAttribute(name = "stream_index", required = true)
     protected int streamIndex;
     @XmlAttribute(name = "pts")
@@ -120,7 +124,7 @@ public class Packet {
      *     {@link String }
      *     
      */
-    public String getCodecType() {
+    public StreamType getCodecType() {
         return codecType;
     }
 
@@ -132,7 +136,7 @@ public class Packet {
      *     {@link String }
      *     
      */
-    public void setCodecType(String value) {
+    public void setCodecType(StreamType value) {
         this.codecType = value;
     }
 

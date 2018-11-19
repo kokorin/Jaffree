@@ -129,7 +129,7 @@ public class FFmpegTest {
 
         Assert.assertNotNull(probe);
         Assert.assertEquals(1, probe.getStreams().size());
-        Assert.assertEquals("audio", probe.getStreams().get(0).getCodecType());
+        Assert.assertEquals(StreamType.AUDIO, probe.getStreams().get(0).getCodecType());
     }
 
     @Test
@@ -375,9 +375,9 @@ public class FFmpegTest {
         List<Stream> streamTypes = probe.getStreams();
 
         Assert.assertEquals(3, streamTypes.size());
-        Assert.assertEquals("audio", streamTypes.get(0).getCodecType());
-        Assert.assertEquals("audio", streamTypes.get(1).getCodecType());
-        Assert.assertEquals("video", streamTypes.get(2).getCodecType());
+        Assert.assertEquals(StreamType.AUDIO, streamTypes.get(0).getCodecType());
+        Assert.assertEquals(StreamType.AUDIO, streamTypes.get(1).getCodecType());
+        Assert.assertEquals(StreamType.VIDEO, streamTypes.get(2).getCodecType());
     }
 
     @Test

@@ -293,3 +293,14 @@ FFmpegResult result = FFmpeg.atPath(BIN)
 
 Jaffree allows simultaneous reading from several sources (with one instance per every source and target).
 You can find details in  Mosaic [example](/src/test/java/examples/programmatic/Mosaic.java).
+
+
+# Building
+
+## Generating ffprobe-related classes
+
+`mvn jaxb2:generate -X -f pom.xml`
+
+Notice that ffprobe.xsd differs from standard ffprobe.xsd provided with ffmpeg:
+type `packetSideDataType` has extra attribute `displaymatrix`. ffprobe reports this property and it's absent in standard XSD.
+ See https://trac.ffmpeg.org/ticket/7139
