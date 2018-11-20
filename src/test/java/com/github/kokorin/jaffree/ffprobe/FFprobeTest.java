@@ -7,6 +7,7 @@ import org.junit.rules.ExpectedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
 
 public class FFprobeTest {
     public static Path BIN;
@@ -153,6 +154,19 @@ public class FFprobeTest {
         Assert.assertNotNull(result);
         Assert.assertNotNull(result.getFrames());
         Assert.assertTrue(result.getFrames().size() > 0);
+
+        for (Object frameOrSubtitle : result.getFrames()) {
+            if (!(frameOrSubtitle instanceof  Frame)) {
+                continue;
+            }
+
+            Frame frame = (Frame) frameOrSubtitle;
+            Assert.assertNotNull(frame.getMediaType());
+
+            if (frame.getMediaType() == StreamType.VIDEO) {
+                Assert.assertNotNull(frame.getSampleAspectRatio());
+            }
+        }
     }
 
     //private LogLevel showLog;
@@ -189,6 +203,16 @@ public class FFprobeTest {
 
         Assert.assertNotNull(result);
         Assert.assertEquals(6, result.getStreams().size());
+        for (Stream stream : result.getStreams()) {
+            if (stream.getCodecType() != StreamType.VIDEO) {
+                continue;
+            }
+
+            Assert.assertNotNull(stream.getSampleAspectRatio());
+            Assert.assertNotNull(stream.getDisplayAspectRatio());
+            Assert.assertNotNull(stream.getStartTime(TimeUnit.NANOSECONDS));
+            Assert.assertEquals(Long.valueOf(167L), stream.getDuration(TimeUnit.SECONDS));
+        }
     }
 
     @Test

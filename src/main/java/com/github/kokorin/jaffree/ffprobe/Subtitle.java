@@ -1,10 +1,14 @@
 
 package com.github.kokorin.jaffree.ffprobe;
 
+import com.github.kokorin.jaffree.StreamType;
+import com.github.kokorin.jaffree.ffprobe.Adapters.StreamTypeAdapter;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 
 /**
@@ -35,7 +39,8 @@ import javax.xml.bind.annotation.XmlType;
 public class Subtitle {
 
     @XmlAttribute(name = "media_type", required = true)
-    protected String mediaType;
+    @XmlJavaTypeAdapter(StreamTypeAdapter.class)
+    protected StreamType mediaType;
     @XmlAttribute(name = "pts")
     protected Long pts;
     @XmlAttribute(name = "pts_time")
@@ -57,9 +62,9 @@ public class Subtitle {
      *     {@link String }
      *     
      */
-    public String getMediaType() {
+    public StreamType getMediaType() {
         if (mediaType == null) {
-            return "subtitle";
+            return new StreamTypeAdapter().unmarshal("subtitle");
         } else {
             return mediaType;
         }
@@ -73,7 +78,7 @@ public class Subtitle {
      *     {@link String }
      *     
      */
-    public void setMediaType(String value) {
+    public void setMediaType(StreamType value) {
         this.mediaType = value;
     }
 

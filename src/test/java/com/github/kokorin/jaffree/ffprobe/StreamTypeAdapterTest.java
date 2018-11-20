@@ -8,7 +8,7 @@ public class StreamTypeAdapterTest {
 
     @Test
     public void unmarshal() throws Exception{
-        StreamTypeAdapter adapter = new StreamTypeAdapter();
+        Adapters.StreamTypeAdapter adapter = new Adapters.StreamTypeAdapter();
 
         Assert.assertNull(adapter.unmarshal(null));
         Assert.assertNull(adapter.unmarshal(""));

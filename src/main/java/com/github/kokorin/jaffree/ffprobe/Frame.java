@@ -1,7 +1,13 @@
 
 package com.github.kokorin.jaffree.ffprobe;
 
+import com.github.kokorin.jaffree.Rational;
+import com.github.kokorin.jaffree.StreamType;
+import com.github.kokorin.jaffree.ffprobe.Adapters.RatioAdapter;
+import com.github.kokorin.jaffree.ffprobe.Adapters.StreamTypeAdapter;
+
 import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,7 +78,8 @@ public class Frame {
     @XmlElement(name = "side_data")
     protected List<FrameSideData> sideDataList;
     @XmlAttribute(name = "media_type", required = true)
-    protected String mediaType;
+    @XmlJavaTypeAdapter(StreamTypeAdapter.class)
+    protected StreamType mediaType;
     @XmlAttribute(name = "stream_index")
     protected Integer streamIndex;
     @XmlAttribute(name = "key_frame", required = true)
@@ -116,7 +123,8 @@ public class Frame {
     @XmlAttribute(name = "pix_fmt")
     protected String pixFmt;
     @XmlAttribute(name = "sample_aspect_ratio")
-    protected String sampleAspectRatio;
+    @XmlJavaTypeAdapter(RatioAdapter.class)
+    protected Rational sampleAspectRatio;
     @XmlAttribute(name = "pict_type")
     protected String pictType;
     @XmlAttribute(name = "coded_picture_number")
@@ -167,7 +175,7 @@ public class Frame {
      *     {@link String }
      *     
      */
-    public String getMediaType() {
+    public StreamType getMediaType() {
         return mediaType;
     }
 
@@ -179,7 +187,7 @@ public class Frame {
      *     {@link String }
      *     
      */
-    public void setMediaType(String value) {
+    public void setMediaType(StreamType value) {
         this.mediaType = value;
     }
 
@@ -687,7 +695,7 @@ public class Frame {
      *     {@link String }
      *     
      */
-    public String getSampleAspectRatio() {
+    public Rational getSampleAspectRatio() {
         return sampleAspectRatio;
     }
 
@@ -699,7 +707,7 @@ public class Frame {
      *     {@link String }
      *     
      */
-    public void setSampleAspectRatio(String value) {
+    public void setSampleAspectRatio(Rational value) {
         this.sampleAspectRatio = value;
     }
 

@@ -247,12 +247,19 @@
                             <version>1.10</version>
                             <scope>runtime</scope>
                         </plugin>
+                        <plugin>
+                            <groupId>net.codesup.util</groupId>
+                            <artifactId>jaxb-delegate-plugin</artifactId>
+                            <version>2.1.0</version>
+                            <scope>runtime</scope>
+                        </plugin>
                     </plugins>
 
                     <args>
                         <arg>-no-header</arg>
                         <arg>-Xxew</arg>
                         <arg>-Xxew:instantiate lazy</arg>
+                        <arg>-Xdelegate</arg>
                     </args>
                 </configuration>
             </plugin>

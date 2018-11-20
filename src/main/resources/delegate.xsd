@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema"
+		xmlns:tns="http://www.codesup.net/jaxb/plugins/delegate"
+		elementFormDefault="qualified"
+		targetNamespace="http://www.codesup.net/jaxb/plugins/delegate">
+	<!--
+	  ~ MIT License
+	  ~
+	  ~ Copyright (c) 2014 Klemm Software Consulting, Mirko Klemm
+	  ~
+	  ~ Permission is hereby granted, free of charge, to any person obtaining a copy
+	  ~ of this software and associated documentation files (the "Software"), to deal
+	  ~ in the Software without restriction, including without limitation the rights
+	  ~ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	  ~ copies of the Software, and to permit persons to whom the Software is
+	  ~ furnished to do so, subject to the following conditions:
+	  ~
+	  ~ The above copyright notice and this permission notice shall be included in
+	  ~ all copies or substantial portions of the Software.
+	  ~
+	  ~ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	  ~ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	  ~ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	  ~ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	  ~ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	  ~ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+	  ~ THE SOFTWARE.
+	  -->
+	<simpleType name="java-qualified-identifier">
+		<restriction base="string">
+			<pattern value="(\w(\w|\$|&lt;|&gt;|,)*)(\.(\w|\$|&lt;|&gt;|,)*)*"/>
+		</restriction>
+	</simpleType>
+	<simpleType name="java-identifier">
+		<restriction base="string">
+			<pattern value="(\w(\w|\$|&lt;|&gt;|,)*)"/>
+		</restriction>
+	</simpleType>
+	<complexType name="method-parameter-type">
+		<annotation>
+			<documentation>
+				Represents a method parameter specification.
+			</documentation>
+		</annotation>
+		<sequence>
+			<element name="documentation" type="string" minOccurs="0"/>
+		</sequence>
+		<attribute name="type" type="tns:java-qualified-identifier"/>
+		<attribute name="name" type="token"/>
+	</complexType>
+	<complexType name="type-parameter-type">
+		<annotation>
+			<documentation>
+				Represents a type parameter specification.
+			</documentation>
+		</annotation>
+		<sequence>
+			<element name="documentation" type="string" minOccurs="0"/>
+		</sequence>
+		<attribute name="extends" type="tns:java-qualified-identifier"/>
+		<attribute name="super" type="tns:java-qualified-identifier"/>
+		<attribute name="name" type="token" use="required"/>
+	</complexType>
+	<element name="method">
+		<annotation>
+			<documentation>
+				Specifies the method that will be generated in the JAXB class to return a formatted
+				representation of an instance of the generated class.
+			</documentation>
+		</annotation>
+		<complexType>
+			<sequence>
+				<element name="documentation" type="string" minOccurs="0"/>
+				<element name="type-param" type="tns:type-parameter-type" minOccurs="0" maxOccurs="unbounded"/>
+				<element name="param" type="tns:method-parameter-type" minOccurs="0" maxOccurs="unbounded"/>
+			</sequence>
+			<attribute name="name" type="tns:java-identifier">
+				<annotation>
+					<documentation>
+						Specifies the method name. Names of the delegate method and the delegating method must
+						be the same.
+					</documentation>
+				</annotation>
+			</attribute>
+			<attribute name="type" type="tns:java-qualified-identifier" use="optional">
+				<annotation>
+					<documentation>
+						Return type of the generated method. Note that the return type of the generated method must match
+						the return type of the delegated method.
+					</documentation>
+				</annotation>
+			</attribute>
+			<attribute name="modifiers" type="string" use="optional">
+				<annotation>
+					<documentation>
+						Whitespace-separated list of modifiers of the generated method.
+						Default: &quot;public&quot; for delegate methods, &quot;public static&quot; for static methods.
+					</documentation>
+				</annotation>
+			</attribute>
+			<attribute name="static" type="boolean" use="optional">
+				<annotation>
+					<documentation>
+						If true, this method is generated as a static method, i.e. its invocation
+						is generated to reference the class instead of the delegate object.
+						If the delegate class also has "static=true", the static method invocation
+						is assumed to NOT have a first parameter that takes the instance of the generated
+						class.
+					</documentation>
+				</annotation>
+			</attribute>
+		</complexType>
+	</element>
+	<element name="delegate">
+		<annotation>
+			<documentation>
+				Specifies a delegate class on which methods can be called. The methods are
+				specified as elements contained in this companion element.
+				The delegate class can have two forms:
+				1.) Instance delegate: All methods must be public. The delegate class must have a one-argument constructor taking
+				an instance of the generated class as an argument. The delegate class will be
+				instantiated lazily upon the first invocation of a delegate method.
+				2.) Utility class: All methods must be
+				public and static and must take an instance of the generated class as the
+				first argument.
+				The utility class should be final and non-instantiable (private no-arg constructor).
+				The plugin will never make an attempt to instantiate this class.
+				By default, an instance delegate is generated.
+			</documentation>
+		</annotation>
+		<complexType>
+			<sequence>
+				<element name="documentation" type="string" minOccurs="0"/>
+				<element name="type-param" type="tns:type-parameter-type" minOccurs="0" maxOccurs="unbounded"/>
+				<element ref="tns:method" minOccurs="0" maxOccurs="unbounded"/>
+			</sequence>
+			<attribute name="id" type="ID" use="optional"/>
+			<attribute name="class" type="tns:java-qualified-identifier" use="required">
+				<annotation>
+					<documentation>
+						Fully qualified name of the class of the delegate.
+						This class must be in the classpath at the time when
+						the generated code is compiled.
+						If method inference is turned on, the class must be
+						in the classpath at the time the code is generated.
+					</documentation>
+				</annotation>
+			</attribute>
+			<attribute name="static" type="boolean">
+				<annotation>
+					<documentation>
+						If true, a utility class reference is generated instead of
+						an instance delegation.
+						All methods must be	public and static and must take an instance of
+						the generated class as the first parameter. This parameter is implicit
+						and must not be contained in the list of parameters declared in the
+						XSD binding annotations.
+						The referenced utility class should be final and non-instantiable
+						(private no-arg constructor).
+						The plugin will never make an attempt to instantiate this class.
+					</documentation>
+				</annotation>
+			</attribute>
+		</complexType>
+	</element>
+	<element name="delegates">
+		<complexType>
+			<sequence>
+				<element name="documentation" type="string" minOccurs="0"/>
+				<element ref="tns:delegate" minOccurs="0" maxOccurs="unbounded"/>
+			</sequence>
+		</complexType>
+	</element>
+
+</schema>

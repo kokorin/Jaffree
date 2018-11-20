@@ -3,6 +3,7 @@
         version="2.1"
         xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
         xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+        xmlns:delegate="http://www.codesup.net/jaxb/plugins/delegate"
         jaxb:extensionBindingPrefixes="xjc"
         xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
@@ -34,6 +35,25 @@
 
         <jaxb:bindings node="//xs:complexType[@name='frameType']">
             <jaxb:class name="Frame"/>
+
+            <jaxb:bindings node="//xs:complexType[@name='frameType']//xs:attribute[@name='media_type']">
+                <jaxb:property>
+                    <jaxb:baseType>
+                        <xjc:javaType name="com.github.kokorin.jaffree.StreamType"
+                                      adapter="com.github.kokorin.jaffree.ffprobe.Adapters.StreamTypeAdapter"/>
+                    </jaxb:baseType>
+                </jaxb:property>
+            </jaxb:bindings>
+
+            <jaxb:bindings node="//xs:complexType[@name='frameType']//xs:attribute[@name='sample_aspect_ratio']">
+                <jaxb:property>
+                    <jaxb:baseType>
+                        <xjc:javaType name="com.github.kokorin.jaffree.Rational"
+                                      adapter="com.github.kokorin.jaffree.ffprobe.Adapters.RatioAdapter"/>
+                    </jaxb:baseType>
+                </jaxb:property>
+            </jaxb:bindings>
+
         </jaxb:bindings>
 
         <jaxb:bindings node="//xs:complexType[@name='libraryVersionType']">
@@ -57,7 +77,7 @@
                 <jaxb:property>
                     <jaxb:baseType>
                         <xjc:javaType name="com.github.kokorin.jaffree.StreamType"
-                                      adapter="com.github.kokorin.jaffree.ffprobe.StreamTypeAdapter"/>
+                                      adapter="com.github.kokorin.jaffree.ffprobe.Adapters.StreamTypeAdapter"/>
                     </jaxb:baseType>
                 </jaxb:property>
             </jaxb:bindings>
@@ -89,11 +109,22 @@
 
         <jaxb:bindings node="//xs:complexType[@name='streamType']">
             <jaxb:class name="Stream"/>
+
+            <delegate:delegate class="com.github.kokorin.jaffree.ffprobe.StreamExtension" static="true">
+                <delegate:method name="getStartTime" type="Long">
+                    <delegate:param name="timeUnit" type="java.util.concurrent.TimeUnit"/>
+                </delegate:method>
+
+                <delegate:method name="getDuration" type="Long">
+                    <delegate:param name="timeUnit" type="java.util.concurrent.TimeUnit"/>
+                </delegate:method>
+            </delegate:delegate>
+
             <jaxb:bindings node="//xs:attribute[@name='codec_time_base']">
                 <jaxb:property>
                     <jaxb:baseType>
                         <xjc:javaType name="com.github.kokorin.jaffree.Rational"
-                                      adapter="com.github.kokorin.jaffree.ffprobe.RationalAdapter"/>
+                                      adapter="com.github.kokorin.jaffree.ffprobe.Adapters.RationalAdapter"/>
                     </jaxb:baseType>
                 </jaxb:property>
             </jaxb:bindings>
@@ -101,7 +132,7 @@
                 <jaxb:property>
                     <jaxb:baseType>
                         <xjc:javaType name="com.github.kokorin.jaffree.Rational"
-                                      adapter="com.github.kokorin.jaffree.ffprobe.RationalAdapter"/>
+                                      adapter="com.github.kokorin.jaffree.ffprobe.Adapters.RationalAdapter"/>
                     </jaxb:baseType>
                 </jaxb:property>
             </jaxb:bindings>
@@ -109,15 +140,33 @@
                 <jaxb:property>
                     <jaxb:baseType>
                         <xjc:javaType name="com.github.kokorin.jaffree.Rational"
-                                      adapter="com.github.kokorin.jaffree.ffprobe.RationalAdapter"/>
+                                      adapter="com.github.kokorin.jaffree.ffprobe.Adapters.RationalAdapter"/>
                     </jaxb:baseType>
                 </jaxb:property>
             </jaxb:bindings>
+
+            <jaxb:bindings node="//xs:complexType[@name='streamType']//xs:attribute[@name='sample_aspect_ratio']">
+                <jaxb:property>
+                    <jaxb:baseType>
+                        <xjc:javaType name="com.github.kokorin.jaffree.Rational"
+                                      adapter="com.github.kokorin.jaffree.ffprobe.Adapters.RatioAdapter"/>
+                    </jaxb:baseType>
+                </jaxb:property>
+            </jaxb:bindings>
+            <jaxb:bindings node="//xs:complexType[@name='streamType']//xs:attribute[@name='display_aspect_ratio']">
+                <jaxb:property>
+                    <jaxb:baseType>
+                        <xjc:javaType name="com.github.kokorin.jaffree.Rational"
+                                      adapter="com.github.kokorin.jaffree.ffprobe.Adapters.RatioAdapter"/>
+                    </jaxb:baseType>
+                </jaxb:property>
+            </jaxb:bindings>
+
             <jaxb:bindings node="//xs:complexType[@name='streamType']//xs:attribute[@name='codec_type']">
                 <jaxb:property>
                     <jaxb:baseType>
                         <xjc:javaType name="com.github.kokorin.jaffree.StreamType"
-                                      adapter="com.github.kokorin.jaffree.ffprobe.StreamTypeAdapter"/>
+                                      adapter="com.github.kokorin.jaffree.ffprobe.Adapters.StreamTypeAdapter"/>
                     </jaxb:baseType>
                 </jaxb:property>
             </jaxb:bindings>
@@ -125,6 +174,15 @@
 
         <jaxb:bindings node="//xs:complexType[@name='subtitleType']">
             <jaxb:class name="Subtitle"/>
+
+            <jaxb:bindings node="//xs:complexType[@name='subtitleType']//xs:attribute[@name='media_type']">
+                <jaxb:property>
+                    <jaxb:baseType>
+                        <xjc:javaType name="com.github.kokorin.jaffree.StreamType"
+                                      adapter="com.github.kokorin.jaffree.ffprobe.Adapters.StreamTypeAdapter"/>
+                    </jaxb:baseType>
+                </jaxb:property>
+            </jaxb:bindings>
         </jaxb:bindings>
 
         <jaxb:bindings node="//xs:complexType[@name='tagType']">

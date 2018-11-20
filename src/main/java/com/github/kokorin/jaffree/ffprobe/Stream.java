@@ -1,13 +1,16 @@
 
 package com.github.kokorin.jaffree.ffprobe;
 
-import com.github.kokorin.jaffree.Rational;
 import com.github.kokorin.jaffree.StreamType;
+import com.github.kokorin.jaffree.ffprobe.Adapters.RatioAdapter;
+import com.github.kokorin.jaffree.ffprobe.Adapters.RationalAdapter;
+import com.github.kokorin.jaffree.ffprobe.Adapters.StreamTypeAdapter;
 
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -103,7 +106,7 @@ public class Stream {
     protected StreamType codecType;
     @XmlAttribute(name = "codec_time_base", required = true)
     @XmlJavaTypeAdapter(RationalAdapter.class)
-    protected Rational codecTimeBase;
+    protected com.github.kokorin.jaffree.Rational codecTimeBase;
     @XmlAttribute(name = "codec_tag", required = true)
     protected String codecTag;
     @XmlAttribute(name = "codec_tag_string", required = true)
@@ -123,9 +126,11 @@ public class Stream {
     @XmlAttribute(name = "has_b_frames")
     protected Integer hasBFrames;
     @XmlAttribute(name = "sample_aspect_ratio")
-    protected String sampleAspectRatio;
+    @XmlJavaTypeAdapter(RatioAdapter.class)
+    protected com.github.kokorin.jaffree.Rational sampleAspectRatio;
     @XmlAttribute(name = "display_aspect_ratio")
-    protected String displayAspectRatio;
+    @XmlJavaTypeAdapter(RatioAdapter.class)
+    protected com.github.kokorin.jaffree.Rational displayAspectRatio;
     @XmlAttribute(name = "pix_fmt")
     protected String pixFmt;
     @XmlAttribute(name = "level")
@@ -160,18 +165,18 @@ public class Stream {
     protected String id;
     @XmlAttribute(name = "r_frame_rate", required = true)
     @XmlJavaTypeAdapter(RationalAdapter.class)
-    protected Rational rFrameRate;
+    protected com.github.kokorin.jaffree.Rational rFrameRate;
     @XmlAttribute(name = "avg_frame_rate", required = true)
     @XmlJavaTypeAdapter(RationalAdapter.class)
-    protected Rational avgFrameRate;
+    protected com.github.kokorin.jaffree.Rational avgFrameRate;
     @XmlAttribute(name = "time_base", required = true)
     protected String timeBase;
     @XmlAttribute(name = "start_pts")
-    protected Long startPts;
+    protected java.lang.Long startPts;
     @XmlAttribute(name = "start_time")
     protected Float startTime;
     @XmlAttribute(name = "duration_ts")
-    protected Long durationTs;
+    protected java.lang.Long durationTs;
     @XmlAttribute(name = "duration")
     protected Float duration;
     @XmlAttribute(name = "bit_rate")
@@ -360,7 +365,7 @@ public class Stream {
      *     {@link String }
      *     
      */
-    public Rational getCodecTimeBase() {
+    public com.github.kokorin.jaffree.Rational getCodecTimeBase() {
         return codecTimeBase;
     }
 
@@ -372,7 +377,7 @@ public class Stream {
      *     {@link String }
      *     
      */
-    public void setCodecTimeBase(Rational value) {
+    public void setCodecTimeBase(com.github.kokorin.jaffree.Rational value) {
         this.codecTimeBase = value;
     }
 
@@ -600,7 +605,7 @@ public class Stream {
      *     {@link String }
      *     
      */
-    public String getSampleAspectRatio() {
+    public com.github.kokorin.jaffree.Rational getSampleAspectRatio() {
         return sampleAspectRatio;
     }
 
@@ -612,7 +617,7 @@ public class Stream {
      *     {@link String }
      *     
      */
-    public void setSampleAspectRatio(String value) {
+    public void setSampleAspectRatio(com.github.kokorin.jaffree.Rational value) {
         this.sampleAspectRatio = value;
     }
 
@@ -624,7 +629,7 @@ public class Stream {
      *     {@link String }
      *     
      */
-    public String getDisplayAspectRatio() {
+    public com.github.kokorin.jaffree.Rational getDisplayAspectRatio() {
         return displayAspectRatio;
     }
 
@@ -636,7 +641,7 @@ public class Stream {
      *     {@link String }
      *     
      */
-    public void setDisplayAspectRatio(String value) {
+    public void setDisplayAspectRatio(com.github.kokorin.jaffree.Rational value) {
         this.displayAspectRatio = value;
     }
 
@@ -1032,7 +1037,7 @@ public class Stream {
      *     {@link String }
      *     
      */
-    public Rational getRFrameRate() {
+    public com.github.kokorin.jaffree.Rational getRFrameRate() {
         return rFrameRate;
     }
 
@@ -1044,7 +1049,7 @@ public class Stream {
      *     {@link String }
      *     
      */
-    public void setRFrameRate(Rational value) {
+    public void setRFrameRate(com.github.kokorin.jaffree.Rational value) {
         this.rFrameRate = value;
     }
 
@@ -1056,7 +1061,7 @@ public class Stream {
      *     {@link String }
      *     
      */
-    public Rational getAvgFrameRate() {
+    public com.github.kokorin.jaffree.Rational getAvgFrameRate() {
         return avgFrameRate;
     }
 
@@ -1068,7 +1073,7 @@ public class Stream {
      *     {@link String }
      *     
      */
-    public void setAvgFrameRate(Rational value) {
+    public void setAvgFrameRate(com.github.kokorin.jaffree.Rational value) {
         this.avgFrameRate = value;
     }
 
@@ -1101,10 +1106,10 @@ public class Stream {
      * 
      * @return
      *     possible object is
-     *     {@link Long }
+     *     {@link java.lang.Long }
      *     
      */
-    public Long getStartPts() {
+    public java.lang.Long getStartPts() {
         return startPts;
     }
 
@@ -1113,10 +1118,10 @@ public class Stream {
      * 
      * @param value
      *     allowed object is
-     *     {@link Long }
+     *     {@link java.lang.Long }
      *     
      */
-    public void setStartPts(Long value) {
+    public void setStartPts(java.lang.Long value) {
         this.startPts = value;
     }
 
@@ -1149,10 +1154,10 @@ public class Stream {
      * 
      * @return
      *     possible object is
-     *     {@link Long }
+     *     {@link java.lang.Long }
      *     
      */
-    public Long getDurationTs() {
+    public java.lang.Long getDurationTs() {
         return durationTs;
     }
 
@@ -1161,10 +1166,10 @@ public class Stream {
      * 
      * @param value
      *     allowed object is
-     *     {@link Long }
+     *     {@link java.lang.Long }
      *     
      */
-    public void setDurationTs(Long value) {
+    public void setDurationTs(java.lang.Long value) {
         this.durationTs = value;
     }
 
@@ -1345,6 +1350,14 @@ public class Stream {
 
     public void setSideDataList(List<PacketSideData> sideDataList) {
         this.sideDataList = sideDataList;
+    }
+
+    public Long getStartTime(TimeUnit timeUnit) {
+        return StreamExtension.getStartTime(this, timeUnit);
+    }
+
+    public Long getDuration(TimeUnit timeUnit) {
+        return StreamExtension.getDuration(this, timeUnit);
     }
 
 }
