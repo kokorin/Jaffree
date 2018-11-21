@@ -43,7 +43,7 @@ public class MainHeader {
      * previous frame of the same stream was a non-keyframe, unless such
      * non-keyframe - keyframe transitions are very frequent.
      * <p>
-     * SHOULD be set to <=32768.
+     * SHOULD be set to &lt;=32768.
      * If the stored value is >65536 then max_distance MUST be set to 65536.
      * <p>
      * This is also half the maximum frame size without a headerChecksum after the
@@ -55,16 +55,16 @@ public class MainHeader {
     public final FrameCode[] frameCodes;
 
     /**
-     * For frames with a final size <= 4096 this header is prepended to the
+     * For frames with a final size &lt;= 4096 this header is prepended to the
      * frame data. That is if the stored frame is 4000 bytes and the
      * elision_header is 96 bytes then it is prepended, if it is 97 byte then it
      * is not.
      * <p>
      * elision_header[0] is fixed to a length 0 header.
      * <p>
-     * The length of each elision_header except header 0 MUST be < 256 and >0.
+     * The length of each elision_header except header 0 MUST be &lt; 256 and >0.
      * <p>
-     * The sum of the lengthes of all elision_headers MUST be <=1024.
+     * The sum of the lengthes of all elision_headers MUST be &lt;=1024.
      */
     public final long[] elisionHeaderSize;
 

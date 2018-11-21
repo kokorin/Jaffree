@@ -27,7 +27,8 @@ public class Executor {
 
     /**
      * Executes provided Runnable.
-     * <bNote</b>: interrupts invoking thread if exception appears
+     * <p>
+     * <b>Note</b>: interrupts invoking thread if exception appears
      *
      * @param name     thread name suffix
      * @param runnable runnable to execute

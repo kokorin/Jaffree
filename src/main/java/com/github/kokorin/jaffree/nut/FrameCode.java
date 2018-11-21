@@ -31,7 +31,7 @@ public class FrameCode {
      * of the size of the following frame.
      * <p>
      * If FLAG_SIZE_MSB is not set then this field has no meaning.
-     * MUST be <16384.
+     * MUST be &lt; 16384.
      */
     public final int dataSizeMul;
 
@@ -39,7 +39,7 @@ public class FrameCode {
      * The less significant part of the size of the following frame.
      * This added together with data_size_mul*data_size_msb is the size of
      * the following frame.
-     * MUST be <16384.
+     * MUST be &lt;16384.
      */
     public final int dataSizeLsb;
 
@@ -47,12 +47,12 @@ public class FrameCode {
      * If FLAG_CODED_PTS is set in the flags of the current frame then this
      * value MUST be ignored, if FLAG_CODED_PTS is not set then pts_delta is the
      * difference between the current pts and last_pts.
-     * MUST be <16384 and >-16384.
+     * MUST be &lt;16384 and >-16384.
      */
     public final long ptsDelta;
 
     /**
-     * MUST be <256.
+     * MUST be &lt;256.
      */
     public final long reservedCount;
 
@@ -62,20 +62,20 @@ public class FrameCode {
      * of previous frames (that is the frames are virtually identical no matter
      * if decoding started from the very first frame or from this keyframe).
      * <p>
-     * If its value is 1-(1<<62) then match_time_delta is unspecified, that is
+     * If its value is 1-(1&lt;&lt;62) then match_time_delta is unspecified, that is
      * the muxer lacked sufficient information to set it.
      * <p>
-     * A muxer MUST only set it to 1-(1<<62) if it does not know the correct
+     * A muxer MUST only set it to 1-(1&lt;&lt;62) if it does not know the correct
      * value. That is, it is not allowed to randomly discard known values.
      * <p>
      * If FLAG_MATCH_TIME is not set then this value shall be used for
      * match_time_delta, otherwise this value is ignored.
-     * MUST be <32768 and >-32768 or =1-(1<<62).
+     * MUST be &lt;32768 and >-32768 or =1-(1&lt;&lt;62).
      */
     public final long matchTimeDelta;
 
     /**
-     * The index into the elision_header table. MUST be <128.
+     * The index into the elision_header table. MUST be &lt;128.
      */
     public final long headerIdx;
 
@@ -154,7 +154,7 @@ public class FrameCode {
         RESERVED(1 << 7),
 
         /**
-         * If set, side/meta data is stored with the frame data. This flag MUST NOT be set in version < 4
+         * If set, side/meta data is stored with the frame data. This flag MUST NOT be set in version &lt; 4
          */
         SM_DATA(1 << 8),
 
