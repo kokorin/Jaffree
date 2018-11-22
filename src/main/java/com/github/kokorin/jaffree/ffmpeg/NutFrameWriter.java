@@ -60,11 +60,12 @@ public class NutFrameWriter implements Runnable {
 
     @Override
     public void run() {
-
         try (ServerSocket serverSocket = this.serverSocket;
              Socket socket = serverSocket.accept();
              OutputStream output = socket.getOutputStream()) {
+            LOGGER.debug("Will write to socket output stream");
             write(output);
+            LOGGER.debug("Finished writing to socket output stream");
         } catch (IOException e) {
             LOGGER.warn("Failed to write to socket: " + serverSocket, e);
         }
@@ -79,10 +80,8 @@ public class NutFrameWriter implements Runnable {
             }
             write(writer);
             writer.writeFooter();
-        } catch (IOException e) {
-            throw new RuntimeException("Can't write frames", e);
         } catch (Exception e) {
-            throw new RuntimeException("Can't writeFooter stream", e);
+            throw new RuntimeException("Write failed", e);
         }
     }
 

@@ -33,7 +33,8 @@ public class FrameOutput extends BaseOutput<FrameOutput> implements Output {
         this.alpha = alpha;
         this.serverSocket = allocateSocket();
 
-        setOutput("tcp://127.0.0.1:" + serverSocket.getLocalPort());
+        //Error while decoding stream #0:1: Invalid argument
+        setOutput("tcp://127.0.0.1:" + serverSocket.getLocalPort()/* + "?timeout=1000000"*/);
         setFormat("nut");
 
         // default arguments

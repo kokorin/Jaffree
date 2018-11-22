@@ -130,7 +130,8 @@ public class NutFrameReader implements Runnable {
             return null;
         }
 
-        Frame result = null;
+        BufferedImage image = null;
+        int[] samples = null;
 
         if (track.streamType == StreamHeader.Type.VIDEO) {
             int width = track.video.width;
@@ -170,26 +171,19 @@ public class NutFrameReader implements Runnable {
                         bOffs, null);
             }
 
-            BufferedImage image = new BufferedImage(colorModel, raster, false, null);
-
-            result = new Frame()
-                    .setImage(image);
+            image = new BufferedImage(colorModel, raster, false, null);
         } else if (track.streamType == StreamHeader.Type.AUDIO) {
             ByteBuffer data = ByteBuffer.wrap(frame.data);
 
             IntBuffer intData = data.asIntBuffer();
-            int[] samples = new int[intData.limit()];
+            samples = new int[intData.limit()];
             intData.get(samples);
-
-            result = new Frame()
-                    .setSamples(samples);
         }
 
-        if (result != null) {
-            result.setStreamId(track.streamId)
-                    .setPts(frame.pts);
+        if (image != null || samples != null) {
+            return new Frame(track.streamId, frame.pts, image, samples);
         }
 
-        return result;
+        return null;
     }
 }

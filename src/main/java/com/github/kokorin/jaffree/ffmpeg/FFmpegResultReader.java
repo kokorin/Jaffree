@@ -73,6 +73,9 @@ public class FFmpegResultReader implements StdReader<FFmpegResult> {
                     continue;
                 }
 
+                if (result != null) {
+                    continue;
+                }
                 errorMessage = line;
             }
         } catch (IOException e) {

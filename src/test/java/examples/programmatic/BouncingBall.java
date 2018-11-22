@@ -121,10 +121,7 @@ public class BouncingBall {
                     graphics.setPaint(ballColor);
                     graphics.fillOval(ballCenterX - ballRadius, ballCenterY - ballRadius, ballRadius * 2, ballRadius * 2);
 
-                    Frame videoFrame = new Frame()
-                            .setStreamId(0)
-                            .setPts(nextVideoTimecode)
-                            .setImage(image);
+                    Frame videoFrame = new Frame(0, nextVideoTimecode, image);
 
                     if (collisionVideoTimecode <= nextVideoTimecode) {
                         Random random = new Random();
@@ -151,10 +148,7 @@ public class BouncingBall {
                     }
 
 
-                    Frame audioFrame = new Frame()
-                            .setStreamId(1)
-                            .setPts(nextAudioTimecode)
-                            .setSamples(samples);
+                    Frame audioFrame = new Frame(1, nextAudioTimecode, samples);
 
                     nextAudioTimecode += 1000 / fps;
                     return audioFrame;

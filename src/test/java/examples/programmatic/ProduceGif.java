@@ -47,10 +47,7 @@ public class ProduceGif {
                 graphics.setPaint(new Color(frameCounter * 1.0f / 30, 0, 0));
                 graphics.fillRect(0, 0, 320, 240);
 
-                Frame videoFrame = new Frame()
-                        .setStreamId(0)
-                        .setPts(frameCounter * 1000 / 10)
-                        .setImage(image);
+                Frame videoFrame = new Frame(0, frameCounter * 1000 / 10, image);
                 frameCounter++;
 
                 return videoFrame;

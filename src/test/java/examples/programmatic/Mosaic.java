@@ -1,5 +1,6 @@
 package examples.programmatic;
 
+import com.github.kokorin.jaffree.LogLevel;
 import com.github.kokorin.jaffree.ffmpeg.*;
 import com.github.kokorin.jaffree.ffmpeg.Frame;
 import com.github.kokorin.jaffree.ffprobe.FFprobe;
@@ -85,7 +86,7 @@ public class Mosaic {
                     results.add(result);
 
                 }
-            }, "FFmpeg");
+            }, "Reader-"+ i + "-main");
             ffmpegThread.setDaemon(true);
             ffmpegThread.start();
         }
@@ -97,9 +98,10 @@ public class Mosaic {
                         FrameInput
                                 .withProducer(frameProducer)
                                 .setFrameRate(frameRate)
-                                //.setFrameOrderingBuffer(1000L)
+                                .setFrameOrderingBuffer(5_000L)
                 )
                 .setOverwriteOutput(true)
+                .setLogLevel(LogLevel.TRACE)
                 .addOutput(UrlOutput
                         .toUrl("mosaic.mp4")
                         //.addMap(0)
@@ -216,10 +218,7 @@ public class Mosaic {
                     return null;
                 }
 
-                Frame result = new Frame();
-                result.setImage(mosaic);
-                result.setPts(nextVideoFrameTimecode);
-                result.setStreamId(0);
+                Frame result = new Frame(0, nextVideoFrameTimecode, mosaic);
 
                 nextVideoFrameTimecode += videoFrameDuration;
 
@@ -257,7 +256,7 @@ public class Mosaic {
                 if (aFrame == null) {
                     return null;
                 }
-                aFrame.setStreamId(1 + minI);
+                aFrame = new Frame(1 + minI, aFrame.getPts(), aFrame.getSamples());
 
                 if (nextPts != Long.MAX_VALUE) {
                     nextAudioFrameTimecode = 1000L * nextPts / sampleRate;

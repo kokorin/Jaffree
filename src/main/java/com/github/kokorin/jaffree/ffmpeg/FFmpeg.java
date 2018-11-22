@@ -34,8 +34,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
 public class FFmpeg {
-    private final LogLevel logLevel = LogLevel.INFO;
-
     private final List<Input> inputs = new ArrayList<>();
     private final List<Output> outputs = new ArrayList<>();
     private final List<String> additionalArguments = new ArrayList<>();
@@ -48,6 +46,7 @@ public class FFmpeg {
     // TODO audio and video specific filters: -vf and -af
     private String filter;
 
+    private LogLevel logLevel = null;
     private String contextName = null;
 
     private final Path executable;
@@ -107,6 +106,11 @@ public class FFmpeg {
 
     public ProgressListener getProgressListener() {
         return progressListener;
+    }
+
+    public FFmpeg setLogLevel(LogLevel logLevel) {
+        this.logLevel = logLevel;
+        return this;
     }
 
     /**
@@ -178,6 +182,9 @@ public class FFmpeg {
         List<String> result = new ArrayList<>();
 
         if (logLevel != null) {
+            if (progressListener != null && logLevel.code() < LogLevel.INFO.code()) {
+                throw new RuntimeException("Specified log level " + logLevel + " hides ffmpeg progress output");
+            }
             result.addAll(Arrays.asList("-loglevel", Integer.toString(logLevel.code())));
         }
 

@@ -215,26 +215,28 @@ public class FrameIOTest {
                 }
 
                 int type = frame % 4;
-                long timestamp = frame / 4;
-                Frame result = new Frame()
-                        .setStreamId(type)
-                        .setPts(timestamp);
+                long frameNumber = frame / 4;
+                long pts = 0;
+                BufferedImage image = null;
+                int[] samples = null;
                 switch (type) {
                     case 0:
-                        result.setImage(new BufferedImage(640, 480, BufferedImage.TYPE_3BYTE_BGR));
+                        image = new BufferedImage(640, 480, BufferedImage.TYPE_3BYTE_BGR);
+                        pts = frameNumber;
                         break;
                     case 1:
-                        result.setImage(new BufferedImage(320, 240, BufferedImage.TYPE_3BYTE_BGR));
+                        image = new BufferedImage(320, 240, BufferedImage.TYPE_3BYTE_BGR);
+                        pts = frameNumber;
                         break;
                     case 2:
                     case 3:
-                        result.setPts(4410 * timestamp)
-                                .setSamples(new int[4410 * 4]);
+                        pts = 4410 * frameNumber;
+                        samples = new int[4410 * 4];
                         break;
                 }
                 frame++;
 
-                return result;
+                return new Frame(type, pts, image, samples);
             }
         };
 
@@ -293,10 +295,7 @@ public class FrameIOTest {
                 graphics.fillRect(0, 0, 320, 240);
                 frameCounter++;
 
-                return new Frame()
-                        .setStreamId(0)
-                        .setImage(image)
-                        .setPts(frameCounter * 1000 / 10);
+                return new Frame(0,frameCounter * 1000 / 10, image);
             }
         };
 
@@ -411,14 +410,11 @@ public class FrameIOTest {
                 long timestamp = frameCounter * 1000 / 10;
                 int[] samples = new int[4410];
                 for (int i = 0; i < samples.length; i++) {
-                    samples[i] = (int) (Integer.MAX_VALUE * Math.sin(300. * (timestamp + i * 100 / samples.length)));
+                    samples[i] = (int) (Integer.MAX_VALUE * Math.sin(300. * (timestamp + i * 100. / samples.length)));
                 }
                 frameCounter++;
 
-                return new Frame()
-                        .setStreamId(0)
-                        .setPts(frameCounter * 4410)
-                        .setSamples(samples);
+                return new Frame(0, frameCounter * 4410, samples);
             }
         };
 
@@ -446,10 +442,7 @@ public class FrameIOTest {
                 .setChannels(1);
         final List<Frame> frames = new CopyOnWriteArrayList<>();
         for (int i = 0; i < 10; i++) {
-            Frame frame = new Frame()
-                    .setStreamId(track.getId())
-                    .setPts(i * samplesPerFrame)
-                    .setSamples(new int[samplesPerFrame]);
+            Frame frame = new Frame(track.getId(), i * samplesPerFrame, new int[samplesPerFrame]);
             frames.add(frame);
         }
 
@@ -561,10 +554,7 @@ public class FrameIOTest {
                                     lastSecond = currentSecond;
                                 }
 
-                                Frame result = new Frame()
-                                        .setStreamId(0)
-                                        .setPts(frame * timebase / fps)
-                                        .setImage(image);
+                                Frame result = new Frame(0, frame * timebase / fps, image);
                                 frame++;
 
                                 return result;

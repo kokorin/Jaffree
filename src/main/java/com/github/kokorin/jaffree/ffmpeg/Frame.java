@@ -19,19 +19,55 @@ package com.github.kokorin.jaffree.ffmpeg;
 
 import java.awt.image.BufferedImage;
 
+/**
+ * Represents video/audio data to be encoded or has been decoded.
+ *
+ * <b>Note</b>: image and samples must not be changed after creating Frame instance.
+ * Otherwise it may affect (or event corrupt) produced media, because Jaffree internally
+ * maintains frame reordering buffer while producing video.
+ */
 public class Frame {
-    private int streamId;
-    private long pts;
-    private BufferedImage image;
-    private int[] samples;
+    private final int streamId;
+    private final long pts;
+    private final BufferedImage image;
+    private final int[] samples;
+
+    /**
+     * Constructor which creates Video Frame, samples are set to null
+     * @param streamId streamId
+     * @param pts pts
+     * @param image image
+     */
+    public Frame(int streamId, long pts, BufferedImage image) {
+        this(streamId, pts, image, null);
+    }
+
+    /**
+     * Constructor which creates Audio Frame, image is set to null
+     * @param streamId streamId
+     * @param pts pts
+     * @param samples samples
+     */
+    public Frame(int streamId, long pts, int[] samples) {
+        this(streamId, pts, null, samples);
+    }
+
+    public Frame(int streamId, long pts, BufferedImage image, int[] samples) {
+        if (image != null && samples != null) {
+            throw new IllegalArgumentException("Only one of image and samples parameters may be non null");
+        }
+        if (image == null && samples == null) {
+            throw new IllegalArgumentException("One of image and samples parameters must be non null");
+        }
+
+        this.streamId = streamId;
+        this.pts = pts;
+        this.image = image;
+        this.samples = samples;
+    }
 
     public int getStreamId() {
         return streamId;
-    }
-
-    public Frame setStreamId(int streamId) {
-        this.streamId = streamId;
-        return this;
     }
 
     /**
@@ -44,27 +80,12 @@ public class Frame {
         return pts;
     }
 
-    public Frame setPts(long pts) {
-        this.pts = pts;
-        return this;
-    }
-
     public BufferedImage getImage() {
         return image;
     }
 
-    public Frame setImage(BufferedImage image) {
-        this.image = image;
-        return this;
-    }
-
     public int[] getSamples() {
         return samples;
-    }
-
-    public Frame setSamples(int[] samples) {
-        this.samples = samples;
-        return this;
     }
 
     @Override
@@ -72,6 +93,8 @@ public class Frame {
         return "Frame{" +
                 "streamId=" + streamId +
                 ", pts=" + pts +
+                ", image?=" + (image != null) +
+                ", samples?=" + (samples != null) +
                 '}';
     }
 }
