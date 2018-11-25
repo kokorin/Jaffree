@@ -38,7 +38,7 @@ public class ObjectFactory {
      * 
      */
     public FFprobeResult createFFprobeResult() {
-        return new FFprobeResult();
+        return null;
     }
 
     /**
@@ -102,7 +102,7 @@ public class ObjectFactory {
      * 
      */
     public Stream createStream() {
-        return new Stream();
+        return new Stream(null);
     }
 
     /**

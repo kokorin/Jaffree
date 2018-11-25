@@ -1,5 +1,6 @@
 package com.github.kokorin.jaffree.ffprobe.data;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -11,6 +12,11 @@ public class Data {
     }
 
     public List<Section> getSections(String sectionName) {
-        return sections.get(sectionName);
+        List<Section> result = sections.get(sectionName);
+        if (result != null) {
+            return result;
+        }
+
+        return Collections.emptyList();
     }
 }
