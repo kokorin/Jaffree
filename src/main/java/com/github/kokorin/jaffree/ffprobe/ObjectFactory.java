@@ -94,7 +94,7 @@ public class ObjectFactory {
      * 
      */
     public StreamDisposition createStreamDisposition() {
-        return new StreamDisposition();
+        return null;
     }
 
     /**
@@ -126,7 +126,7 @@ public class ObjectFactory {
      * 
      */
     public Tag createTag() {
-        return new Tag();
+        return null;
     }
 
     /**

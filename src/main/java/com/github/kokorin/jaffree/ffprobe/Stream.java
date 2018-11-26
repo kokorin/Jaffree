@@ -17,11 +17,11 @@ public class Stream {
     }
 
     public StreamDisposition getDisposition() {
-        return null;
+        return new StreamDisposition(section.getSubSection("DISPOSITION"));
     }
 
     public List<Tag> getTag() {
-        return null;
+        return section.getSubSection("TAG", Section.TAG_CONVERTER);
     }
 
     public List<PacketSideData> getSideDataList() {
@@ -92,11 +92,11 @@ public class Stream {
     }
 
     public Rational getSampleAspectRatio() {
-        return section.getRational("sample_aspect_ratio");
+        return section.getRatio("sample_aspect_ratio");
     }
 
     public Rational getDisplayAspectRatio() {
-        return section.getRational("display_aspect_ratio");
+        return section.getRatio("display_aspect_ratio");
     }
 
     public String getPixFmt() {
