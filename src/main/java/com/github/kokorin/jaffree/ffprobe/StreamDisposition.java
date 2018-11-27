@@ -1,61 +1,61 @@
 
 package com.github.kokorin.jaffree.ffprobe;
 
-import com.github.kokorin.jaffree.ffprobe.data.Section;
+import com.github.kokorin.jaffree.ffprobe.data.DTag;
 
 public class StreamDisposition {
-    private final Section section;
+    private final DTag tag;
 
-    public StreamDisposition(Section section) {
-        this.section = section;
+    public StreamDisposition(DTag tag) {
+        this.tag = tag;
     }
 
     public int getDefault() {
-        return section.getInteger("default");
+        return tag.getInteger("default");
     }
 
     public int getDub() {
-        return section.getInteger("dub");
+        return tag.getInteger("dub");
     }
 
     public int getOriginal() {
-        return section.getInteger("original");
+        return tag.getInteger("original");
     }
 
     public int getComment() {
-        return section.getInteger("comment");
+        return tag.getInteger("comment");
     }
 
     public int getLyrics() {
-        return section.getInteger("lyrics");
+        return tag.getInteger("lyrics");
     }
 
     public int getKaraoke() {
-        return section.getInteger("karaoke");
+        return tag.getInteger("karaoke");
     }
 
     public int getForced() {
-        return section.getInteger("forced");
+        return tag.getInteger("forced");
     }
 
     public int getHearingImpaired() {
-        return section.getInteger("hearing_impaired");
+        return tag.getInteger("hearing_impaired");
     }
 
     public int getVisualImpaired() {
-        return section.getInteger("visual_impaired");
+        return tag.getInteger("visual_impaired");
     }
 
     public int getCleanEffects() {
-        return section.getInteger("clean_effects");
+        return tag.getInteger("clean_effects");
     }
 
     public int getAttachedPic() {
-        return section.getInteger("attached_pic");
+        return tag.getInteger("attached_pic");
     }
 
     public int getTimedThumbnails() {
-        return section.getInteger("timed_thumbnails");
+        return tag.getInteger("timed_thumbnails");
     }
 
 

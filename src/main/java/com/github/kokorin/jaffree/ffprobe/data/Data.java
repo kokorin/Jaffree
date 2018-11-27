@@ -5,14 +5,14 @@ import java.util.List;
 import java.util.Map;
 
 public class Data {
-    private final Map<String, List<Section>> sections;
+    private final Map<String, List<DSection>> sections;
 
-    public Data(Map<String, List<Section>> sections) {
+    public Data(Map<String, List<DSection>> sections) {
         this.sections = sections;
     }
 
-    public List<Section> getSections(String sectionName) {
-        List<Section> result = sections.get(sectionName);
+    public List<DSection> getSections(String sectionName) {
+        List<DSection> result = sections.get(sectionName);
         if (result != null) {
             return result;
         }

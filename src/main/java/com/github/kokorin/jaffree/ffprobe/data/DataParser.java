@@ -3,23 +3,24 @@ package com.github.kokorin.jaffree.ffprobe.data;
 import java.util.*;
 
 public class DataParser {
-    private Map<String, List<Section>> result = new HashMap<>();
-
     // State
-    private String sectionName = null;
-    private Map<String, String> properties = null;
-    private Map<String, Map<String, String>> subSections = null;
+    private final Deque<State> stack;
+
+    public DataParser() {
+        this.stack = new LinkedList<>();
+        this.stack.addLast(new State("ROOT"));
+    }
 
     public void parseLine(String line) {
         if (line.startsWith("[/") && line.endsWith("]")) {
-            String name  = line.substring(2, line.length() - 1);
+            String name = line.substring(2, line.length() - 1);
             sectionEnd(name);
         } else if (line.startsWith("[") && line.endsWith("]")) {
-            String name  = line.substring(1, line.length() - 1);
+            String name = line.substring(1, line.length() - 1);
             sectionStart(name);
         } else {
             String[] keyValue = line.split("=");
-            if (keyValue.length  != 2) {
+            if (keyValue.length != 2) {
                 throw new RuntimeException("key=value was expected but got: " + line);
             }
             String key = keyValue[0];
@@ -27,68 +28,60 @@ public class DataParser {
             if (!key.contains(":")) {
                 property(key, value);
             } else {
-                String[] sectionKey = key.split(":");
-                if (sectionKey.length != 2) {
+                String[] tagKey = key.split(":");
+                if (tagKey.length != 2) {
                     throw new RuntimeException("Wrong subsection property format: " + line);
                 }
 
-                String section = sectionKey[0];
-                key = sectionKey[1];
+                String tag = tagKey[0];
+                key = tagKey[1];
 
-                subSectionProperty(section, key, value);
+                tagProperty(tag, key, value);
             }
         }
-
     }
 
     public void sectionStart(String name) {
-        if (sectionName != null) {
-            throw new RuntimeException("Unexpected start of section " + name);
-        }
-
-        sectionName = name;
-        properties = new HashMap<>();
-        subSections = new HashMap<>();
+        stack.addLast(new State(name));
     }
 
     public void sectionEnd(String name) {
-        if (sectionName == null || !sectionName.equals(name)) {
-            throw new RuntimeException("Expecting end of " + sectionName + " but found " + name);
+        if (stack.size() < 2) {
+            throw new IllegalStateException("Can't close root section");
+        }
+        State state = stack.pollLast();
+
+        if (!state.sectionName.equals(name)) {
+            throw new RuntimeException("Expecting end of " + state.sectionName + " but found " + name);
         }
 
-        List<Section> data = result.get(sectionName);
-        if (data == null) {
-            data = new ArrayList<>();
-            result.put(sectionName, data);
-        }
-
-        data.add(new Section(properties, subSections));
-
-        sectionName = null;
-        properties = null;
-        subSections = null;
+        State parent = stack.peekLast();
+        parent.subSections.add(state);
     }
 
     public void property(String key, String value) {
-        properties.put(key, value);
+        stack.peekLast().properties.put(key, value);
     }
 
-    public void subSectionProperty(String section, String key, String value) {
-        Map<String, String> subSection = subSections.get(section);
-        if (subSection == null) {
-            subSection = new HashMap<>();
-            subSections.put(section, subSection);
+    public void tagProperty(String name, String key, String value) {
+        Map<String, Map<String, String>> tags = stack.peekLast().tags;
+        Map<String, String> tag = tags.get(name);
+        if (tag == null) {
+            tag = new HashMap<>();
+            tags.put(name, tag);
         }
 
-        subSection.put(key, value);
+        tag.put(key, value);
     }
 
     public Data getResult() {
-        if (sectionName != null) {
-            throw new RuntimeException();
+        if (stack.size() != 1) {
+            throw new IllegalStateException("Parsing failed");
         }
 
-        return new Data(result);
+        State root = stack.peek();
+
+        return new Data(toSubSections(root.subSections));
     }
 
     public static Data parse(Iterator<String> lines) {
@@ -100,5 +93,43 @@ public class DataParser {
         }
 
         return parser.getResult();
+    }
+
+    public static DSection toSection(State state) {
+        Map<String, DTag> tags = new HashMap<>();
+        for (Map.Entry<String, Map<String, String>> entry : state.tags.entrySet()) {
+            tags.put(entry.getKey(), new DTag(entry.getValue()));
+        }
+
+        Map<String, List<DSection>> subSections = toSubSections(state.subSections);
+
+        return new DSection(state.properties, tags, subSections);
+    }
+
+    public static Map<String, List<DSection>> toSubSections(List<State> subSections) {
+        Map<String, List<DSection>> result = new HashMap<>();
+
+        for (State state : subSections) {
+            List<DSection> list = result.get(state.sectionName);
+            if (list == null) {
+                list = new ArrayList<>();
+                result.put(state.sectionName, list);
+            }
+
+            list.add(toSection(state));
+        }
+
+        return result;
+    }
+
+    public static class State {
+        public final String sectionName;
+        public final Map<String, String> properties = new HashMap<>();
+        public final Map<String, Map<String, String>> tags = new HashMap<>();
+        public final List<State> subSections = new ArrayList<>();
+
+        public State(String sectionName) {
+            this.sectionName = sectionName;
+        }
     }
 }

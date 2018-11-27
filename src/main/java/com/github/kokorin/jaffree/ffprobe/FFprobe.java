@@ -26,8 +26,6 @@ import com.github.kokorin.jaffree.process.ThrowingStdReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.xml.bind.JAXB;
-import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -45,7 +43,7 @@ public class FFprobe {
     // xsd_compliant, x
     // If set to 1 perform more checks for ensuring that the output is XSD compliant. Default value is 0.
     // This option automatically sets fully_qualified to 1.
-    private final String printFormat = "xml=x=1:q=1";
+    private final String printFormat = null; //"xml=x=1:q=1";
     // Show private data, that is data depending on the format of the particular shown element.
     // This option is enabled by default, but you may need to disable it for specific uses,
     // for example when creating XSD-compliant XML output.
@@ -442,12 +440,7 @@ public class FFprobe {
     }
 
     protected StdReader<FFprobeResult> createStdOutReader() {
-        return new StdReader<FFprobeResult>() {
-            @Override
-            public FFprobeResult read(InputStream stdOut) {
-                return JAXB.unmarshal(stdOut, FFprobeResult.class);
-            }
-        };
+        return new FFprobeResultReader();
     }
 
     protected StdReader<FFprobeResult> createStdErrReader() {

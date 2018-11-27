@@ -17,7 +17,7 @@ public class DataParserTest {
 
         Assert.assertNotNull(data);
 
-        List<Section> streams = data.getSections("STREAM");
+        List<DSection> streams = data.getSections("STREAM");
         Assert.assertEquals(2, streams.size());
     }
 

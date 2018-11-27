@@ -1,7 +1,7 @@
 package com.github.kokorin.jaffree.ffprobe;
 
+import com.github.kokorin.jaffree.ffprobe.data.DSection;
 import com.github.kokorin.jaffree.ffprobe.data.Data;
-import com.github.kokorin.jaffree.ffprobe.data.Section;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -52,7 +52,7 @@ public class FFprobeResult {
 
     public List<Stream> getStreams() {
         List<Stream> result = new ArrayList<>();
-        for (Section section : data.getSections("STREAM")) {
+        for (DSection section : data.getSections("STREAM")) {
             result.add(new Stream(section));
         }
         return result;

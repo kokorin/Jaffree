@@ -2,27 +2,23 @@ package com.github.kokorin.jaffree.ffprobe.data;
 
 import com.github.kokorin.jaffree.Rational;
 import com.github.kokorin.jaffree.StreamType;
-import com.github.kokorin.jaffree.ffprobe.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-public class Section {
+public class DBase {
     private final Map<String, String> properties;
-    private final Map<String, Map<String, String>> subSections;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Section.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DBase.class);
 
-    public Section(Map<String, String> properties, Map<String, Map<String, String>> subSections) {
+    public DBase(Map<String, String> properties) {
         this.properties = properties;
-        this.subSections = subSections;
     }
 
-    public <T> T get(String key, ValueConverter<T> converter) {
+    public <T> T getValue(String key, ValueConverter<T> converter) {
         String value = properties.get(key);
         if (value == null) {
             return null;
@@ -31,59 +27,44 @@ public class Section {
         return converter.convert(value);
     }
 
-    public String getString(String key) {
-        return properties.get(key);
-    }
-
-    public Long getLong(String key) {
-        return get(key, LONG_CONVERTER);
-    }
-
-    public Integer getInteger(String key) {
-        return get(key, INTEGER_CONVERTER);
-    }
-
-    public Float getFloat(String key) {
-        return get(key, FLOAT_CONVERTER);
-    }
-
-    public StreamType getStreamType(String key) {
-        return get(key, STREAM_TYPE_CONVERTER);
-    }
-
-    public Rational getRational(String key) {
-        return get(key, RATIONAL_CONVERTER);
-    }
-
-    public Rational getRatio(String key) {
-        return get(key, RATIO_CONVERTER);
-    }
-
-    public Section getSubSection(String name) {
-        Map<String, String> props = subSections.get(name);
-        if (props == null) {
-            props = Collections.emptyMap();
-        }
-
-        Map<String, Map<String, String>> subs = Collections.emptyMap();
-
-        return new Section(props, subs);
-    }
-
-    public <T> List<T> getSubSection(String name, KeyValueConverter<T> converter) {
+    public <T> List<T> getValues(KeyValueConverter<T> converter) {
         List<T> result = new ArrayList<>();
 
-        Map<String, String> props = subSections.get(name);
-        if (props == null) {
-            props = Collections.emptyMap();
-        }
-
-        for (Map.Entry<String, String> entry : props.entrySet()) {
+        for (Map.Entry<String, String> entry : properties.entrySet()) {
             result.add(converter.convert(entry.getKey(), entry.getValue()));
         }
 
         return result;
     }
+
+    public String getString(String key) {
+        return properties.get(key);
+    }
+
+    public Long getLong(String key) {
+        return getValue(key, LONG_CONVERTER);
+    }
+
+    public Integer getInteger(String key) {
+        return getValue(key, INTEGER_CONVERTER);
+    }
+
+    public Float getFloat(String key) {
+        return getValue(key, FLOAT_CONVERTER);
+    }
+
+    public StreamType getStreamType(String key) {
+        return getValue(key, STREAM_TYPE_CONVERTER);
+    }
+
+    public Rational getRational(String key) {
+        return getValue(key, RATIONAL_CONVERTER);
+    }
+
+    public Rational getRatio(String key) {
+        return getValue(key, RATIO_CONVERTER);
+    }
+
 
     //
     // Converters
@@ -165,11 +146,4 @@ public class Section {
             return null;
         }
     }
-
-    public static final KeyValueConverter<Tag> TAG_CONVERTER = new KeyValueConverter<Tag>() {
-        @Override
-        public Tag convert(String key, String value) {
-            return new Tag(key, value);
-        }
-    };
 }

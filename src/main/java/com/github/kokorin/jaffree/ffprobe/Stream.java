@@ -3,25 +3,26 @@ package com.github.kokorin.jaffree.ffprobe;
 
 import com.github.kokorin.jaffree.Rational;
 import com.github.kokorin.jaffree.StreamType;
-import com.github.kokorin.jaffree.ffprobe.data.Section;
+import com.github.kokorin.jaffree.ffprobe.data.DSection;
+import com.github.kokorin.jaffree.ffprobe.data.DTag;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 
 public class Stream {
-    private final Section section;
+    private final DSection section;
 
-    public Stream(Section section) {
+    public Stream(DSection section) {
         this.section = section;
     }
 
     public StreamDisposition getDisposition() {
-        return new StreamDisposition(section.getSubSection("DISPOSITION"));
+        return new StreamDisposition(section.getTag("DISPOSITION"));
     }
 
     public List<Tag> getTag() {
-        return section.getSubSection("TAG", Section.TAG_CONVERTER);
+        return section.getTag("TAG").getValues(DTag.TAG_CONVERTER);
     }
 
     public List<PacketSideData> getSideDataList() {
