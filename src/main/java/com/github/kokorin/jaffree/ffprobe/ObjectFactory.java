@@ -46,7 +46,7 @@ public class ObjectFactory {
      * 
      */
     public Packet createPacket() {
-        return new Packet();
+        return null;
     }
 
     /**

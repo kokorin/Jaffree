@@ -3,7 +3,6 @@ package com.github.kokorin.jaffree.ffprobe;
 import com.github.kokorin.jaffree.ffprobe.data.DSection;
 import com.github.kokorin.jaffree.ffprobe.data.Data;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -35,7 +34,12 @@ public class FFprobeResult {
     }
 
     public List<Packet> getPackets() {
-        return Collections.emptyList();
+        return data.getSections("PACKET", new Data.SectionConverter<Packet>() {
+            @Override
+            public Packet convert(DSection dSection) {
+                return new Packet(dSection);
+            }
+        });
     }
 
     public List<Object> getFrames() {
@@ -51,11 +55,12 @@ public class FFprobeResult {
     }
 
     public List<Stream> getStreams() {
-        List<Stream> result = new ArrayList<>();
-        for (DSection section : data.getSections("STREAM")) {
-            result.add(new Stream(section));
-        }
-        return result;
+        return data.getSections("STREAM", new Data.SectionConverter<Stream>() {
+            @Override
+            public Stream convert(DSection dSection) {
+                return new Stream(dSection);
+            }
+        });
     }
 
     public List<Chapter> getChapters() {
