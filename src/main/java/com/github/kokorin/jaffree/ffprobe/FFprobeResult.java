@@ -14,7 +14,12 @@ public class FFprobeResult {
     }
 
     public ProgramVersion getProgramVersion() {
-        return null;
+        DSection section = data.getSection("PROGRAM_VERSION");
+        if (section == null) {
+            return null;
+        }
+
+        return new ProgramVersion(section);
     }
 
     public Format getFormat() {
@@ -26,7 +31,12 @@ public class FFprobeResult {
     }
 
     public List<LibraryVersion> getLibraryVersions() {
-        return Collections.emptyList();
+        return data.getSections("LIBRARY_VERSION", new Data.SectionConverter<LibraryVersion>() {
+            @Override
+            public LibraryVersion convert(DSection dSection) {
+                return new LibraryVersion(dSection);
+            }
+        });
     }
 
     public List<PixelFormat> getPixelFormats() {

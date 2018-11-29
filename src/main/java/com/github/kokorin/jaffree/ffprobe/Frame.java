@@ -3,11 +3,8 @@ package com.github.kokorin.jaffree.ffprobe;
 
 import com.github.kokorin.jaffree.Rational;
 import com.github.kokorin.jaffree.StreamType;
-import com.github.kokorin.jaffree.ffprobe.Adapters.RatioAdapter;
-import com.github.kokorin.jaffree.ffprobe.Adapters.StreamTypeAdapter;
 
 import javax.xml.bind.annotation.*;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -78,7 +75,6 @@ public class Frame {
     @XmlElement(name = "side_data")
     protected List<FrameSideData> sideDataList;
     @XmlAttribute(name = "media_type", required = true)
-    @XmlJavaTypeAdapter(StreamTypeAdapter.class)
     protected StreamType mediaType;
     @XmlAttribute(name = "stream_index")
     protected Integer streamIndex;
@@ -123,7 +119,6 @@ public class Frame {
     @XmlAttribute(name = "pix_fmt")
     protected String pixFmt;
     @XmlAttribute(name = "sample_aspect_ratio")
-    @XmlJavaTypeAdapter(RatioAdapter.class)
     protected Rational sampleAspectRatio;
     @XmlAttribute(name = "pict_type")
     protected String pictType;
