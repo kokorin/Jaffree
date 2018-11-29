@@ -369,19 +369,6 @@ public class FFprobeTest {
     }
 
     @Test
-    @Ignore("Test uses local file, that can't be downloaded in general case")
-    public void testError() throws Exception {
-        FFprobeResult result = FFprobe.atPath(BIN)
-                .setInputPath(SAMPLES.resolve("nonexistent"))
-                .setShowStreams(true)
-                .setShowData(true)
-                .setSelectStreams(StreamType.VIDEO)
-                .execute();
-
-        Assert.assertNotNull(result);
-    }
-
-    @Test
     public void testExceptionIsThrownIfFfprobeExitsWithError() {
         expectedException.expect(new StackTraceMatcher("No such file or directory"));
 

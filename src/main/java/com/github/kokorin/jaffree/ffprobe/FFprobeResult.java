@@ -27,7 +27,12 @@ public class FFprobeResult {
     }
 
     public Error getError() {
-        return null;
+        DSection section = data.getSection("ERROR");
+        if (section == null) {
+            return null;
+        }
+
+        return new Error(section);
     }
 
     public List<LibraryVersion> getLibraryVersions() {
@@ -61,7 +66,12 @@ public class FFprobeResult {
     }
 
     public List<Program> getPrograms() {
-        return Collections.emptyList();
+        return data.getSections("PROGRAM", new Data.SectionConverter<Program>() {
+            @Override
+            public Program convert(DSection dSection) {
+                return new Program(dSection);
+            }
+        });
     }
 
     public List<Stream> getStreams() {

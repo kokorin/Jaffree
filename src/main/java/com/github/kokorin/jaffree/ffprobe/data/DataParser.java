@@ -6,6 +6,9 @@ public class DataParser {
     // State
     private final Deque<State> stack;
 
+    private String multilinePropertyKey = null;
+    private StringBuilder multilinePropertyValue = null;
+
     public DataParser() {
         this.stack = new LinkedList<>();
         this.stack.addLast(new State("ROOT"));
@@ -19,24 +22,35 @@ public class DataParser {
             String name = line.substring(1, line.length() - 1);
             sectionStart(name);
         } else {
-            String[] keyValue = line.split("=");
-            if (keyValue.length != 2) {
-                throw new RuntimeException("key=value was expected but got: " + line);
-            }
-            String key = keyValue[0];
-            String value = keyValue[1];
-            if (!key.contains(":")) {
-                property(key, value);
-            } else {
-                String[] tagKey = key.split(":");
-                if (tagKey.length != 2) {
-                    throw new RuntimeException("Wrong subsection property format: " + line);
+            if (isMultiline()) {
+                if (line.isEmpty()) {
+                    endProperty();
+                } else {
+                    propertyLine(line);
                 }
+            } else if (line.endsWith("=")) {
+                String key = line.substring(0, line.length() - 1);
+                startProperty(key);
+            } else {
+                String[] keyValue = line.split("=");
+                if (keyValue.length != 2) {
+                    throw new RuntimeException("key=value was expected but got: " + line);
+                }
+                String key = keyValue[0];
+                String value = keyValue[1];
+                if (!key.contains(":")) {
+                    property(key, value);
+                } else {
+                    String[] tagKey = key.split(":");
+                    if (tagKey.length != 2) {
+                        throw new RuntimeException("Wrong subsection property format: " + line);
+                    }
 
-                String tag = tagKey[0];
-                key = tagKey[1];
+                    String tag = tagKey[0];
+                    key = tagKey[1];
 
-                tagProperty(tag, key, value);
+                    tagProperty(tag, key, value);
+                }
             }
         }
     }
@@ -61,6 +75,34 @@ public class DataParser {
 
     public void property(String key, String value) {
         stack.peekLast().properties.put(key, value);
+    }
+
+    public void startProperty(String key) {
+        if (multilinePropertyKey != null || multilinePropertyValue != null) {
+            throw new IllegalStateException("Property already started, but not ended: " + multilinePropertyKey);
+        }
+
+        multilinePropertyKey = key;
+        multilinePropertyValue = new StringBuilder();
+    }
+
+    public void propertyLine(String line) {
+        if (multilinePropertyValue.length() > 0) {
+            multilinePropertyValue.append('\n');
+        }
+
+        multilinePropertyValue.append(line);
+    }
+
+    public void endProperty() {
+        property(multilinePropertyKey, multilinePropertyValue.toString());
+
+        multilinePropertyKey = null;
+        multilinePropertyValue = null;
+    }
+
+    public boolean isMultiline() {
+        return multilinePropertyKey != null;
     }
 
     public void tagProperty(String name, String key, String value) {
