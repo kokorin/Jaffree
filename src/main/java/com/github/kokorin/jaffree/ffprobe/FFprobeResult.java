@@ -62,12 +62,22 @@ public class FFprobeResult {
         });
     }
 
-    public List<Object> getFrames() {
-        return Collections.emptyList();
+    public List<Frame> getFrames() {
+        return data.getSections("FRAME", new DSection.SectionConverter<Frame>() {
+            @Override
+            public Frame convert(DSection dSection) {
+                return new Frame(dSection);
+            }
+        });
     }
 
-    public List<Object> getPacketsAndFrames() {
-        return Collections.emptyList();
+    public List<Subtitle> getSubtitles() {
+        return data.getSections("SUBTITLE", new DSection.SectionConverter<Subtitle>() {
+            @Override
+            public Subtitle convert(DSection dSection) {
+                return new Subtitle(dSection);
+            }
+        });
     }
 
     public List<Program> getPrograms() {
