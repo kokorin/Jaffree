@@ -347,10 +347,15 @@ public class FFprobeTest {
     }
 
     @Test
-    @Ignore("Test uses local file, that can't be downloaded in general case")
     public void testSideListAttributes() throws Exception {
+        Path video = Paths.get("VID_20180811_180157.mp4");
+        // Test uses local file
+        if (!Files.exists(video)) {
+            return;
+        }
+
         FFprobeResult result = FFprobe.atPath(BIN)
-                .setInputPath(SAMPLES.resolve("VID_20180317_232636.mp4"))
+                .setInputPath(video)
                 .setShowStreams(true)
                 .setShowData(true)
                 .setSelectStreams(StreamType.VIDEO)

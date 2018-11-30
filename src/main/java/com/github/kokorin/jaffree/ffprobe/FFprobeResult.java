@@ -23,7 +23,12 @@ public class FFprobeResult {
     }
 
     public Format getFormat() {
-        return null;
+        DSection section = data.getSection("FORMAT");
+        if (section == null) {
+            return null;
+        }
+
+        return new Format(section);
     }
 
     public Error getError() {
@@ -36,7 +41,7 @@ public class FFprobeResult {
     }
 
     public List<LibraryVersion> getLibraryVersions() {
-        return data.getSections("LIBRARY_VERSION", new Data.SectionConverter<LibraryVersion>() {
+        return data.getSections("LIBRARY_VERSION", new DSection.SectionConverter<LibraryVersion>() {
             @Override
             public LibraryVersion convert(DSection dSection) {
                 return new LibraryVersion(dSection);
@@ -49,7 +54,7 @@ public class FFprobeResult {
     }
 
     public List<Packet> getPackets() {
-        return data.getSections("PACKET", new Data.SectionConverter<Packet>() {
+        return data.getSections("PACKET", new DSection.SectionConverter<Packet>() {
             @Override
             public Packet convert(DSection dSection) {
                 return new Packet(dSection);
@@ -66,7 +71,7 @@ public class FFprobeResult {
     }
 
     public List<Program> getPrograms() {
-        return data.getSections("PROGRAM", new Data.SectionConverter<Program>() {
+        return data.getSections("PROGRAM", new DSection.SectionConverter<Program>() {
             @Override
             public Program convert(DSection dSection) {
                 return new Program(dSection);
@@ -75,7 +80,7 @@ public class FFprobeResult {
     }
 
     public List<Stream> getStreams() {
-        return data.getSections("STREAM", new Data.SectionConverter<Stream>() {
+        return data.getSections("STREAM", new DSection.SectionConverter<Stream>() {
             @Override
             public Stream convert(DSection dSection) {
                 return new Stream(dSection);

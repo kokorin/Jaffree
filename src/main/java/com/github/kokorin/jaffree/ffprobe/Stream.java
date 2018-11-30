@@ -26,10 +26,12 @@ public class Stream {
     }
 
     public List<PacketSideData> getSideDataList() {
-        //
-        // @XmlElementWrapper(name = "side_data_list")
-        // @XmlElement(name = "side_data")
-        return null;
+        return section.getSections("SIDE_DATA", new DSection.SectionConverter<PacketSideData>() {
+            @Override
+            public PacketSideData convert(DSection dSection) {
+                return new PacketSideData(dSection);
+            }
+        });
     }
 
     public int getIndex() {
