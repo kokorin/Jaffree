@@ -156,7 +156,7 @@ public class FFprobeTest {
         Assert.assertTrue(result.getFrames().size() > 0);
 
         for (Object frameOrSubtitle : result.getFrames()) {
-            if (!(frameOrSubtitle instanceof  Frame)) {
+            if (!(frameOrSubtitle instanceof Frame)) {
                 continue;
             }
 
@@ -344,6 +344,15 @@ public class FFprobeTest {
 
         Assert.assertNotNull(result);
         Assert.assertFalse(result.getPixelFormats().isEmpty());
+
+        boolean hasComponents = false;
+        for (PixelFormat format : result.getPixelFormats()) {
+            if (format.getComponents().isEmpty()) {
+                hasComponents = true;
+            }
+        }
+
+        Assert.assertTrue(hasComponents);
     }
 
     @Test

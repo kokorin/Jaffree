@@ -50,7 +50,12 @@ public class FFprobeResult {
     }
 
     public List<PixelFormat> getPixelFormats() {
-        return Collections.emptyList();
+        return data.getSections("PIXEL_FORMAT", new DSection.SectionConverter<PixelFormat>() {
+            @Override
+            public PixelFormat convert(DSection dSection) {
+                return new PixelFormat(dSection);
+            }
+        });
     }
 
     public List<Packet> getPackets() {
