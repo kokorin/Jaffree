@@ -25,7 +25,6 @@ import com.github.kokorin.jaffree.ffprobe.data.DTag;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-
 public class Stream {
     private final DSection section;
 

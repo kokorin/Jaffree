@@ -20,7 +20,6 @@ package com.github.kokorin.jaffree.ffprobe;
 import com.github.kokorin.jaffree.ffprobe.data.DSection;
 import com.github.kokorin.jaffree.ffprobe.data.Data;
 
-import java.util.Collections;
 import java.util.List;
 
 public class FFprobeResult {

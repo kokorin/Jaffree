@@ -1,7 +1,7 @@
 package examples.programmatic;
 
-import com.github.kokorin.jaffree.ffmpeg.*;
 import com.github.kokorin.jaffree.ffmpeg.Frame;
+import com.github.kokorin.jaffree.ffmpeg.*;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

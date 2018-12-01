@@ -21,7 +21,6 @@ import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffprobe.data.DSection;
 import com.github.kokorin.jaffree.ffprobe.data.DTag;
 
-import java.util.Collections;
 import java.util.List;
 
 public class Packet {
