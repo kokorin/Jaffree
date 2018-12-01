@@ -1,229 +1,61 @@
+/*
+ *    Copyright  2018 Denis Kokorin
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ *
+ */
 
 package com.github.kokorin.jaffree.ffprobe;
 
 import com.github.kokorin.jaffree.StreamType;
-import com.github.kokorin.jaffree.ffprobe.Adapters.StreamTypeAdapter;
+import com.github.kokorin.jaffree.ffprobe.data.DSection;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-
-
-/**
- * <p>Java class for subtitleType complex type.
- * 
- * <p>The following schema fragment specifies the expected content contained within this class.
- * 
- * <pre>
- * &lt;complexType name="subtitleType"&gt;
- *   &lt;complexContent&gt;
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
- *       &lt;attribute name="media_type" use="required" type="{http://www.w3.org/2001/XMLSchema}string" fixed="subtitle" /&gt;
- *       &lt;attribute name="pts" type="{http://www.w3.org/2001/XMLSchema}long" /&gt;
- *       &lt;attribute name="pts_time" type="{http://www.w3.org/2001/XMLSchema}float" /&gt;
- *       &lt;attribute name="format" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
- *       &lt;attribute name="start_display_time" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
- *       &lt;attribute name="end_display_time" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
- *       &lt;attribute name="num_rects" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
- *     &lt;/restriction&gt;
- *   &lt;/complexContent&gt;
- * &lt;/complexType&gt;
- * </pre>
- * 
- * 
- */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "subtitleType")
 public class Subtitle {
+    private final DSection section;
 
-    @XmlAttribute(name = "media_type", required = true)
-    @XmlJavaTypeAdapter(StreamTypeAdapter.class)
-    protected StreamType mediaType;
-    @XmlAttribute(name = "pts")
-    protected Long pts;
-    @XmlAttribute(name = "pts_time")
-    protected Float ptsTime;
-    @XmlAttribute(name = "format")
-    protected Integer format;
-    @XmlAttribute(name = "start_display_time")
-    protected Integer startDisplayTime;
-    @XmlAttribute(name = "end_display_time")
-    protected Integer endDisplayTime;
-    @XmlAttribute(name = "num_rects")
-    protected Integer numRects;
+    public Subtitle(DSection section) {
+        this.section = section;
+    }
 
-    /**
-     * Gets the value of the mediaType property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
+    public DSection getSection() {
+        return section;
+    }
+
     public StreamType getMediaType() {
-        if (mediaType == null) {
-            return new StreamTypeAdapter().unmarshal("subtitle");
-        } else {
-            return mediaType;
-        }
+        return section.getStreamType("media_type");
     }
 
-    /**
-     * Sets the value of the mediaType property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setMediaType(StreamType value) {
-        this.mediaType = value;
-    }
-
-    /**
-     * Gets the value of the pts property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Long }
-     *     
-     */
     public Long getPts() {
-        return pts;
+        return section.getLong("pts");
     }
 
-    /**
-     * Sets the value of the pts property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Long }
-     *     
-     */
-    public void setPts(Long value) {
-        this.pts = value;
-    }
-
-    /**
-     * Gets the value of the ptsTime property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Float }
-     *     
-     */
     public Float getPtsTime() {
-        return ptsTime;
+        return section.getFloat("pts_time");
     }
 
-    /**
-     * Sets the value of the ptsTime property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Float }
-     *     
-     */
-    public void setPtsTime(Float value) {
-        this.ptsTime = value;
-    }
-
-    /**
-     * Gets the value of the format property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Integer }
-     *     
-     */
     public Integer getFormat() {
-        return format;
+        return section.getInteger("format");
     }
 
-    /**
-     * Sets the value of the format property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Integer }
-     *     
-     */
-    public void setFormat(Integer value) {
-        this.format = value;
-    }
-
-    /**
-     * Gets the value of the startDisplayTime property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Integer }
-     *     
-     */
     public Integer getStartDisplayTime() {
-        return startDisplayTime;
+        return section.getInteger("start_display_time");
     }
 
-    /**
-     * Sets the value of the startDisplayTime property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Integer }
-     *     
-     */
-    public void setStartDisplayTime(Integer value) {
-        this.startDisplayTime = value;
-    }
-
-    /**
-     * Gets the value of the endDisplayTime property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Integer }
-     *     
-     */
     public Integer getEndDisplayTime() {
-        return endDisplayTime;
+        return section.getInteger("end_display_time");
     }
 
-    /**
-     * Sets the value of the endDisplayTime property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Integer }
-     *     
-     */
-    public void setEndDisplayTime(Integer value) {
-        this.endDisplayTime = value;
-    }
-
-    /**
-     * Gets the value of the numRects property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Integer }
-     *     
-     */
     public Integer getNumRects() {
-        return numRects;
+        return section.getInteger("num_rects");
     }
-
-    /**
-     * Sets the value of the numRects property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Integer }
-     *     
-     */
-    public void setNumRects(Integer value) {
-        this.numRects = value;
-    }
-
 }

@@ -156,7 +156,7 @@ public class FFprobeTest {
         Assert.assertTrue(result.getFrames().size() > 0);
 
         for (Object frameOrSubtitle : result.getFrames()) {
-            if (!(frameOrSubtitle instanceof  Frame)) {
+            if (!(frameOrSubtitle instanceof Frame)) {
                 continue;
             }
 
@@ -344,13 +344,27 @@ public class FFprobeTest {
 
         Assert.assertNotNull(result);
         Assert.assertFalse(result.getPixelFormats().isEmpty());
+
+        boolean hasComponents = false;
+        for (PixelFormat format : result.getPixelFormats()) {
+            if (format.getComponents().isEmpty()) {
+                hasComponents = true;
+            }
+        }
+
+        Assert.assertTrue(hasComponents);
     }
 
     @Test
-    @Ignore("Test uses local file, that can't be downloaded in general case")
     public void testSideListAttributes() throws Exception {
+        Path video = Paths.get("VID_20180811_180157.mp4");
+        // Test uses local file
+        if (!Files.exists(video)) {
+            return;
+        }
+
         FFprobeResult result = FFprobe.atPath(BIN)
-                .setInputPath(SAMPLES.resolve("VID_20180317_232636.mp4"))
+                .setInputPath(video)
                 .setShowStreams(true)
                 .setShowData(true)
                 .setSelectStreams(StreamType.VIDEO)
@@ -366,19 +380,6 @@ public class FFprobeTest {
         Assert.assertNotNull(sideData.getDisplayMatrix());
         Assert.assertNotEquals("New lines must be kept by parser", -1, sideData.getDisplayMatrix().indexOf('\n'));
         Assert.assertNotNull(sideData.getRotation());
-    }
-
-    @Test
-    @Ignore("Test uses local file, that can't be downloaded in general case")
-    public void testError() throws Exception {
-        FFprobeResult result = FFprobe.atPath(BIN)
-                .setInputPath(SAMPLES.resolve("nonexistent"))
-                .setShowStreams(true)
-                .setShowData(true)
-                .setSelectStreams(StreamType.VIDEO)
-                .execute();
-
-        Assert.assertNotNull(result);
     }
 
     @Test

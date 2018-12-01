@@ -1,183 +1,64 @@
+/*
+ *    Copyright  2018 Denis Kokorin
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ *
+ */
 
 package com.github.kokorin.jaffree.ffprobe;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlType;
+import com.github.kokorin.jaffree.ffprobe.data.DTag;
 
-
-/**
- * <p>Java class for pixelFormatFlagsType complex type.
- * 
- * <p>The following schema fragment specifies the expected content contained within this class.
- * 
- * <pre>
- * &lt;complexType name="pixelFormatFlagsType"&gt;
- *   &lt;complexContent&gt;
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
- *       &lt;attribute name="big_endian" use="required" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
- *       &lt;attribute name="palette" use="required" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
- *       &lt;attribute name="bitstream" use="required" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
- *       &lt;attribute name="hwaccel" use="required" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
- *       &lt;attribute name="planar" use="required" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
- *       &lt;attribute name="rgb" use="required" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
- *       &lt;attribute name="pseudopal" use="required" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
- *       &lt;attribute name="alpha" use="required" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
- *     &lt;/restriction&gt;
- *   &lt;/complexContent&gt;
- * &lt;/complexType&gt;
- * </pre>
- * 
- * 
- */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "pixelFormatFlagsType")
 public class PixelFormatFlags {
+    private final DTag tag;
 
-    @XmlAttribute(name = "big_endian", required = true)
-    protected int bigEndian;
-    @XmlAttribute(name = "palette", required = true)
-    protected int palette;
-    @XmlAttribute(name = "bitstream", required = true)
-    protected int bitstream;
-    @XmlAttribute(name = "hwaccel", required = true)
-    protected int hwaccel;
-    @XmlAttribute(name = "planar", required = true)
-    protected int planar;
-    @XmlAttribute(name = "rgb", required = true)
-    protected int rgb;
-    @XmlAttribute(name = "pseudopal", required = true)
-    protected int pseudopal;
-    @XmlAttribute(name = "alpha", required = true)
-    protected int alpha;
+    public PixelFormatFlags(DTag tag) {
+        this.tag = tag;
+    }
 
-    /**
-     * Gets the value of the bigEndian property.
-     * 
-     */
+    public DTag getTag() {
+        return tag;
+    }
+
     public int getBigEndian() {
-        return bigEndian;
+        return tag.getInteger("big_endian");
     }
 
-    /**
-     * Sets the value of the bigEndian property.
-     * 
-     */
-    public void setBigEndian(int value) {
-        this.bigEndian = value;
-    }
-
-    /**
-     * Gets the value of the palette property.
-     * 
-     */
     public int getPalette() {
-        return palette;
+        return tag.getInteger("palette");
     }
 
-    /**
-     * Sets the value of the palette property.
-     * 
-     */
-    public void setPalette(int value) {
-        this.palette = value;
-    }
-
-    /**
-     * Gets the value of the bitstream property.
-     * 
-     */
     public int getBitstream() {
-        return bitstream;
+        return tag.getInteger("bitstream");
     }
 
-    /**
-     * Sets the value of the bitstream property.
-     * 
-     */
-    public void setBitstream(int value) {
-        this.bitstream = value;
-    }
-
-    /**
-     * Gets the value of the hwaccel property.
-     * 
-     */
     public int getHwaccel() {
-        return hwaccel;
+        return tag.getInteger("hwaccel");
     }
 
-    /**
-     * Sets the value of the hwaccel property.
-     * 
-     */
-    public void setHwaccel(int value) {
-        this.hwaccel = value;
-    }
-
-    /**
-     * Gets the value of the planar property.
-     * 
-     */
     public int getPlanar() {
-        return planar;
+        return tag.getInteger("planar");
     }
 
-    /**
-     * Sets the value of the planar property.
-     * 
-     */
-    public void setPlanar(int value) {
-        this.planar = value;
-    }
-
-    /**
-     * Gets the value of the rgb property.
-     * 
-     */
     public int getRgb() {
-        return rgb;
+        return tag.getInteger("rgb");
     }
 
-    /**
-     * Sets the value of the rgb property.
-     * 
-     */
-    public void setRgb(int value) {
-        this.rgb = value;
-    }
-
-    /**
-     * Gets the value of the pseudopal property.
-     * 
-     */
     public int getPseudopal() {
-        return pseudopal;
+        return tag.getInteger("pseudopal");
     }
 
-    /**
-     * Sets the value of the pseudopal property.
-     * 
-     */
-    public void setPseudopal(int value) {
-        this.pseudopal = value;
-    }
-
-    /**
-     * Gets the value of the alpha property.
-     * 
-     */
     public int getAlpha() {
-        return alpha;
+        return tag.getInteger("alpha");
     }
-
-    /**
-     * Sets the value of the alpha property.
-     * 
-     */
-    public void setAlpha(int value) {
-        this.alpha = value;
-    }
-
 }

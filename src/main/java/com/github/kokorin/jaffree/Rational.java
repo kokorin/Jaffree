@@ -106,11 +106,15 @@ public class Rational extends Number implements Comparable<Rational> {
 
     @Override
     public String toString() {
+        return toString("/");
+    }
+
+    public String toString(String delimiter) {
         if (denominator == 1) {
             return Long.toString(numerator);
         }
 
-        return numerator + "/" + denominator;
+        return numerator + delimiter + denominator;
     }
 
     @Override
@@ -143,7 +147,11 @@ public class Rational extends Number implements Comparable<Rational> {
     }
 
     public static Rational valueOf(String value) throws NumberFormatException {
-        String[] parts = value.split("/", 2);
+        return valueOf(value, "/");
+    }
+
+    public static Rational valueOf(String value, String delimiter) throws NumberFormatException {
+        String[] parts = value.split(delimiter, 2);
 
         try {
             long numerator;

@@ -15,27 +15,24 @@
  *
  */
 
-package com.github.kokorin.jaffree.ffprobe;
+package com.github.kokorin.jaffree.ffprobe.data;
 
-import com.github.kokorin.jaffree.ffprobe.data.DSection;
+import com.github.kokorin.jaffree.ffprobe.Tag;
 
-public class Error {
-    private final DSection section;
+import java.util.Collections;
+import java.util.Map;
 
-    public Error(DSection section) {
-        this.section = section;
+public class DTag extends DBase {
+    public static final DTag EMPTY = new DTag(Collections.<String, String>emptyMap());
+
+    public DTag(Map<String, String> properties) {
+        super(properties);
     }
 
-    public DSection getSection() {
-        return section;
-    }
-
-    public int getCode() {
-        return section.getInteger("code");
-    }
-
-    public String getString() {
-        return section.getString("string");
-    }
-
+    public static final KeyValueConverter<Tag> TAG_CONVERTER = new KeyValueConverter<Tag>() {
+        @Override
+        public Tag convert(String key, String value) {
+            return new Tag(key, value);
+        }
+    };
 }

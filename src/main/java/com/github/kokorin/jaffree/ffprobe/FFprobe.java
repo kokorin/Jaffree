@@ -26,8 +26,6 @@ import com.github.kokorin.jaffree.process.ThrowingStdReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.xml.bind.JAXB;
-import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -35,26 +33,11 @@ import java.util.Arrays;
 import java.util.List;
 
 public class FFprobe {
-
-    // This final options are required for well-formatted xml output
-    //
-    // fully_qualified, q
-    // If set to 1 specify if the output should be fully qualified. Default value is 0.
-    // This is required for generating an XML file which can be validated through an XSD file.
-    //
-    // xsd_compliant, x
-    // If set to 1 perform more checks for ensuring that the output is XSD compliant. Default value is 0.
-    // This option automatically sets fully_qualified to 1.
-    private final String printFormat = "xml=x=1:q=1";
-    // Show private data, that is data depending on the format of the particular shown element.
-    // This option is enabled by default, but you may need to disable it for specific uses,
-    // for example when creating XSD-compliant XML output.
-    private final boolean showPrivateData = false;
-
     private final LogLevel logLevel = LogLevel.ERROR;
 
     private String selectStreams;
     private boolean showData;
+    private boolean showPrivateData = true;
     private String showDataHash;
     private boolean showFormat;
     private String showFormatEntry;
@@ -115,6 +98,18 @@ public class FFprobe {
      */
     public FFprobe setShowData(boolean showData) {
         this.showData = showData;
+        return this;
+    }
+
+    /**
+     * Show private data, that is data depending on the format of the particular shown element.
+     * This option is enabled by default, but you may need to disable it for specific uses.
+     *
+     * @param showPrivateData show
+     * @return this
+     */
+    public FFprobe setShowPrivateData(boolean showPrivateData) {
+        this.showPrivateData = showPrivateData;
         return this;
     }
 
@@ -356,17 +351,6 @@ public class FFprobe {
     protected List<String> buildArguments() {
         List<String> result = new ArrayList<>();
 
-        // Force bitexact output, useful to produce output which is not dependent on the specific build.
-        // -bitexact and -show_program_version or -show_library_versions options are incompatible
-        boolean bitExact = !showProgramVersion && !showLibraryVersions && !showVersions;
-        if (bitExact) {
-            result.add("-bitexact");
-        }
-
-        if (printFormat != null) {
-            result.addAll(Arrays.asList("-print_format", printFormat));
-        }
-
         if (logLevel != null) {
             result.addAll(Arrays.asList("-loglevel", Integer.toString(logLevel.code())));
         }
@@ -442,12 +426,7 @@ public class FFprobe {
     }
 
     protected StdReader<FFprobeResult> createStdOutReader() {
-        return new StdReader<FFprobeResult>() {
-            @Override
-            public FFprobeResult read(InputStream stdOut) {
-                return JAXB.unmarshal(stdOut, FFprobeResult.class);
-            }
-        };
+        return new FFprobeResultReader();
     }
 
     protected StdReader<FFprobeResult> createStdErrReader() {
