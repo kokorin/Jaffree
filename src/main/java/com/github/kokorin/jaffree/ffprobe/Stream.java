@@ -1,3 +1,19 @@
+/*
+ *    Copyright  2018 Denis Kokorin
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ *
+ */
 
 package com.github.kokorin.jaffree.ffprobe;
 
@@ -15,6 +31,10 @@ public class Stream {
 
     public Stream(DSection section) {
         this.section = section;
+    }
+
+    public DSection getSection() {
+        return section;
     }
 
     public StreamDisposition getDisposition() {
@@ -186,12 +206,20 @@ public class Stream {
         return section.getFloat("start_time");
     }
 
+    public Long getStartTime(TimeUnit timeUnit) {
+        return fromSeconds(getStartTime(), timeUnit);
+    }
+
     public Long getDurationTs() {
         return section.getLong("duration_ts");
     }
 
     public Float getDuration() {
         return section.getFloat("duration");
+    }
+
+    public Long getDuration(TimeUnit timeUnit) {
+        return fromSeconds(getDuration(), timeUnit);
     }
 
     public Integer getBitRate() {
@@ -218,13 +246,12 @@ public class Stream {
         return section.getInteger("nb_read_packets");
     }
 
+    private static Long fromSeconds(Float seconds, TimeUnit timeUnit) {
+        if (seconds == null) {
+            return null;
+        }
 
-    public Long getStartTime(TimeUnit timeUnit) {
-        return StreamExtension.getStartTime(this, timeUnit);
+        long millis = (long) (1000 * seconds);
+        return timeUnit.convert(millis, TimeUnit.MILLISECONDS);
     }
-
-    public Long getDuration(TimeUnit timeUnit) {
-        return StreamExtension.getDuration(this, timeUnit);
-    }
-
 }

@@ -1,5 +1,24 @@
+/*
+ *    Copyright  2018 Denis Kokorin
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ *
+ */
 
 package com.github.kokorin.jaffree.ffprobe;
+
+import com.github.kokorin.jaffree.ffprobe.data.DSection;
+import com.github.kokorin.jaffree.ffprobe.data.DTag;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -8,191 +27,42 @@ import javax.xml.bind.annotation.XmlType;
 import java.util.ArrayList;
 import java.util.List;
 
-
-/**
- * <p>Java class for chapterType complex type.
- * 
- * <p>The following schema fragment specifies the expected content contained within this class.
- * 
- * <pre>
- * &lt;complexType name="chapterType"&gt;
- *   &lt;complexContent&gt;
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
- *       &lt;sequence&gt;
- *         &lt;element name="tag" type="{http://www.ffmpeg.org/schema/ffprobe}tagType" maxOccurs="unbounded" minOccurs="0"/&gt;
- *       &lt;/sequence&gt;
- *       &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
- *       &lt;attribute name="time_base" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
- *       &lt;attribute name="start" use="required" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
- *       &lt;attribute name="start_time" type="{http://www.w3.org/2001/XMLSchema}float" /&gt;
- *       &lt;attribute name="end" use="required" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
- *       &lt;attribute name="end_time" use="required" type="{http://www.w3.org/2001/XMLSchema}float" /&gt;
- *     &lt;/restriction&gt;
- *   &lt;/complexContent&gt;
- * &lt;/complexType&gt;
- * </pre>
- * 
- * 
- */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "chapterType", propOrder = {
-    "tag"
-})
 public class Chapter {
+    private final DSection section;
 
-    protected List<Tag> tag;
-    @XmlAttribute(name = "id", required = true)
-    protected int id;
-    @XmlAttribute(name = "time_base", required = true)
-    protected String timeBase;
-    @XmlAttribute(name = "start", required = true)
-    protected int start;
-    @XmlAttribute(name = "start_time")
-    protected Float startTime;
-    @XmlAttribute(name = "end", required = true)
-    protected int end;
-    @XmlAttribute(name = "end_time", required = true)
-    protected float endTime;
+    public Chapter(DSection section) {
+        this.section = section;
+    }
 
-    /**
-     * Gets the value of the tag property.
-     * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the tag property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getTag().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link Tag }
-     * 
-     * 
-     */
+    public DSection getSection() {
+        return section;
+    }
+
     public List<Tag> getTag() {
-        if (tag == null) {
-            tag = new ArrayList<Tag>();
-        }
-        return this.tag;
+        return section.getTag("TAG").getValues(DTag.TAG_CONVERTER);
     }
 
-    /**
-     * Gets the value of the id property.
-     * 
-     */
     public int getId() {
-        return id;
+        return section.getInteger("id");
     }
 
-    /**
-     * Sets the value of the id property.
-     * 
-     */
-    public void setId(int value) {
-        this.id = value;
-    }
-
-    /**
-     * Gets the value of the timeBase property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
     public String getTimeBase() {
-        return timeBase;
+        return section.getString("time_base");
     }
 
-    /**
-     * Sets the value of the timeBase property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setTimeBase(String value) {
-        this.timeBase = value;
-    }
-
-    /**
-     * Gets the value of the start property.
-     * 
-     */
     public int getStart() {
-        return start;
+        return section.getInteger("start");
     }
 
-    /**
-     * Sets the value of the start property.
-     * 
-     */
-    public void setStart(int value) {
-        this.start = value;
-    }
-
-    /**
-     * Gets the value of the startTime property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Float }
-     *     
-     */
     public Float getStartTime() {
-        return startTime;
+        return section.getFloat("start_time");
     }
 
-    /**
-     * Sets the value of the startTime property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Float }
-     *     
-     */
-    public void setStartTime(Float value) {
-        this.startTime = value;
-    }
-
-    /**
-     * Gets the value of the end property.
-     * 
-     */
     public int getEnd() {
-        return end;
+        return section.getInteger("end");
     }
 
-    /**
-     * Sets the value of the end property.
-     * 
-     */
-    public void setEnd(int value) {
-        this.end = value;
-    }
-
-    /**
-     * Gets the value of the endTime property.
-     * 
-     */
     public float getEndTime() {
-        return endTime;
+        return section.getFloat("end_time");
     }
-
-    /**
-     * Sets the value of the endTime property.
-     * 
-     */
-    public void setEndTime(float value) {
-        this.endTime = value;
-    }
-
 }

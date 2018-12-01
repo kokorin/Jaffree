@@ -1,3 +1,19 @@
+/*
+ *    Copyright  2018 Denis Kokorin
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ *
+ */
 
 package com.github.kokorin.jaffree.ffprobe;
 
@@ -14,6 +30,10 @@ public class Program {
         this.section = section;
     }
 
+    public DSection getSection() {
+        return section;
+    }
+
     public List<Tag> getTag() {
         return section.getTag("TAG").getValues(DTag.TAG_CONVERTER);
     }
@@ -22,39 +42,39 @@ public class Program {
         return Collections.emptyList();
     }
 
-    public int getprogramId() {
+    public int getProgramId() {
         return section.getInteger("program_id");
     }
 
-    public int getprogramNum() {
+    public int getProgramNum() {
         return section.getInteger("program_num");
     }
 
-    public int getnbStreams() {
+    public int getNbStreams() {
         return section.getInteger("nb_streams");
     }
 
-    public Float getstartTime() {
+    public Float getStartTime() {
         return section.getFloat("start_time");
     }
 
-    public Long getstartPts() {
+    public Long getStartPts() {
         return section.getLong("start_pts");
     }
 
-    public Float getendTime() {
+    public Float getEndTime() {
         return section.getFloat("end_time");
     }
 
-    public Long getendPts() {
+    public Long getEndPts() {
         return section.getLong("end_pts");
     }
 
-    public int getpmtPid() {
+    public int getPmtPid() {
         return section.getInteger("pmt_pid");
     }
 
-    public int getpcrPid() {
+    public int getPcrPid() {
         return section.getInteger("pcr_pid");
     }
 }
