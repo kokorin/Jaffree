@@ -254,7 +254,7 @@ public class FrameIOTest {
         Assert.assertNotNull(result);
 
         FFprobeResult probe = FFprobe.atPath(BIN)
-                .setInputPath(output)
+                .setInput(output)
                 .setShowStreams(true)
                 .execute();
 

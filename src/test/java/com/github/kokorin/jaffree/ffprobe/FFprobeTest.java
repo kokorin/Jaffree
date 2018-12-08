@@ -36,7 +36,7 @@ public class FFprobeTest {
     @Test
     public void testShowDataWithShowStreams() throws Exception {
         FFprobeResult result = FFprobe.atPath(BIN)
-                .setInputPath(VIDEO_MP4)
+                .setInput(VIDEO_MP4)
                 .setShowData(true)
                 .setShowStreams(true)
                 .execute();
@@ -52,7 +52,7 @@ public class FFprobeTest {
     @Test
     public void testEnvPath() throws Exception {
         FFprobeResult result = FFprobe.atPath()
-                .setInputPath(VIDEO_MP4)
+                .setInput(VIDEO_MP4)
                 .execute();
 
         Assert.assertNotNull(result);
@@ -61,7 +61,7 @@ public class FFprobeTest {
     @Test
     public void testShowDataWithShowPackets() throws Exception {
         FFprobeResult result = FFprobe.atPath(BIN)
-                .setInputPath(VIDEO_MP4)
+                .setInput(VIDEO_MP4)
                 .setShowData(true)
                 .setShowPackets(true)
                 .execute();
@@ -79,7 +79,7 @@ public class FFprobeTest {
     @Test
     public void testShowDataHashWithShowStreams() throws Exception {
         FFprobeResult result = FFprobe.atPath(BIN)
-                .setInputPath(VIDEO_MP4)
+                .setInput(VIDEO_MP4)
                 .setShowDataHash("MD5")
                 .setShowStreams(true)
                 .execute();
@@ -91,7 +91,7 @@ public class FFprobeTest {
     @Test
     public void testShowDataHashWithShowPackets() throws Exception {
         FFprobeResult result = FFprobe.atPath(BIN)
-                .setInputPath(VIDEO_MP4)
+                .setInput(VIDEO_MP4)
                 .setShowDataHash("MD5")
                 .setShowPackets(true)
                 .execute();
@@ -108,7 +108,7 @@ public class FFprobeTest {
     @Test
     public void testShowFormat() throws Exception {
         FFprobeResult result = FFprobe.atPath(BIN)
-                .setInputPath(VIDEO_MP4)
+                .setInput(VIDEO_MP4)
                 .setShowFormat(true)
                 .execute();
 
@@ -123,7 +123,7 @@ public class FFprobeTest {
     public void testShowEntries() throws Exception {
 
         FFprobeResult result = FFprobe.atPath(BIN)
-                .setInputPath(VIDEO_MP4)
+                .setInput(VIDEO_MP4)
                 .setShowEntries("packet=pts_time,duration_time,stream_index : stream=index,codec_type")
                 .execute();
 
@@ -147,7 +147,7 @@ public class FFprobeTest {
     @Test
     public void testShowFrames() throws Exception {
         FFprobeResult result = FFprobe.atPath(BIN)
-                .setInputPath(VIDEO_MP4)
+                .setInput(VIDEO_MP4)
                 .setShowFrames(true)
                 .execute();
 
@@ -175,7 +175,7 @@ public class FFprobeTest {
     @Ignore("For some reason ffmpeg on ubuntu doesn't recognize -show_log option")
     public void testShowLog() throws Exception {
         FFprobeResult result = FFprobe.atPath(BIN)
-                .setInputPath(VIDEO_MP4)
+                .setInput(VIDEO_MP4)
                 .setShowFrames(true)
                 .setShowLog(LogLevel.TRACE)
                 .execute();
@@ -197,7 +197,7 @@ public class FFprobeTest {
     @Test
     public void testShowStreams() throws Exception {
         FFprobeResult result = FFprobe.atPath(BIN)
-                .setInputPath(VIDEO_MP4)
+                .setInput(VIDEO_MP4)
                 .setShowStreams(true)
                 .execute();
 
@@ -218,7 +218,7 @@ public class FFprobeTest {
     @Test
     public void testSelectStreamWithShowStreams() throws Exception {
         FFprobeResult result = FFprobe.atPath(BIN)
-                .setInputPath(VIDEO_MP4)
+                .setInput(VIDEO_MP4)
                 .setShowStreams(true)
                 .setSelectStreams(StreamType.VIDEO)
                 .execute();
@@ -233,7 +233,7 @@ public class FFprobeTest {
     @Test
     public void testSelectStreamWithShowPackets() throws Exception {
         FFprobeResult result = FFprobe.atPath(BIN)
-                .setInputPath(VIDEO_MP4)
+                .setInput(VIDEO_MP4)
                 .setShowPackets(true)
                 .setSelectStreams(StreamSpecifier.withIndex(5))
                 .execute();
@@ -248,7 +248,7 @@ public class FFprobeTest {
     @Test
     public void testShowPrograms() throws Exception {
         FFprobeResult result = FFprobe.atPath(BIN)
-                .setInputPath(TRANSPORT_VOB)
+                .setInput(TRANSPORT_VOB)
                 .setShowPrograms(true)
                 .execute();
 
@@ -261,7 +261,7 @@ public class FFprobeTest {
     @Test
     public void testShowChapters() throws Exception {
         FFprobeResult result = FFprobe.atPath(BIN)
-                .setInputPath(VIDEO_MP4)
+                .setInput(VIDEO_MP4)
                 .setShowChapters(true)
                 .execute();
 
@@ -276,7 +276,7 @@ public class FFprobeTest {
     @Test
     public void testCountFramesAndPackets() throws Exception {
         FFprobeResult result = FFprobe.atPath(BIN)
-                .setInputPath(VIDEO_MP4)
+                .setInput(VIDEO_MP4)
                 .setShowStreams(true)
                 .setCountFrames(true)
                 .setCountPackets(true)
@@ -294,7 +294,7 @@ public class FFprobeTest {
     @Test
     public void testReadIntervals() throws Exception {
         FFprobeResult result = FFprobe.atPath(BIN)
-                .setInputPath(VIDEO_MP4)
+                .setInput(VIDEO_MP4)
                 .setShowPackets(true)
                 .setReadIntervals("30%+#42")
                 .execute();
@@ -364,7 +364,7 @@ public class FFprobeTest {
         }
 
         FFprobeResult result = FFprobe.atPath(BIN)
-                .setInputPath(video)
+                .setInput(video)
                 .setShowStreams(true)
                 .setShowData(true)
                 .setSelectStreams(StreamType.VIDEO)
@@ -387,7 +387,7 @@ public class FFprobeTest {
         expectedException.expect(new StackTraceMatcher("No such file or directory"));
 
         FFprobeResult result = FFprobe.atPath(BIN)
-                .setInputPath(Paths.get("nonexistent.mp4"))
+                .setInput(Paths.get("nonexistent.mp4"))
                 .execute();
     }
 }

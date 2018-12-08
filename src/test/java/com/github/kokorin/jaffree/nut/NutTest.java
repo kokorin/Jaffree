@@ -76,7 +76,7 @@ public class NutTest {
         assertNutStructure(outputPath);
 
         FFprobeResult probe = FFprobe.atPath(BIN)
-                .setInputPath(outputPath)
+                .setInput(outputPath)
                 .setCountFrames(true)
                 .setShowLog(LogLevel.DEBUG)
                 .execute();

@@ -58,7 +58,7 @@ public class FFprobe {
     private boolean showLibraryVersions;
     private boolean showVersions;
     private boolean showPixelFormats;
-    private Path inputPath;
+    private String input;
 
     private final Path executable;
 
@@ -125,7 +125,7 @@ public class FFprobe {
     }
 
     /**
-     * Show information about the container format of the inputPath multimedia stream.
+     * Show information about the container format of the input multimedia stream.
      *
      * @param showFormat
      * @return this
@@ -168,9 +168,8 @@ public class FFprobe {
      * <p>
      * SECTION_ENTRIES       ::= SECTION_ENTRY[:SECTION_ENTRIES]
      * <p>
-     * TODO: output with this option doesn't conform to ffprobe.xsd.
-     * {@link Packet#streamIndex} can be absent in XML
-     * {@link Stream#getIndex()} also can be absent in XML
+     * {@link Packet#getStreamIndex} can be absent in XML
+     * {@link Stream#getIndex} also can be absent in XML
      *
      * @param showEntries
      * @return this
@@ -181,7 +180,7 @@ public class FFprobe {
     }
 
     /**
-     * Show information about each packet contained in the inputPath multimedia stream.
+     * Show information about each packet contained in the input multimedia stream.
      *
      * @param showPackets
      * @return this
@@ -192,7 +191,7 @@ public class FFprobe {
     }
 
     /**
-     * Show information about each frame and subtitle contained in the inputPath multimedia stream.
+     * Show information about each frame and subtitle contained in the input multimedia stream.
      *
      * @param showFrames
      * @return this
@@ -217,7 +216,7 @@ public class FFprobe {
     }
 
     /**
-     * Show information about each media stream contained in the inputPath multimedia stream.
+     * Show information about each media stream contained in the input multimedia stream.
      *
      * @param showStreams
      * @return this
@@ -228,7 +227,7 @@ public class FFprobe {
     }
 
     /**
-     * Show information about programs and their streams contained in the inputPath multimedia stream.
+     * Show information about programs and their streams contained in the input multimedia stream.
      *
      * @param showPrograms
      * @return this
@@ -336,8 +335,13 @@ public class FFprobe {
         return this;
     }
 
-    public FFprobe setInputPath(Path inputPath) {
-        this.inputPath = inputPath;
+    public FFprobe setInput(Path path) {
+        this.input = path.toString();
+        return this;
+    }
+
+    public FFprobe setInput(String input) {
+        this.input = input;
         return this;
     }
 
@@ -418,8 +422,8 @@ public class FFprobe {
             result.add("-show_pixel_formats");
         }
 
-        if (inputPath != null) {
-            result.addAll(Arrays.asList("-i", inputPath.toString()));
+        if (input != null) {
+            result.addAll(Arrays.asList("-i", input));
         }
 
         return result;

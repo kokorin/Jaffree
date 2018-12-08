@@ -123,7 +123,7 @@ public class FFmpegTest {
         Assert.assertNotNull(result);
 
         FFprobeResult probe = FFprobe.atPath(BIN)
-                .setInputPath(outputPath)
+                .setInput(outputPath)
                 .setShowStreams(true)
                 .execute();
 
@@ -368,7 +368,7 @@ public class FFmpegTest {
 
         FFprobeResult probe = FFprobe.atPath(BIN)
                 .setShowStreams(true)
-                .setInputPath(outputPath)
+                .setInput(outputPath)
                 .execute();
         Assert.assertNull(probe.getError());
 
@@ -425,7 +425,7 @@ public class FFmpegTest {
     private static double getDuration(Path path) {
         FFprobeResult probe = FFprobe.atPath(BIN)
                 .setShowStreams(true)
-                .setInputPath(path)
+                .setInput(path)
                 .execute();
         Assert.assertNull(probe.getError());
 

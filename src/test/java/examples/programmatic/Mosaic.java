@@ -46,7 +46,7 @@ public class Mosaic {
             // Other corner-cases (no video stream, multiple audio stream are not considered)
             FFprobeResult probeResult = FFprobe.atPath(ffmpegBin)
                     .setShowStreams(true)
-                    .setInputPath(Paths.get(input))
+                    .setInput(Paths.get(input))
                     .execute();
             for (com.github.kokorin.jaffree.ffprobe.Stream stream : probeResult.getStreams()) {
                 if ("audio".equals(stream.getCodecType())) {

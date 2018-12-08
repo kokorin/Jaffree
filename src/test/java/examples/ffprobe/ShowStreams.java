@@ -25,7 +25,7 @@ public class ShowStreams {
     public void execute() {
         FFprobeResult result = FFprobe.atPath(ffmpegBin)
                 .setShowStreams(true)
-                .setInputPath(video)
+                .setInput(video)
                 .execute();
 
         for (Stream stream : result.getStreams()) {
