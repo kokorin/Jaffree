@@ -20,17 +20,17 @@ package com.github.kokorin.jaffree.ffmpeg;
 import java.util.concurrent.TimeUnit;
 
 public class FFmpegProgress {
-    private final long frame;
-    private final double fps;
-    private final double q;
-    private final long size;
-    private final long time;
-    private final long dup;
-    private final long drop;
-    private final double bitrate;
-    private final double speed;
+    private final Long frame;
+    private final Double fps;
+    private final Double q;
+    private final Long size;
+    private final Long time;
+    private final Long dup;
+    private final Long drop;
+    private final Double bitrate;
+    private final Double speed;
 
-    public FFmpegProgress(long frame, double fps, double q, long size, long time, long dup, long drop, double bitrate, double speed) {
+    public FFmpegProgress(Long frame, Double fps, Double q, Long size, Long time, Long dup, Long drop, Double bitrate, Double speed) {
         this.frame = frame;
         this.fps = fps;
         this.q = q;
@@ -42,50 +42,54 @@ public class FFmpegProgress {
         this.speed = speed;
     }
 
-    public long getFrame() {
+    public Long getFrame() {
         return frame;
     }
 
-    public double getFps() {
+    public Double getFps() {
         return fps;
     }
 
-    public double getQ() {
+    public Double getQ() {
         return q;
     }
 
     /**
      * @return size in bytes
      */
-    public long getSize() {
+    public Long getSize() {
         return size;
     }
 
     /**
      * @return time in milliseconds
      */
-    public long getTimeMillis() {
+    public Long getTimeMillis() {
         return time;
     }
 
-    public long getTime(TimeUnit timeUnit) {
+    public Long getTime(TimeUnit timeUnit) {
+        if (time == null) {
+            return null;
+        }
+
         return timeUnit.convert(time, TimeUnit.MILLISECONDS);
     }
 
 
-    public long getDup() {
+    public Long getDup() {
         return dup;
     }
 
-    public long getDrop() {
+    public Long getDrop() {
         return drop;
     }
 
-    public double getBitrate() {
+    public Double getBitrate() {
         return bitrate;
     }
 
-    public double getSpeed() {
+    public Double getSpeed() {
         return speed;
     }
 }

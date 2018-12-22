@@ -18,14 +18,14 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
 public class FFmpegResult {
-    private final long videoSize;
-    private final long audioSize;
-    private final long subtitleSize;
-    private final long otherStreamsSize;
-    private final long globalHeadersSize;
-    private final double muxingOverheadRatio;
+    private final Long videoSize;
+    private final Long audioSize;
+    private final Long subtitleSize;
+    private final Long otherStreamsSize;
+    private final Long globalHeadersSize;
+    private final Double muxingOverheadRatio;
 
-    public FFmpegResult(long videoSize, long audioSize, long subtitleSize, long otherStreamsSize, long globalHeadersSize, double muxingOverheadRatio) {
+    public FFmpegResult(Long videoSize, Long audioSize, Long subtitleSize, Long otherStreamsSize, Long globalHeadersSize, Double muxingOverheadRatio) {
         this.videoSize = videoSize;
         this.audioSize = audioSize;
         this.subtitleSize = subtitleSize;
@@ -37,42 +37,42 @@ public class FFmpegResult {
     /**
      * @return size in bytes
      */
-    public long getVideoSize() {
+    public Long getVideoSize() {
         return videoSize;
     }
 
     /**
      * @return size in bytes
      */
-    public long getAudioSize() {
+    public Long getAudioSize() {
         return audioSize;
     }
 
     /**
      * @return size in bytes
      */
-    public long getSubtitleSize() {
+    public Long getSubtitleSize() {
         return subtitleSize;
     }
 
     /**
      * @return size in bytes
      */
-    public long getOtherStreamsSize() {
+    public Long getOtherStreamsSize() {
         return otherStreamsSize;
     }
 
     /**
      * @return size in bytes
      */
-    public long getGlobalHeadersSize() {
+    public Long getGlobalHeadersSize() {
         return globalHeadersSize;
     }
 
     /**
      * @return value in range [0..1]
      */
-    public double getMuxingOverheadRatio() {
+    public Double getMuxingOverheadRatio() {
         return muxingOverheadRatio;
     }
 }

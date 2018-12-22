@@ -21,17 +21,38 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 public enum SizeUnit {
+    /**
+     * kilobit
+     */
     K(1_000L),
+    /**
+     * megabit
+     */
     M(1_000_000L),
+    /**
+     * gigabit
+     */
     G(1_000_000_000L),
 
     Ki(1_024L),
     Mi(1_024L * 1_024),
     Gi(1_024L * 1_024 * 1_024),
 
+    /**
+     * byte
+     */
     B(8L),
+    /**
+     * kilobyte
+     */
     KB(1_000L * 8),
+    /**
+     * megabyte
+     */
     MB(1_000_000L * 8),
+    /**
+     * gigabyte
+     */
     GB(1_000_000_000L * 8),
 
     KiB(1_024L * 8),

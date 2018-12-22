@@ -12,12 +12,26 @@ public class FFmpegResultReaderTest {
         FFmpegResult result = FFmpegResultReader.parsResult(value);
 
         Assert.assertNotNull(result);
-        Assert.assertEquals(1_000_000_000L, result.getVideoSize());
-        Assert.assertEquals(2_000_000, result.getAudioSize());
-        Assert.assertEquals(3 * 1024, result.getSubtitleSize());
-        Assert.assertEquals(4_000, result.getOtherStreamsSize());
-        Assert.assertEquals(0, result.getGlobalHeadersSize());
+        Assert.assertEquals(1_000_000_000L, result.getVideoSize().longValue());
+        Assert.assertEquals(2_000_000, result.getAudioSize().longValue());
+        Assert.assertEquals(3 * 1024, result.getSubtitleSize().longValue());
+        Assert.assertEquals(4_000, result.getOtherStreamsSize().longValue());
+        Assert.assertEquals(0, result.getGlobalHeadersSize().longValue());
         Assert.assertEquals(0.01285102, result.getMuxingOverheadRatio(), 0.00000001);
+    }
+
+    @Test
+    public void parseZeroResult() throws Exception {
+        String value = "video:0kB audio:0kB subtitle:0kB other streams:0kB global headers:0kB muxing overhead: 0.000000%";
+        FFmpegResult result = FFmpegResultReader.parsResult(value);
+
+        Assert.assertNotNull(result);
+        Assert.assertEquals(0, result.getVideoSize().longValue());
+        Assert.assertEquals(0, result.getAudioSize().longValue());
+        Assert.assertEquals(0, result.getSubtitleSize().longValue());
+        Assert.assertEquals(0, result.getOtherStreamsSize().longValue());
+        Assert.assertEquals(0, result.getGlobalHeadersSize().longValue());
+        Assert.assertEquals(0, result.getMuxingOverheadRatio(), 0.00000001);
     }
 
     @Test
@@ -26,12 +40,12 @@ public class FFmpegResultReaderTest {
         FFmpegResult result = FFmpegResultReader.parsResult(value);
 
         Assert.assertNotNull(result);
-        Assert.assertEquals(1_417_000L, result.getVideoSize());
-        Assert.assertEquals(113_000L, result.getAudioSize());
-        Assert.assertEquals(0L, result.getSubtitleSize());
-        Assert.assertEquals(0L, result.getOtherStreamsSize());
-        Assert.assertEquals(0, result.getGlobalHeadersSize());
-        Assert.assertEquals(0, result.getMuxingOverheadRatio(), 0.0000001);
+        Assert.assertEquals(1_417_000L, result.getVideoSize().longValue());
+        Assert.assertEquals(113_000L, result.getAudioSize().longValue());
+        Assert.assertEquals(0L, result.getSubtitleSize().longValue());
+        Assert.assertEquals(0L, result.getOtherStreamsSize().longValue());
+        Assert.assertEquals(0, result.getGlobalHeadersSize().longValue());
+        Assert.assertNull(result.getMuxingOverheadRatio());
     }
 
 
@@ -49,11 +63,11 @@ public class FFmpegResultReaderTest {
         FFmpegProgress result = FFmpegResultReader.parseProgress(value);
 
         Assert.assertNotNull(result);
-        Assert.assertEquals(5012, result.getFrame());
+        Assert.assertEquals(5012, result.getFrame().longValue());
         Assert.assertEquals(25.1, result.getFps(), 0.01);
         Assert.assertEquals(-1.0, result.getQ(), 0.01);
-        Assert.assertEquals(26_463_000, result.getSize());
-        Assert.assertEquals(167_200, result.getTimeMillis());
+        Assert.assertEquals(26_463_000, result.getSize().longValue());
+        Assert.assertEquals(167_200, result.getTimeMillis().longValue());
         Assert.assertEquals(1296.6, result.getBitrate(), 0.01);
         Assert.assertEquals(1.23e+3, result.getSpeed(), 0.1);
     }
@@ -64,13 +78,13 @@ public class FFmpegResultReaderTest {
         FFmpegProgress result = FFmpegResultReader.parseProgress(value);
 
         Assert.assertNotNull(result);
-        Assert.assertEquals(33, result.getFrame());
+        Assert.assertEquals(33, result.getFrame().longValue());
         Assert.assertEquals(0.0, result.getFps(), 0.01);
         Assert.assertEquals(-1.0, result.getQ(), 0.01);
-        Assert.assertEquals(71_000, result.getSize());
-        Assert.assertEquals(2_790, result.getTimeMillis());
-        Assert.assertEquals(2_790, result.getTime(TimeUnit.MILLISECONDS));
-        Assert.assertEquals(2, result.getTime(TimeUnit.SECONDS));
+        Assert.assertEquals(71_000, result.getSize().longValue());
+        Assert.assertEquals(2_790, result.getTimeMillis().longValue());
+        Assert.assertEquals(2_790, result.getTime(TimeUnit.MILLISECONDS).longValue());
+        Assert.assertEquals(2, result.getTime(TimeUnit.SECONDS).longValue());
         Assert.assertEquals(207.3, result.getBitrate(), 0.01);
         Assert.assertEquals(11.9, result.getSpeed(), 0.1);
     }
@@ -82,13 +96,13 @@ public class FFmpegResultReaderTest {
         FFmpegProgress result = FFmpegResultReader.parseProgress(value);
 
         Assert.assertNotNull(result);
-        Assert.assertEquals(358, result.getFrame());
+        Assert.assertEquals(358, result.getFrame().longValue());
         Assert.assertEquals(0.0, result.getFps(), 0.01);
         Assert.assertEquals(-1.0, result.getQ(), 0.01);
-        Assert.assertEquals(443_000, result.getSize());
-        Assert.assertEquals(29_710, result.getTimeMillis());
+        Assert.assertEquals(443_000, result.getSize().longValue());
+        Assert.assertEquals(29_710, result.getTimeMillis().longValue());
         Assert.assertEquals(122.0, result.getBitrate(), 0.01);
-        Assert.assertTrue(Double.isNaN(result.getSpeed()));
+        Assert.assertNull(result.getSpeed());
     }
 
     @Test
@@ -97,14 +111,14 @@ public class FFmpegResultReaderTest {
         FFmpegProgress result = FFmpegResultReader.parseProgress(value);
 
         Assert.assertNotNull(result);
-        Assert.assertEquals(184, result.getFrame());
+        Assert.assertEquals(184, result.getFrame().longValue());
         Assert.assertEquals(0, result.getFps(), 0.01);
         Assert.assertEquals(-1.0, result.getQ(), 0.01);
-        Assert.assertEquals(38_000, result.getSize());
-        Assert.assertEquals(7_240, result.getTimeMillis());
+        Assert.assertEquals(38_000, result.getSize().longValue());
+        Assert.assertEquals(7_240, result.getTimeMillis().longValue());
         Assert.assertEquals(43.4, result.getBitrate(), 0.01);
-        Assert.assertEquals(73, result.getDup());
-        Assert.assertEquals(0, result.getDrop());
+        Assert.assertEquals(73, result.getDup().longValue());
+        Assert.assertEquals(0, result.getDrop().longValue());
         Assert.assertEquals(19.5, result.getSpeed(), 0.1);
     }
 
@@ -130,11 +144,11 @@ public class FFmpegResultReaderTest {
         FFmpegProgress result = FFmpegResultReader.parseProgress(value);
 
         Assert.assertNotNull(result);
-        Assert.assertEquals(0, result.getSize());
-        Assert.assertEquals(607_800, result.getTimeMillis());
-        Assert.assertEquals(607, result.getTime(TimeUnit.SECONDS));
-        Assert.assertEquals(10, result.getTime(TimeUnit.MINUTES));
-        Assert.assertTrue(Double.isNaN(result.getBitrate()));
+        Assert.assertNull(result.getSize());
+        Assert.assertEquals(607_800, result.getTimeMillis().longValue());
+        Assert.assertEquals(607, result.getTime(TimeUnit.SECONDS).longValue());
+        Assert.assertEquals(10, result.getTime(TimeUnit.MINUTES).longValue());
+        Assert.assertNull(result.getBitrate());
     }
 
     @Test

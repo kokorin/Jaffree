@@ -95,56 +95,22 @@ public class FFmpegResultReader implements StdReader<FFmpegResult> {
         }
 
         try {
-            Map<String, String> map = new HashMap<>();
             // Replace "frame=  495 fps= 89" with "frame=495 fps=89"
             value = value.replaceAll("= +", "=");
-            for (String pair : value.split(" +")) {
-                String[] nameAndValue = pair.split("=");
+            Map<String, String> map = parseKeyValues(value, "=");
 
-                if (nameAndValue.length != 2) {
-                    continue;
-                }
+            Long frame = parseLong(map.get("frame"));
+            Double fps = parseDouble(map.get("fps"));
+            Double q = parseDouble(map.get("q"));
+            Long size = parseSizeInBytes(map.get("Lsize"));
+            Long timeMillis = parseTimeInMillis(map.get("time"));
+            Long dup = parseLong(map.get("dup"));
+            Long drop = parseLong(map.get("drop"));
+            Double bitrate = parseBitrateInKBits(map.get("bitrate"));
+            Double speed = parseSpeed(map.get("speed"));
 
-                map.put(nameAndValue[0], nameAndValue[1]);
-            }
-
-            long frame = parseLong(map.get("frame"), 0);
-            double fps = parseDouble(map.get("fps"), Double.NaN);
-            double q = parseDouble(map.get("q"), Double.NaN);
-
-            long size = parseSizeInBytes(map.get("Lsize"));
-
-            long time = 0;
-            String timeStr = map.get("time");
-            if (timeStr != null) {
-                String[] timeParts = timeStr.split(":");
-                if (timeParts.length == 3) {
-                    long hours = parseLong(timeParts[0], 0);
-                    long minutes = parseLong(timeParts[1], 0);
-                    double seconds = parseDouble(timeParts[2], 0);
-                    time = (long) (((hours * 60 + minutes) * 60 + seconds) * 1000);
-                }
-            }
-
-            String bitrateStr = map.get("bitrate");
-            String[] bitrateAndUnit = splitValueAndUnit(bitrateStr);
-            double bitrate = Double.NaN;
-            if (bitrateAndUnit[1].equals("kbits/s")) {
-                bitrate = parseDouble(bitrateAndUnit[0], Double.NaN);
-            }
-
-            long dup = parseLong(map.get("dup"), 0);
-            long drop = parseLong(map.get("drop"), 0);
-
-            String speedStr = map.get("speed");
-            if (speedStr != null && speedStr.endsWith("x")) {
-                speedStr = speedStr.substring(0, speedStr.length() - 1);
-            }
-            double speed = parseDouble(speedStr, Double.NaN);
-
-            if (frame != 0 || !Double.isNaN(fps) || !Double.isNaN(q) || size != 0
-                    || time != 0 || !Double.isNaN(bitrate) || !Double.isNaN(speed)) {
-                return new FFmpegProgress(frame, fps, q, size, time, dup, drop, bitrate, speed);
+            if (hasNonNull(frame, fps, q, size, timeMillis, dup, drop, bitrate, speed)) {
+                return new FFmpegProgress(frame, fps, q, size, timeMillis, dup, drop, bitrate, speed);
             }
         } catch (Exception e) {
             // suppress
@@ -155,42 +121,29 @@ public class FFmpegResultReader implements StdReader<FFmpegResult> {
 
 
     static FFmpegResult parsResult(String value) {
-        if (value == null) {
+        if (value == null || value.isEmpty()) {
             return null;
         }
 
-        value = value
-                .replaceAll("other streams", "other_streams")
-                .replaceAll("global headers", "global_headers")
-                .replaceAll("muxing overhead", "muxing_overhead")
-                .replaceAll(":\\s+", ":");
         try {
-            Map<String, String> map = new HashMap<>();
-            for (String keyValueStr : value.split("\\s+")) {
-                String[] keyValuePair = keyValueStr.split(":");
+            value = value
+                    .replaceAll("other streams", "other_streams")
+                    .replaceAll("global headers", "global_headers")
+                    .replaceAll("muxing overhead", "muxing_overhead")
+                    .replaceAll(":\\s+", ":");
 
-                if (keyValuePair.length != 2) {
-                    continue;
-                }
+            Map<String, String> map = parseKeyValues(value, ":");
 
-                map.put(keyValuePair[0], keyValuePair[1]);
-            }
 
-            long videoSize = parseSizeInBytes(map.get("video"));
-            long audioSize = parseSizeInBytes(map.get("audio"));
-            long subtitleSize = parseSizeInBytes(map.get("subtitle"));
-            long otherStreamsSize = parseSizeInBytes(map.get("other_streams"));
-            long globalHeadersSize = parseSizeInBytes(map.get("global_headers"));
+            Long videoSize = parseSizeInBytes(map.get("video"));
+            Long audioSize = parseSizeInBytes(map.get("audio"));
+            Long subtitleSize = parseSizeInBytes(map.get("subtitle"));
+            Long otherStreamsSize = parseSizeInBytes(map.get("other_streams"));
+            Long globalHeadersSize = parseSizeInBytes(map.get("global_headers"));
+            Double muxOverhead = parseRatio(map.get("muxing_overhead"));
 
-            String muxOverhead = map.get("muxing_overhead");
-            if (muxOverhead != null && muxOverhead.endsWith("%")) {
-                muxOverhead = muxOverhead.substring(0, muxOverhead.length() - 1);
-            }
-            double muxingOverheadRatio = parseDouble(muxOverhead, 0.) * 0.01;
-
-            if (videoSize != 0 || audioSize != 0 || subtitleSize != 0 || otherStreamsSize != 0
-                    || globalHeadersSize != 0 || muxingOverheadRatio != 0) {
-                return new FFmpegResult(videoSize, audioSize, subtitleSize, otherStreamsSize, globalHeadersSize, muxingOverheadRatio);
+            if (hasNonNull(videoSize, audioSize, subtitleSize, otherStreamsSize, globalHeadersSize, muxOverhead)) {
+                return new FFmpegResult(videoSize, audioSize, subtitleSize, otherStreamsSize, globalHeadersSize, muxOverhead);
             }
         } catch (Exception e) {
             // supress
@@ -199,8 +152,23 @@ public class FFmpegResultReader implements StdReader<FFmpegResult> {
         return null;
     }
 
+    private static Map<String, String> parseKeyValues(String value, String separator) {
+        Map<String, String> result = new HashMap<>();
 
-    private static long parseLong(String value, long defValue) {
+        for (String pair : value.split("\\s+")) {
+            String[] nameAndValue = pair.split(separator);
+
+            if (nameAndValue.length != 2) {
+                continue;
+            }
+
+            result.put(nameAndValue[0], nameAndValue[1]);
+        }
+
+        return result;
+    }
+
+    private static Long parseLong(String value) {
         if (value != null && !value.isEmpty()) {
             try {
                 return Long.parseLong(value);
@@ -209,10 +177,10 @@ public class FFmpegResultReader implements StdReader<FFmpegResult> {
             }
         }
 
-        return defValue;
+        return null;
     }
 
-    private static double parseDouble(String value, double defValue) {
+    private static Double parseDouble(String value) {
         if (value != null && !value.isEmpty()) {
             try {
                 return Double.parseDouble(value);
@@ -221,14 +189,88 @@ public class FFmpegResultReader implements StdReader<FFmpegResult> {
             }
         }
 
-        return defValue;
+        return null;
     }
 
-    private static long parseSizeInBytes(String value) {
+    private static Long parseSizeInBytes(String value) {
+        return parseSize(value, SizeUnit.B);
+    }
+
+    private static Long parseSize(String value, SizeUnit unit) {
         String[] sizeAndUnit = splitValueAndUnit(value);
-        long parsedValue = parseLong(sizeAndUnit[0], 0);
-        SizeUnit unit = parseSizeUnit(sizeAndUnit[1]);
-        return unit.toBytes(parsedValue);
+        Long parsedValue = parseLong(sizeAndUnit[0]);
+        if (parsedValue == null) {
+            return null;
+        }
+
+        SizeUnit valueUnit = parseSizeUnit(sizeAndUnit[1]);
+        if (valueUnit == null) {
+            return null;
+        }
+
+        return valueUnit.convertTo(parsedValue, unit);
+    }
+
+    private static Double parseBitrateInKBits(String value) {
+        if (value == null || value.isEmpty()) {
+            return null;
+        }
+
+        value = value.replace("kbits/s", "");
+
+        return parseDouble(value);
+    }
+
+    private static Double parseRatio(String value) {
+        if (value == null || value.isEmpty()) {
+            return null;
+        }
+
+        double multiplier = 1;
+        if (value.endsWith("%")) {
+            value = value.substring(0, value.length() - 1);
+            multiplier = 1. / 100;
+        }
+
+        Double valueDouble = parseDouble(value);
+        if (valueDouble == null) {
+            return null;
+        }
+
+        return multiplier * valueDouble;
+    }
+
+    private static Long parseTimeInMillis(String value) {
+        if (value == null || value.isEmpty()) {
+            return null;
+        }
+
+        String[] timeParts = value.split(":");
+        if (timeParts.length != 3) {
+            return null;
+        }
+
+        Long hours = parseLong(timeParts[0]);
+        Long minutes = parseLong(timeParts[1]);
+        Double seconds = parseDouble(timeParts[2]);
+
+        if (hours == null || minutes == null || seconds == null) {
+            return null;
+        }
+
+        return (long) (((hours * 60 + minutes) * 60 + seconds) * 1000);
+    }
+
+    private static Double parseSpeed(String value) {
+        if (value == null || value.isEmpty()) {
+            return null;
+        }
+
+        if (value.endsWith("x")) {
+            value = value.substring(0, value.length() - 1);
+        }
+
+        return parseDouble(value);
     }
 
     private static String[] splitValueAndUnit(String string) {
@@ -252,6 +294,16 @@ public class FFmpegResultReader implements StdReader<FFmpegResult> {
             }
         }
 
-        return SizeUnit.K;
+        return null;
+    }
+
+    private static boolean hasNonNull(Object... items) {
+        for (Object item : items) {
+            if (item != null) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
