@@ -47,7 +47,7 @@ public class FrameCode {
      * If FLAG_CODED_PTS is set in the flags of the current frame then this
      * value MUST be ignored, if FLAG_CODED_PTS is not set then pts_delta is the
      * difference between the current pts and last_pts.
-     * MUST be &lt;16384 and >-16384.
+     * MUST be &lt;16384 and &gt;-16384.
      */
     public final long ptsDelta;
 
@@ -70,7 +70,7 @@ public class FrameCode {
      * <p>
      * If FLAG_MATCH_TIME is not set then this value shall be used for
      * match_time_delta, otherwise this value is ignored.
-     * MUST be &lt;32768 and >-32768 or =1-(1&lt;&lt;62).
+     * MUST be &lt;32768 and &gt;-32768 or =1-(1&lt;&lt;62).
      */
     public final long matchTimeDelta;
 

@@ -44,7 +44,7 @@ public class MainHeader {
      * non-keyframe - keyframe transitions are very frequent.
      * <p>
      * SHOULD be set to &lt;=32768.
-     * If the stored value is >65536 then max_distance MUST be set to 65536.
+     * If the stored value is &gt;65536 then max_distance MUST be set to 65536.
      * <p>
      * This is also half the maximum frame size without a headerChecksum after the
      * frame header.
@@ -62,7 +62,7 @@ public class MainHeader {
      * <p>
      * elision_header[0] is fixed to a length 0 header.
      * <p>
-     * The length of each elision_header except header 0 MUST be &lt; 256 and >0.
+     * The length of each elision_header except header 0 MUST be &lt; 256 and &gt;0.
      * <p>
      * The sum of the lengthes of all elision_headers MUST be &lt;=1024.
      */
