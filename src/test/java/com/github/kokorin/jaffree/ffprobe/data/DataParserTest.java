@@ -21,6 +21,19 @@ public class DataParserTest {
         Assert.assertEquals(2, streams.size());
     }
 
+    @Test
+    public void parseHttpsPresigned() throws Exception {
+        Data data = parseResource("ffprobe_streams_presigned_https.out");
+
+        Assert.assertNotNull(data);
+
+        List<DSection> streams = data.getSections("STREAM");
+        Assert.assertEquals(2, streams.size());
+
+        DSection format = data.getSection("FORMAT");
+        Assert.assertNotNull(format);
+    }
+
     public static Data parseResource(String name) throws Exception {
         try (InputStream input = DataParserTest.class.getResourceAsStream(name)){
             Iterator<String> lineIterator = IOUtils.lineIterator(input, StandardCharsets.UTF_8);
