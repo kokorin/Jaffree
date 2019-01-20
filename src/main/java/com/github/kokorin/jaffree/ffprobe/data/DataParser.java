@@ -49,8 +49,8 @@ public class DataParser {
                 String key = line.substring(0, line.length() - 1);
                 startProperty(key);
             } else {
-                String[] keyValue = line.split("=");
-                if (keyValue.length < 2) {
+                String[] keyValue = line.split("=", 2);
+                if (keyValue.length != 2) {
                     throw new RuntimeException("key=value was expected but got: " + line);
                 }
                 String key = keyValue[0];
