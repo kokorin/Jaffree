@@ -27,7 +27,13 @@ import com.github.kokorin.jaffree.OS;
  */
 public class NullOutput extends BaseOutput<NullOutput> implements Output {
     public NullOutput() {
-        copyAllCodecs();
+        this(true);
+    }
+
+    public NullOutput(boolean copyCodecs) {
+        if (copyCodecs) {
+            copyAllCodecs();
+        }
         setFormat("null");
         String output = OS.IS_WINDOWS ? "NUL" : "/dev/null";
         setOutput(output);

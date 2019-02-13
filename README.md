@@ -8,7 +8,7 @@ It integrates with ffmpeg via `java.lang.Process`.
 <dependency>
     <groupId>com.github.kokorin.jaffree</groupId>
     <artifactId>jaffree</artifactId>
-    <version>0.7.3</version>
+    <version>0.7.4</version>
 </dependency>
 
 <!--
@@ -69,6 +69,31 @@ FFmpegResult result = FFmpeg.atPath(BIN)
         // This is optional
         .setProgressListener(listener)
         .execute();
+```
+
+## Custom parsing of ffmpeg output
+
+```java
+FFmpegResult result = FFmpeg.atPath(BIN)
+        .addInput(UrlInput.fromPath(VIDEO_MP4))
+        .addArguments("-af", "loudnorm=I=-16:TP=-1.5:LRA=11:print_format=json")
+        .addOutput(new NullOutput(false))
+        .setOutputListener(new OutputListener() {
+            private boolean loudnormReportStarted;
+            @Override
+            public boolean onOutput(String line) {
+                if (line.contains("loudnornm")) {
+                    loudnormReportStarted = true;
+                    return true;
+                }
+                if (loudnormReportStarted) {
+                    // TODO parse loudnorm JSON report
+                }
+                return loudnormReportStarted;
+            }
+        })
+        .execute();
+
 ```
 
 ## Complex filtergraph (mosaic video)

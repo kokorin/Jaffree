@@ -15,6 +15,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class FFmpegTest {
@@ -417,9 +418,32 @@ public class FFmpegTest {
         expectedException.expect(new StackTraceMatcher("No such file or directory"));
 
         FFmpegResult result = FFmpeg.atPath(BIN)
-                .addInput(UrlInput.fromPath(Paths.get("nonexistent.mp4")))
+                .addInput(UrlInput.fromPath(ERROR_MP4))
                 //.addOutput()
                 .execute();
+    }
+
+    @Test
+    public void testCustomOutputParsing() {
+        final AtomicBoolean loudnormReportFound = new AtomicBoolean();
+
+        FFmpegResult result = FFmpeg.atPath(BIN)
+                .addInput(UrlInput.fromPath(VIDEO_MP4))
+                .addArguments("-af", "loudnorm=I=-16:TP=-1.5:LRA=11:print_format=json")
+                .addOutput(new NullOutput(false))
+                .setOutputListener(new OutputListener() {
+                    @Override
+                    public boolean onOutput(String line) {
+                        if (line.contains("loudnorm")) {
+                            loudnormReportFound.set(true);
+                        }
+                        return loudnormReportFound.get();
+                    }
+                })
+                .execute();
+
+        Assert.assertNotNull(result);
+        Assert.assertTrue(loudnormReportFound.get());
     }
 
     private static double getDuration(Path path) {

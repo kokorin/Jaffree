@@ -18,5 +18,11 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
 public interface ProgressListener {
+    /**
+     * Attention: this method is not thread safe and may be invoked in different thread.
+     * Consider using synchronization.
+     *
+     * @param progress ffmpeg progress
+     */
     void onProgress(FFmpegProgress progress);
 }

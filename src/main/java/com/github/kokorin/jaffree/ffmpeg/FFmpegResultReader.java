@@ -31,11 +31,13 @@ import java.util.Map;
 
 public class FFmpegResultReader implements StdReader<FFmpegResult> {
     private final ProgressListener progressListener;
+    private final OutputListener outputListener;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FFmpegResultReader.class);
 
-    public FFmpegResultReader(ProgressListener progressListener) {
+    public FFmpegResultReader(ProgressListener progressListener, OutputListener outputListener) {
         this.progressListener = progressListener;
+        this.outputListener = outputListener;
     }
 
     @Override
@@ -67,15 +69,18 @@ public class FFmpegResultReader implements StdReader<FFmpegResult> {
                     continue;
                 }
 
-                if (line.startsWith("[")) {
-                    // After encoding has ended ffmpeg adds extra codec-specific data like following
-                    // [libx264 @ 00000000012057c0] frame I:17    Avg QP:19.81  size:  2020
-                    continue;
+                if (outputListener != null) {
+                    boolean errorLine = outputListener.onOutput(line);
+
+                    if (!errorLine) {
+                        continue;
+                    }
                 }
 
                 if (result != null) {
                     continue;
                 }
+
                 errorMessage = line;
             }
         } catch (IOException e) {

@@ -39,6 +39,7 @@ public class FFmpeg {
     private final List<String> additionalArguments = new ArrayList<>();
     private boolean overwriteOutput;
     private ProgressListener progressListener;
+    private OutputListener outputListener;
     //-progress url (global)
     //-filter_threads nb_threads (global)
     //-debug_ts (global)
@@ -99,13 +100,24 @@ public class FFmpeg {
         return this;
     }
 
+    /**
+     * Supply custom ProgressListener to receive progress events
+     * @param progressListener listener
+     * @return this
+     */
     public FFmpeg setProgressListener(ProgressListener progressListener) {
         this.progressListener = progressListener;
         return this;
     }
 
-    public ProgressListener getProgressListener() {
-        return progressListener;
+    /**
+     * Supply custom OutputListener to receive ffmpeg output.
+     * @param outputListener listener
+     * @return this
+     */
+    public FFmpeg setOutputListener(OutputListener outputListener) {
+        this.outputListener = outputListener;
+        return this;
     }
 
     public FFmpeg setLogLevel(LogLevel logLevel) {
@@ -171,7 +183,7 @@ public class FFmpeg {
     }
 
     protected StdReader<FFmpegResult> createStdErrReader() {
-        return new FFmpegResultReader(progressListener);
+        return new FFmpegResultReader(progressListener, outputListener);
     }
 
     protected StdReader<FFmpegResult> createStdOutReader() {
