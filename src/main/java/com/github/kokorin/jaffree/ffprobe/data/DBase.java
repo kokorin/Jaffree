@@ -98,21 +98,39 @@ public class DBase {
     public static final ValueConverter<Long> LONG_CONVERTER = new ValueConverter<Long>() {
         @Override
         public Long convert(String value) {
-            return Long.valueOf(value);
+            try {
+                return Long.valueOf(value);
+            } catch (Exception e) {
+                LOGGER.warn("Failed to parse long number: " + value, e);
+            }
+
+            return null;
         }
     };
 
     public static final ValueConverter<Integer> INTEGER_CONVERTER = new ValueConverter<Integer>() {
         @Override
         public Integer convert(String value) {
-            return Integer.valueOf(value);
+            try {
+                return Integer.valueOf(value);
+            } catch (Exception e) {
+                LOGGER.warn("Failed to parse integer number: " + value, e);
+            }
+
+            return null;
         }
     };
 
     public static final ValueConverter<Float> FLOAT_CONVERTER = new ValueConverter<Float>() {
         @Override
         public Float convert(String value) {
-            return Float.valueOf(value);
+            try {
+                return Float.valueOf(value);
+            } catch (Exception e) {
+                LOGGER.warn("Failed to parse float number: " + value, e);
+            }
+
+            return null;
         }
     };
 
@@ -126,7 +144,7 @@ public class DBase {
             try {
                 return StreamType.valueOf(value.toUpperCase());
             } catch (Exception e) {
-                LOGGER.warn("Failed to parse rational number: " + value, e);
+                LOGGER.warn("Failed to parse StreamType: " + value, e);
             }
 
             return null;
@@ -150,7 +168,7 @@ public class DBase {
 
         @Override
         public Rational convert(String value) {
-            if (value == null || value.isEmpty() || value.equals("0/0")) {
+            if (value == null || value.isEmpty() || value.equals("0/0") || value.equals("N/A")) {
                 return null;
             }
 
