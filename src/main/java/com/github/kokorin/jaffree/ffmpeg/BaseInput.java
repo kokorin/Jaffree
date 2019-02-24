@@ -75,5 +75,10 @@ public abstract class BaseInput<T extends BaseInput<T>> extends BaseInOut<T> imp
 
         return result;
     }
+
+    @Override
+    public Runnable helperThread() {
+        return null;
+    }
 }
 

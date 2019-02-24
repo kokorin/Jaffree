@@ -26,17 +26,14 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 
-public class NutFrameWriter implements Runnable {
+public class NutFrameWriter implements TcpInput.Writer {
     private final FrameProducer producer;
     private final boolean alpha;
-    private final ServerSocket serverSocket;
     private final Long frameOrderingBufferMillis;
 
     private static final byte[] FOURCC_ABGR = {'A', 'B', 'G', 'R'};
@@ -47,34 +44,20 @@ public class NutFrameWriter implements Runnable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NutFrameWriter.class);
 
-    public NutFrameWriter(FrameProducer producer, boolean alpha, ServerSocket serverSocket) {
-        this(producer, alpha, serverSocket, null);
+    public NutFrameWriter(FrameProducer producer, boolean alpha) {
+        this(producer, alpha, null);
     }
 
-    public NutFrameWriter(FrameProducer producer, boolean alpha, ServerSocket serverSocket, Long frameOrderingBufferMillis) {
+    public NutFrameWriter(FrameProducer producer, boolean alpha, Long frameOrderingBufferMillis) {
         this.producer = producer;
         this.alpha = alpha;
-        this.serverSocket = serverSocket;
         this.frameOrderingBufferMillis = frameOrderingBufferMillis;
     }
 
     @Override
-    public void run() {
-        try (ServerSocket serverSocket = this.serverSocket;
-             Socket socket = serverSocket.accept();
-             OutputStream output = socket.getOutputStream()) {
-            LOGGER.debug("Will write to socket output stream");
-            write(output);
-            LOGGER.debug("Finished writing to socket output stream");
-        } catch (IOException e) {
-            LOGGER.warn("Failed to write to socket: " + serverSocket, e);
-        }
-    }
-
-    // package-private for test
-    void write(OutputStream stdIn) {
+    public void write(OutputStream out) {
         try {
-            NutWriter writer = new NutWriter(new NutOutputStream(stdIn));
+            NutWriter writer = new NutWriter(new NutOutputStream(out));
             if (frameOrderingBufferMillis != null) {
                 writer.setFrameOrderingBufferMillis(frameOrderingBufferMillis);
             }

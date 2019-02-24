@@ -485,7 +485,7 @@ public class FrameIOTest {
         };
 
         ByteArrayInputStream input = new ByteArrayInputStream(buffer.toByteArray());
-        NutFrameReader reader = new NutFrameReader(consumer, false, null);
+        NutFrameReader reader = new NutFrameReader(consumer, false);
         reader.read(input);
 
         Assert.assertEquals(1, actualTracks.size());

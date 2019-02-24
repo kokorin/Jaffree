@@ -27,40 +27,25 @@ import java.awt.color.ColorSpace;
 import java.awt.image.*;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NutFrameReader implements Runnable {
+public class NutFrameReader implements TcpOutput.Reader {
     private final FrameConsumer frameConsumer;
     private final boolean alpha;
-    private final ServerSocket serverSocket;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NutFrameReader.class);
 
-    public NutFrameReader(FrameConsumer frameConsumer, boolean alpha, ServerSocket serverSocket) {
+    public NutFrameReader(FrameConsumer frameConsumer, boolean alpha) {
         this.frameConsumer = frameConsumer;
         this.alpha = alpha;
-        this.serverSocket = serverSocket;
     }
 
     @Override
-    public void run() {
-        try (ServerSocket serverSocket = this.serverSocket;
-             Socket socket = serverSocket.accept();
-             InputStream input = socket.getInputStream()) {
-            read(input);
-        } catch (IOException e) {
-            throw  new RuntimeException("Failed to read from socket " + serverSocket, e);
-        }
-    }
-
-    // package-private for test
-    void read(InputStream stdOut) {
-        NutInputStream stream = new NutInputStream(stdOut);
+    public void read(InputStream input) {
+        NutInputStream stream = new NutInputStream(input);
         NutReader nutReader = new NutReader(stream);
 
         try {

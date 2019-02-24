@@ -19,22 +19,13 @@ package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.StreamType;
 
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-
-public class FrameOutput extends BaseOutput<FrameOutput> implements Output {
+public class FrameOutput extends TcpOutput<FrameOutput> implements Output {
     private final FrameConsumer consumer;
     private final boolean alpha;
-    private final ServerSocket serverSocket;
 
     public FrameOutput(FrameConsumer consumer, boolean alpha) {
         this.consumer = consumer;
         this.alpha = alpha;
-        this.serverSocket = allocateSocket();
-
-        //Error while decoding stream #0:1: Invalid argument
-        setOutput("tcp://127.0.0.1:" + serverSocket.getLocalPort()/* + "?timeout=1000000"*/);
         setFormat("nut");
 
         // default arguments
@@ -44,20 +35,14 @@ public class FrameOutput extends BaseOutput<FrameOutput> implements Output {
 
         setCodec(StreamType.AUDIO, "pcm_s32be");
     }
+
     public FrameConsumer getConsumer() {
         return consumer;
     }
 
-    Runnable createReader() {
-        return new NutFrameReader(consumer, alpha, serverSocket);
-    }
-
-    private static ServerSocket allocateSocket() {
-        try {
-            return new ServerSocket(0, 1, InetAddress.getLoopbackAddress());
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to allocate socket", e);
-        }
+    @Override
+    protected Reader reader() {
+        return new NutFrameReader(consumer, alpha);
     }
 
     public static FrameOutput withConsumer(FrameConsumer consumer) {

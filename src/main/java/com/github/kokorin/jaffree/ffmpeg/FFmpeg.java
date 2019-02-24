@@ -137,23 +137,25 @@ public class FFmpeg {
     }
 
     public FFmpegResult execute() {
-        List<Runnable> readersAndWriters = new ArrayList<>();
+        List<Runnable> helpers = new ArrayList<>();
 
         for (Input input : inputs) {
-            if (input instanceof FrameInput) {
-                readersAndWriters.add(((FrameInput) input).createWriter());
+            Runnable helper = input.helperThread();
+            if (helper != null) {
+                helpers.add(helper);
             }
         }
         for (Output output : outputs) {
-            if (output instanceof FrameOutput) {
-                readersAndWriters.add(((FrameOutput) output).createReader());
+            Runnable helper = output.helperThread();
+            if (helper != null) {
+                helpers.add(helper);
             }
         }
 
         return new ProcessHandler<FFmpegResult>(executable, contextName)
                 .setStdErrReader(createStdErrReader())
                 .setStdOutReader(createStdOutReader())
-                .setRunnables(readersAndWriters)
+                .setRunnables(helpers)
                 .execute(buildArguments());
     }
 

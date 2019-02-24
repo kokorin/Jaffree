@@ -21,4 +21,10 @@ import java.util.List;
 
 public interface Output {
     List<String> buildArguments();
+
+    /**
+     * Helper {@link Runnable} which should be ran in dedicated thread
+     * @return null if no helper thread is need, otherwise Runnable
+     */
+    Runnable helperThread();
 }

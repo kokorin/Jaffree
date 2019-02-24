@@ -258,6 +258,11 @@ public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements
         return result;
     }
 
+    @Override
+    public Runnable helperThread() {
+        return null;
+    }
+
     private static interface Mapping {
         String toValue();
     }
