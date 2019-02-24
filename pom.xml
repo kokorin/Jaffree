@@ -6,7 +6,7 @@
 
     <groupId>com.github.kokorin.jaffree</groupId>
     <artifactId>jaffree</artifactId>
-    <version>0.7.5</version>
+    <version>0.8.0</version>
     <packaging>jar</packaging>
 
     <name>Jaffree</name>

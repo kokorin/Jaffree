@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.image.*;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -32,46 +33,50 @@ import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NutFrameReader implements TcpOutput.Reader {
+public class NutFrameConsumer implements TcpOutput.Consumer {
     private final FrameConsumer frameConsumer;
     private final boolean alpha;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NutFrameReader.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(NutFrameConsumer.class);
 
-    public NutFrameReader(FrameConsumer frameConsumer, boolean alpha) {
+    public NutFrameConsumer(FrameConsumer frameConsumer, boolean alpha) {
         this.frameConsumer = frameConsumer;
         this.alpha = alpha;
     }
 
     @Override
-    public void read(InputStream input) {
+    public void consumeAndClose(InputStream input) {
+        try (Closeable toClose = input) {
+            read(input);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to read stream", e);
+        }
+    }
+
+    void read(InputStream input) throws IOException {
         NutInputStream stream = new NutInputStream(input);
         NutReader nutReader = new NutReader(stream);
 
-        try {
-            MainHeader mainHeader = nutReader.getMainHeader();
-            StreamHeader[] streamHeaders = nutReader.getStreamHeaders();
-            List<Stream> tracks = parseTracks(mainHeader, streamHeaders);
-            frameConsumer.consumeStreams(tracks);
+        MainHeader mainHeader = nutReader.getMainHeader();
+        StreamHeader[] streamHeaders = nutReader.getStreamHeaders();
+        List<Stream> streams = parseTracks(mainHeader, streamHeaders);
+        frameConsumer.consumeStreams(streams);
 
-            LOGGER.debug("Streams: {}", (Object) streamHeaders);
+        LOGGER.debug("Streams: {}", (Object) streamHeaders);
 
-            NutFrame nutFrame;
-            while ((nutFrame = nutReader.readFrame()) != null) {
-                LOGGER.trace("NutFrame: {}", nutFrame);
+        NutFrame nutFrame;
+        while ((nutFrame = nutReader.readFrame()) != null) {
+            LOGGER.trace("NutFrame: {}", nutFrame);
 
-                int trackNo = nutFrame.streamId;
-                Frame frame = parseFrame(streamHeaders[trackNo], nutFrame);
-                LOGGER.trace("Parsed frame: {}", frame);
+            int trackNo = nutFrame.streamId;
+            Frame frame = parseFrame(streamHeaders[trackNo], nutFrame);
+            LOGGER.trace("Parsed frame: {}", frame);
 
-                if (frame == null) {
-                    continue;
-                }
-
-                frameConsumer.consume(frame);
+            if (frame == null) {
+                continue;
             }
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to read stream", e);
+
+            frameConsumer.consume(frame);
         }
 
         frameConsumer.consume(null);
@@ -81,9 +86,9 @@ public class NutFrameReader implements TcpOutput.Reader {
         List<Stream> result = new ArrayList<>();
 
         for (StreamHeader streamHeader : streamHeaders) {
-            Stream track = null;
+            Stream stream = null;
             if (streamHeader.streamType == StreamHeader.Type.VIDEO) {
-                track = new Stream()
+                stream = new Stream()
                         .setType(Stream.Type.VIDEO)
                         .setWidth(streamHeader.video.width)
                         .setHeight(streamHeader.video.height);
@@ -93,17 +98,17 @@ public class NutFrameReader implements TcpOutput.Reader {
                     LOGGER.warn("Samplerate denominator is'n equal to 1 (?). This may lead to incorrect audio decoding", samplerate);
                 }
 
-                track = new Stream()
+                stream = new Stream()
                         .setType(Stream.Type.AUDIO)
                         .setSampleRate(samplerate.numerator / samplerate.denominator)
                         .setChannels(streamHeader.audio.channelCount);
             }
 
-            if (track != null) {
+            if (stream != null) {
                 Rational timebase = mainHeader.timeBases[streamHeader.timeBaseId];
-                track.setId(streamHeader.streamId)
+                stream.setId(streamHeader.streamId)
                         .setTimebase(timebase.denominator / timebase.numerator);
-                result.add(track);
+                result.add(stream);
             }
         }
 

@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
@@ -31,7 +32,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 
-public class NutFrameWriter implements TcpInput.Writer {
+public class NutFrameSupplier implements TcpInput.Supplier {
     private final FrameProducer producer;
     private final boolean alpha;
     private final Long frameOrderingBufferMillis;
@@ -42,21 +43,21 @@ public class NutFrameWriter implements TcpInput.Writer {
     private static final byte[] FOURCC_PCM_S32BE = {32, 'D', 'S', 'P'};
 
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NutFrameWriter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(NutFrameSupplier.class);
 
-    public NutFrameWriter(FrameProducer producer, boolean alpha) {
+    public NutFrameSupplier(FrameProducer producer, boolean alpha) {
         this(producer, alpha, null);
     }
 
-    public NutFrameWriter(FrameProducer producer, boolean alpha, Long frameOrderingBufferMillis) {
+    public NutFrameSupplier(FrameProducer producer, boolean alpha, Long frameOrderingBufferMillis) {
         this.producer = producer;
         this.alpha = alpha;
         this.frameOrderingBufferMillis = frameOrderingBufferMillis;
     }
 
     @Override
-    public void write(OutputStream out) {
-        try {
+    public void supplyAndClose(OutputStream out) {
+        try (Closeable toClose = out) {
             NutWriter writer = new NutWriter(new NutOutputStream(out));
             if (frameOrderingBufferMillis != null) {
                 writer.setFrameOrderingBufferMillis(frameOrderingBufferMillis);

@@ -98,6 +98,10 @@ public class DBase {
     public static final ValueConverter<Long> LONG_CONVERTER = new ValueConverter<Long>() {
         @Override
         public Long convert(String value) {
+            if (value == null || value.isEmpty() || value.equals("N/A")) {
+                return null;
+            }
+
             try {
                 return Long.valueOf(value);
             } catch (Exception e) {
@@ -111,6 +115,10 @@ public class DBase {
     public static final ValueConverter<Integer> INTEGER_CONVERTER = new ValueConverter<Integer>() {
         @Override
         public Integer convert(String value) {
+            if (value == null || value.isEmpty() || value.equals("N/A")) {
+                return null;
+            }
+
             try {
                 return Integer.valueOf(value);
             } catch (Exception e) {
@@ -124,6 +132,10 @@ public class DBase {
     public static final ValueConverter<Float> FLOAT_CONVERTER = new ValueConverter<Float>() {
         @Override
         public Float convert(String value) {
+            if (value == null || value.isEmpty() || value.equals("N/A")) {
+                return null;
+            }
+
             try {
                 return Float.valueOf(value);
             } catch (Exception e) {
@@ -137,7 +149,7 @@ public class DBase {
     public static final ValueConverter<StreamType> STREAM_TYPE_CONVERTER = new ValueConverter<StreamType>() {
         @Override
         public StreamType convert(String value) {
-            if (value == null || value.isEmpty()) {
+            if (value == null || value.isEmpty() || value.equals("N/A")) {
                 return null;
             }
 

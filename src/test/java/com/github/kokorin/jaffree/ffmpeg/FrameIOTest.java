@@ -465,8 +465,8 @@ public class FrameIOTest {
 
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
-        NutFrameWriter writer = new NutFrameWriter(producer, false, null);
-        writer.write(buffer);
+        NutFrameSupplier writer = new NutFrameSupplier(producer, false, null);
+        writer.supplyAndClose(buffer);
 
         final List<Stream> actualTracks = new CopyOnWriteArrayList<>();
         final List<Frame> actualFrames = new CopyOnWriteArrayList<>();
@@ -485,8 +485,8 @@ public class FrameIOTest {
         };
 
         ByteArrayInputStream input = new ByteArrayInputStream(buffer.toByteArray());
-        NutFrameReader reader = new NutFrameReader(consumer, false);
-        reader.read(input);
+        NutFrameConsumer reader = new NutFrameConsumer(consumer, false);
+        reader.consumeAndClose(input);
 
         Assert.assertEquals(1, actualTracks.size());
         Assert.assertEquals(track.getId(), actualTracks.get(0).getId());
@@ -506,7 +506,7 @@ public class FrameIOTest {
         }
     }
 
-    public void testNutGenerationAndConsuption(final int duration, final int fps, final long timebase, final int width, final int height) throws Exception {
+    public void testNutGenerationAndConsumption(final int duration, final int fps, final long timebase, final int width, final int height) throws Exception {
         Assert.assertEquals(0, timebase % fps);
         Path mp4Path = Files.createTempFile("highResolution", ".mp4");
 
@@ -582,9 +582,9 @@ public class FrameIOTest {
 
     @Test
     public void videoFramerateHighResolution() throws Exception {
-        testNutGenerationAndConsuption(10, 25, 1000, 480, 240);
-        testNutGenerationAndConsuption(10, 25, 1000, 1280, 720);
-        testNutGenerationAndConsuption(10, 25, 1000, 2560, 1440);
+        testNutGenerationAndConsumption(10, 25, 1000, 480, 240);
+        testNutGenerationAndConsumption(10, 25, 1000, 1280, 720);
+        testNutGenerationAndConsumption(10, 25, 1000, 2560, 1440);
     }
 
 }

@@ -21,6 +21,7 @@ import com.github.kokorin.jaffree.LogLevel;
 import com.github.kokorin.jaffree.process.LoggingStdReader;
 import com.github.kokorin.jaffree.process.ProcessHandler;
 import com.github.kokorin.jaffree.process.StdReader;
+import com.github.kokorin.jaffree.process.StdWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -153,6 +154,7 @@ public class FFmpeg {
         }
 
         return new ProcessHandler<FFmpegResult>(executable, contextName)
+                .setStdInWriter(createStdInWriter())
                 .setStdErrReader(createStdErrReader())
                 .setStdOutReader(createStdOutReader())
                 .setRunnables(helpers)
@@ -182,6 +184,10 @@ public class FFmpeg {
         runner.start();
 
         return result;
+    }
+
+    protected StdWriter createStdInWriter() {
+        return null;
     }
 
     protected StdReader<FFmpegResult> createStdErrReader() {

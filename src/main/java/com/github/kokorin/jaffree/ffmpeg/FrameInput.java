@@ -89,12 +89,12 @@ public class FrameInput extends TcpInput<FrameInput> implements Input {
     }
 
     @Override
-    protected Writer writer() {
+    protected Supplier supplier() {
         if (!frameRateSet) {
             LOGGER.warn("It's strongly recommended to specify video frame rate, " +
                     "otherwise video encoding may be slower (by 20-50 times) and may produce corrupted video");
         }
-        return new NutFrameWriter(producer, alpha, frameOrderingBufferMillis);
+        return new NutFrameSupplier(producer, alpha, frameOrderingBufferMillis);
     }
 
     public static FrameInput withProducer(FrameProducer producer) {

@@ -17,12 +17,12 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-import java.io.Closeable;
+import com.github.kokorin.jaffree.util.SocketOutputStream;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
-import java.net.Socket;
 
 public abstract class TcpInput<T extends TcpInput<T>> extends BaseInput<T> implements Input {
     private final ServerSocket serverSocket;
@@ -42,15 +42,14 @@ public abstract class TcpInput<T extends TcpInput<T>> extends BaseInput<T> imple
 
     @Override
     public final Runnable helperThread() {
-        final Writer writer = writer();
+        final Supplier supplier = supplier();
 
         return new Runnable() {
             @Override
             public void run() {
-                try (Closeable toClose = serverSocket;
-                     Socket socket = serverSocket.accept();
-                     OutputStream output = socket.getOutputStream()) {
-                    writer.write(output);
+                try {
+                    OutputStream outputStream = new SocketOutputStream(serverSocket);
+                    supplier.supplyAndClose(outputStream);
                 } catch (IOException e) {
                     throw new RuntimeException("Failed to read from socket " + serverSocket, e);
                 }
@@ -58,9 +57,14 @@ public abstract class TcpInput<T extends TcpInput<T>> extends BaseInput<T> imple
         };
     }
 
-    protected abstract Writer writer();
+    protected abstract Supplier supplier();
 
-    public interface Writer {
-        void write(OutputStream out);
+    public interface Supplier {
+
+        /**
+         * Supplier <b>must</b> close passed {@link OutputStream} either in current or another thread.
+         * @param out OutputStream
+         */
+        void supplyAndClose(OutputStream out);
     }
 }

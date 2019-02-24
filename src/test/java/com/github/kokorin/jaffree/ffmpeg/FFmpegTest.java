@@ -6,17 +6,24 @@ import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffprobe.FFprobe;
 import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
 import com.github.kokorin.jaffree.ffprobe.Stream;
+import org.apache.commons.io.IOUtils;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
 
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class FFmpegTest {
     public static Path BIN;
@@ -446,6 +453,119 @@ public class FFmpegTest {
         Assert.assertTrue(loudnormReportFound.get());
     }
 
+    @Test
+    public void testPipeInput() throws IOException {
+        Path tempDir = Files.createTempDirectory("jaffree");
+        Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
+
+        FFmpegResult result;
+
+        try (InputStream inputStream = Files.newInputStream(VIDEO_MP4)) {
+            result = FFmpeg.atPath(BIN)
+                    .addInput(PipeInput.pumpFrom(inputStream))
+                    .addOutput(UrlOutput.toPath(outputPath))
+                    .execute();
+        }
+
+        Assert.assertNotNull(result);
+        Assert.assertNotNull(result.getVideoSize());
+
+        Assert.assertTrue(getDuration(outputPath) > 10.);
+    }
+
+
+    @Test
+    public void testPipeInputAsync() throws IOException {
+        Path tempDir = Files.createTempDirectory("jaffree");
+        Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
+
+        FFmpegResult result = FFmpeg.atPath(BIN)
+                .addInput(PipeInput.withSupplier(new TcpInput.Supplier() {
+                    @Override
+                    public void supplyAndClose(final OutputStream out) {
+                        Runnable runnable = new Runnable() {
+                            @Override
+                            public void run() {
+                                try (InputStream inputStream = Files.newInputStream(VIDEO_MP4);
+                                     Closeable toClose = out) {
+                                    IOUtils.copyLarge(inputStream, out);
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }
+                        };
+
+                        Thread thread = new Thread(runnable, "Supplier");
+                        thread.start();
+                    }
+                }))
+                .addOutput(UrlOutput.toPath(outputPath))
+                .execute();
+
+
+        Assert.assertNotNull(result);
+        Assert.assertNotNull(result.getVideoSize());
+
+        Assert.assertTrue(getDuration(outputPath) > 10.);
+    }
+
+    @Test
+    public void testPipeOutput() throws IOException {
+        Path tempDir = Files.createTempDirectory("jaffree");
+        Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
+
+        FFmpegResult result;
+        try (OutputStream outputStream = Files.newOutputStream(outputPath, StandardOpenOption.CREATE)) {
+            result = FFmpeg.atPath(BIN)
+                    .addInput(UrlInput.fromPath(VIDEO_MP4))
+                    .addOutput(PipeOutput.pumpTo(outputStream).setFormat("flv"))
+                    .setOverwriteOutput(true)
+                    .execute();
+        }
+
+        Assert.assertNotNull(result);
+        Assert.assertNotNull(result.getVideoSize());
+
+        Assert.assertTrue(getExactDuration(outputPath) > 10.);
+    }
+
+    @Test
+    public void testPipeOutputAsync() throws IOException {
+        Path tempDir = Files.createTempDirectory("jaffree");
+        final Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
+
+        FFmpegResult result = FFmpeg.atPath(BIN)
+                .addInput(UrlInput.fromPath(VIDEO_MP4))
+                .addOutput(PipeOutput.withConsumer(
+                        new TcpOutput.Consumer() {
+                            @Override
+                            public void consumeAndClose(final InputStream in) {
+                                Runnable runnable = new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        try (OutputStream outputStream = Files.newOutputStream(outputPath, StandardOpenOption.CREATE);
+                                             Closeable toClose = in) {
+                                            IOUtils.copyLarge(in, outputStream);
+                                        } catch (IOException e) {
+                                            throw new RuntimeException(e);
+                                        }
+                                    }
+                                };
+
+                                Thread thread = new Thread(runnable, "Consumer");
+                                thread.start();
+                            }
+                        }
+                ).setFormat("flv"))
+                .setOverwriteOutput(true)
+                .execute();
+
+        Assert.assertNotNull(result);
+        Assert.assertNotNull(result.getVideoSize());
+
+        Assert.assertTrue(getExactDuration(outputPath) > 10.);
+    }
+
     private static double getDuration(Path path) {
         FFprobeResult probe = FFprobe.atPath(BIN)
                 .setShowStreams(true)
@@ -459,5 +579,22 @@ public class FFmpegTest {
         }
 
         return result;
+    }
+
+    private static double getExactDuration(Path path) {
+        final AtomicReference<FFmpegProgress> progressRef = new AtomicReference<>();
+
+        FFmpegResult result = FFmpeg.atPath(BIN)
+                .addInput(UrlInput.fromPath(path))
+                .addOutput(new NullOutput())
+                .setProgressListener(new ProgressListener() {
+                    @Override
+                    public void onProgress(FFmpegProgress progress) {
+                        progressRef.set(progress);
+                    }
+                })
+                .execute();
+
+        return progressRef.get().getTime(TimeUnit.SECONDS);
     }
 }

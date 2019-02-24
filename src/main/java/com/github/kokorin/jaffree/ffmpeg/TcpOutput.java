@@ -1,11 +1,27 @@
 package com.github.kokorin.jaffree.ffmpeg;
+/*
+ *    Copyright  2019 Denis Kokorin
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ *
+ */
 
-import java.io.Closeable;
+import com.github.kokorin.jaffree.util.SocketInputStream;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
-import java.net.Socket;
 
 public abstract class TcpOutput<T extends TcpOutput<T>> extends BaseOutput<T> implements Output {
     private final ServerSocket serverSocket;
@@ -18,23 +34,25 @@ public abstract class TcpOutput<T extends TcpOutput<T>> extends BaseOutput<T> im
 
     @Override
     public final Runnable helperThread() {
-        final Reader reader = reader();
+        final Consumer consumer = consumer();
 
+        if (consumer == null) {
+            return null;
+        }
         return new Runnable() {
             @Override
             public void run() {
-                try (Closeable toClose = serverSocket;
-                     Socket socket = serverSocket.accept();
-                     InputStream input = socket.getInputStream()) {
-                    reader.read(input);
+                try {
+                    InputStream inputStream = new SocketInputStream(serverSocket);
+                    consumer.consumeAndClose(inputStream);
                 } catch (IOException e) {
-                    throw  new RuntimeException("Failed to read from socket " + serverSocket, e);
+                    throw new RuntimeException("Failed to read from socket " + serverSocket, e);
                 }
             }
         };
     }
 
-    protected abstract Reader reader();
+    protected abstract Consumer consumer();
 
     protected ServerSocket allocateSocket() {
         try {
@@ -44,7 +62,13 @@ public abstract class TcpOutput<T extends TcpOutput<T>> extends BaseOutput<T> im
         }
     }
 
-    public interface Reader {
-        void read(InputStream in);
+    public interface Consumer {
+
+        /**
+         * Consumer <b>must</b> close passed {@link InputStream} either in current or another thread.
+         *
+         * @param in InputStream
+         */
+        void consumeAndClose(InputStream in);
     }
 }

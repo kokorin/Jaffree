@@ -41,8 +41,8 @@ public class FrameOutput extends TcpOutput<FrameOutput> implements Output {
     }
 
     @Override
-    protected Reader reader() {
-        return new NutFrameReader(consumer, alpha);
+    protected Consumer consumer() {
+        return new NutFrameConsumer(consumer, alpha);
     }
 
     public static FrameOutput withConsumer(FrameConsumer consumer) {

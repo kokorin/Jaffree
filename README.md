@@ -8,7 +8,7 @@ It integrates with ffmpeg via `java.lang.Process`.
 <dependency>
     <groupId>com.github.kokorin.jaffree</groupId>
     <artifactId>jaffree</artifactId>
-    <version>0.7.5</version>
+    <version>0.8.0</version>
 </dependency>
 
 <!--
@@ -93,6 +93,30 @@ FFmpegResult result = FFmpeg.atPath(BIN)
             }
         })
         .execute();
+
+```
+
+## Supplying and consuming data with InputStream and OutputStream
+
+Under the hoop pipes are not OS pipes, but TCP Sockets. This allows much higher bandwidth.
+
+```java
+FFmpegResult result;
+
+try (InputStream inputStream = Files.newInputStream(VIDEO_MP4)) {
+    result = FFmpeg.atPath(BIN)
+            .addInput(PipeInput.pumpFrom(inputStream))
+            .addOutput(UrlOutput.toPath(outputPath))
+            .execute();
+}
+
+try (OutputStream outputStream = Files.newOutputStream(outputPath, StandardOpenOption.CREATE)) {
+    result = FFmpeg.atPath(BIN)
+            .addInput(UrlInput.fromPath(VIDEO_MP4))
+            .addOutput(PipeOutput.pumpTo(outputStream).setFormat("flv"))
+            .setOverwriteOutput(true)
+            .execute();
+}
 
 ```
 
