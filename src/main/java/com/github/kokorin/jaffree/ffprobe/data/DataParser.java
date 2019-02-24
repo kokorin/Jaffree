@@ -17,9 +17,15 @@
 
 package com.github.kokorin.jaffree.ffprobe.data;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.*;
 
 public class DataParser {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DataParser.class);
+
     // State
     private final Deque<State> stack;
 
@@ -51,7 +57,8 @@ public class DataParser {
             } else {
                 String[] keyValue = line.split("=", 2);
                 if (keyValue.length != 2) {
-                    throw new RuntimeException("key=value was expected but got: " + line);
+                    LOGGER.warn("failed to parse line, which will be ignored: {}", line);
+                    return;
                 }
                 String key = keyValue[0];
                 String value = keyValue[1];
