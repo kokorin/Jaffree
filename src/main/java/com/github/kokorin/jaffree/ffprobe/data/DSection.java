@@ -21,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -46,13 +45,19 @@ public class DSection extends DBase {
         return result;
     }
 
+    public void setTag(String name, DTag tag) {
+        tags.put(name, tag);
+    }
+
     public List<DSection> getSections(String name) {
         List<DSection> result = sections.get(name);
-        if (result != null) {
-            return result;
+
+        if (result == null) {
+            result = new ArrayList<>();
+            sections.put(name, result);
         }
 
-        return Collections.emptyList();
+        return result;
     }
 
     public DSection getSection(String name) {

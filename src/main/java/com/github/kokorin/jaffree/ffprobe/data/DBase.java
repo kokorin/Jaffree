@@ -44,6 +44,10 @@ public class DBase {
         return converter.convert(value);
     }
 
+    public void setValue(String key, String value) {
+        properties.put(key, value);
+    }
+
     public <T> List<T> getValues(KeyValueConverter<T> converter) {
         List<T> result = new ArrayList<>();
 
