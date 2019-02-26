@@ -19,6 +19,8 @@ package com.github.kokorin.jaffree.ffprobe;
 
 import com.github.kokorin.jaffree.LogLevel;
 import com.github.kokorin.jaffree.StreamType;
+import com.github.kokorin.jaffree.ffprobe.data.DefaultFormatParser;
+import com.github.kokorin.jaffree.ffprobe.data.FormatParser;
 import com.github.kokorin.jaffree.process.LoggingStdReader;
 import com.github.kokorin.jaffree.process.ProcessHandler;
 import com.github.kokorin.jaffree.process.StdReader;
@@ -59,6 +61,8 @@ public class FFprobe {
     private boolean showVersions;
     private boolean showPixelFormats;
     private String input;
+
+    private FormatParser parser = new DefaultFormatParser();
 
     private final Path executable;
 
@@ -345,6 +349,16 @@ public class FFprobe {
         return this;
     }
 
+
+    public FFprobe setFormatParser(FormatParser parser) {
+        if (parser == null) {
+            throw new IllegalArgumentException("Parser must be non null");
+        }
+
+        this.parser = parser;
+        return this;
+    }
+
     public FFprobeResult execute() {
         return new ProcessHandler<FFprobeResult>(executable, null)
                 .setStdOutReader(createStdOutReader())
@@ -422,6 +436,8 @@ public class FFprobe {
             result.add("-show_pixel_formats");
         }
 
+        result.addAll(Arrays.asList("-print_format", parser.getFormatName()));
+
         if (input != null) {
             result.addAll(Arrays.asList("-i", input));
         }
@@ -430,7 +446,7 @@ public class FFprobe {
     }
 
     protected StdReader<FFprobeResult> createStdOutReader() {
-        return new FFprobeResultReader();
+        return new FFprobeResultReader(parser);
     }
 
     protected StdReader<FFprobeResult> createStdErrReader() {

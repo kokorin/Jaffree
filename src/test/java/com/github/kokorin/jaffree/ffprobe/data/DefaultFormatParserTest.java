@@ -1,15 +1,12 @@
 package com.github.kokorin.jaffree.ffprobe.data;
 
-import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Iterator;
 import java.util.List;
 
-public class DataParserTest {
+public class DefaultFormatParserTest {
 
     @Test
     public void parse() throws Exception {
@@ -39,9 +36,8 @@ public class DataParserTest {
     }
 
     public static Data parseResource(String name) throws Exception {
-        try (InputStream input = DataParserTest.class.getResourceAsStream(name)){
-            Iterator<String> lineIterator = IOUtils.lineIterator(input, StandardCharsets.UTF_8);
-            return DataParser.parse(lineIterator);
+        try (InputStream input = DefaultFormatParserTest.class.getResourceAsStream(name)){
+            return new DefaultFormatParser().parse(input);
         }
     }
 }

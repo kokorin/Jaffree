@@ -20,11 +20,14 @@ package com.github.kokorin.jaffree.ffprobe.data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.*;
 
-public class DataParser {
+public class DefaultFormatParser implements FormatParser {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DataParser.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultFormatParser.class);
 
     // State
     private final Deque<State> stack;
@@ -32,10 +35,29 @@ public class DataParser {
     private String multilinePropertyKey = null;
     private StringBuilder multilinePropertyValue = null;
 
-    public DataParser() {
+    public DefaultFormatParser() {
         this.stack = new LinkedList<>();
         this.stack.addLast(new State("ROOT"));
     }
+
+    @Override
+    public String getFormatName() {
+        return "default";
+    }
+
+    @Override
+    public Data parse(InputStream inputStream) {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+        Iterator<String> lines = new LineIterator(reader);
+
+        while (lines.hasNext()) {
+            String line = lines.next();
+            parseLine(line);
+        }
+
+        return getResult();
+    }
+
 
     public void parseLine(String line) {
         if (line.startsWith("[/") && line.endsWith("]")) {
@@ -147,18 +169,11 @@ public class DataParser {
 
         State root = stack.peek();
 
+        stack.clear();
+        multilinePropertyKey = null;
+        multilinePropertyValue = null;
+
         return new Data(toSubSections(root.subSections));
-    }
-
-    public static Data parse(Iterator<String> lines) {
-        DataParser parser = new DataParser();
-
-        while (lines.hasNext()) {
-            String line = lines.next();
-            parser.parseLine(line);
-        }
-
-        return parser.getResult();
     }
 
     public static DSection toSection(State state) {
