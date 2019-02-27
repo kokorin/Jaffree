@@ -45,6 +45,10 @@ public class DSection extends DBase {
         return result;
     }
 
+    public boolean hasTag(String name) {
+        return tags.containsKey(name);
+    }
+
     public void setTag(String name, DTag tag) {
         tags.put(name, tag);
     }

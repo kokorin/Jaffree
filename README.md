@@ -8,7 +8,7 @@ It integrates with ffmpeg via `java.lang.Process`.
 <dependency>
     <groupId>com.github.kokorin.jaffree</groupId>
     <artifactId>jaffree</artifactId>
-    <version>0.8.0</version>
+    <version>0.8.1</version>
 </dependency>
 
 <!--
@@ -37,6 +37,8 @@ Path VIDEO_MP4 = Paths.get("/path/to/video.mp4");
 FFprobeResult result = FFprobe.atPath(BIN)
         .setInputPath(VIDEO_MP4)
         .setShowStreams(true)
+        // You can use custom ffprobe output parser if you want
+        //.setFormatParser(customParserImplementation)
         .execute();
 
 for (Stream stream : probe.getStreams()) {

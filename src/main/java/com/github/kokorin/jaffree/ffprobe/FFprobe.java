@@ -19,7 +19,7 @@ package com.github.kokorin.jaffree.ffprobe;
 
 import com.github.kokorin.jaffree.LogLevel;
 import com.github.kokorin.jaffree.StreamType;
-import com.github.kokorin.jaffree.ffprobe.data.DefaultFormatParser;
+import com.github.kokorin.jaffree.ffprobe.data.FlatFormatParser;
 import com.github.kokorin.jaffree.ffprobe.data.FormatParser;
 import com.github.kokorin.jaffree.process.LoggingStdReader;
 import com.github.kokorin.jaffree.process.ProcessHandler;
@@ -62,7 +62,7 @@ public class FFprobe {
     private boolean showPixelFormats;
     private String input;
 
-    private FormatParser parser = new DefaultFormatParser();
+    private FormatParser parser = new FlatFormatParser();
 
     private final Path executable;
 
