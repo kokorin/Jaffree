@@ -1,4 +1,3 @@
-package com.github.kokorin.jaffree.ffmpeg;
 /*
  *    Copyright  2019 Denis Kokorin
  *
@@ -15,6 +14,8 @@ package com.github.kokorin.jaffree.ffmpeg;
  *    limitations under the License.
  *
  */
+
+package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.util.SocketInputStream;
 

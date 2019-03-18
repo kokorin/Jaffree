@@ -1,4 +1,3 @@
-package com.github.kokorin.jaffree.ffmpeg;
 /*
  *    Copyright  2019 Apache commons-io participants, Denis Kokorin
  *
@@ -15,6 +14,8 @@ package com.github.kokorin.jaffree.ffmpeg;
  *    limitations under the License.
  *
  */
+
+package com.github.kokorin.jaffree.ffmpeg;
 
 import java.io.IOException;
 import java.io.InputStream;
