@@ -33,6 +33,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class FFprobe {
     private final LogLevel logLevel = LogLevel.ERROR;
@@ -43,7 +44,6 @@ public class FFprobe {
     private String showDataHash;
     private boolean showFormat;
     private String showFormatEntry;
-    //TODO extract type
     private String showEntries;
     private boolean showPackets;
     private boolean showFrames;
@@ -53,13 +53,16 @@ public class FFprobe {
     private boolean showChapters;
     private boolean countFrames;
     private boolean countPackets;
-    //TODO extract type
     private String readIntervals;
-
     private boolean showProgramVersion;
     private boolean showLibraryVersions;
     private boolean showVersions;
     private boolean showPixelFormats;
+
+    private Long probeSize;
+    private Long analyzeDuration;
+    private Long fpsProbeSize;
+
     private String input;
 
     private FormatParser parser = new FlatFormatParser();
@@ -339,6 +342,47 @@ public class FFprobe {
         return this;
     }
 
+    /**
+     * Set probing size (from 32 to I64_MAX) (default 5e+006)
+     * @param probeSize
+     * @return this
+     */
+    public FFprobe setProbeSize(Long probeSize) {
+        this.probeSize = probeSize;
+        return this;
+    }
+
+    /**
+     * Specify how many microseconds are analyzed to probe the input (from 0 to I64_MAX) (default 0)
+     * @param analyzeDurationMicros
+     * @return this
+     */
+    public FFprobe setAnalyzeDuration(Long analyzeDurationMicros) {
+        this.analyzeDuration = analyzeDurationMicros;
+        return this;
+    }
+
+    /**
+     * Specify how long to analyze to probe the input (from 0 to I64_MAX) (default 0)
+     * @param analyzeDuration duration
+     * @param timeUnit time unit
+     * @return this
+     */
+    public FFprobe setAnalyzeDuration(Number analyzeDuration, TimeUnit timeUnit) {
+        long micros = (long) (analyzeDuration.doubleValue() * timeUnit.toMicros(1));
+        return setAnalyzeDuration(micros);
+    }
+
+    /**
+     * Number of frames used to probe fps (from -1 to 2.14748e+009) (default -1)
+     * @param fpsProbeSize frames
+     * @return this
+     */
+    public FFprobe setFpsProbeSize(Long fpsProbeSize) {
+        this.fpsProbeSize = fpsProbeSize;
+        return this;
+    }
+
     public FFprobe setInput(Path path) {
         this.input = path.toString();
         return this;
@@ -434,6 +478,16 @@ public class FFprobe {
         }
         if (showPixelFormats) {
             result.add("-show_pixel_formats");
+        }
+
+        if (probeSize != null) {
+            result.addAll(Arrays.asList("-probesize", probeSize.toString()));
+        }
+        if (analyzeDuration != null) {
+            result.addAll(Arrays.asList("-analyzeduration", analyzeDuration.toString()));
+        }
+        if (fpsProbeSize != null) {
+            result.addAll(Arrays.asList("-fpsprobesize", fpsProbeSize.toString()));
         }
 
         result.addAll(Arrays.asList("-print_format", parser.getFormatName()));
