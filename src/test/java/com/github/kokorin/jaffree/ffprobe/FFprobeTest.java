@@ -390,4 +390,57 @@ public class FFprobeTest {
                 .setInput(Paths.get("nonexistent.mp4"))
                 .execute();
     }
+
+
+    @Test
+    public void testProbeSize() throws Exception {
+        FFprobeResult result = FFprobe.atPath(BIN)
+                .setShowStreams(true)
+                .setProbeSize(10_000_000L)
+                .setInput(VIDEO_MP4)
+                .execute();
+
+        Assert.assertNotNull(result);
+        Assert.assertNotNull(result.getStreams());
+        Assert.assertFalse(result.getStreams().isEmpty());
+    }
+
+    @Test
+    public void testAnalyzeDuration() throws Exception {
+        FFprobeResult result = FFprobe.atPath(BIN)
+                .setShowStreams(true)
+                .setAnalyzeDuration(10_000_000L)
+                .setInput(VIDEO_MP4)
+                .execute();
+
+        Assert.assertNotNull(result);
+        Assert.assertNotNull(result.getStreams());
+        Assert.assertFalse(result.getStreams().isEmpty());
+    }
+
+    @Test
+    public void testAnalyzeDuration2() throws Exception {
+        FFprobeResult result = FFprobe.atPath(BIN)
+                .setShowStreams(true)
+                .setAnalyzeDuration(10, TimeUnit.SECONDS)
+                .setInput(VIDEO_MP4)
+                .execute();
+
+        Assert.assertNotNull(result);
+        Assert.assertNotNull(result.getStreams());
+        Assert.assertFalse(result.getStreams().isEmpty());
+    }
+
+    @Test
+    public void testFpsProbeSize() throws Exception {
+        FFprobeResult result = FFprobe.atPath(BIN)
+                .setShowStreams(true)
+                .setFpsProbeSize(100L)
+                .setInput(VIDEO_MP4)
+                .execute();
+
+        Assert.assertNotNull(result);
+        Assert.assertNotNull(result.getStreams());
+        Assert.assertFalse(result.getStreams().isEmpty());
+    }
 }
