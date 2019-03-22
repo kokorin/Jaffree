@@ -11,10 +11,8 @@ import java.util.concurrent.TimeUnit;
 
 public class FFprobeTest {
     public static Path BIN;
-    public static Path SAMPLES = Paths.get("target/samples");
-    public static Path VIDEO_MP4 = SAMPLES.resolve("MPEG-4/video.mp4");
-    public static Path ERROR_MP4 = SAMPLES.resolve("non_existent.mp4");
-    public static Path TRANSPORT_VOB = SAMPLES.resolve("MPEG-VOB/transport-stream/capture.neimeng");
+    public static Path VIDEO_MP4 = Artifacts.getFFmpegSample("MPEG-4/video.mp4");
+    public static Path TRANSPORT_VOB = Artifacts.getFFmpegSample("MPEG-VOB/transport-stream/capture.neimeng");
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -28,7 +26,8 @@ public class FFprobeTest {
         Assert.assertNotNull("Nor command line property, neither system variable FFMPEG_BIN is set up", ffmpegHome);
         BIN = Paths.get(ffmpegHome);
 
-        Assert.assertTrue("Sample videos weren't found: " + SAMPLES.toAbsolutePath(), Files.exists(SAMPLES));
+        Assert.assertTrue("Sample videos weren't found: " + VIDEO_MP4.toAbsolutePath(), Files.exists(VIDEO_MP4));
+        Assert.assertTrue("Sample videos weren't found: " + TRANSPORT_VOB.toAbsolutePath(), Files.exists(TRANSPORT_VOB));
     }
 
     //private boolean showData;
