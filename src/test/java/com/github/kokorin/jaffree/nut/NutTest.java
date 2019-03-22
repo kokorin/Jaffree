@@ -1,5 +1,6 @@
 package com.github.kokorin.jaffree.nut;
 
+import com.github.kokorin.jaffree.Artifacts;
 import com.github.kokorin.jaffree.LogLevel;
 import com.github.kokorin.jaffree.ffmpeg.*;
 import com.github.kokorin.jaffree.ffprobe.FFprobe;
@@ -17,9 +18,8 @@ import java.nio.file.Paths;
 public class NutTest {
 
     public static Path BIN;
-    public static Path SAMPLES = Paths.get("target/samples");
-    public static Path VIDEO_MP4 = SAMPLES.resolve("MPEG-4/video.mp4");
-    public static Path VIDEO_NUT = SAMPLES.resolve("video.nut");
+    public static Path VIDEO_MP4 = Artifacts.getFFmpegSample("MPEG-4/video.mp4");
+    public static Path VIDEO_NUT = Artifacts.getSamplePath("video.nut");
 
     @BeforeClass
     public static void setUp() throws Exception {
@@ -30,7 +30,7 @@ public class NutTest {
         Assert.assertNotNull("Nor command line property, neither system variable FFMPEG_BIN is set up", ffmpegHome);
         BIN = Paths.get(ffmpegHome);
 
-        Assert.assertTrue("Sample videos weren't found: " + SAMPLES.toAbsolutePath(), Files.exists(SAMPLES));
+        Assert.assertTrue("Sample videos weren't found: " + VIDEO_MP4.toAbsolutePath(), Files.exists(VIDEO_MP4));
 
         if (!Files.exists(VIDEO_NUT)) {
             FFmpeg.atPath(BIN)

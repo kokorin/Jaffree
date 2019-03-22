@@ -158,35 +158,6 @@
                     <compilerArgs>-Xlint:unchecked</compilerArgs>
                 </configuration>
             </plugin>
-
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>vfs-maven-plugin</artifactId>
-                <version>1.0.1</version>
-                <executions>
-                    <execution>
-                        <id>http2file</id>
-                        <phase>test-compile</phase>
-                        <goals>
-                            <goal>copy</goal>
-                        </goals>
-                        <configuration>
-                            <fileset>
-                                <source>http://samples.ffmpeg.org/</source>
-                                <includes>
-                                    <include>MPEG-4/video.mp4</include>
-                                    <include>MPEG-4/video2.mp4</include>
-                                    <include>FLV/zelda.flv</include>
-                                    <include>MPEG-4/turn-on-off.mp4</include>
-                                    <include>MPEG-VOB/transport-stream/capture.neimeng</include>
-                                    <include>Matroska/atlantis405-test.mkv</include>
-                                </includes>
-                                <destination>file://${project.build.directory}/samples</destination>
-                            </fileset>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
             
             <plugin>
                 <groupId>org.sonatype.plugins</groupId>

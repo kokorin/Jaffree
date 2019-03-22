@@ -1,5 +1,6 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
+import com.github.kokorin.jaffree.Artifacts;
 import com.github.kokorin.jaffree.StreamSpecifier;
 import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffprobe.FFprobe;
@@ -17,13 +18,10 @@ import java.util.concurrent.TimeUnit;
 public class FFmpegFilterTest {
 
     public static Path BIN;
-    public static Path SAMPLES = Paths.get("target/samples");
-    public static Path VIDEO_MP4 = SAMPLES.resolve("MPEG-4/video.mp4");
-    public static Path VIDEO2_MP4 = SAMPLES.resolve("MPEG-4/video2.mp4");
-    public static Path SMALL_FLV = SAMPLES.resolve("FLV/zelda.flv");
-    public static Path SMALL_MP4 = SAMPLES.resolve("MPEG-4/turn-on-off.mp4");
-    public static Path ERROR_MP4 = SAMPLES.resolve("non_existent.mp4");
-    public static Path TRANSPORT_VOB = SAMPLES.resolve("MPEG-VOB/transport-stream/capture.neimeng");
+    public static Path VIDEO_MP4 = Artifacts.getFFmpegSample("MPEG-4/video.mp4");
+    public static Path VIDEO2_MP4 = Artifacts.getFFmpegSample("MPEG-4/video2.mp4");
+    public static Path SMALL_FLV = Artifacts.getFFmpegSample("FLV/zelda.flv");
+    public static Path SMALL_MP4 = Artifacts.getFFmpegSample("MPEG-4/turn-on-off.mp4");
 
     @BeforeClass
     public static void setUp() throws Exception {
@@ -34,7 +32,10 @@ public class FFmpegFilterTest {
         Assert.assertNotNull("Nor command line property, neither system variable FFMPEG_BIN is set up", ffmpegHome);
         BIN = Paths.get(ffmpegHome);
 
-        Assert.assertTrue("Sample videos weren't found: " + SAMPLES.toAbsolutePath(), Files.exists(SAMPLES));
+        Assert.assertTrue("Sample videos weren't found: " + VIDEO_MP4.toAbsolutePath(), Files.exists(VIDEO_MP4));
+        Assert.assertTrue("Sample videos weren't found: " + VIDEO2_MP4.toAbsolutePath(), Files.exists(VIDEO2_MP4));
+        Assert.assertTrue("Sample videos weren't found: " + SMALL_FLV.toAbsolutePath(), Files.exists(SMALL_FLV));
+        Assert.assertTrue("Sample videos weren't found: " + SMALL_MP4.toAbsolutePath(), Files.exists(SMALL_MP4));
     }
 
     /**
