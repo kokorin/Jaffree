@@ -39,7 +39,7 @@ public class PipeOutput extends TcpOutput<PipeOutput> implements Output {
     }
 
     public static PipeOutput pumpTo(OutputStream destination) {
-        return pumpTo(destination, 4 * 1024);
+        return pumpTo(destination, 1_000_000);
     }
 
     public static PipeOutput pumpTo(OutputStream destination, int bufferSize) {
