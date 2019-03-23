@@ -442,4 +442,21 @@ public class FFprobeTest {
         Assert.assertNotNull(result.getStreams());
         Assert.assertFalse(result.getStreams().isEmpty());
     }
+
+    @Test
+    public void testAdditionalArguments() {
+        FFprobeResult result = FFprobe.atPath(BIN)
+                // The same as .setShowStreams(true), just for testing
+                .addArgument("-show_streams")
+                .addArguments("-select_streams", "v")
+                .setInput(VIDEO_MP4)
+                .execute();
+
+
+        Assert.assertNotNull(result);
+        Assert.assertEquals(1, result.getStreams().size());
+
+        Stream stream = result.getStreams().get(0);
+        Assert.assertEquals(StreamType.VIDEO, stream.getCodecType());
+    }
 }
