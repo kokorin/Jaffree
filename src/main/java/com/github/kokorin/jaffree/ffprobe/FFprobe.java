@@ -63,6 +63,8 @@ public class FFprobe {
     private Long analyzeDuration;
     private Long fpsProbeSize;
 
+    private final List<String> additionalArguments = new ArrayList<>();
+
     private String input;
 
     private FormatParser parser = new FlatFormatParser();
@@ -73,6 +75,16 @@ public class FFprobe {
 
     public FFprobe(Path executable) {
         this.executable = executable;
+    }
+
+    public FFprobe addArgument(String argument) {
+        additionalArguments.add(argument);
+        return this;
+    }
+
+    public FFprobe addArguments(String key, String value) {
+        additionalArguments.addAll(Arrays.asList(key, value));
+        return this;
     }
 
     /**
@@ -491,6 +503,8 @@ public class FFprobe {
         }
 
         result.addAll(Arrays.asList("-print_format", parser.getFormatName()));
+
+        result.addAll(additionalArguments);
 
         if (input != null) {
             result.addAll(Arrays.asList("-i", input));
