@@ -84,6 +84,9 @@ public class NutFrameSupplier implements TcpInput.Supplier {
             }
             final StreamHeader streamHeader;
 
+            Objects.requireNonNull(stream.getType(), "Stream type must be specified");
+            Objects.requireNonNull(stream.getTimebase(), "Stream timebase must be specified");
+
             switch (stream.getType()) {
                 case VIDEO:
                     Objects.requireNonNull(stream.getWidth(), "Width must be specified");
@@ -110,6 +113,7 @@ public class NutFrameSupplier implements TcpInput.Supplier {
                     break;
                 case AUDIO:
                     Objects.requireNonNull(stream.getSampleRate(), "Samplerate must be specified");
+                    Objects.requireNonNull(stream.getChannels(), "Number of channels must be specified");
                     streamHeader = new StreamHeader(
                             stream.getId(),
                             StreamHeader.Type.AUDIO,
