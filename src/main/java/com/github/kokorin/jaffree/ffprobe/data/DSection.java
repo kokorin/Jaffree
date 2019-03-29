@@ -45,6 +45,17 @@ public class DSection extends DBase {
         return result;
     }
 
+    public DTag getTag(String ...names) {
+        for (String name : names) {
+            DTag result = tags.get(name);
+            if (result != null) {
+                return result;
+            }
+        }
+
+        return DTag.EMPTY;
+    }
+
     public boolean hasTag(String name) {
         return tags.containsKey(name);
     }
