@@ -40,8 +40,12 @@ public class Stream {
         return new StreamDisposition(section.getTag("DISPOSITION"));
     }
 
-    public List<Tag> getTag() {
-        return section.getTag("TAG").getValues(DTag.TAG_CONVERTER);
+    public List<Tag> getTagList() {
+        return section.getTag("TAG", "TAGS").getValues(DTag.TAG_CONVERTER);
+    }
+
+    public String getTag(String name) {
+        return section.getTag("TAG", "TAGS").getString(name);
     }
 
     public List<PacketSideData> getSideDataList() {
