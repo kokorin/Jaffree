@@ -1,12 +1,20 @@
 package com.github.kokorin.jaffree.ffprobe;
 
 import com.github.kokorin.jaffree.*;
+import com.github.kokorin.jaffree.ffprobe.data.DefaultFormatParser;
+import com.github.kokorin.jaffree.ffprobe.data.FlatFormatParser;
+import junit.framework.AssertionFailedError;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 public class FFprobeTest {
@@ -458,5 +466,97 @@ public class FFprobeTest {
 
         Stream stream = result.getStreams().get(0);
         Assert.assertEquals(StreamType.VIDEO, stream.getCodecType());
+    }
+
+    @Test
+    public void testDataFormat() throws Exception {
+        FFprobeResult defaultResult = FFprobe.atPath(BIN)
+                .setShowStreams(true)
+                .setInput(VIDEO_MP4)
+                .setFormatParser(new DefaultFormatParser())
+                .execute();
+
+
+        FFprobeResult flatResult = FFprobe.atPath(BIN)
+                .setShowStreams(true)
+                .setInput(VIDEO_MP4)
+                .setFormatParser(new FlatFormatParser())
+                .execute();
+
+        compareByGetters("", defaultResult, flatResult);
+
+    }
+
+    private static List<? extends Class> noDeepCompare = Arrays.asList(
+            int.class, short.class, long.class, float.class, double.class, boolean.class,
+            Integer.class, Short.class, Long.class, Float.class, Double.class, Boolean.class,
+            String.class
+    ) ;
+
+    private static void compareByGetters(String context, Object o1, Object o2) throws Exception {
+        if (Objects.equals(o1, o2)) {
+            return;
+        }
+
+        if (o1 == null || o2 == null) {
+            throw new AssertionFailedError(context + " null: " + o1 + " " + o2);
+        }
+
+        if (o1.getClass() != o2.getClass()) {
+            throw new AssertionFailedError(context + " class: " + o1 + " " + o2);
+        }
+
+        Class clazz = o1.getClass();
+
+        if (noDeepCompare.contains(clazz)) {
+            throw new AssertionFailedError(context + " not equal: " + o1 + " " + o2);
+        }
+
+        if (o1 instanceof List) {
+            List l1 = (List)o1;
+            List l2 = (List)o2;
+
+            if (l1.size() != l2.size()) {
+                throw new AssertionFailedError(context + " size: " + o1 + " " + o2);
+            }
+
+            for (int i =0; i < l1.size(); i++) {
+                String subContext = context + "[" + i + "]";
+                compareByGetters(subContext, l1.get(i), l2.get(i));
+            }
+
+            return;
+        }
+
+        if (clazz.getPackage().getName().startsWith("com.github.kokorin.jaffree")) {
+            for (Method method : clazz.getMethods()) {
+                if (!Modifier.isPublic(method.getModifiers())) {
+                    continue;
+                }
+
+                if (!method.getName().startsWith("get")) {
+                    continue;
+                }
+
+                if (method.getParameterTypes().length > 0) {
+                    continue;
+                }
+
+                String subContext = method.getName() + "()";
+                if (!context.isEmpty()) {
+                    subContext = context + "." + subContext;
+                }
+
+                Object s1 = method.invoke(o1);
+                Object s2 = method.invoke(o2);
+
+                compareByGetters(subContext, s1, s2);
+            }
+
+
+            return;
+        }
+
+        throw new AssertionFailedError("Don't know how to compare " + clazz);
     }
 }

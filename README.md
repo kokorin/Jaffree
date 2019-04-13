@@ -8,7 +8,7 @@ It integrates with ffmpeg via `java.lang.Process`.
 <dependency>
     <groupId>com.github.kokorin.jaffree</groupId>
     <artifactId>jaffree</artifactId>
-    <version>0.8.2</version>
+    <version>0.8.3</version>
 </dependency>
 
 <!--

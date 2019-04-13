@@ -24,6 +24,11 @@ import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 
+/**
+ * Provides possibility to consume ffmpeg output via TCP socket.
+ * <b>Note</b> there are limitation because of non-seekable nature of TCP output.
+ * @param <T>
+ */
 public abstract class TcpOutput<T extends TcpOutput<T>> extends BaseOutput<T> implements Output {
     private final ServerSocket serverSocket;
 
