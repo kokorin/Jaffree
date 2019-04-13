@@ -22,6 +22,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+/**
+ * Provides possibility to consume ffmpeg output via TCP socket.
+ * <p>
+ * <b>Note</b> there are limitations because of non-seekable nature of TCP output.
+ */
 public class PipeOutput extends TcpOutput<PipeOutput> implements Output {
     private final Consumer consumer;
 
