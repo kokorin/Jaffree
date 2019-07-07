@@ -27,9 +27,9 @@ public class SocketOutputStream extends OutputStream {
     private final Socket socket;
     private final OutputStream outputStream;
 
-    public SocketOutputStream(ServerSocket serverSocket) throws IOException {
+    public SocketOutputStream(ServerSocket serverSocket, Socket socket) throws IOException {
         this.serverSocket = serverSocket;
-        this.socket = serverSocket.accept();
+        this.socket = socket;
         this.outputStream = socket.getOutputStream();
     }
 

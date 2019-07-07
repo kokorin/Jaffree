@@ -17,6 +17,8 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
+import com.github.kokorin.jaffree.util.IOUtil;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,7 +45,7 @@ public class PipeInput extends TcpInput<PipeInput> implements Input {
     }
 
     public static PipeInput pumpFrom(InputStream source, int bufferSize) {
-        return new PipeInput(new PipeSupplier(source,bufferSize));
+        return new PipeInput(new PipeSupplier(source, bufferSize));
     }
 
     private static class PipeSupplier implements Supplier {

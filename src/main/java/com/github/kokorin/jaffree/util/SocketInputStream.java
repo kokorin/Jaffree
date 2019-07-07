@@ -28,8 +28,12 @@ public class SocketInputStream extends InputStream {
     private final InputStream inputStream;
 
     public SocketInputStream(ServerSocket serverSocket) throws IOException {
+        this(serverSocket, serverSocket.accept());
+    }
+
+    public SocketInputStream(ServerSocket serverSocket, Socket socket) throws IOException {
         this.serverSocket = serverSocket;
-        this.socket = serverSocket.accept();
+        this.socket = socket;
         this.inputStream = socket.getInputStream();
     }
 

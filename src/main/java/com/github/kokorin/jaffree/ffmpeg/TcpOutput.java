@@ -18,54 +18,41 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.util.SocketInputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetAddress;
 import java.net.ServerSocket;
+import java.net.Socket;
 
 /**
  * Provides possibility to consume ffmpeg output via TCP socket.
  * <b>Note</b> there are limitation because of non-seekable nature of TCP output.
  * @param <T>
  */
-public abstract class TcpOutput<T extends TcpOutput<T>> extends BaseOutput<T> implements Output {
-    private final ServerSocket serverSocket;
-
+public abstract class TcpOutput<T extends TcpOutput<T>> extends SocketOutput<T> implements Output {
+    private static final Logger LOGGER = LoggerFactory.getLogger(TcpOutput.class);
     public TcpOutput() {
-        this.serverSocket = allocateSocket();
-
-        setOutput("tcp://127.0.0.1:" + serverSocket.getLocalPort()/* + "?timeout=1000000"*/);
-    }
-
-    @Override
-    public final Runnable helperThread() {
-        final Consumer consumer = consumer();
-
-        if (consumer == null) {
-            return null;
-        }
-        return new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    InputStream inputStream = new SocketInputStream(serverSocket);
-                    consumer.consumeAndClose(inputStream);
-                } catch (IOException e) {
-                    throw new RuntimeException("Failed to read from socket " + serverSocket, e);
-                }
-            }
-        };
+        super("tcp");
     }
 
     protected abstract Consumer consumer();
 
-    protected ServerSocket allocateSocket() {
-        try {
-            return new ServerSocket(0, 1, InetAddress.getLoopbackAddress());
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to allocate socket", e);
-        }
+    @Override
+    Negotiator negotiator() {
+        final Consumer consumer = consumer();
+
+        return new Negotiator() {
+            @Override
+            public void negotiateAndClose(ServerSocket serverSocket) throws IOException {
+                LOGGER.debug("Accepting connection: {}", serverSocket);
+                Socket socket = serverSocket.accept();
+                InputStream inputStream = new SocketInputStream(serverSocket, socket);
+                LOGGER.debug("Passing output stream to consumer: {}", consumer);
+                consumer.consumeAndClose(inputStream);
+            }
+        };
     }
 
     public interface Consumer {
