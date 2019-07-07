@@ -18,51 +18,44 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.util.SocketOutputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.InetAddress;
 import java.net.ServerSocket;
+import java.net.Socket;
 
-public abstract class TcpInput<T extends TcpInput<T>> extends BaseInput<T> implements Input {
-    private final ServerSocket serverSocket;
+public abstract class TcpInput<T extends TcpInput<T>> extends SocketInput<T> implements Input {
+    private static final Logger LOGGER = LoggerFactory.getLogger(TcpInput.class);
 
     public TcpInput() {
-        this.serverSocket = allocateSocket();
-        setInput("tcp://127.0.0.1:" + serverSocket.getLocalPort());
-    }
-
-    protected ServerSocket allocateSocket() {
-        try {
-            return new ServerSocket(0, 1, InetAddress.getLoopbackAddress());
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to allocate socket", e);
-        }
-    }
-
-    @Override
-    public final Runnable helperThread() {
-        final Supplier supplier = supplier();
-
-        return new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    OutputStream outputStream = new SocketOutputStream(serverSocket);
-                    supplier.supplyAndClose(outputStream);
-                } catch (IOException e) {
-                    throw new RuntimeException("Failed to read from socket " + serverSocket, e);
-                }
-            }
-        };
+        super("tcp");
     }
 
     protected abstract Supplier supplier();
+
+    @Override
+    final Negotiator negotiator() {
+        final Supplier supplier = supplier();
+
+        return new Negotiator() {
+            @Override
+            public void negotiateAndClose(ServerSocket serverSocket) throws IOException {
+                LOGGER.debug("Accepting connection: {}", serverSocket);
+                Socket socket = serverSocket.accept();
+                OutputStream outputStream = new SocketOutputStream(serverSocket, socket);
+                LOGGER.debug("Passing output stream to supplier: {}", supplier);
+                supplier.supplyAndClose(outputStream);
+            }
+        };
+    }
 
     public interface Supplier {
 
         /**
          * Supplier <b>must</b> close passed {@link OutputStream} either in current or another thread.
+         *
          * @param out OutputStream
          */
         void supplyAndClose(OutputStream out);

@@ -1,9 +1,6 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
-import com.github.kokorin.jaffree.Artifacts;
-import com.github.kokorin.jaffree.SizeUnit;
-import com.github.kokorin.jaffree.StackTraceMatcher;
-import com.github.kokorin.jaffree.StreamType;
+import com.github.kokorin.jaffree.*;
 import com.github.kokorin.jaffree.ffprobe.FFprobe;
 import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
 import com.github.kokorin.jaffree.ffprobe.Stream;
@@ -16,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -567,6 +565,32 @@ public class FFmpegTest {
         Assert.assertNotNull(result.getVideoSize());
 
         Assert.assertTrue(getExactDuration(outputPath) > 10.);
+    }
+
+    @Test
+    public void testHttpInput() throws IOException {
+        Path tempDir = Files.createTempDirectory("jaffree");
+        Path outputPath = tempDir.resolve("frame.jpg");
+
+        try (SeekableByteChannel channel = Files.newByteChannel(VIDEO_MP4)) {
+            FFmpegResult result = FFmpeg.atPath(BIN)
+                    .addInput(
+                            new ChannelInput(VIDEO_MP4.getFileName().toString(), channel)
+                                    .setPosition(1, TimeUnit.MINUTES)
+                    )
+                    .addOutput(
+                            UrlOutput.toPath(outputPath)
+                                    .setFrameCount(StreamType.VIDEO, 1L)
+                    )
+                    .setLogLevel(LogLevel.DEBUG)
+                    .execute();
+
+            Assert.assertNotNull(result);
+            Assert.assertNotNull(result.getVideoSize());
+        }
+
+        Assert.assertTrue(Files.exists(outputPath));
+        Assert.assertTrue(Files.size(outputPath) > 1000);
     }
 
     private static double getDuration(Path path) {
