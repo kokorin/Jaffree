@@ -100,7 +100,7 @@ FFmpegResult result = FFmpeg.atPath(BIN)
 
 ## Supplying and consuming data with InputStream and OutputStream
 
-Under the hoop pipes are not OS pipes, but TCP Sockets. This allows much higher bandwidth.
+Under the hood pipes are not OS pipes, but TCP Sockets. This allows much higher bandwidth.
 
 ```java
 FFmpegResult result;
@@ -121,6 +121,16 @@ try (OutputStream outputStream = Files.newOutputStream(outputPath, StandardOpenO
 }
 
 ```
+
+## Forceful stop
+
+It's not possible to stop ffmpeg/ffprobw gracefully with Jaffree. But to stop them forcefully one can use 3 ways:
+
+1. Throw an exception in ProgressListener (ffmpeg only)
+2. Start ffmpeg with com.github.kokorin.jaffree.ffmpeg.FFmpeg#executeAsync which returns an instance of Future<FFmpegResult>.
+ Stop ffmpeg with future.cancel(true) (ffmpeg only)
+3. Start ffmpeg with com.github.kokorin.jaffree.ffmpeg.FFmpeg#execute (or ffprobe with FFprobe#execute) and interrupt thread running Jaffree
+
 
 ## Complex filtergraph (mosaic video)
 
