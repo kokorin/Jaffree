@@ -170,20 +170,11 @@ public class FFmpeg {
      * @return ffmpeg result future
      */
     public Future<FFmpegResult> executeAsync() {
-        Callable<FFmpegResult> callable = new Callable<FFmpegResult>() {
-            @Override
-            public FFmpegResult call() throws Exception {
-                return execute();
-            }
-        };
-
-        final FutureTask<FFmpegResult> result = new FutureTask<>(callable);
-
-        Thread runner = new Thread(result, "FFmpeg-async-runner");
-        runner.setDaemon(true);
-        runner.start();
-
-        return result;
+        return Executors.newSingleThreadExecutor((r) -> {
+            Thread runner = new Thread(r, contextName != null ? "FFmpeg-async-runner-" + contextName : "FFmpeg-async-runner");
+            runner.setDaemon(true);
+            return runner;
+        }).submit(this::execute);
     }
 
     protected StdWriter createStdInWriter() {
