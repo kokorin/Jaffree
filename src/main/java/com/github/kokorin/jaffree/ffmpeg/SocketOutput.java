@@ -25,9 +25,13 @@ public abstract class SocketOutput<T extends SocketOutput<T>> extends BaseOutput
     private final ServerSocket serverSocket;
 
     public SocketOutput(String protocol) {
+        this(protocol, "");
+    }
+
+    public SocketOutput(String protocol, String suffix) {
         this.serverSocket = allocateSocket();
 
-        setOutput(protocol + "://127.0.0.1:" + serverSocket.getLocalPort()/* + "?timeout=1000000"*/);
+        super.setOutput(protocol + "://127.0.0.1:" + serverSocket.getLocalPort() + suffix);
     }
 
     @Override
@@ -52,6 +56,11 @@ public abstract class SocketOutput<T extends SocketOutput<T>> extends BaseOutput
         } catch (IOException e) {
             throw new RuntimeException("Failed to allocate socket", e);
         }
+    }
+
+    @Override
+    public final T setOutput(String output) {
+        throw new RuntimeException("SocketOutput output can't be changed");
     }
 
     abstract Negotiator negotiator();

@@ -17,13 +17,14 @@ import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+
+import static java.nio.file.StandardOpenOption.*;
 
 public class FFmpegTest {
     public static Path BIN;
@@ -516,7 +517,7 @@ public class FFmpegTest {
         Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
 
         FFmpegResult result;
-        try (OutputStream outputStream = Files.newOutputStream(outputPath, StandardOpenOption.CREATE)) {
+        try (OutputStream outputStream = Files.newOutputStream(outputPath, CREATE)) {
             result = FFmpeg.atPath(BIN)
                     .addInput(UrlInput.fromPath(VIDEO_MP4))
                     .addOutput(PipeOutput.pumpTo(outputStream).setFormat("flv"))
@@ -544,7 +545,7 @@ public class FFmpegTest {
                                 Runnable runnable = new Runnable() {
                                     @Override
                                     public void run() {
-                                        try (OutputStream outputStream = Files.newOutputStream(outputPath, StandardOpenOption.CREATE);
+                                        try (OutputStream outputStream = Files.newOutputStream(outputPath, CREATE);
                                              Closeable toClose = in) {
                                             IOUtils.copyLarge(in, outputStream);
                                         } catch (IOException e) {
@@ -568,7 +569,31 @@ public class FFmpegTest {
     }
 
     @Test
-    public void testHttpInput() throws IOException {
+    public void testChannelInput() throws IOException {
+        Path tempDir = Files.createTempDirectory("jaffree");
+        Path outputPath = tempDir.resolve("channel.mp4");
+
+        try (SeekableByteChannel channel = Files.newByteChannel(VIDEO_MP4)) {
+            FFmpegResult result = FFmpeg.atPath(BIN)
+                    .addInput(
+                            new ChannelInput(VIDEO_MP4.getFileName().toString(), channel)
+                    )
+                    .addOutput(
+                            UrlOutput.toPath(outputPath)
+                    )
+                    .setLogLevel(LogLevel.INFO)
+                    .execute();
+
+            Assert.assertNotNull(result);
+            Assert.assertNotNull(result.getVideoSize());
+        }
+
+        Assert.assertTrue(Files.exists(outputPath));
+        Assert.assertTrue(Files.size(outputPath) > 1000);
+    }
+
+    @Test
+    public void testChannelInputSeek() throws IOException {
         Path tempDir = Files.createTempDirectory("jaffree");
         Path outputPath = tempDir.resolve("frame.jpg");
 
@@ -582,6 +607,32 @@ public class FFmpegTest {
                             UrlOutput.toPath(outputPath)
                                     .setFrameCount(StreamType.VIDEO, 1L)
                     )
+                    .setLogLevel(LogLevel.INFO)
+                    .execute();
+
+            Assert.assertNotNull(result);
+            Assert.assertNotNull(result.getVideoSize());
+        }
+
+        Assert.assertTrue(Files.exists(outputPath));
+        Assert.assertTrue(Files.size(outputPath) > 1000);
+    }
+
+    @Test
+    public void testChannelOutput() throws IOException {
+        Path tempDir = Files.createTempDirectory("jaffree");
+        Path outputPath = tempDir.resolve("channel.mp4");
+
+        try (SeekableByteChannel channel = Files.newByteChannel(outputPath, CREATE, WRITE, READ, TRUNCATE_EXISTING)) {
+            FFmpegResult result = FFmpeg.atPath(BIN)
+                    .addInput(
+                            UrlInput.fromPath(VIDEO_MP4)
+                    )
+                    .addOutput(
+                            new ChannelOutput("channel.mp4", channel)
+                            .addArguments("-movflags", "empty_moov")
+                    )
+                    .setOverwriteOutput(true)
                     .setLogLevel(LogLevel.DEBUG)
                     .execute();
 

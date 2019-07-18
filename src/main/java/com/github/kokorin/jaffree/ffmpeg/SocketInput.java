@@ -30,7 +30,7 @@ public abstract class SocketInput<T extends SocketInput<T>> extends BaseInput<T>
 
     public SocketInput(String protocol, String suffix) {
         this.serverSocket = allocateSocket();
-        setInput(protocol + "://127.0.0.1:" + serverSocket.getLocalPort() + suffix);
+        super.setInput(protocol + "://127.0.0.1:" + serverSocket.getLocalPort() + suffix);
     }
 
     protected ServerSocket allocateSocket() {
@@ -55,6 +55,11 @@ public abstract class SocketInput<T extends SocketInput<T>> extends BaseInput<T>
                 }
             }
         };
+    }
+
+    @Override
+    public T setInput(String input) {
+        throw new RuntimeException("SocketInput input can't be changed");
     }
 
     abstract Negotiator negotiator();

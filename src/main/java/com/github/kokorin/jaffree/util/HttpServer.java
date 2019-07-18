@@ -29,6 +29,17 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Simple HTTP server intended to work <b>only</b> with ffmpeg.
+ * <p>
+ * This class uses knowledge of how ffmpeg operates with HTTP input:
+ * <ol>
+ * <li>ffmpeg establishes HTTP connection with Range header "0-" and reads data.</li>
+ * <li>if ffmpeg needs to seek, it tries to establish one more HTTP connection with required Range,
+ * <b>without closing</b> previous connection</li>
+ * <li>if in previous stap new connection is established successfully, old one is closed</li>
+ * </ol>
+ */
 public class HttpServer implements Runnable {
     private final SeekableByteChannel channel;
     private final ServerSocket serverSocket;
@@ -57,7 +68,15 @@ public class HttpServer implements Runnable {
                         } catch (IOException e) {
                             LOGGER.warn("Failed to serve request", e);
                         } finally {
-                            count.decrementAndGet();
+                            int current = count.decrementAndGet();
+                            /*if (current == 0) {
+                                try {
+                                    LOGGER.debug("Closing {}", serverSocket);
+                                    serverSocket.close();
+                                } catch (IOException e) {
+                                    LOGGER.warn("Ignoring exception while closing socket", e);
+                                }
+                            }*/
                         }
                     }
                 }).start();
@@ -70,12 +89,14 @@ public class HttpServer implements Runnable {
     }
 
     protected void serve(Socket socket) throws IOException {
+        LOGGER.debug("Serving request");
+
         boolean keepAlive = true;
         try (Closeable toClose = socket) {
             BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             while (keepAlive) {
 
-                String verbAndVersion = reader.readLine();
+                String firstLine = reader.readLine();
                 Map<String, String> headers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
                 while (true) {
                     String line = reader.readLine();
@@ -86,13 +107,26 @@ public class HttpServer implements Runnable {
                     String[] nameAndValue = line.split(": ");
                     String name = nameAndValue[0];
                     String value = nameAndValue[1];
+                    LOGGER.debug("{}: {}", name, value);
+
                     headers.put(name, value);
                 }
 
-                if (verbAndVersion.startsWith("GET ")) {
+                String[] verbResourceVersion = firstLine.split(" ");
+                String verb = verbResourceVersion[0];
+                String resource = verbResourceVersion[1];
+                String version = verbResourceVersion[2];
+
+                if (!"HTTP/1.1".equalsIgnoreCase(version)) {
+                    throw new RuntimeException("Unsupported HTTP version: " + version);
+                }
+
+                if ("GET".equalsIgnoreCase(verb)) {
                     keepAlive = doGet(headers, socket.getOutputStream());
+                } else if ("POST".equalsIgnoreCase(verb)) {
+                    keepAlive = doPost(headers, socket.getInputStream());
                 } else {
-                    throw new RuntimeException("Unsupported verb: " + verbAndVersion);
+                    throw new RuntimeException("Unsupported verb: " + verbResourceVersion);
                 }
             }
         }
@@ -163,5 +197,35 @@ public class HttpServer implements Runnable {
         }
 
         return keepAlive;
+    }
+
+    protected boolean doPost(Map<String, String> headers, InputStream input) throws IOException {
+        String transferEncoding = headers.get("Transfer-Encoding");
+
+        if ("chunked".equalsIgnoreCase(transferEncoding)) {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+            while (true){
+                String line = reader.readLine();
+                LOGGER.debug("Chunk header: {}", line);
+                int length = Integer.parseInt(line, 16);
+
+                LOGGER.debug("Reading chunk of length: {}", length);
+
+                long read = IOUtil.copy(input, Channels.newOutputStream(channel), 1_000_000, length);
+                LOGGER.debug("Read {} bytes from chunk", read);
+
+                line = reader.readLine();
+                if (!line.isEmpty()) {
+                    LOGGER.warn("Expected epmty line between chunks, but was: {}", line);
+                }
+
+                if (length == 0) {
+                    LOGGER.debug("Last chunk");
+                    break;
+                }
+            }
+        }
+        //IOUtil.copy(input, Channels.newOutputStream(channel));
+        return false;
     }
 }

@@ -17,18 +17,18 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-import com.github.kokorin.jaffree.util.FtpServer;
+import com.github.kokorin.jaffree.util.HttpServer;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.channels.SeekableByteChannel;
 
-public class ChannelInput extends SocketInput<ChannelInput> implements Input {
+public class ChannelOutput extends SocketOutput<ChannelOutput> implements Output {
     private final SeekableByteChannel channel;
 
-    public ChannelInput(String fileName, SeekableByteChannel channel) {
-        super("ftp", "/" + fileName);
+    public ChannelOutput(String fileName, SeekableByteChannel channel) {
+        super("http", "/" + fileName);
         this.channel = channel;
     }
 
@@ -38,7 +38,7 @@ public class ChannelInput extends SocketInput<ChannelInput> implements Input {
             @Override
             public void negotiateAndClose(ServerSocket serverSocket) throws IOException {
                 try (Closeable toClose = serverSocket) {
-                    Runnable server = new FtpServer(channel, serverSocket);
+                    HttpServer server = new HttpServer(channel, serverSocket);
                     server.run();
                 }
             }
