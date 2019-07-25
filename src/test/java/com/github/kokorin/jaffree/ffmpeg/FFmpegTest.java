@@ -623,6 +623,8 @@ public class FFmpegTest {
         Path tempDir = Files.createTempDirectory("jaffree");
         Path outputPath = tempDir.resolve("channel.mp4");
 
+        System.out.println("Will write to " + outputPath);
+
         try (SeekableByteChannel channel = Files.newByteChannel(outputPath, CREATE, WRITE, READ, TRUNCATE_EXISTING)) {
             FFmpegResult result = FFmpeg.atPath(BIN)
                     .addInput(
@@ -630,10 +632,9 @@ public class FFmpegTest {
                     )
                     .addOutput(
                             new ChannelOutput("channel.mp4", channel)
-                            .addArguments("-movflags", "empty_moov")
                     )
                     .setOverwriteOutput(true)
-                    .setLogLevel(LogLevel.DEBUG)
+                    .setLogLevel(LogLevel.INFO)
                     .execute();
 
             Assert.assertNotNull(result);

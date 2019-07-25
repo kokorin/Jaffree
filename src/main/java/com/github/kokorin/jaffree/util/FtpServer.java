@@ -103,6 +103,9 @@ public class FtpServer implements Runnable {
                     case "RETR":
                         doRetr(controlOutput, dataServerSocket);
                         break;
+                    case "STOR":
+                        doStor(controlOutput, dataServerSocket, args);
+                        break;
                     case "ABOR":
                         doAbor(controlOutput);
                         break;
@@ -191,6 +194,26 @@ public class FtpServer implements Runnable {
         }
     }
 
+    private void doStor(OutputStream output, ServerSocket dataServerSocket, String path) throws IOException {
+        println(output, "150 File status okay; about to open data connection.");
+
+        long copied = 0;
+        try (Socket dataSocket = dataServerSocket.accept()) {
+            LOGGER.debug("Data connection established: {}", dataSocket);
+
+            copied = IOUtil.copy(dataSocket.getInputStream(), Channels.newOutputStream(channel), 1_000_000);
+        } catch (SocketException e) {
+            if (e.getMessage().startsWith("Connection reset by peer")) {
+                LOGGER.debug("Client closed socket: {}", e.getMessage());
+            } else {
+                throw e;
+            }
+
+        } finally {
+            LOGGER.debug("Copied {} bytes from data socket", copied);
+        }
+    }
+
     private void doAbor(OutputStream output) throws IOException {
         println(output, "226 Closing data connection.");
     }
@@ -200,6 +223,7 @@ public class FtpServer implements Runnable {
     }
 
     protected void println(OutputStream output, String line) throws IOException {
+        LOGGER.debug("Responding: {}", line);
         output.write(line.getBytes());
         output.write(NEW_LINE);
     }
