@@ -98,7 +98,41 @@ FFmpegResult result = FFmpeg.atPath(BIN)
 
 ```
 
+## Supplying and consuming data with SeekableByteChannel
+
+Under the hood Jaffree uses tiny FTP server to interact with SeekableByteChannel
+
+```java
+FFmpegResult result;
+
+try (SeekableByteChannel channel = Files.newByteChannel(VIDEO_MP4, READ)) {
+    FFmpegResult result = FFmpeg.atPath(BIN)
+            .addInput(
+                    ChannelInput.fromChannel(VIDEO_MP4.getFileName().toString(), channel)
+            )
+            .addOutput(
+                    UrlOutput.toPath(outputPath)
+            )
+            .execute();
+}
+
+try (SeekableByteChannel channel = Files.newByteChannel(outputPath, CREATE, WRITE, READ, TRUNCATE_EXISTING)) {
+    FFmpegResult result = FFmpeg.atPath(BIN)
+            .addInput(
+                    UrlInput.fromPath(VIDEO_MP4)
+            )
+            .addOutput(
+                    ChannelOutput.toChannel("channel.mp4", channel)
+            )
+            .execute();
+}
+
+```
+
 ## Supplying and consuming data with InputStream and OutputStream
+
+**Notice** It's recommended to use `ChannelInput` & `ChannelOutput` since ffmpeg leverage seeking in input and 
+requires seekable output for many formats.
 
 Under the hood pipes are not OS pipes, but TCP Sockets. This allows much higher bandwidth.
 

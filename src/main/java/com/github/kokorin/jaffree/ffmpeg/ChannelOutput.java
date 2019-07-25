@@ -46,4 +46,8 @@ public class ChannelOutput extends SocketOutput<ChannelOutput> implements Output
             }
         };
     }
+
+    public static ChannelOutput toChannel(String filename, SeekableByteChannel channel) {
+        return new ChannelOutput(filename, channel);
+    }
 }

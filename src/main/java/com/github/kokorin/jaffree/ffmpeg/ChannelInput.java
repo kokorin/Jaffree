@@ -44,4 +44,8 @@ public class ChannelInput extends SocketInput<ChannelInput> implements Input {
             }
         };
     }
+
+    public static ChannelInput fromChannel(String fileName, SeekableByteChannel channel) {
+        return new ChannelInput(fileName, channel);
+    }
 }
