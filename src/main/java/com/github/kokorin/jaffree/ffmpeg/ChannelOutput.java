@@ -17,7 +17,7 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-import com.github.kokorin.jaffree.util.HttpServer;
+import com.github.kokorin.jaffree.util.FtpServer;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -27,18 +27,20 @@ import java.nio.channels.SeekableByteChannel;
 public class ChannelOutput extends SocketOutput<ChannelOutput> implements Output {
     private final SeekableByteChannel channel;
 
-    public ChannelOutput(String fileName, SeekableByteChannel channel) {
-        super("http", "/" + fileName);
+    public ChannelOutput(String filename, SeekableByteChannel channel) {
+        super("ftp", "/" + filename);
         this.channel = channel;
+        this.addArguments("-ftp-write-seekable", "1");
     }
 
     @Override
     Negotiator negotiator() {
+
         return new Negotiator() {
             @Override
             public void negotiateAndClose(ServerSocket serverSocket) throws IOException {
                 try (Closeable toClose = serverSocket) {
-                    HttpServer server = new HttpServer(channel, serverSocket);
+                    Runnable server = new FtpServer(channel, serverSocket);
                     server.run();
                 }
             }

@@ -27,6 +27,7 @@ public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements
     private String output;
     private Long outputPosition;
     private Long sizeLimit;
+
     private final Map<String, Object> frames = new HashMap<>();
     private final Set<StreamType> disabledStreams = new LinkedHashSet<>();
     private final List<Mapping> maps = new ArrayList<>();
