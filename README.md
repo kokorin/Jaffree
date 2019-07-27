@@ -66,7 +66,7 @@ ProgressListener listener = new ProgressListener() {
 FFmpegResult result = FFmpeg.atPath(BIN)
         .addInput(UrlInput.fromPath(VIDEO_MP4))
         .addOutput(UrlOutput.toPath(outputPath)
-                .addCodec(null, "copy")
+                .copyAllCodecs()
         )
         // This is optional
         .setProgressListener(listener)
