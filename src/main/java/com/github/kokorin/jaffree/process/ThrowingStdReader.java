@@ -49,7 +49,7 @@ public class ThrowingStdReader<T> implements StdReader<T> {
         }
 
         if (!messageIsEmpty) {
-            throw new RuntimeException(message.toString());
+            throw new RuntimeException("Finished with error message: " + message.toString());
         }
 
         return null;

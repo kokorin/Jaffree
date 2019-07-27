@@ -84,11 +84,11 @@ public class FFmpegResultReader implements StdReader<FFmpegResult> {
                 errorMessage = line;
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Exception while reading ffmpeg output", e);
         }
 
         if (errorMessage != null) {
-            throw new RuntimeException(errorMessage);
+            throw new RuntimeException("ffmpeg exited with message: " + errorMessage);
         }
 
         return result;

@@ -20,6 +20,7 @@ package com.github.kokorin.jaffree.process;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -65,12 +66,13 @@ public class Executor {
                 try {
                     runnable.run();
                 } catch (Exception e) {
-                    LOGGER.debug("Exception: {}, collecting for later report", name, e);
+                    LOGGER.debug("Exception in thread {}, collecting for later report", name);
                     exceptions.add(e);
 
                     // Starter thread MUST NOT be interrupted multiple times,
                     // otherwise main thread may be marked for interruption after exiting ProcessHandler logic.
                     if (!stopped && starterInterrupted.compareAndSet(false, true)) {
+                        LOGGER.warn("Interrupting starter thread ({}) because of exception: {}", starter.getName(), e.getMessage());
                         starter.interrupt();
                     }
                 } finally {
@@ -111,6 +113,17 @@ public class Executor {
 
     public boolean isRunning() {
         return runningCounter.get() > 0;
+    }
+
+    public List<String> getRunningThreadNames() {
+        List<String> result = new ArrayList<>();
+        for (Thread thread : threads) {
+            if (thread.isAlive() && !thread.isInterrupted()) {
+                result.add(thread.getName());
+            }
+        }
+
+        return result;
     }
 
     private String getThreadName(String name) {
