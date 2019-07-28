@@ -160,11 +160,44 @@ try (OutputStream outputStream = Files.newOutputStream(outputPath, StandardOpenO
 
 It's not possible to stop ffmpeg/ffprobw gracefully with Jaffree. But to stop them forcefully one can use 3 ways:
 
-1. Throw an exception in ProgressListener (ffmpeg only)
-2. Start ffmpeg with com.github.kokorin.jaffree.ffmpeg.FFmpeg#executeAsync which returns an instance of Future<FFmpegResult>.
- Stop ffmpeg with future.cancel(true) (ffmpeg only)
-3. Start ffmpeg with com.github.kokorin.jaffree.ffmpeg.FFmpeg#execute (or ffprobe with FFprobe#execute) and interrupt thread running Jaffree
+* Throw an exception in ProgressListener (ffmpeg only)
+```java
+final AtomicBoolean stopped = new AtomicBoolean();
+ffmpeg.setProgressListener(
+        new ProgressListener() {
+            @Override
+            public void onProgress(FFmpegProgress progress) {
+                if (stopped.get()) {
+                    throw new RuntimeException("Stooped with exception!");
+                }
+            }
+        }
+);
+```
 
+* Start ffmpeg with FFmpeg#executeAsync and cancel received Future (ffmpeg only)
+```java
+Future<FFmpegResult> future = ffmpeg.executeAsync();
+
+Thread.sleep(5_000);
+// We must pass mayInterruptIfRunning true, otherwise process won't be interrupted
+future.cancel(true);
+```
+
+* Start ffmpeg with FFmpeg#execute (or ffprobe with FFprobe#execute) and interrupt thread
+```java
+Thread thread = new Thread() {
+    @Override
+    public void run() {
+        ffmpeg.execute();
+    }
+};
+thread.start();
+
+Thread.sleep(5_000);
+thread.interrupt();
+```
+See whole example [here](/src/test/java/examples/ffmpeg/Stop.java).
 
 ## Complex filtergraph (mosaic video)
 
