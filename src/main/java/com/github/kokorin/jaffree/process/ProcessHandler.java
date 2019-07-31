@@ -110,10 +110,11 @@ public class ProcessHandler<T> {
 
             LOGGER.info("Waiting for process to finish");
             status = process.waitFor();
+            LOGGER.info("Process has finished with status: {}", status);
 
             waitForExecutorToStop(executor, 10_000);
         } catch (InterruptedException e) {
-            LOGGER.warn("Waiting for process has been interrupted", e);
+            LOGGER.warn("Process has been interrupted");
             interrupted = e;
         } finally {
             if (executor != null) {
@@ -277,7 +278,7 @@ public class ProcessHandler<T> {
                 break;
             }
 
-            LOGGER.trace("Executor hasn't yet stopped, will sleep");
+            LOGGER.trace("Executor hasn't yet stopped, still running threads: {}", executor.getRunningThreadNames());
             Thread.sleep(100);
         } while (executor.isRunning());
     }
