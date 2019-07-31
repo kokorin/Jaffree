@@ -395,7 +395,7 @@ public class FFmpegTest {
 
         FFmpegResult result = FFmpeg.atPath(BIN)
                 .addInput(UrlInput.fromPath(ERROR_MP4))
-                //.addOutput()
+                .addOutput(new NullOutput())
                 .execute();
     }
 
