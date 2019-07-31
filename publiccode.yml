@@ -5,9 +5,9 @@
 publiccodeYmlVersion: '0.2'
 name: Jaffree
 url: 'https://github.com/kokorin/Jaffree/'
-releaseDate: '2019-07-25'
+releaseDate: '2019-07-31'
 developmentStatus: stable
-softwareVersion: 0.9.0
+softwareVersion: 0.9.1
 platforms:
   - web
   - windows
