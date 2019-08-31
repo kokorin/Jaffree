@@ -210,16 +210,25 @@ public class FFprobeTest {
 
         Assert.assertNotNull(result);
         Assert.assertEquals(6, result.getStreams().size());
+        boolean bitsPerSampleIsPresent = false;
         for (Stream stream : result.getStreams()) {
-            if (stream.getCodecType() != StreamType.VIDEO) {
-                continue;
+            if (stream.getCodecType() == StreamType.VIDEO) {
+
+                Assert.assertNotNull(stream.getSampleAspectRatio());
+                Assert.assertNotNull(stream.getDisplayAspectRatio());
+                Assert.assertNotNull(stream.getStartTime(TimeUnit.NANOSECONDS));
+                Assert.assertEquals(Long.valueOf(167L), stream.getDuration(TimeUnit.SECONDS));
+                Assert.assertNotNull(stream.getBitRate());
+                Assert.assertNotNull(stream.getMaxBitRate());
             }
 
-            Assert.assertNotNull(stream.getSampleAspectRatio());
-            Assert.assertNotNull(stream.getDisplayAspectRatio());
-            Assert.assertNotNull(stream.getStartTime(TimeUnit.NANOSECONDS));
-            Assert.assertEquals(Long.valueOf(167L), stream.getDuration(TimeUnit.SECONDS));
+            // TODO find video sample for which ffprobe reports bits_per_raw_sample
+            // Assert.assertNotNull(stream.getBitsPerRawSample());
+
+            bitsPerSampleIsPresent |= stream.getBitsPerSample() != null;
         }
+
+        Assert.assertTrue("bits per sample hasen't been found in any stream", bitsPerSampleIsPresent);
     }
 
     @Test

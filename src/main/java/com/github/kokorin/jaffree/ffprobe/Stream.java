@@ -181,8 +181,8 @@ public class Stream {
         return section.getString("channel_layout");
     }
 
-    public Integer getBitsPerSample() {
-        return section.getInteger("bits_per_sample");
+    public Long getBitsPerSample() {
+        return section.getLong("bits_per_sample");
     }
 
     public String getId() {
@@ -225,16 +225,16 @@ public class Stream {
         return fromSeconds(getDuration(), timeUnit);
     }
 
-    public Integer getBitRate() {
-        return section.getInteger("bit_rate");
+    public Long getBitRate() {
+        return section.getLong("bit_rate");
     }
 
-    public Integer getMaxBitRate() {
-        return section.getInteger("max_bit_rate");
+    public Long getMaxBitRate() {
+        return section.getLong("max_bit_rate");
     }
 
-    public Integer getBitsPerRawSample() {
-        return section.getInteger("bits_per_raw_sample");
+    public Long getBitsPerRawSample() {
+        return section.getLong("bits_per_raw_sample");
     }
 
     public Integer getNbFrames() {
