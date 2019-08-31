@@ -63,7 +63,7 @@ public class FlatFormatParser implements FormatParser {
                     continue;
                 }
 
-                LOGGER.debug("Parsed: {}", key);
+                LOGGER.debug("Parsed: {} = {}", key, value);
             } catch (Exception e) {
                 LOGGER.warn("Exception during parsing, ignored: {}", e.getMessage());
             }
