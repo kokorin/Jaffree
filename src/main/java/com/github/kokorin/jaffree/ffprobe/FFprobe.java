@@ -28,10 +28,13 @@ import com.github.kokorin.jaffree.process.ThrowingStdReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.InputStream;
+import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -65,7 +68,7 @@ public class FFprobe {
 
     private final List<String> additionalArguments = new ArrayList<>();
 
-    private String input;
+    private Input input;
 
     private FormatParser parser = new FlatFormatParser();
 
@@ -396,12 +399,26 @@ public class FFprobe {
     }
 
     public FFprobe setInput(Path path) {
-        this.input = path.toString();
-        return this;
+        return setInput(path.toString());
     }
 
     public FFprobe setInput(String input) {
-        this.input = input;
+        this.input = new UrlInput(input);
+        return this;
+    }
+
+    public FFprobe setInput(InputStream input) {
+        this.input = new PipeInput(input, 1024 * 1024);
+        return this;
+    }
+
+    public FFprobe setInput(InputStream input, int bufferSize) {
+        this.input = new PipeInput(input, bufferSize);
+        return this;
+    }
+
+    public FFprobe setInput(SeekableByteChannel channel) {
+        this.input = new ChannelInput(channel);
         return this;
     }
 
@@ -416,9 +433,17 @@ public class FFprobe {
     }
 
     public FFprobeResult execute() {
+        List<Runnable> helpers = Collections.emptyList();
+
+        Runnable helper = input.helperThread();
+        if (helper != null) {
+            helpers = Collections.singletonList(helper);
+        }
+
         return new ProcessHandler<FFprobeResult>(executable, null)
                 .setStdOutReader(createStdOutReader())
                 .setStdErrReader(createStdErrReader())
+                .setRunnables(helpers)
                 .execute(buildArguments());
     }
 
@@ -507,7 +532,7 @@ public class FFprobe {
         result.addAll(additionalArguments);
 
         if (input != null) {
-            result.addAll(Arrays.asList("-i", input));
+            result.addAll(Arrays.asList("-i", input.getUrl()));
         }
 
         return result;

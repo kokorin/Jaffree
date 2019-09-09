@@ -7,11 +7,14 @@ import junit.framework.AssertionFailedError;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
 
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -228,7 +231,7 @@ public class FFprobeTest {
             bitsPerSampleIsPresent |= stream.getBitsPerSample() != null;
         }
 
-        Assert.assertTrue("bits per sample hasen't been found in any stream", bitsPerSampleIsPresent);
+        Assert.assertTrue("bits per sample hasn't been found in any stream", bitsPerSampleIsPresent);
     }
 
     @Test
@@ -493,7 +496,40 @@ public class FFprobeTest {
                 .execute();
 
         compareByGetters("", defaultResult, flatResult);
+    }
 
+    @Test
+    public void testInputStream() throws Exception {
+        FFprobeResult result;
+
+        try (InputStream inputStream = Files.newInputStream(VIDEO_MP4, StandardOpenOption.READ)) {
+            result = FFprobe.atPath(BIN)
+                    .setShowStreams(true)
+                    .setInput(inputStream)
+                    .setFormatParser(new DefaultFormatParser())
+                    .execute();
+        }
+
+        Assert.assertNotNull(result);
+        Assert.assertNotNull(result.getStreams());
+        Assert.assertFalse(result.getStreams().isEmpty());
+    }
+
+    @Test
+    public void testInputChannel() throws Exception {
+        FFprobeResult result;
+
+        try (SeekableByteChannel channel = Files.newByteChannel(VIDEO_MP4, StandardOpenOption.READ)) {
+            result = FFprobe.atPath(BIN)
+                    .setShowStreams(true)
+                    .setInput(channel)
+                    .setFormatParser(new DefaultFormatParser())
+                    .execute();
+        }
+
+        Assert.assertNotNull(result);
+        Assert.assertNotNull(result.getStreams());
+        Assert.assertFalse(result.getStreams().isEmpty());
     }
 
     private static List<? extends Class> noDeepCompare = Arrays.asList(
