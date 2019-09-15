@@ -104,8 +104,6 @@ public class ProcessHandler<T> {
         Exception interrupted = null;
 
         try {
-            waitForProcessOutput(process, 10_000);
-
             executor = startExecution(process, resultRef);
 
             LOGGER.info("Waiting for process to finish");
@@ -228,43 +226,6 @@ public class ProcessHandler<T> {
             }
         } catch (Exception e) {
             LOGGER.warn("Ignoring exception: " + e.getMessage());
-        }
-    }
-
-
-    private static void waitForProcessOutput(Process process, long timeoutMillis) throws InterruptedException {
-        LOGGER.debug("Waiting for Process output");
-
-        long waitStarted = System.currentTimeMillis();
-
-        try {
-            do {
-                if (System.currentTimeMillis() - waitStarted > timeoutMillis) {
-                    LOGGER.warn("Process has no output in {} millis, won't wait longer", timeoutMillis);
-                    break;
-                }
-
-                LOGGER.trace("Process has no output yet, will sleep");
-                Thread.sleep(100);
-            } while (process.getErrorStream().available() == 0
-                    && process.getInputStream().available() == 0);
-        } catch (IOException ignored) {
-
-        }
-    }
-
-    private static void waitForExecutorToStart(Executor executor, long timeoutMillis) throws InterruptedException {
-        LOGGER.debug("Waiting for Executor to start");
-
-        long waitStarted = System.currentTimeMillis();
-        while (!executor.isRunning()) {
-            if (System.currentTimeMillis() - waitStarted > timeoutMillis) {
-                LOGGER.warn("Executor hasn't started in {} millis, won't wait longer", timeoutMillis);
-                break;
-            }
-
-            LOGGER.trace("Executor hasn't yet started, will sleep");
-            Thread.sleep(100);
         }
     }
 

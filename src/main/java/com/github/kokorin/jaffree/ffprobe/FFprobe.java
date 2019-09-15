@@ -34,7 +34,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -433,11 +432,12 @@ public class FFprobe {
     }
 
     public FFprobeResult execute() {
-        List<Runnable> helpers = Collections.emptyList();
-
-        Runnable helper = input.helperThread();
-        if (helper != null) {
-            helpers = Collections.singletonList(helper);
+        List<Runnable> helpers = new ArrayList<>();
+        if (input != null) {
+            Runnable helper = input.helperThread();
+            if (helper != null) {
+                helpers.add(helper);
+            }
         }
 
         return new ProcessHandler<FFprobeResult>(executable, null)
