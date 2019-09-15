@@ -18,11 +18,14 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.util.IOUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.SocketException;
 
 public class PipeInput extends TcpInput<PipeInput> implements Input {
     private final Supplier supplier;
@@ -52,6 +55,9 @@ public class PipeInput extends TcpInput<PipeInput> implements Input {
         private final InputStream source;
         private final int bufferSize;
 
+        private static final Logger LOGGER = LoggerFactory.getLogger(PipeSupplier.class);
+
+
         public PipeSupplier(InputStream source, int bufferSize) {
             this.source = source;
             this.bufferSize = bufferSize;
@@ -61,6 +67,9 @@ public class PipeInput extends TcpInput<PipeInput> implements Input {
         public void supplyAndClose(OutputStream destination) {
             try (Closeable toClose = destination) {
                 IOUtil.copy(source, destination, bufferSize);
+            } catch (SocketException e) {
+                // client has no way to notify server that no more data is needed
+                LOGGER.debug("Ignoring exception: " + e.getMessage());
             } catch (IOException e) {
                 throw new RuntimeException("Failed to copy data", e);
             }

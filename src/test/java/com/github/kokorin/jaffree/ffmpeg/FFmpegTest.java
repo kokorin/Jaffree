@@ -442,6 +442,30 @@ public class FFmpegTest {
         Assert.assertTrue(getDuration(outputPath) > 10.);
     }
 
+    @Test
+    public void testPipeInputPartialRead() throws IOException {
+        Path tempDir = Files.createTempDirectory("jaffree");
+        Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
+
+        FFmpegResult result;
+
+        try (InputStream inputStream = Files.newInputStream(VIDEO_MP4)) {
+            result = FFmpeg.atPath(BIN)
+                    .addInput(
+                            PipeInput
+                                    .pumpFrom(inputStream)
+                                    .setDuration(15, TimeUnit.SECONDS)
+                    )
+                    .addOutput(UrlOutput.toPath(outputPath))
+                    .execute();
+        }
+
+        Assert.assertNotNull(result);
+        Assert.assertNotNull(result.getVideoSize());
+
+        Assert.assertTrue(getDuration(outputPath) > 10.);
+    }
+
 
     @Test
     public void testPipeInputAsync() throws IOException {
@@ -544,6 +568,31 @@ public class FFmpegTest {
             FFmpegResult result = FFmpeg.atPath(BIN)
                     .addInput(
                             new ChannelInput(VIDEO_MP4.getFileName().toString(), channel)
+                    )
+                    .addOutput(
+                            UrlOutput.toPath(outputPath)
+                    )
+                    .setLogLevel(LogLevel.INFO)
+                    .execute();
+
+            Assert.assertNotNull(result);
+            Assert.assertNotNull(result.getVideoSize());
+        }
+
+        Assert.assertTrue(Files.exists(outputPath));
+        Assert.assertTrue(Files.size(outputPath) > 1000);
+    }
+
+    @Test
+    public void testChannelInputPartialRead() throws IOException {
+        Path tempDir = Files.createTempDirectory("jaffree");
+        Path outputPath = tempDir.resolve("channel.mp4");
+
+        try (SeekableByteChannel channel = Files.newByteChannel(VIDEO_MP4, READ)) {
+            FFmpegResult result = FFmpeg.atPath(BIN)
+                    .addInput(
+                            new ChannelInput(VIDEO_MP4.getFileName().toString(), channel)
+                                    .setDuration(10, TimeUnit.SECONDS)
                     )
                     .addOutput(
                             UrlOutput.toPath(outputPath)
