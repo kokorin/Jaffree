@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 
 public class PipeInput extends SocketInput {
     private final InputStream inputStream;
@@ -51,6 +52,9 @@ public class PipeInput extends SocketInput {
                      OutputStream outputStream = new SocketOutputStream(serverSocket, socket)) {
                     LOGGER.debug("Connection accepted, copying");
                     IOUtil.copy(inputStream, outputStream, bufferSize);
+                } catch (SocketException e) {
+                    // client has no way to notify server that no more data is needed
+                    LOGGER.debug("Ignoring exception: " + e.getMessage());
                 }
             }
         };
