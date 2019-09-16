@@ -8,7 +8,7 @@ It integrates with ffmpeg via `java.lang.Process`.
 <dependency>
     <groupId>com.github.kokorin.jaffree</groupId>
     <artifactId>jaffree</artifactId>
-    <version>0.9.1</version>
+    <version>0.9.2</version>
 </dependency>
 
 <!--
@@ -103,7 +103,15 @@ FFmpegResult result = FFmpeg.atPath(BIN)
 Under the hood Jaffree uses tiny FTP server to interact with SeekableByteChannel
 
 ```java
+FFprobeResult probe;
 FFmpegResult result;
+
+try (SeekableByteChannel channel = Files.newByteChannel(VIDEO_MP4, READ)) {
+    probe = FFprobe.atPath(BIN)
+            .setShowStreams(true)
+            .setInput(channel)
+            .execute();
+}
 
 try (SeekableByteChannel channel = Files.newByteChannel(VIDEO_MP4, READ)) {
     FFmpegResult result = FFmpeg.atPath(BIN)
@@ -137,7 +145,16 @@ requires seekable output for many formats.
 Under the hood pipes are not OS pipes, but TCP Sockets. This allows much higher bandwidth.
 
 ```java
+FFprobeResult probe;
 FFmpegResult result;
+
+try (InputStream inputStream = Files.newInputStream(VIDEO_MP4)) {
+    probe = FFprobe.atPath(BIN)
+            .setShowStreams(true)
+            .setInput(inputStream)
+            .execute();
+}
+
 
 try (InputStream inputStream = Files.newInputStream(VIDEO_MP4)) {
     result = FFmpeg.atPath(BIN)

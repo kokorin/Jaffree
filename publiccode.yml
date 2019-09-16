@@ -7,7 +7,7 @@ name: Jaffree
 url: 'https://github.com/kokorin/Jaffree/'
 releaseDate: '2019-07-31'
 developmentStatus: stable
-softwareVersion: 0.9.1
+softwareVersion: 0.9.2
 platforms:
   - web
   - windows
