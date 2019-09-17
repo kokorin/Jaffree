@@ -9,13 +9,8 @@
         </layout>
     </appender>
 
-    <!--<logger name="org.ebml" additivity="false">
-        <level value="trace" />
-        <appender-ref ref="console" />
-    </logger>-->
-
     <logger name="com.github" additivity="false">
-        <level value="trace" />
+        <level value="info" />
         <appender-ref ref="console" />
     </logger>
 
