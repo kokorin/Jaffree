@@ -18,6 +18,8 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.util.IOUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -32,12 +34,15 @@ import java.io.OutputStream;
 public class PipeOutput extends TcpOutput<PipeOutput> implements Output {
     private final Consumer consumer;
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(PipeOutput.class);
+
     public PipeOutput(Consumer consumer) {
         this.consumer = consumer;
     }
 
     @Override
     protected Consumer consumer() {
+        LOGGER.warn("It's recommended to use ChannelOutput since ffmpeg requires seekable output for many formats");
         return consumer;
     }
 
