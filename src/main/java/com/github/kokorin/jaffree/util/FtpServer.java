@@ -109,6 +109,11 @@ public class FtpServer implements Runnable {
                     case "ABOR":
                         doAbor(controlOutput);
                         break;
+                    case "FEAT":
+                    case "EPSV":
+                        // intentional fall through
+                        doNotImplemented(controlOutput);
+                        break;
                     case "QUIT":
                         quit = true;
                         break;
