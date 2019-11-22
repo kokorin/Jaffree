@@ -1,6 +1,6 @@
 # Jaffree
 
-Jaffree stands for [Ja]va [ff]mpeg and [ff]probe [free] command line wrapper.
+Jaffree stands for [Ja]va [ff]mpeg and [ff]probe [free] command line wrapper. Jaffree supports programmatic video production and consumption (with transparency)
 
 It integrates with ffmpeg via `java.lang.Process`.
 
