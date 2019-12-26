@@ -4,6 +4,7 @@ import com.github.kokorin.jaffree.*;
 import com.github.kokorin.jaffree.ffprobe.FFprobe;
 import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
 import com.github.kokorin.jaffree.ffprobe.Stream;
+import com.github.kokorin.jaffree.process.AsyncProcess;
 import org.apache.commons.io.IOUtils;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
@@ -18,7 +19,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -204,7 +204,9 @@ public class FFmpegTest {
                 )
                 .addOutput(UrlOutput.toPath(outputPath));
 
-        Future<FFmpegResult> futureResult = ffmpeg.executeAsync();
+        AsyncProcess<FFmpegResult> futureResult = ffmpeg.executeAsync();
+
+        Assert.assertNotNull(futureResult.getProcess());
 
         Thread.sleep(1_000);
 

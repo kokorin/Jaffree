@@ -26,6 +26,8 @@ import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ProcessHandler<T> {
@@ -70,11 +72,7 @@ public class ProcessHandler<T> {
     }
 
     public T execute(List<String> options) {
-        List<String> command = new ArrayList<>();
-        command.add(executable.toString());
-        command.addAll(options);
-
-        LOGGER.info("Command constructed:\n{}", joinArguments(command));
+        List<String> command = createCommand(options);
 
         Process process = null;
         try {
@@ -87,14 +85,63 @@ public class ProcessHandler<T> {
             throw new RuntimeException("Failed to start process.", e);
         } finally {
             if (process != null) {
-                process.destroy();
-                // Process must be destroyed before closing streams, can't use try-with-resources,
-                // as resources are closing when leaving try block, before finally
-                closeQuietly(process.getInputStream());
-                closeQuietly(process.getOutputStream());
-                closeQuietly(process.getErrorStream());
+                cleanupProcess(process);
             }
         }
+    }
+
+    public AsyncProcess<T> executeAsync(List<String> options, String runnerThreadName) {
+        List<String> command = createCommand(options);
+
+        Process process;
+        try {
+            LOGGER.info("Starting async process: {}", executable);
+            process = new ProcessBuilder(command).start();
+
+            final Process closedOverProcess = process;
+
+            Callable<T> callable = new Callable<T>() {
+                Process p = closedOverProcess;
+
+                @Override
+                public T call() {
+                    try {
+                        return interactWithProcess(p);
+                    } finally {
+                        cleanupProcess(p);
+                    }
+                }
+            };
+
+            final FutureTask<T> resultFuture = new FutureTask<>(callable);
+
+            Thread runner = new Thread(resultFuture, runnerThreadName);
+            runner.setDaemon(true);
+            runner.start();
+
+            return new AsyncProcess<>(process, resultFuture);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to start process.", e);
+        }
+    }
+
+    private List<String> createCommand(List<String> options) {
+        List<String> command = new ArrayList<>();
+        command.add(executable.toString());
+        command.addAll(options);
+
+        LOGGER.info("Command constructed:\n{}", joinArguments(command));
+
+        return command;
+    }
+
+    private void cleanupProcess(Process process) {
+        process.destroy();
+        // Process must be destroyed before closing streams, can't use try-with-resources,
+        // as resources are closing when leaving try block, before finally
+        closeQuietly(process.getInputStream());
+        closeQuietly(process.getOutputStream());
+        closeQuietly(process.getErrorStream());
     }
 
     protected T interactWithProcess(Process process) {

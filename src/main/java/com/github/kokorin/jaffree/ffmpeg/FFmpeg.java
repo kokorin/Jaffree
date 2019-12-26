@@ -18,10 +18,7 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.LogLevel;
-import com.github.kokorin.jaffree.process.LoggingStdReader;
-import com.github.kokorin.jaffree.process.ProcessHandler;
-import com.github.kokorin.jaffree.process.StdReader;
-import com.github.kokorin.jaffree.process.StdWriter;
+import com.github.kokorin.jaffree.process.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,9 +27,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 
 public class FFmpeg {
     private final List<Input> inputs = new ArrayList<>();
@@ -103,6 +97,7 @@ public class FFmpeg {
 
     /**
      * Supply custom ProgressListener to receive progress events
+     *
      * @param progressListener listener
      * @return this
      */
@@ -113,6 +108,7 @@ public class FFmpeg {
 
     /**
      * Supply custom OutputListener to receive ffmpeg output.
+     *
      * @param outputListener listener
      * @return this
      */
@@ -138,6 +134,22 @@ public class FFmpeg {
     }
 
     public FFmpegResult execute() {
+        return createProcessHandler().execute(buildArguments());
+    }
+
+    /**
+     * Runs ffmpeg in separate Thread.
+     * <p>
+     * <b>Note</b>: execution is started immediately, so invocation of <code>Future.cancel(false)</code> has no effect.
+     * Use <code>Future.cancel(true)</code>
+     *
+     * @return ffmpeg async result that is a future and provides the actual process
+     */
+    public AsyncProcess<FFmpegResult> executeAsync() {
+        return createProcessHandler().executeAsync(buildArguments(), "FFmpeg-async-runner");
+    }
+
+    private ProcessHandler<FFmpegResult> createProcessHandler() {
         List<Runnable> helpers = new ArrayList<>();
 
         for (Input input : inputs) {
@@ -157,33 +169,7 @@ public class FFmpeg {
                 .setStdInWriter(createStdInWriter())
                 .setStdErrReader(createStdErrReader())
                 .setStdOutReader(createStdOutReader())
-                .setRunnables(helpers)
-                .execute(buildArguments());
-    }
-
-    /**
-     * Runs ffmpeg in separate Thread.
-     * <p>
-     * <b>Note</b>: execution is started immediately, so invocation of <code>Future.cancel(false)</code> has no effect.
-     * Use <code>Future.cancel(true)</code>
-     *
-     * @return ffmpeg result future
-     */
-    public Future<FFmpegResult> executeAsync() {
-        Callable<FFmpegResult> callable = new Callable<FFmpegResult>() {
-            @Override
-            public FFmpegResult call() throws Exception {
-                return execute();
-            }
-        };
-
-        final FutureTask<FFmpegResult> result = new FutureTask<>(callable);
-
-        Thread runner = new Thread(result, "FFmpeg-async-runner");
-        runner.setDaemon(true);
-        runner.start();
-
-        return result;
+                .setRunnables(helpers);
     }
 
     protected StdWriter createStdInWriter() {
