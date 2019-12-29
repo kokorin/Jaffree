@@ -1,36 +1,69 @@
 package examples.ffprobe;
 
+import com.github.kokorin.jaffree.ffmpeg.*;
 import com.github.kokorin.jaffree.ffprobe.FFprobe;
 import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
 import com.github.kokorin.jaffree.ffprobe.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class ShowStreams {
-    private final Path ffmpegBin;
-    private final Path video;
+    private final String ffmpegBin;
+    private final String video;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ShowStreams.class);
 
-    public ShowStreams(Path ffmpegBin, Path video) {
+    public ShowStreams(String ffmpegBin, String video) {
         this.ffmpegBin = ffmpegBin;
         this.video = video;
     }
 
     public void execute() {
-        FFprobeResult result = FFprobe.atPath(ffmpegBin)
+        FFprobe ffprobe;
+        if (ffmpegBin != null) {
+            ffprobe = FFprobe.atPath(Paths.get(ffmpegBin));
+        } else {
+            ffprobe = FFprobe.atPath();
+        }
+
+        FFprobeResult result = ffprobe
                 .setShowStreams(true)
                 .setInput(video)
                 .execute();
 
         for (Stream stream : result.getStreams()) {
-            System.out.println("Stream " + stream.getIndex() + " type " + stream.getCodecType());
+            System.out.println("Stream " + stream.getIndex() + " type " + stream.getCodecType() + " duration " + stream.getDuration(TimeUnit.SECONDS));
         }
+
+        FFmpeg ffmpeg;
+        if (ffmpegBin != null) {
+            ffmpeg = FFmpeg.atPath(Paths.get(ffmpegBin));
+        } else {
+            ffmpeg = FFmpeg.atPath();
+        }
+
+        final AtomicLong durationMillis = new AtomicLong();
+        FFmpegResult fFmpegResult = ffmpeg
+                .addInput(
+                        UrlInput.fromUrl(video)
+                )
+                .addOutput(new NullOutput())
+                .setProgressListener(new ProgressListener() {
+                    @Override
+                    public void onProgress(FFmpegProgress progress) {
+                        durationMillis.set(progress.getTimeMillis());
+                    }
+                })
+                .execute();
+
+        System.out.println("Exact duration: " + durationMillis.get() + " milliseconds");
+
     }
 
     public static void main(String[] args) {
@@ -54,11 +87,6 @@ public class ShowStreams {
             }
         }
 
-        if (ffmpegBin == null || video == null) {
-            LOGGER.error("Arguments: -ffmpeg_bin </path/to/ffmpeg/bin> <file>");
-            return;
-        }
-
-        new ShowStreams(Paths.get(ffmpegBin), Paths.get(video)).execute();
+        new ShowStreams(ffmpegBin, video).execute();
     }
 }
