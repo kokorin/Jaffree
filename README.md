@@ -31,19 +31,52 @@ Inspired by [ffmpeg-cli-wrapper](https://github.com/bramp/ffmpeg-cli-wrapper) by
 See whole example [here](/src/test/java/examples/ffprobe/ShowStreams.java).
 
 ```java
+//path to ffmpeg directory or null (to use PATH env variable)
 Path BIN = Paths.get("/path/to/ffmpeg_directory/");
 Path VIDEO_MP4 = Paths.get("/path/to/video.mp4");
 
-FFprobeResult result = FFprobe.atPath(BIN)
-        .setInputPath(VIDEO_MP4)
+
+FFprobe ffprobe;
+if (BIN != null) {
+    ffprobe = FFprobe.atPath(BIN);
+} else {
+    ffprobe = FFprobe.atPath();
+}
+
+FFprobeResult result = ffprobe
         .setShowStreams(true)
-        // You can use custom ffprobe output parser if you want
-        //.setFormatParser(customParserImplementation)
+        .setInput(VIDEO_MP4)
         .execute();
 
-for (Stream stream : probe.getStreams()) {
-    //TODO analyze stream data
+for (Stream stream : result.getStreams()) {
+    System.out.println("Stream " + stream.getIndex() 
+            + " type " + stream.getCodecType()
+            + " duration " + stream.getDuration(TimeUnit.SECONDS));
 }
+
+FFmpeg ffmpeg;
+if (BIN != null) {
+    ffmpeg = FFmpeg.atPath(BIN);
+} else {
+    ffmpeg = FFmpeg.atPath();
+}
+
+//Sometimes ffprobe can't show exact duration, use ffmpeg trancoding to NULL output to get it
+final AtomicLong durationMillis = new AtomicLong();
+FFmpegResult fFmpegResult = ffmpeg
+        .addInput(
+                UrlInput.fromUrl(VIDEO_MP4)
+        )
+        .addOutput(new NullOutput())
+        .setProgressListener(new ProgressListener() {
+            @Override
+            public void onProgress(FFmpegProgress progress) {
+                durationMillis.set(progress.getTimeMillis());
+            }
+        })
+        .execute();
+
+System.out.println("Exact duration: " + durationMillis.get() + " milliseconds");
 ```
 
 ## Re-encode and track progress
