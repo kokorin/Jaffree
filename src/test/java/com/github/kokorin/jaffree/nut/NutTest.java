@@ -8,6 +8,8 @@ import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -20,6 +22,8 @@ public class NutTest {
     public static Path BIN;
     public static Path VIDEO_MP4 = Artifacts.getFFmpegSample("MPEG-4/video.mp4");
     public static Path VIDEO_NUT = Artifacts.getSamplePath("video.nut");
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(NutTest.class);
 
     @BeforeClass
     public static void setUp() throws Exception {
@@ -120,22 +124,22 @@ public class NutTest {
             NutReader reader = new NutReader(new NutInputStream(input));
             reader.readFrame();
 
-            System.out.println("-------");
-            System.out.println(reader.getMainHeader());
+            LOGGER.debug("-------");
+            LOGGER.debug(reader.getMainHeader().toString());
 
-            System.out.println("-------");
+            LOGGER.debug("-------");
             for (Info info : reader.getInfos()) {
-                System.out.println(info);
+                LOGGER.debug(info.toString());
             }
 
-            System.out.println("-------");
+            LOGGER.debug("-------");
             for (StreamHeader streamHeader : reader.getStreamHeaders()) {
-                System.out.println(streamHeader);
+                LOGGER.debug(streamHeader.toString());
             }
 
-            System.out.println("-------");
+            LOGGER.debug("-------");
             for (FrameCode fCode : reader.getMainHeader().frameCodes) {
-                System.out.println(fCode);
+                LOGGER.debug(fCode.toString());
             }
         }
     }
