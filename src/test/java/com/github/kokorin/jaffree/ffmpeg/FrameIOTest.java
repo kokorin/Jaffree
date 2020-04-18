@@ -7,6 +7,8 @@ import com.github.kokorin.jaffree.ffprobe.FFprobe;
 import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import javax.sound.sampled.*;
@@ -34,6 +36,8 @@ public class FrameIOTest {
     public static Path BIN;
     public static Path VIDEO_MP4 = Artifacts.getFFmpegSample("MPEG-4/video.mp4");
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(FrameIOTest.class);
+
     @BeforeClass
     public static void setUp() throws Exception {
         String ffmpegHome = System.getProperty("FFMPEG_BIN");
@@ -49,7 +53,7 @@ public class FrameIOTest {
     @Test
     public void dumpFrames() throws Exception {
         final Path tempDir = Files.createTempDirectory("jaffree");
-        System.out.println("Will write to " + tempDir);
+        LOGGER.debug("Will write to " + tempDir);
 
         final AtomicLong trackCounter = new AtomicLong();
         final AtomicLong frameCounter = new AtomicLong();
@@ -71,7 +75,7 @@ public class FrameIOTest {
                 try {
                     boolean written = ImageIO.write(frame.getImage(), "png", tempDir.resolve(filename).toFile());
                     Assert.assertTrue(written);
-                    System.out.println(filename);
+                    LOGGER.debug(filename);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -173,7 +177,7 @@ public class FrameIOTest {
     public void testMultipleStreams() throws Exception {
         final Path tempDir = Files.createTempDirectory("jaffree");
         Path output = tempDir.resolve("output.mp4");
-        System.out.println("Will write to " + output);
+        LOGGER.debug("Will write to " + output);
 
         FrameProducer producer = new FrameProducer() {
             private int frame = 0;
@@ -265,7 +269,7 @@ public class FrameIOTest {
     public void createGif() throws Exception {
         final Path tempDir = Files.createTempDirectory("jaffree");
         Path output = tempDir.resolve("test.gif");
-        System.out.println("Will write to " + tempDir);
+        LOGGER.debug("Will write to " + tempDir);
 
         FrameProducer producer = new FrameProducer() {
             private final int frameCount = 30;
@@ -287,7 +291,7 @@ public class FrameIOTest {
                 if (frameCounter > frameCount) {
                     return null;
                 }
-                System.out.println("Creating frame " + frameCounter);
+                LOGGER.debug("Creating frame " + frameCounter);
 
                 BufferedImage image = new BufferedImage(320, 240, BufferedImage.TYPE_3BYTE_BGR);
                 Graphics2D graphics = image.createGraphics();
@@ -334,7 +338,7 @@ public class FrameIOTest {
                             line.addLineListener(new LineListener() {
                                 @Override
                                 public void update(LineEvent event) {
-                                    System.out.println(event);
+                                    LOGGER.debug(event.toString());
                                 }
                             });
                             line.open(audioFormat);
@@ -385,7 +389,7 @@ public class FrameIOTest {
     public void createMp3() throws Exception {
         final Path tempDir = Files.createTempDirectory("jaffree");
         Path output = tempDir.resolve("test.mp3");
-        System.out.println("Will write to " + tempDir);
+        LOGGER.debug("Will write to " + tempDir);
 
         FrameProducer producer = new FrameProducer() {
             private long frameCounter = 0;

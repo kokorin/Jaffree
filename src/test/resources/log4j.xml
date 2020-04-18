@@ -10,13 +10,13 @@
     </appender>
 
     <logger name="com.github" additivity="false">
-        <level value="info" />
-        <appender-ref ref="console" />
+        <level value="info"/>
+        <appender-ref ref="console"/>
     </logger>
 
     <root>
-        <priority value ="info" />
-        <appender-ref ref="console" />
+        <priority value="info"/>
+        <appender-ref ref="console"/>
     </root>
 
 </log4j:configuration>

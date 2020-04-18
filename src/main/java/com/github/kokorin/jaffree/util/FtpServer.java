@@ -188,7 +188,11 @@ public class FtpServer implements Runnable {
 
             copied = IOUtil.copy(Channels.newInputStream(channel), dataSocket.getOutputStream(), 1_000_000);
         } catch (SocketException e) {
-            if (e.getMessage().startsWith("Connection reset by peer")) {
+            // ffmpeg can close connection without fully reading requested data. This is not an error.
+            // "Connection reset" is thrown on Linux (Ubunyu) & Windows
+            // "Broken pipe" is thrown on MacOS
+            String message = e.getMessage();
+            if (message.startsWith("Connection reset") || message.startsWith("Broken pipe")) {
                 LOGGER.debug("Client closed socket: {}", e.getMessage());
             } else {
                 throw e;

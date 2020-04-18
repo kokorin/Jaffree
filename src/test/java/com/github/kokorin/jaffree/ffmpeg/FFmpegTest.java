@@ -7,6 +7,8 @@ import com.github.kokorin.jaffree.ffprobe.Stream;
 import org.apache.commons.io.IOUtils;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -32,6 +34,8 @@ public class FFmpegTest {
     public static Path SMALL_FLV = Artifacts.getFFmpegSample("FLV/zelda.flv");
     public static Path SMALL_MP4 = Artifacts.getFFmpegSample("MPEG-4/turn-on-off.mp4");
     public static Path ERROR_MP4 = Paths.get("non_existent.mp4");
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(FFmpegTest.class);
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -365,12 +369,12 @@ public class FFmpegTest {
         FrameConsumer frameConsumer = new FrameConsumer() {
             @Override
             public void consumeStreams(List<com.github.kokorin.jaffree.ffmpeg.Stream> streams) {
-                System.out.println(streams + "");
+               LOGGER.debug(streams + "");
             }
 
             @Override
             public void consume(Frame frame) {
-                System.out.println(frame + "");
+                LOGGER.debug(frame + "");
             }
         };
 
@@ -567,12 +571,12 @@ public class FFmpegTest {
         try (SeekableByteChannel channel = Files.newByteChannel(VIDEO_MP4, READ)) {
             FFmpegResult result = FFmpeg.atPath(BIN)
                     .addInput(
-                            new ChannelInput(VIDEO_MP4.getFileName().toString(), channel)
+                            new ChannelInput("testChannelInput.mp4", channel)
                     )
                     .addOutput(
                             UrlOutput.toPath(outputPath)
                     )
-                    .setLogLevel(LogLevel.INFO)
+                    .setLogLevel(LogLevel.DEBUG)
                     .execute();
 
             Assert.assertNotNull(result);
@@ -591,7 +595,7 @@ public class FFmpegTest {
         try (SeekableByteChannel channel = Files.newByteChannel(VIDEO_MP4, READ)) {
             FFmpegResult result = FFmpeg.atPath(BIN)
                     .addInput(
-                            new ChannelInput(VIDEO_MP4.getFileName().toString(), channel)
+                            new ChannelInput("testChannelInputPartialRead.mp4", channel)
                                     .setDuration(10, TimeUnit.SECONDS)
                     )
                     .addOutput(
@@ -616,7 +620,7 @@ public class FFmpegTest {
         try (SeekableByteChannel channel = Files.newByteChannel(VIDEO_MP4, READ)) {
             FFmpegResult result = FFmpeg.atPath(BIN)
                     .addInput(
-                            new ChannelInput(VIDEO_MP4.getFileName().toString(), channel)
+                            new ChannelInput("testChannelInputSeek.mp4", channel)
                                     .setPosition(1, TimeUnit.MINUTES)
                     )
                     .addOutput(
@@ -639,7 +643,7 @@ public class FFmpegTest {
         Path tempDir = Files.createTempDirectory("jaffree");
         Path outputPath = tempDir.resolve("channel.mp4");
 
-        System.out.println("Will write to " + outputPath);
+        LOGGER.debug("Will write to " + outputPath);
 
         try (SeekableByteChannel channel = Files.newByteChannel(outputPath, CREATE, WRITE, READ, TRUNCATE_EXISTING)) {
             FFmpegResult result = FFmpeg.atPath(BIN)

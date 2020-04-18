@@ -66,7 +66,7 @@ public class Executor {
                 try {
                     runnable.run();
                 } catch (Exception e) {
-                    LOGGER.debug("Exception in thread {}, collecting for later report", name);
+                    LOGGER.debug("Exception in thread {}, collecting for later report. Message: {}", name, e.getMessage());
                     exceptions.add(e);
 
                     // Starter thread MUST NOT be interrupted multiple times,
