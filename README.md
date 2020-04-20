@@ -4,6 +4,18 @@ Jaffree stands for [Ja]va [ff]mpeg and [ff]probe [free] command line wrapper. Ja
 
 It integrates with ffmpeg via `java.lang.Process`.
 
+Inspired by [ffmpeg-cli-wrapper](https://github.com/bramp/ffmpeg-cli-wrapper)
+
+## Tested with the help of [GitHub Actions](/kokorin/Jaffree/blob/master/.github/workflows/maven.yml) 
+
+![Tests](https://github.com/kokorin/Jaffree/workflows/Tests/badge.svg)
+
+**OS**: Ubuntu, MacOS, Windows
+
+**JDK**: 7, 8, 11, 14
+
+# Usage 
+
 ```xml
 <dependency>
     <groupId>com.github.kokorin.jaffree</groupId>
@@ -20,9 +32,6 @@ It integrates with ffmpeg via `java.lang.Process`.
     <artifactId>slf4j-api</artifactId>
     <version>1.7.25</version>
 </dependency>
-```
-
-Inspired by [ffmpeg-cli-wrapper](https://github.com/bramp/ffmpeg-cli-wrapper) by [Andrew Brampton](https://blog.bramp.net/)
 
 # Examples
 
