@@ -32,6 +32,7 @@ Inspired by [ffmpeg-cli-wrapper](https://github.com/bramp/ffmpeg-cli-wrapper)
     <artifactId>slf4j-api</artifactId>
     <version>1.7.25</version>
 </dependency>
+```
 
 # Examples
 
