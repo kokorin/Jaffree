@@ -4,7 +4,10 @@ import com.github.kokorin.jaffree.*;
 import com.github.kokorin.jaffree.ffprobe.data.DefaultFormatParser;
 import com.github.kokorin.jaffree.ffprobe.data.FlatFormatParser;
 import junit.framework.AssertionFailedError;
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.io.InputStream;
@@ -182,7 +185,6 @@ public class FFprobeTest {
     //private LogLevel showLog;
 
     @Test
-    @Ignore("For some reason ffmpeg on ubuntu doesn't recognize -show_log option")
     public void testShowLog() throws Exception {
         FFprobeResult result = FFprobe.atPath(BIN)
                 .setInput(VIDEO_MP4)
