@@ -19,8 +19,15 @@ public class StackTraceMatcher extends BaseMatcher<Object> {
         Throwable throwable = (Throwable) item;
         while (throwable != null) {
             String message = throwable.getMessage();
+
             if (message != null && message.contains(messagePart)) {
                 return true;
+            }
+
+            for (Throwable suppressed : throwable.getSuppressed()) {
+                if (matches(suppressed)) {
+                    return true;
+                }
             }
             throwable = throwable.getCause();
         }
@@ -30,6 +37,6 @@ public class StackTraceMatcher extends BaseMatcher<Object> {
 
     @Override
     public void describeTo(Description description) {
-
+        description.appendText("message of any exception in the stacktrace to contain: " + messagePart);
     }
 }
