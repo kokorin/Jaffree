@@ -25,6 +25,7 @@ public interface FrameConsumer {
     /**
      * Called for every frame in video file. When there is no more frame this method is called one more time
      * with {@code}null{@code} to notify consumer about EOF.
+     *
      * @param frame
      */
     void consume(Frame frame);

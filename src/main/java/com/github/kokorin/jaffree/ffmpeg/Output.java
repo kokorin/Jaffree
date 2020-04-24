@@ -24,6 +24,7 @@ public interface Output {
 
     /**
      * Helper {@link Runnable} which should be ran in dedicated thread
+     *
      * @return null if no helper thread is need, otherwise Runnable
      */
     Runnable helperThread();

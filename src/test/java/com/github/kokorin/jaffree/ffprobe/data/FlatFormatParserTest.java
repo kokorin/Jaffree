@@ -13,7 +13,7 @@ public class FlatFormatParserTest {
 
     @Test
     public void parse() throws Exception {
-        try (InputStream input = getClass().getResourceAsStream("ffprobe_out.flat")){
+        try (InputStream input = getClass().getResourceAsStream("ffprobe_out.flat")) {
             Data data = new FlatFormatParser().parse(input);
             Assert.assertNotNull(data);
 
@@ -25,7 +25,7 @@ public class FlatFormatParserTest {
 
     @Test
     public void parseMultiline() throws Exception {
-        try (InputStream input = getClass().getResourceAsStream("ffprobe_multiline_out.flat")){
+        try (InputStream input = getClass().getResourceAsStream("ffprobe_multiline_out.flat")) {
             Data data = new FlatFormatParser().parse(input);
             Assert.assertNotNull(data);
 
@@ -42,7 +42,7 @@ public class FlatFormatParserTest {
 
     @Test
     public void parseHttp() throws Exception {
-        try (InputStream input = getClass().getResourceAsStream("ffprobe_http_out.flat")){
+        try (InputStream input = getClass().getResourceAsStream("ffprobe_http_out.flat")) {
             Data data = new FlatFormatParser().parse(input);
             Assert.assertNotNull(data);
 
@@ -59,7 +59,7 @@ public class FlatFormatParserTest {
 
     @Test
     public void parseWithRotate() throws IOException {
-        try (InputStream input = getClass().getResourceAsStream("ffprobe_with_rotate.flat")){
+        try (InputStream input = getClass().getResourceAsStream("ffprobe_with_rotate.flat")) {
             Data data = new FlatFormatParser().parse(input);
             Assert.assertNotNull(data);
 

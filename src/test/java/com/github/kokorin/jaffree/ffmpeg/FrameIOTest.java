@@ -299,7 +299,7 @@ public class FrameIOTest {
                 graphics.fillRect(0, 0, 320, 240);
                 frameCounter++;
 
-                return new Frame(0,frameCounter * 1000 / 10, image);
+                return new Frame(0, frameCounter * 1000 / 10, image);
             }
         };
 

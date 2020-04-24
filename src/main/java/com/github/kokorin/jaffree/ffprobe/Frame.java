@@ -58,7 +58,7 @@ public class Frame {
         return section.getSections("SIDE_DATA", new DSection.SectionConverter<FrameSideData>() {
             @Override
             public FrameSideData convert(DSection dSection) {
-               return new FrameSideData(dSection);
+                return new FrameSideData(dSection);
             }
         });
     }

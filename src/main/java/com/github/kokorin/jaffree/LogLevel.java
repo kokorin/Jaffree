@@ -26,7 +26,7 @@ public enum LogLevel {
 
     /**
      * Only show fatal errors which could lead the process to crash, such as an assertion failure.
-     *
+     * <p>
      * This is not currently used for anything.
      */
     PANIC(0),
@@ -34,7 +34,7 @@ public enum LogLevel {
 
     /**
      * Only show fatal errors.
-     *
+     * <p>
      * These are errors after which the process absolutely cannot continue.
      */
     FATAL(8),
@@ -48,7 +48,7 @@ public enum LogLevel {
 
     /**
      * Show all warnings and errors.
-     *
+     * <p>
      * Any message related to possibly incorrect or unexpected events will be shown.
      */
     WARNING(24),
@@ -56,7 +56,7 @@ public enum LogLevel {
 
     /**
      * Show informative messages during processing.
-     *
+     * <p>
      * This is in addition to warnings and errors. This is the default value.
      */
     INFO(32),

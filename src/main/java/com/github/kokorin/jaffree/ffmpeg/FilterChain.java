@@ -50,8 +50,7 @@ public class FilterChain {
     }
 
 
-
-    public static FilterChain of(Filter ...filters) {
+    public static FilterChain of(Filter... filters) {
         return new FilterChain().addFilters(Arrays.asList(filters));
     }
 }
