@@ -39,6 +39,7 @@ public abstract class BaseInput<T extends BaseInput<T>> extends BaseInOut<T> imp
 
     /**
      * Set number of times input stream shall be looped. Loop 0 means no loop, loop -1 means infinite loop.
+     *
      * @param streamLoop
      * @return this
      */

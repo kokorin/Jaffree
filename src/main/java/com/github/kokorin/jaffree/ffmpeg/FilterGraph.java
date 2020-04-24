@@ -49,7 +49,7 @@ public class FilterGraph {
         return result.toString();
     }
 
-    public static FilterGraph of(FilterChain ...chains) {
+    public static FilterGraph of(FilterChain... chains) {
         return new FilterGraph().addFilterChains(Arrays.asList(chains));
     }
 }

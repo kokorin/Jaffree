@@ -358,6 +358,7 @@ public class FFprobe {
 
     /**
      * Set probing size (from 32 to I64_MAX) (default 5e+006)
+     *
      * @param probeSize
      * @return this
      */
@@ -368,6 +369,7 @@ public class FFprobe {
 
     /**
      * Specify how many microseconds are analyzed to probe the input (from 0 to I64_MAX) (default 0)
+     *
      * @param analyzeDurationMicros
      * @return this
      */
@@ -378,8 +380,9 @@ public class FFprobe {
 
     /**
      * Specify how long to analyze to probe the input (from 0 to I64_MAX) (default 0)
+     *
      * @param analyzeDuration duration
-     * @param timeUnit time unit
+     * @param timeUnit        time unit
      * @return this
      */
     public FFprobe setAnalyzeDuration(Number analyzeDuration, TimeUnit timeUnit) {
@@ -389,6 +392,7 @@ public class FFprobe {
 
     /**
      * Number of frames used to probe fps (from -1 to 2.14748e+009) (default -1)
+     *
      * @param fpsProbeSize frames
      * @return this
      */

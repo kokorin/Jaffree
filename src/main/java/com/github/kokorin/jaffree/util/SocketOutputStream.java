@@ -54,11 +54,12 @@ public class SocketOutputStream extends OutputStream {
     }
 
     @Override
+    @SuppressWarnings("checkstyle:emptystatement")
     public void close() throws IOException {
         try (ServerSocket toCloseServerSocket = serverSocket;
              Socket toCloseSocket = socket;
              OutputStream toCloseOutputStream = outputStream) {
-
+            ; // Do nothing, just close
         }
     }
 }

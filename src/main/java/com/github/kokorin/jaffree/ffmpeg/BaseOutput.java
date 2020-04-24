@@ -116,17 +116,18 @@ public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements
     }
 
 
-
     /**
      * Sets special "copy" codec for all streams
+     *
      * @return this
      */
     public T copyAllCodecs() {
-        return copyCodec((String)null);
+        return copyCodec((String) null);
     }
 
     /**
      * Sets special "copy" codec for specified streams
+     *
      * @return this
      */
     public T copyCodec(String streamSpecifier) {
@@ -155,6 +156,7 @@ public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements
 
     /**
      * Stop writing to the stream after framecount frames.
+     *
      * @param streamType Stream Type
      * @param frameCount frame count
      * @return this
@@ -173,7 +175,7 @@ public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements
      * <p>
      * Each input stream is identified by the input file index input_file_id. Index starts at 0.
      *
-     * @param inputFileIndex  index of input file
+     * @param inputFileIndex index of input file
      * @return this
      */
     public T addMap(int inputFileIndex) {
@@ -187,8 +189,8 @@ public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements
      * Each input stream is identified by the input file index input_file_id and the input stream index
      * input_stream_id within the input file. Both indices start at 0.
      *
-     * @param inputFileIndex  index of input file
-     * @param streamType specifier for stream(s) in input file
+     * @param inputFileIndex index of input file
+     * @param streamType     specifier for stream(s) in input file
      * @return this
      */
     public T addMap(int inputFileIndex, StreamType streamType) {

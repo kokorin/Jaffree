@@ -91,11 +91,11 @@ public class NutOutputStream implements AutoCloseable {
         position++;
     }
 
-    public void writeVariablesString(String data) throws IOException{
+    public void writeVariablesString(String data) throws IOException {
         writeVariableBytes(data.getBytes());
     }
 
-    public void writeVariableBytes(byte[] data) throws IOException{
+    public void writeVariableBytes(byte[] data) throws IOException {
         writeValue(data.length);
         writeBytes(data);
     }
@@ -106,7 +106,7 @@ public class NutOutputStream implements AutoCloseable {
         writeValue(value);
     }
 
-    public void writeCString(String data) throws IOException{
+    public void writeCString(String data) throws IOException {
         writeBytes(data.getBytes());
         writeByte(0);
     }
@@ -121,7 +121,7 @@ public class NutOutputStream implements AutoCloseable {
         crc32.reset();
     }
 
-    public void writeCrc32() throws IOException{
+    public void writeCrc32() throws IOException {
         writeInt(crc32.getValue());
     }
 

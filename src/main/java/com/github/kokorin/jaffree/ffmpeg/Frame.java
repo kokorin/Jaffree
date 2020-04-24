@@ -34,9 +34,10 @@ public class Frame {
 
     /**
      * Constructor which creates Video Frame, samples are set to null
+     *
      * @param streamId streamId
-     * @param pts pts
-     * @param image image
+     * @param pts      pts
+     * @param image    image
      */
     public Frame(int streamId, long pts, BufferedImage image) {
         this(streamId, pts, image, null);
@@ -44,9 +45,10 @@ public class Frame {
 
     /**
      * Constructor which creates Audio Frame, image is set to null
+     *
      * @param streamId streamId
-     * @param pts pts
-     * @param samples samples
+     * @param pts      pts
+     * @param samples  samples
      */
     public Frame(int streamId, long pts, int[] samples) {
         this(streamId, pts, null, samples);

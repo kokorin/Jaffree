@@ -67,6 +67,7 @@ public abstract class SocketInput<T extends SocketInput<T>> extends BaseInput<T>
     interface Negotiator {
         /**
          * Negotiator <b>must</b> close passed in {@code ServerSocket}
+         *
          * @param serverSocket socket to communicate
          * @throws IOException
          */

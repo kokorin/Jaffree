@@ -198,7 +198,7 @@ public class FlatFormatParser implements FormatParser {
 
         @Override
         public Object next(Object prev) {
-            if (!(prev instanceof  DSection)) {
+            if (!(prev instanceof DSection)) {
                 return null;
             }
 

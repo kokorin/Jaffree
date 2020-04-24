@@ -69,8 +69,9 @@ public class FrameInput extends TcpInput<FrameInput> implements Input {
      * <b>It's strongly recommended</b> to specify videoFrameRate for video producing.
      * <p>
      * Otherwise conversion can be very slow (20-50 times slower) and even can result in corrupted video
+     *
      * @param streamSpecifier stream specifier
-     * @param value video frames per second
+     * @param value           video frames per second
      * @return this
      */
     @Override

@@ -112,6 +112,7 @@ public class Filter {
      * A first level escaping affects the content of each filter option value, which may contain
      * the special character {@code}:{@code} used to separate values, or one of
      * the escaping characters {@code}\'{@code}.
+     *
      * @param value
      * @return
      */

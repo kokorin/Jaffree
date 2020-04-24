@@ -53,6 +53,7 @@ public class Packet {
             }
         });
     }
+
     public StreamType getCodecType() {
         return section.getStreamType("codec_type");
     }
