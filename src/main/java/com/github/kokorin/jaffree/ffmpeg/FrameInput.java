@@ -57,12 +57,12 @@ public class FrameInput extends TcpInput<FrameInput> implements Input {
      * <p>
      * Otherwise conversion can be very slow (20-50 times slower) and even can result in corrupted video
      *
-     * @param value video frames per second
+     * @param frameRate video frames per second
      * @return this
      */
     @Override
-    public FrameInput setFrameRate(Number value) {
-        return super.setFrameRate(value);
+    public FrameInput setFrameRate(Number frameRate) {
+        return super.setFrameRate(frameRate);
     }
 
     /**
@@ -71,13 +71,13 @@ public class FrameInput extends TcpInput<FrameInput> implements Input {
      * Otherwise conversion can be very slow (20-50 times slower) and even can result in corrupted video
      *
      * @param streamSpecifier stream specifier
-     * @param value           video frames per second
+     * @param frameRate           video frames per second
      * @return this
      */
     @Override
-    public FrameInput setFrameRate(String streamSpecifier, Number value) {
+    public FrameInput setFrameRate(String streamSpecifier, Number frameRate) {
         frameRateSet = true;
-        return super.setFrameRate(streamSpecifier, value);
+        return super.setFrameRate(streamSpecifier, frameRate);
     }
 
     public FrameInput setFrameOrderingBuffer(long bufferTime, TimeUnit unit) {

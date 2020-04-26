@@ -20,7 +20,13 @@ package com.github.kokorin.jaffree.ffmpeg;
 import com.github.kokorin.jaffree.SizeUnit;
 import com.github.kokorin.jaffree.StreamType;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements Output {

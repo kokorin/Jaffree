@@ -6,9 +6,7 @@ import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Warmup;
 
-import java.awt.*;
 import java.awt.color.ColorSpace;
-import java.awt.image.*;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 

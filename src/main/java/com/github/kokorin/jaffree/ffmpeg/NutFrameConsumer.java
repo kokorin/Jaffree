@@ -18,13 +18,23 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.Rational;
-import com.github.kokorin.jaffree.nut.*;
+import com.github.kokorin.jaffree.nut.MainHeader;
+import com.github.kokorin.jaffree.nut.NutFrame;
+import com.github.kokorin.jaffree.nut.NutInputStream;
+import com.github.kokorin.jaffree.nut.NutReader;
+import com.github.kokorin.jaffree.nut.StreamHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.awt.color.ColorSpace;
-import java.awt.image.*;
+import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.ComponentColorModel;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
+import java.awt.image.Raster;
+import java.awt.image.WritableRaster;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;

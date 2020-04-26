@@ -18,7 +18,13 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.Rational;
-import com.github.kokorin.jaffree.nut.*;
+import com.github.kokorin.jaffree.nut.DataItem;
+import com.github.kokorin.jaffree.nut.FrameCode;
+import com.github.kokorin.jaffree.nut.Info;
+import com.github.kokorin.jaffree.nut.NutFrame;
+import com.github.kokorin.jaffree.nut.NutOutputStream;
+import com.github.kokorin.jaffree.nut.NutWriter;
+import com.github.kokorin.jaffree.nut.StreamHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

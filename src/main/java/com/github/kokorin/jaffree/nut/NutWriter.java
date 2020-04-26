@@ -22,7 +22,13 @@ import com.github.kokorin.jaffree.nut.FrameCode.Flag;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.EnumSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 public class NutWriter {
     private final NutOutputStream output;
