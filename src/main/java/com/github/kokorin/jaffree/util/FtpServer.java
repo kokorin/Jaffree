@@ -50,7 +50,7 @@ public class FtpServer implements Runnable {
     }
 
     @Override
-    public void run(){
+    public void run() {
         LOGGER.debug("Starting FTP server {}", serverSocket);
 
         try (AutoCloseable toClose = serverSocket;

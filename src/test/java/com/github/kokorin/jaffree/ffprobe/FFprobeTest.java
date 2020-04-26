@@ -1,6 +1,11 @@
 package com.github.kokorin.jaffree.ffprobe;
 
-import com.github.kokorin.jaffree.*;
+import com.github.kokorin.jaffree.Artifacts;
+import com.github.kokorin.jaffree.LogLevel;
+import com.github.kokorin.jaffree.Rational;
+import com.github.kokorin.jaffree.StackTraceMatcher;
+import com.github.kokorin.jaffree.StreamSpecifier;
+import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffprobe.data.DefaultFormatParser;
 import com.github.kokorin.jaffree.ffprobe.data.FlatFormatParser;
 import junit.framework.AssertionFailedError;
