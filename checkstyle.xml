@@ -109,6 +109,7 @@
             <property name="excludeScope" value="private"/>
         </module>
         <module name="JavadocStyle"/>
+        <module name="MissingJavadocType"/>
         <module name="MissingJavadocMethod"/>
 
         <!-- Checks for Naming Conventions.                  -->

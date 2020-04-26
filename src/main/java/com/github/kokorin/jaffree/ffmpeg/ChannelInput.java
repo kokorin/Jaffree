@@ -24,19 +24,36 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.channels.SeekableByteChannel;
 
+/**
+ * {@link ChannelInput} is the implementation of {@link Input}
+ * which allows usage of {@link SeekableByteChannel} as ffmpeg input.
+ */
 public class ChannelInput extends SocketInput<ChannelInput> implements Input {
     private final SeekableByteChannel channel;
 
-    public ChannelInput(String fileName, SeekableByteChannel channel) {
+    /**
+     * Creates {@link ChannelInput}.
+     * <p>
+     * ffmpeg uses fileName's extension to autodetect input format
+     *
+     * @param fileName file name
+     * @param channel  byte channel
+     */
+    public ChannelInput(final String fileName, final SeekableByteChannel channel) {
         super("ftp", "/" + fileName);
         this.channel = channel;
     }
 
+    /**
+     * Creates {@link Negotiator} which adapts byte chanel to be used as ffmpeg input.
+     *
+     * @return negotiator
+     */
     @Override
     Negotiator negotiator() {
         return new Negotiator() {
             @Override
-            public void negotiateAndClose(ServerSocket serverSocket) throws IOException {
+            public void negotiateAndClose(final ServerSocket serverSocket) throws IOException {
                 try (Closeable toClose = serverSocket) {
                     Runnable server = new FtpServer(channel, serverSocket);
                     server.run();
@@ -45,7 +62,17 @@ public class ChannelInput extends SocketInput<ChannelInput> implements Input {
         };
     }
 
-    public static ChannelInput fromChannel(String fileName, SeekableByteChannel channel) {
+    /**
+     * Creates {@link ChannelInput}.
+     * <p>
+     * ffmpeg uses fileName's extension to autodetect input format
+     *
+     * @param fileName file name
+     * @param channel  byte channel
+     * @return ChannelInput
+     */
+    public static ChannelInput fromChannel(final String fileName,
+                                           final SeekableByteChannel channel) {
         return new ChannelInput(fileName, channel);
     }
 }

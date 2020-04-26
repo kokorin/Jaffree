@@ -20,12 +20,20 @@ package com.github.kokorin.jaffree.ffmpeg;
 import java.util.List;
 
 public interface Input {
+
+    /**
+     * Build a list of command line arguments for this input.
+     *
+     * @return list of command line arguments
+     */
     List<String> buildArguments();
 
     /**
      * Helper {@link Runnable} which should be ran in dedicated thread
+     * <p>
+     * Return <b>null</b> if no helper thread is needed
      *
-     * @return null if no helper thread is needed, otherwise Runnable
+     * @return runnable
      */
     Runnable helperThread();
 }
