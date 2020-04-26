@@ -26,7 +26,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-public abstract class BaseInOut<T extends BaseInOut> {
+/**
+ * Base class which handles common arguments for both ffmpeg input & output.
+ *
+ * @param <T> self
+ */
+public abstract class BaseInOut<T extends BaseInOut<T>> {
     private String format;
     private Long duration;
     private Long position;
@@ -40,7 +45,7 @@ public abstract class BaseInOut<T extends BaseInOut> {
     private final Map<String, Object> frameRates = new LinkedHashMap<>();
     private final Map<String, Object> frameSizes = new LinkedHashMap<>();
     private final Map<String, Object> codecs = new LinkedHashMap<>();
-    private final Map<String, Object> pixelformats = new LinkedHashMap<>();
+    private final Map<String, Object> pixelFormats = new LinkedHashMap<>();
     private final List<String> additionalArguments = new ArrayList<>();
 
     /**
@@ -196,6 +201,9 @@ public abstract class BaseInOut<T extends BaseInOut> {
      * @param streamSpecifier stream specifier
      * @param frameRate       Hz value, fraction or abbreviation
      * @return this
+     * @see <a href="https://ffmpeg.org/ffmpeg.html#Stream-specifiers">
+     * stream specifiers</a>
+     * @see com.github.kokorin.jaffree.StreamSpecifier
      */
     public T setFrameRate(final String streamSpecifier, final Number frameRate) {
         this.frameRates.put(streamSpecifier, frameRate);
@@ -234,6 +242,9 @@ public abstract class BaseInOut<T extends BaseInOut> {
      * @param width           frame width
      * @param height          frame height
      * @return this
+     * @see <a href="https://ffmpeg.org/ffmpeg.html#Stream-specifiers">
+     * stream specifiers</a>
+     * @see com.github.kokorin.jaffree.StreamSpecifier
      */
     public T setFrameSize(final String streamSpecifier, final Number width, final Number height) {
         return setFrameSize(streamSpecifier, width + "x" + height);
@@ -252,6 +263,9 @@ public abstract class BaseInOut<T extends BaseInOut> {
      * @param streamSpecifier stream specifier
      * @param resolution      width + "x" + height
      * @return this
+     * @see <a href="https://ffmpeg.org/ffmpeg.html#Stream-specifiers">
+     * stream specifiers</a>
+     * @see com.github.kokorin.jaffree.StreamSpecifier
      */
     public T setFrameSize(final String streamSpecifier, final String resolution) {
         this.frameSizes.put(streamSpecifier, resolution);
@@ -333,7 +347,7 @@ public abstract class BaseInOut<T extends BaseInOut> {
      * @see com.github.kokorin.jaffree.StreamSpecifier
      */
     public T setPixelFormat(final String streamSpecifier, final String pixelFormat) {
-        pixelformats.put(streamSpecifier, pixelFormat);
+        pixelFormats.put(streamSpecifier, pixelFormat);
         return thisAsT();
     }
 
@@ -366,6 +380,11 @@ public abstract class BaseInOut<T extends BaseInOut> {
         return thisAsT();
     }
 
+    /**
+     * Build a list of command line arguments that are common for ffmpeg input & output.
+     *
+     * @return list of command line arguments
+     */
     protected final List<String> buildCommonArguments() {
         List<String> result = new ArrayList<>();
 
@@ -388,7 +407,7 @@ public abstract class BaseInOut<T extends BaseInOut> {
         result.addAll(toArguments("-r", frameRates));
         result.addAll(toArguments("-s", frameSizes));
         result.addAll(toArguments("-c", codecs));
-        result.addAll(toArguments("-pix_fmt", pixelformats));
+        result.addAll(toArguments("-pix_fmt", pixelFormats));
 
         result.addAll(additionalArguments);
 

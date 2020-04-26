@@ -59,8 +59,18 @@ public abstract class SocketInput implements Input {
         }
     }
 
+    /**
+     * Creates {@link Negotiator}.
+     *
+     * @return negotiator
+     */
+    // TODO make protected?
     abstract Negotiator negotiator();
 
+    /**
+     * {@link Negotiator} is capable of integrating with ffprobe via Socket-based connection.
+     */
+    // TODO make protected?
     interface Negotiator {
         /**
          * Negotiator <b>must</b> close passed in {@code ServerSocket}

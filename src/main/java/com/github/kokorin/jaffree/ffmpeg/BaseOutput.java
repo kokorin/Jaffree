@@ -29,7 +29,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Base class which handles all arguments for ffmpeg output.
+ *
+ * @param <T> self
+ */
+//TODO make abstract?
 public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements Output {
+    // TODO make output property final
     private String output;
     private Long outputPosition;
     private Long sizeLimit;
@@ -61,8 +68,14 @@ public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements
     //-an (output)
     //-sample_fmt[:stream_specifier] sample_fmt (output,per-stream)
 
-
-    public T setOutput(String output) {
+    /**
+     * Set output path to file or URI.
+     *
+     * @param output path to file or URI
+     * @return this
+     */
+    @SuppressWarnings("checkstyle:hiddenfield")
+    public T setOutput(final String output) {
         this.output = output;
         return thisAsT();
     }
@@ -76,7 +89,7 @@ public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements
      * @return this
      * @see #setDuration(long)
      */
-    public T setOutputPosition(long positionMillis) {
+    public T setOutputPosition(final long positionMillis) {
         this.outputPosition = positionMillis;
         return thisAsT();
     }
@@ -91,19 +104,21 @@ public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements
      * @return this
      * @see #setDuration(long)
      */
-    public T setOutputPosition(Number position, TimeUnit unit) {
+    public T setOutputPosition(final Number position, final TimeUnit unit) {
         long millis = (long) (position.doubleValue() * unit.toMillis(1));
         return setOutputPosition(millis);
     }
 
     /**
-     * Set the file size limit, expressed in bytes. No further chunk of bytes is written after the limit is exceeded.
+     * Set the file size limit, expressed in bytes. No further chunk of bytes is written after
+     * the limit is exceeded.
+     * <p>
      * The size of the output file is slightly more than the requested file size.
      *
      * @param sizeLimitBytes size limit in bytes
      * @return this
      */
-    public T setSizeLimit(long sizeLimitBytes) {
+    public T setSizeLimit(final long sizeLimitBytes) {
         this.sizeLimit = sizeLimitBytes;
         return thisAsT();
     }
@@ -116,14 +131,15 @@ public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements
      * @param unit      size unit
      * @return this
      */
-    public T setSizeLimit(Number sizeLimit, SizeUnit unit) {
+    @SuppressWarnings("checkstyle:hiddenfield")
+    public T setSizeLimit(final Number sizeLimit, final SizeUnit unit) {
         long bytes = (long) (sizeLimit.doubleValue() * unit.toBytes(1));
         return setSizeLimit(bytes);
     }
 
 
     /**
-     * Sets special "copy" codec for all streams
+     * Sets special "copy" codec for all streams.
      *
      * @return this
      */
@@ -132,22 +148,38 @@ public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements
     }
 
     /**
-     * Sets special "copy" codec for specified streams
+     * Sets special "copy" codec for specified streams.
      *
+     * @param streamSpecifier stream specifier
      * @return this
+     * @see <a href="https://ffmpeg.org/ffmpeg.html#Stream-specifiers">
+     * stream specifiers</a>
+     * @see com.github.kokorin.jaffree.StreamSpecifier
      */
-    public T copyCodec(String streamSpecifier) {
+    public T copyCodec(final String streamSpecifier) {
         return setCodec(streamSpecifier, "copy");
     }
 
-    public T copyCodec(StreamType streamType) {
+    /**
+     * Sets special "copy" codec for specified streams.
+     *
+     * @param streamType stream type
+     * @return this
+     */
+    public T copyCodec(final StreamType streamType) {
         return setCodec(streamType, "copy");
     }
 
-
-    public T disableStream(StreamType type) {
-        disabledStreams.add(type);
-        switch (type) {
+    /**
+     * Disable stream of the specified type.
+     *
+     * @param streamType stream type
+     * @return this
+     */
+    public T disableStream(final StreamType streamType) {
+        disabledStreams.add(streamType);
+        // TODO check if this foolproof is required
+        switch (streamType) {
             case VIDEO:
                 setCodec(StreamType.VIDEO, null);
                 setPixelFormat(null);
@@ -155,19 +187,20 @@ public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements
             case AUDIO:
                 setCodec(StreamType.AUDIO, null);
                 break;
+            default:
         }
 
         return thisAsT();
     }
 
     /**
-     * Stop writing to the stream after framecount frames.
+     * Stop writing to the stream after specified number of frames.
      *
-     * @param streamType Stream Type
+     * @param streamType stream type
      * @param frameCount frame count
      * @return this
      */
-    public T setFrameCount(StreamType streamType, Long frameCount) {
+    public T setFrameCount(final StreamType streamType, final Long frameCount) {
         String key = null;
         if (streamType != null) {
             key = streamType.code();
@@ -184,7 +217,7 @@ public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements
      * @param inputFileIndex index of input file
      * @return this
      */
-    public T addMap(int inputFileIndex) {
+    public T addMap(final int inputFileIndex) {
         this.maps.add(new DefaultMapping(false, inputFileIndex, null, false));
         return thisAsT();
     }
@@ -192,14 +225,14 @@ public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements
     /**
      * Designate one or more input streams as a source for the output file.
      * <p>
-     * Each input stream is identified by the input file index input_file_id and the input stream index
-     * input_stream_id within the input file. Both indices start at 0.
+     * Each input stream is identified by the input file index input_file_id and the input stream
+     * index input_stream_id within the input file. Both indices start at 0.
      *
      * @param inputFileIndex index of input file
-     * @param streamType     specifier for stream(s) in input file
+     * @param streamType     stream type
      * @return this
      */
-    public T addMap(int inputFileIndex, StreamType streamType) {
+    public T addMap(final int inputFileIndex, final StreamType streamType) {
         this.maps.add(new DefaultMapping(false, inputFileIndex, streamType.code(), false));
         return thisAsT();
     }
@@ -207,30 +240,38 @@ public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements
     /**
      * Designate one or more input streams as a source for the output file.
      * <p>
-     * Each input stream is identified by the input file index input_file_id and the input stream index
-     * input_stream_id within the input file. Both indices start at 0.
+     * Each input stream is identified by the input file index input_file_id and the input stream
+     * index input_stream_id within the input file. Both indices start at 0.
      *
      * @param inputFileIndex  index of input file
      * @param streamSpecifier specifier for stream(s) in input file
      * @return this
+     * @see <a href="https://ffmpeg.org/ffmpeg.html#Stream-specifiers">
+     * stream specifiers</a>
+     * @see com.github.kokorin.jaffree.StreamSpecifier
      */
-    public T addMap(int inputFileIndex, String streamSpecifier) {
+    public T addMap(final int inputFileIndex, final String streamSpecifier) {
         this.maps.add(new DefaultMapping(false, inputFileIndex, streamSpecifier, false));
         return thisAsT();
     }
 
     /**
-     * An alternative [linklabel] form will map outputs from complex filter graphs (see the -filter_complex option)
-     * to the output file. linklabel must correspond to a defined output link label in the graph.
+     * An alternative [linklabel] form will map outputs from complex filter graphs
+     * (see the -filter_complex option) to the output file.
+     * <p>
+     * linklabel must correspond to a defined output link label in the graph.
      *
      * @param linkLabel label in complex filter
      * @return this
      */
-    public T addMap(String linkLabel) {
+    public T addMap(final String linkLabel) {
         this.maps.add(new LabelMapping(linkLabel));
         return thisAsT();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public final List<String> buildArguments() {
         List<String> result = new ArrayList<>();
@@ -267,22 +308,27 @@ public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements
         return result;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    //TODO remove and keep helperThread abstract?
     @Override
     public Runnable helperThread() {
         return null;
     }
 
-    private static interface Mapping {
+    private interface Mapping {
         String toValue();
     }
 
-    private static class DefaultMapping implements Mapping {
-        public boolean negative;
-        public int inputFileId;
-        public String streamSpecifier;
-        public boolean optional;
+    private static final class DefaultMapping implements Mapping {
+        private final boolean negative;
+        private final int inputFileId;
+        private final String streamSpecifier;
+        private final boolean optional;
 
-        public DefaultMapping(boolean negative, int inputFileId, String streamSpecifier, boolean optional) {
+        DefaultMapping(final boolean negative, final int inputFileId,
+                              final String streamSpecifier, final boolean optional) {
             this.negative = negative;
             this.inputFileId = inputFileId;
             this.streamSpecifier = streamSpecifier;
@@ -311,10 +357,10 @@ public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements
         }
     }
 
-    private static class LabelMapping implements Mapping {
-        public String linkLabel;
+    private static final class LabelMapping implements Mapping {
+        private final String linkLabel;
 
-        public LabelMapping(String linkLabel) {
+        private LabelMapping(final String linkLabel) {
             this.linkLabel = linkLabel;
         }
 

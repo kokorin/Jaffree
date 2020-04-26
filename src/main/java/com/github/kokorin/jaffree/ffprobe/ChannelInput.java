@@ -24,19 +24,33 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.channels.SeekableByteChannel;
 
+/**
+ * {@link ChannelInput} is the implementation of {@link Input}
+ * which allows usage of {@link SeekableByteChannel} as ffprobe input.
+ */
 public class ChannelInput extends SocketInput {
     private final SeekableByteChannel channel;
 
-    public ChannelInput(SeekableByteChannel channel) {
+    /**
+     * Creates {@link ChannelInput}.
+     *
+     * @param channel byte channel
+     */
+    public ChannelInput(final SeekableByteChannel channel) {
         super("ftp");
         this.channel = channel;
     }
 
+    /**
+     * Creates {@link Negotiator} which adapts byte chanel to be used as ffprobe input.
+     *
+     * @return negotiator
+     */
     @Override
     Negotiator negotiator() {
         return new Negotiator() {
             @Override
-            public void negotiateAndClose(ServerSocket serverSocket) throws IOException {
+            public void negotiateAndClose(final ServerSocket serverSocket) throws IOException {
                 try (Closeable toClose = serverSocket) {
                     Runnable server = new FtpServer(channel, serverSocket);
                     server.run();
