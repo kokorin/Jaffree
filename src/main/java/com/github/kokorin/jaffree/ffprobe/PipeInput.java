@@ -33,7 +33,12 @@ public class PipeInput extends SocketInput {
     private final InputStream inputStream;
     private final int bufferSize;
 
+    private static final int DEFAULT_BUFFER_SIZE = 1_000_000;
     private static final Logger LOGGER = LoggerFactory.getLogger(PipeInput.class);
+
+    public PipeInput(InputStream inputStream) {
+        this(inputStream, DEFAULT_BUFFER_SIZE);
+    }
 
     public PipeInput(InputStream inputStream, int bufferSize) {
         super("tcp");

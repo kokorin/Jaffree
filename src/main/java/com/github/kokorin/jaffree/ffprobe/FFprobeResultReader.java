@@ -24,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
-import java.util.Iterator;
 
 public class FFprobeResultReader implements StdReader<FFprobeResult> {
 
@@ -41,30 +40,5 @@ public class FFprobeResultReader implements StdReader<FFprobeResult> {
         Data data = parser.parse(stdOut);
 
         return new FFprobeResult(data);
-    }
-
-    private static class LoggingIterator implements Iterator<String> {
-        private final Iterator<String> delegate;
-
-        public LoggingIterator(Iterator<String> delegate) {
-            this.delegate = delegate;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return delegate.hasNext();
-        }
-
-        @Override
-        public String next() {
-            String next = delegate.next();
-            LOGGER.debug(next);
-            return next;
-        }
-
-        @Override
-        public void remove() {
-            delegate.remove();
-        }
     }
 }
