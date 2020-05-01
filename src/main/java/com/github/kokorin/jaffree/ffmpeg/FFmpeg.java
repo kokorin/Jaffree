@@ -69,7 +69,7 @@ public class FFmpeg {
     /**
      * Creates {@link FFmpeg}.
      *
-     * @param executable path to ffmpeg directory
+     * @param executable path to ffmpeg binary
      */
     public FFmpeg(final Path executable) {
         this.executable = executable;
@@ -289,35 +289,51 @@ public class FFmpeg {
         return this;
     }
 
-    //TODO check if it works with OutputListener or ProgressListener
-    public FFmpeg setLogLevel(LogLevel logLevel) {
+    /**
+     * Sets ffmpeg logging level.
+     * <p>
+     * Note: for message to appear in SLF4J logging it's required to configure appropriate
+     * log level for SLF4J.
+     *
+     * @param logLevel log level
+     * @return this
+     */
+    public FFmpeg setLogLevel(final LogLevel logLevel) {
         this.logLevel = logLevel;
         return this;
     }
 
     /**
-     * Set context name to prepend all log messages. Makes logs more clear in case of multiple ffmpeg processes
+     * Set context name to prepend all log messages.
+     * <p>
+     * Makes logs more clear in case of multiple ffmpeg processes running simultaneously
      *
      * @param contextName context name
      * @return this
      */
-    public FFmpeg setContextName(String contextName) {
+    public FFmpeg setContextName(final String contextName) {
         this.contextName = contextName;
         return this;
     }
 
+    /**
+     * Starts synchronous ffmpeg execution.
+     * <p>
+     * Current thread is blocked until ffmpeg is finished.
+     *
+     * @return ffmpeg result
+     */
     public FFmpegResult execute() {
         ProcessHandler<FFmpegResult> processHandler = createProcessHandler();
         return processHandler.execute();
     }
 
     /**
-     * Runs ffmpeg in separate Thread.
+     * Starts asynchronous ffmpeg execution.
      * <p>
      *
      * @return ffmpeg result future
-     */
-    public FFmpegResultFuture executeAsync() {
+     */    public FFmpegResultFuture executeAsync() {
         final ProcessHandler<FFmpegResult> processHandler = createProcessHandler();
         Stopper stopper = createStopper();
         processHandler.setStopper(stopper);
@@ -363,20 +379,48 @@ public class FFmpeg {
         return new FFmpegStopper();
     }
 
+    /**
+     * Creates {@link StdReader} which is used to read ffmpeg stderr.
+     * <p>
+     * Note: should be overridden wisely: otherwise {@link FFmpeg} may produce wrong result or
+     * even produce an error.
+     *
+     * @return this
+     */
     protected StdReader<FFmpegResult> createStdErrReader() {
         return new FFmpegResultReader(progressListener, outputListener);
     }
 
+    /**
+     * Creates {@link StdReader} which is used to read ffmpeg stderr.
+     * <p>
+     * Note: default implementation simply logs everything with SLF4J.
+     *
+     * @return this
+     */
     protected StdReader<FFmpegResult> createStdOutReader() {
         return new LoggingStdReader<>();
     }
 
+    /**
+     * Constructs ffmpeg command line.
+     * <p>
+     * Arguments order is as follows:
+     * <ol>
+     *     <li>arguments for each {@link Input}</li>
+     *     <li>global arguments</li>
+     *     <li>arguments for each {@link Output}</li>
+     * </ol>
+     *
+     * @return arguments list
+     */
     protected List<String> buildArguments() {
         List<String> result = new ArrayList<>();
 
         if (logLevel != null) {
             if (progressListener != null && logLevel.code() < LogLevel.INFO.code()) {
-                throw new RuntimeException("Specified log level " + logLevel + " hides ffmpeg progress output");
+                throw new RuntimeException("Specified log level " + logLevel
+                        + " hides ffmpeg progress output");
             }
             result.addAll(Arrays.asList("-loglevel", Integer.toString(logLevel.code())));
         }
@@ -389,7 +433,8 @@ public class FFmpeg {
             //Overwrite output files without asking.
             result.add("-y");
         } else {
-            // Do not overwrite output files, and exit immediately if a specified output file already exists.
+            // Do not overwrite output files, and exit immediately if a specified output file
+            // already exists.
             result.add("-n");
         }
 
@@ -408,11 +453,24 @@ public class FFmpeg {
         return result;
     }
 
+    /**
+     * Creates {@link FFmpeg}.
+     * <p>
+     * Note: directory with ffmpeg binaries must be in PATH environment variable.
+     *
+     * @return FFmpeg
+     */
     public static FFmpeg atPath() {
         return atPath(null);
     }
 
-    public static FFmpeg atPath(Path pathToDir) {
+    /**
+     * Creates {@link FFmpeg}.
+     *
+     * @param pathToDir path to ffmpeg directory
+     * @return FFmpeg
+     */
+    public static FFmpeg atPath(final Path pathToDir) {
         final Path executable;
         if (pathToDir != null) {
             executable = pathToDir.resolve("ffmpeg");
