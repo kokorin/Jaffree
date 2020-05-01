@@ -34,9 +34,9 @@ import java.util.concurrent.TimeUnit;
  *
  * @param <T> self
  */
-//TODO make abstract?
+//TODO: make abstract?
 public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements Output {
-    // TODO make output property final
+    // TODO: make output property final
     private String output;
     private Long outputPosition;
     private Long sizeLimit;
@@ -178,7 +178,7 @@ public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements
      */
     public T disableStream(final StreamType streamType) {
         disabledStreams.add(streamType);
-        // TODO check if this foolproof is required
+        // TODO: check if this foolproof is required
         switch (streamType) {
             case VIDEO:
                 setCodec(StreamType.VIDEO, null);
@@ -311,7 +311,7 @@ public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements
     /**
      * {@inheritDoc}
      */
-    //TODO remove and keep helperThread abstract?
+    //TODO: remove and keep helperThread abstract?
     @Override
     public Runnable helperThread() {
         return null;

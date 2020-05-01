@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+// TODO: move to util package
 public class LineIterator implements Iterator<String> {
     private final BufferedReader reader;
     private String nextLine = null;

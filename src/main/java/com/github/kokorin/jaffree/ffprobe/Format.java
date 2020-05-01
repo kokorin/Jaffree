@@ -62,12 +62,12 @@ public class Format {
         return section.getString("format_long_name");
     }
 
-    // TODO getter with TimeUnit?
+    // TODO: getter with TimeUnit?
     public Float getStartTime() {
         return section.getFloat("start_time");
     }
 
-    // TODO getter with TimeUnit?
+    // TODO: getter with TimeUnit?
     public Float getDuration() {
         return section.getFloat("duration");
     }
