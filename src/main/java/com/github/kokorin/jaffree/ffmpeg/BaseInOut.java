@@ -279,12 +279,12 @@ public abstract class BaseInOut<T extends BaseInOut<T>> {
      * codec is the name of a decoder/encoder or a special value <b>copy</b>
      * (output only) to indicate that the stream is not to be re-encoded.
      *
-     * @param type  stream type
+     * @param streamType  stream type
      * @param codec codec name
      * @return this
      */
-    public T setCodec(final StreamType type, final String codec) {
-        return setCodec(type.code(), codec);
+    public T setCodec(final StreamType streamType, final String codec) {
+        return setCodec(streamType.code(), codec);
     }
 
     /**
