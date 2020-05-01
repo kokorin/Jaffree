@@ -193,7 +193,10 @@
         <!-- See https://checkstyle.org/config_misc.html -->
         <module name="ArrayTypeStyle"/>
         <module name="FinalParameters"/>
-        <module name="TodoComment"/>
+
+        <module name="TodoComment">
+            <property name="format" value="RANDOM_STRING_TO_TEMPORARILY_SUPPRESS_TODO_CHECKS"/>
+        </module>
         <module name="UpperEll"/>
 
         <!-- https://checkstyle.org/config_filters.html#SuppressionXpathFilter -->

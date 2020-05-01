@@ -19,6 +19,9 @@ package com.github.kokorin.jaffree.ffmpeg;
 
 import java.util.concurrent.TimeUnit;
 
+/**
+ * {@link FFmpegProgress} contains information about ffmpeg encoding progress.
+ */
 public class FFmpegProgress {
     private final Long frame;
     private final Double fps;
@@ -30,7 +33,23 @@ public class FFmpegProgress {
     private final Double bitrate;
     private final Double speed;
 
-    public FFmpegProgress(Long frame, Double fps, Double q, Long size, Long time, Long dup, Long drop, Double bitrate, Double speed) {
+    /**
+     * Creates  {@link FFmpegProgress}.
+     *
+     * @param frame   number of frames
+     * @param fps     frames encoded per second
+     * @param q       quality of coded frames
+     * @param size    current size in bytes
+     * @param time    encoded duration
+     * @param dup     number of duplicate frames
+     * @param drop    number of dropped frames
+     * @param bitrate estimated bitrate
+     * @param speed   encoding speed
+     */
+    @SuppressWarnings("checkstyle:parameternumber")
+    public FFmpegProgress(final Long frame, final Double fps, final Double q, final Long size,
+                          final Long time, final Long dup, final Long drop, final Double bitrate,
+                          final Double speed) {
         this.frame = frame;
         this.fps = fps;
         this.q = q;
@@ -42,14 +61,23 @@ public class FFmpegProgress {
         this.speed = speed;
     }
 
+    /**
+     * @return number of frames encoded so far
+     */
     public Long getFrame() {
         return frame;
     }
 
+    /**
+     * @return frames encoded per second
+     */
     public Double getFps() {
         return fps;
     }
 
+    /**
+     * @return quality of coded frames
+     */
     public Double getQ() {
         return q;
     }
@@ -62,13 +90,17 @@ public class FFmpegProgress {
     }
 
     /**
-     * @return time in milliseconds
+     * @return encoded time in milliseconds
      */
     public Long getTimeMillis() {
         return time;
     }
 
-    public Long getTime(TimeUnit timeUnit) {
+    /**
+     * @param timeUnit time unit of the result
+     * @return encoded time in specified {@link TimeUnit}
+     */
+    public Long getTime(final TimeUnit timeUnit) {
         if (time == null) {
             throw new IllegalArgumentException("TimeUnit must be non null");
         }
@@ -76,19 +108,33 @@ public class FFmpegProgress {
         return timeUnit.convert(time, TimeUnit.MILLISECONDS);
     }
 
-
+    /**
+     * @return number of duplicate frames
+     */
     public Long getDup() {
         return dup;
     }
 
+    /**
+     * @return number of dropped frames
+     */
     public Long getDrop() {
         return drop;
     }
 
+    /**
+     * @return estimated bitrate
+     */
     public Double getBitrate() {
         return bitrate;
     }
 
+    /**
+     * Encoding speed represents how many seconds ffmpeg spends on producing 1 second of
+     * encoded output.
+     *
+     * @return encoding speed
+     */
     public Double getSpeed() {
         return speed;
     }
