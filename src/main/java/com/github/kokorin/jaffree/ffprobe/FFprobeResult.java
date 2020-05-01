@@ -33,6 +33,7 @@ public class FFprobeResult {
         return data;
     }
 
+    // TODO: delete this?
     public ProgramVersion getProgramVersion() {
         DSection section = data.getSection("PROGRAM_VERSION");
         if (section == null) {
@@ -51,6 +52,7 @@ public class FFprobeResult {
         return new Format(section);
     }
 
+    // TODO: delete this?
     public Error getError() {
         DSection section = data.getSection("ERROR");
         if (section == null) {
@@ -60,6 +62,7 @@ public class FFprobeResult {
         return new Error(section);
     }
 
+    // TODO: delete this?
     public List<LibraryVersion> getLibraryVersions() {
         return data.getSections("LIBRARY_VERSION", new DSection.SectionConverter<LibraryVersion>() {
             @Override
@@ -69,6 +72,7 @@ public class FFprobeResult {
         });
     }
 
+    // TODO: delete this?
     public List<PixelFormat> getPixelFormats() {
         return data.getSections("PIXEL_FORMAT", new DSection.SectionConverter<PixelFormat>() {
             @Override

@@ -515,7 +515,7 @@ public class FrameIOTest {
 
             Assert.assertEquals(frame.getStreamId(), actualFrame.getStreamId());
             Assert.assertArrayEquals(frame.getSamples(), actualFrame.getSamples());
-            // TODO compare images
+            // TODO: compare images
         }
     }
 
@@ -525,7 +525,7 @@ public class FrameIOTest {
 
         final AtomicReference<FFmpegProgress> progressRef = new AtomicReference<>();
 
-        // TODO convert outputPath to MP4 with ffmpeg and check how long will it take
+        // TODO: convert outputPath to MP4 with ffmpeg and check how long will it take
         FFmpeg.atPath(BIN)
                 .addInput(FrameInput.withProducer(
                         new FrameProducer() {

@@ -36,10 +36,16 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
+/**
+ * {@link FFmpeg} provides an ability to start & stop ffmpeg process and keep track of
+ * encoding progress.
+ */
+//TODO add debug statements for all methods
 public class FFmpeg {
     private final List<Input> inputs = new ArrayList<>();
     private final List<Output> outputs = new ArrayList<>();
     private final List<String> additionalArguments = new ArrayList<>();
+    //TODO make it Boolean (non-primitive)
     private boolean overwriteOutput;
     private ProgressListener progressListener;
     private OutputListener outputListener;
@@ -60,26 +66,96 @@ public class FFmpeg {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FFmpeg.class);
 
-    public FFmpeg(Path executable) {
+    /**
+     * Creates {@link FFmpeg}.
+     *
+     * @param executable path to ffmpeg directory
+     */
+    public FFmpeg(final Path executable) {
         this.executable = executable;
     }
 
-    public FFmpeg addInput(Input input) {
+    /**
+     * Adds arguments (provided by input parameter) to ffmpeg arguments list.
+     * <p>
+     * Note: the order matters.
+     *
+     * @param input input
+     * @return this
+     * @see Input
+     * @see UrlInput
+     * @see ChannelInput
+     * @see FrameInput
+     * @see PipeInput
+     */
+    public FFmpeg addInput(final Input input) {
         inputs.add(input);
         return this;
     }
 
-    public FFmpeg addArgument(String argument) {
+    /**
+     * Adds arguments (provided by output parameter) to ffmpeg arguments list.
+     * <p>
+     * Note: the order matters.
+     *
+     * @param output output
+     * @return this
+     * @see Output
+     * @see UrlOutput
+     * @see ChannelOutput
+     * @see FrameOutput
+     * @see PipeOutput
+     */
+    public FFmpeg addOutput(final Output output) {
+        outputs.add(output);
+        return this;
+    }
+
+    /**
+     * Adds custom global argument to ffmpeg arguments list.
+     * <p>
+     * <b>Note:</b> if value contains spaces it <b>should not</b> be wrapped
+     * with quotes. Also spaces <b>should not</b> be escaped with backslash
+     *
+     * @param argument argument
+     * @return this
+     */
+    public FFmpeg addArgument(final String argument) {
         additionalArguments.add(argument);
         return this;
     }
 
-    public FFmpeg addArguments(String key, String value) {
+    /**
+     * Adds custom global arguments to ffmpeg arguments list.
+     * <p>
+     * <b>Note:</b> if value contains spaces it <b>should not</b> be wrapped
+     * with quotes. Also spaces <b>should not</b> be escaped with backslash
+     *
+     * @param key   key argument
+     * @param value value argument
+     * @return this
+     */
+    public FFmpeg addArguments(final String key, final String value) {
         additionalArguments.addAll(Arrays.asList(key, value));
         return this;
     }
 
-    public FFmpeg setComplexFilter(FilterGraph graph) {
+    /**
+     * Adds complex filter graph to ffmpeg arugments list.
+     * <p>
+     * Complex filtergraphs are those which cannot be described as simply a linear processing chain
+     * applied to one stream. This is the case, for example, when the graph has more than one input
+     * and/or output, or when output stream type is different from input.
+     *
+     * @param graph complex filter graph
+     * @return this
+     * @see <a href="https://ffmpeg.org/ffmpeg-all.html#toc-Filtergraph-syntax-1">
+     * Filtergraph syntax</a>
+     * @see <a href="https://ffmpeg.org/ffmpeg-all.html#Complex-filtergraphs">
+     * Complex filtergraph</a>
+     */
+    // TODO overload with String parameter
+    public FFmpeg setComplexFilter(final FilterGraph graph) {
         this.complexFilter = graph;
         return this;
     }
@@ -89,6 +165,8 @@ public class FFmpeg {
      *
      * @param filter a String describing the filter to apply
      * @return this
+     *
+     * @see <a href="https://ffmpeg.org/ffmpeg-all.html#Simple-filtergraphs">Simple filtergraphs</a>
      */
     public FFmpeg setFilter(String filter) {
         return setFilter("", filter);
@@ -99,6 +177,8 @@ public class FFmpeg {
      *
      * @param filter a FilterGraph describing the filter to apply
      * @return this
+     *
+     * @see <a href="https://ffmpeg.org/ffmpeg-all.html#Simple-filtergraphs">Simple filtergraphs</a>
      */
     public FFmpeg setFilter(FilterGraph filter) {
         return setFilter("", filter.getValue());
@@ -110,6 +190,8 @@ public class FFmpeg {
      * @param streamType  the stream type to apply this filter to (StreamType.AUDIO or StreamType.VIDEO)
      * @param filterGraph a graph describing the filters to apply
      * @return this
+     *
+     * @see <a href="https://ffmpeg.org/ffmpeg-all.html#Simple-filtergraphs">Simple filtergraphs</a>
      */
     public FFmpeg setFilter(StreamType streamType, FilterGraph filterGraph) {
         return setFilter(streamType.code(), filterGraph.getValue());
@@ -121,6 +203,8 @@ public class FFmpeg {
      * @param streamType the stream type to apply this filter to (StreamType.AUDIO or StreamType.VIDEO)
      * @param filter     a String describing the filter to apply
      * @return this
+     *
+     * @see <a href="https://ffmpeg.org/ffmpeg-all.html#Simple-filtergraphs">Simple filtergraphs</a>
      */
     public FFmpeg setFilter(StreamType streamType, String filter) {
         return setFilter(streamType.code(), filter);
@@ -132,6 +216,8 @@ public class FFmpeg {
      * @param streamSpecifier a String specifying to which stream this filter must be applied ("a" for audio, "v" "for video, or "" for generic 'filter')
      * @param filterGraph     a graph describing the filters to apply
      * @return this
+     *
+     * @see <a href="https://ffmpeg.org/ffmpeg-all.html#Simple-filtergraphs">Simple filtergraphs</a>
      */
     public FFmpeg setFilter(String streamSpecifier, FilterGraph filterGraph) {
         return setFilter(streamSpecifier, filterGraph.getValue());
@@ -143,6 +229,8 @@ public class FFmpeg {
      * @param streamSpecifier a String specifying to which stream this filter must be applied ("a" for audio, "v" "for video, or "" for generic 'filter')
      * @param filter          a String describing the filter to apply
      * @return this
+     *
+     * @see <a href="https://ffmpeg.org/ffmpeg-all.html#Simple-filtergraphs">Simple filtergraphs</a>
      */
     public FFmpeg setFilter(String streamSpecifier, String filter) {
         // If a previous filter was set, warn that it is replaced by the new one
@@ -159,45 +247,49 @@ public class FFmpeg {
         return this;
     }
 
-    public FFmpeg addOutput(Output output) {
-        outputs.add(output);
-        return this;
-    }
-
 
     /**
-     * Whether to overwrite or to stop. False by default.
+     * Whether to overwrite output. False by default.
+     * <p>
+     * If overwriteOutput is false, ffmpeg will stop with an error if output file exists.
      *
-     * @param overwriteOutput true if forcibly overwrite, false if to stop
+     * @param overwriteOutput true to overwrite output
      * @return this
      */
-    public FFmpeg setOverwriteOutput(boolean overwriteOutput) {
+    public FFmpeg setOverwriteOutput(final boolean overwriteOutput) {
         this.overwriteOutput = overwriteOutput;
         return this;
     }
 
     /**
-     * Supply custom ProgressListener to receive progress events
+     * Supply custom ProgressListener to receive progress events.
+     * <p>
+     * Usually ffmpeg reports encoding progress every second.
      *
-     * @param progressListener listener
+     * @param progressListener progress listener
      * @return this
      */
-    public FFmpeg setProgressListener(ProgressListener progressListener) {
+    public FFmpeg setProgressListener(final ProgressListener progressListener) {
         this.progressListener = progressListener;
         return this;
     }
 
     /**
      * Supply custom OutputListener to receive ffmpeg output.
+     * <p>
+     * Some ffmpeg filters cause extra output. Any line in ffmpeg output that doesn't represent
+     * encoding progress or encoding result  will be passed to {@link OutputListener}
      *
-     * @param outputListener listener
+     * @param outputListener output listener
      * @return this
+     * @see FFmpegResultReader
      */
-    public FFmpeg setOutputListener(OutputListener outputListener) {
+    public FFmpeg setOutputListener(final OutputListener outputListener) {
         this.outputListener = outputListener;
         return this;
     }
 
+    //TODO check if it works with OutputListener or ProgressListener
     public FFmpeg setLogLevel(LogLevel logLevel) {
         this.logLevel = logLevel;
         return this;

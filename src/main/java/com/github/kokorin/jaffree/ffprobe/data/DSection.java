@@ -25,19 +25,39 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Data structure which represents single section in ffprobe output.
+ * <p>
+ * Data section can contain all types of data structures: properties, tags and sub-sections
+ */
 public class DSection extends DBase {
     private final Map<String, DTag> tags;
     private final Map<String, List<DSection>> sections;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DSection.class);
 
-    public DSection(Map<String, String> properties, Map<String, DTag> tags, Map<String, List<DSection>> sections) {
+    /**
+     * Creates {@link DSection}.
+     *
+     * @param properties properties
+     * @param tags       tags
+     * @param sections   sections
+     */
+    public DSection(final Map<String, String> properties,
+                    final Map<String, DTag> tags,
+                    final Map<String, List<DSection>> sections) {
         super(properties);
         this.tags = tags;
         this.sections = sections;
     }
 
-    public DTag getTag(String name) {
+    /**
+     * Returns tag by its name.
+     *
+     * @param name tag name
+     * @return tag
+     */
+    public DTag getTag(final String name) {
         DTag result = tags.get(name);
         if (result == null) {
             return DTag.EMPTY;
@@ -46,7 +66,16 @@ public class DSection extends DBase {
         return result;
     }
 
-    public DTag getTag(String... names) {
+    /**
+     * Returns tag by any of the specified names in the fallback manner.
+     * <p>
+     * This method is designed for cases when different implementations of {@link FormatParser}
+     * produce different names for the same tag.
+     *
+     * @param names tag names
+     * @return tag
+     */
+    public DTag getTag(final String... names) {
         for (String name : names) {
             DTag result = tags.get(name);
             if (result != null) {
@@ -57,18 +86,34 @@ public class DSection extends DBase {
         return DTag.EMPTY;
     }
 
-    public boolean hasTag(String name) {
+    /**
+     * Checks if tag is present.
+     *
+     * @param name name
+     * @return tag presence
+     */
+    public boolean hasTag(final String name) {
         return tags.containsKey(name);
     }
 
-    public void setTag(String name, DTag tag) {
+    // TODO: make DSection immutable
+    @SuppressWarnings("checkstyle:designforextension")
+    void setTag(final String name, final DTag tag) {
         tags.put(name, tag);
     }
 
-    public List<DSection> getSections(String name) {
+    /**
+     * Returns sub-sections by name.
+     *
+     * @param name name
+     * @return sub-sections
+     */
+    //TODO: FlatFormatParser uses this method to put extra sections
+    public List<DSection> getSections(final String name) {
         List<DSection> result = sections.get(name);
 
         if (result == null) {
+            // TODO: Collections.emptyList() ?
             result = new ArrayList<>();
             sections.put(name, result);
         }
@@ -76,20 +121,35 @@ public class DSection extends DBase {
         return result;
     }
 
-    public DSection getSection(String name) {
-        List<DSection> sections = getSections(name);
-        if (sections.isEmpty()) {
+    /**
+     * Returns single subsection by name.
+     *
+     * @param name name
+     * @return sub-section
+     */
+    public DSection getSection(final String name) {
+        List<DSection> subSections = getSections(name);
+        if (subSections.isEmpty()) {
             return null;
         }
 
-        if (sections.size() > 1) {
-            LOGGER.warn("Single section requested: {}, but there are {} sections with the same name");
+        if (subSections.size() > 1) {
+            LOGGER.warn("Single section requested: {}, "
+                    + "but there are {} sections with the same name", name, subSections.size());
         }
 
-        return sections.get(0);
+        return subSections.get(0);
     }
 
-    public <T> List<T> getSections(String name, SectionConverter<T> converter) {
+    /**
+     * Handy method which returns sub-sections of the specified name converted to T type.
+     *
+     * @param name      name
+     * @param converter converter
+     * @param <T>       result type
+     * @return converted sub-sections
+     */
+    public <T> List<T> getSections(final String name, final SectionConverter<T> converter) {
         List<T> result = new ArrayList<>();
         for (DSection dSection : getSections(name)) {
             result.add(converter.convert(dSection));
@@ -97,7 +157,18 @@ public class DSection extends DBase {
         return result;
     }
 
+    /**
+     * Represents a converter which is used to convert requested DSection to T type.
+     *
+     * @param <T> type to convert to
+     */
     public interface SectionConverter<T> {
+
+        /**
+         * Converts {@link DSection} to T type.
+         * @param dSection dSection
+         * @return converted dSection
+         */
         T convert(DSection dSection);
     }
 

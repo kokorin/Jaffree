@@ -232,7 +232,7 @@ public class FFprobeTest {
                 Assert.assertNotNull(stream.getMaxBitRate());
             }
 
-            // TODO find video sample for which ffprobe reports bits_per_raw_sample
+            // TODO: find video sample for which ffprobe reports bits_per_raw_sample
             // Assert.assertNotNull(stream.getBitsPerRawSample());
 
             bitsPerSampleIsPresent |= stream.getBitsPerSample() != null;
@@ -292,7 +292,7 @@ public class FFprobeTest {
                 .execute();
 
         Assert.assertNotNull(result);
-        //TODO Find media file with chapters
+        //TODO: Find media file with chapters
         Assert.assertNotNull(result.getChapters());
     }
 

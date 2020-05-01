@@ -27,7 +27,7 @@ import java.util.List;
  * @param <T> self
  */
 public abstract class BaseInput<T extends BaseInput<T>> extends BaseInOut<T> implements Input {
-    // TODO make input property final
+    // TODO: make input property final
     private String input;
     private Integer streamLoop;
     private boolean readAtFrameRate = false;
@@ -109,7 +109,7 @@ public abstract class BaseInput<T extends BaseInput<T>> extends BaseInOut<T> imp
     /**
      * {@inheritDoc}
      */
-    //TODO remove and keep helperThread abstract?
+    //TODO: remove and keep helperThread abstract?
     @Override
     public Runnable helperThread() {
         return null;

@@ -352,12 +352,10 @@ public abstract class BaseInOut<T extends BaseInOut<T>> {
     }
 
     /**
-     * Add custom arguments.
+     * Add custom input/output specific arguments.
      * <p>
      * <b>Note:</b> if value contains spaces it <b>should not</b> be wrapped
      * with quotes. Also spaces <b>should not</b> be escaped with backslash
-     * <p>
-     * Intended for cases, that are not yet supported by jaffree
      *
      * @param key   key to add
      * @param value value to add

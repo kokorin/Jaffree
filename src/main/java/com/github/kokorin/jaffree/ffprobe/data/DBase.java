@@ -26,16 +26,32 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class DBase {
+/**
+ * Abstract base class for ffprobe output data structures.
+ */
+public abstract class DBase {
     private final Map<String, String> properties;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DBase.class);
 
-    public DBase(Map<String, String> properties) {
+    /**
+     * Creates {@link DBase} with passed in properties.
+     *
+     * @param properties properties
+     */
+    public DBase(final Map<String, String> properties) {
         this.properties = properties;
     }
 
-    public <T> T getValue(String key, ValueConverter<T> converter) {
+    /**
+     * Handy method to get single value of specific type.
+     *
+     * @param key       key name
+     * @param converter converter to use
+     * @param <T>       return type
+     * @return value for key
+     */
+    public <T> T getValue(final String key, final ValueConverter<T> converter) {
         String value = properties.get(key);
         if (value == null) {
             return null;
@@ -44,11 +60,20 @@ public class DBase {
         return converter.convert(value);
     }
 
-    public void setValue(String key, String value) {
+    // TODO: make DBase immutable
+    @SuppressWarnings("checkstyle:designforextension")
+    void setValue(final String key, final String value) {
         properties.put(key, value);
     }
 
-    public <T> List<T> getValues(KeyValueConverter<T> converter) {
+    /**
+     * Handy method to get all properties of specific type.
+     *
+     * @param converter converter to use
+     * @param <T>       return type
+     * @return values
+     */
+    public <T> List<T> getValues(final KeyValueConverter<T> converter) {
         List<T> result = new ArrayList<>();
 
         for (Map.Entry<String, String> entry : properties.entrySet()) {
@@ -58,31 +83,77 @@ public class DBase {
         return result;
     }
 
-    public String getString(String key) {
+    /**
+     * Returns string value for specified key.
+     *
+     * @param key key
+     * @return value
+     */
+    public String getString(final String key) {
         return properties.get(key);
     }
 
-    public Long getLong(String key) {
+
+    /**
+     * Returns long value for specified key (using default converter).
+     *
+     * @param key key
+     * @return value
+     */
+    public Long getLong(final String key) {
         return getValue(key, LONG_CONVERTER);
     }
 
-    public Integer getInteger(String key) {
+    /**
+     * Returns integer value for specified key (using default converter).
+     *
+     * @param key key
+     * @return value
+     */
+    public Integer getInteger(final String key) {
         return getValue(key, INTEGER_CONVERTER);
     }
 
-    public Float getFloat(String key) {
+    /**
+     * Returns float value for specified key (using default converter).
+     *
+     * @param key key
+     * @return value
+     */
+    public Float getFloat(final String key) {
         return getValue(key, FLOAT_CONVERTER);
     }
 
-    public StreamType getStreamType(String key) {
+    /**
+     * Returns StreamType value for specified key (using default converter).
+     *
+     * @param key key
+     * @return value
+     */
+    // TODO: check if it should be here
+    public StreamType getStreamType(final String key) {
         return getValue(key, STREAM_TYPE_CONVERTER);
     }
 
-    public Rational getRational(String key) {
+    /**
+     * Returns rational value for specified key (using default converter).
+     *
+     * @param key key
+     * @return value
+     */
+    public Rational getRational(final String key) {
         return getValue(key, RATIONAL_CONVERTER);
     }
 
-    public Rational getRatio(String key) {
+    /**
+     * Returns ratio value for specified key (using default converter).
+     * <p>
+     * Note: usually ration is represented by 2 digits separated by : (colon)
+     *
+     * @param key key
+     * @return value
+     */
+    public Rational getRatio(final String key) {
         return getValue(key, RATIO_CONVERTER);
     }
 
@@ -91,17 +162,40 @@ public class DBase {
     // Converters
     //
 
+    /**
+     * Represents a converter which is used to convert requested value to T type.
+     *
+     * @param <T> type to convert to
+     */
     public interface ValueConverter<T> {
+        /**
+         * Converts passed in {@link String} value to T type.
+         *
+         * @param value value
+         * @return converted value
+         */
         T convert(String value);
     }
 
+    /**
+     * Represents a converter which is used to convert key-value pair to T type.
+     *
+     * @param <T> type to convert to
+     */
     public interface KeyValueConverter<T> {
+        /**
+         * Converts passed in key-value pair to T type.
+         *
+         * @param key   key
+         * @param value value
+         * @return converted value
+         */
         T convert(String key, String value);
     }
 
     public static final ValueConverter<Long> LONG_CONVERTER = new ValueConverter<Long>() {
         @Override
-        public Long convert(String value) {
+        public Long convert(final String value) {
             if (value == null || value.isEmpty() || value.equals("N/A")) {
                 return null;
             }
@@ -118,7 +212,7 @@ public class DBase {
 
     public static final ValueConverter<Integer> INTEGER_CONVERTER = new ValueConverter<Integer>() {
         @Override
-        public Integer convert(String value) {
+        public Integer convert(final String value) {
             if (value == null || value.isEmpty() || value.equals("N/A")) {
                 return null;
             }
@@ -135,7 +229,7 @@ public class DBase {
 
     public static final ValueConverter<Float> FLOAT_CONVERTER = new ValueConverter<Float>() {
         @Override
-        public Float convert(String value) {
+        public Float convert(final String value) {
             if (value == null || value.isEmpty() || value.equals("N/A")) {
                 return null;
             }
@@ -150,40 +244,37 @@ public class DBase {
         }
     };
 
-    public static final ValueConverter<StreamType> STREAM_TYPE_CONVERTER = new ValueConverter<StreamType>() {
-        @Override
-        public StreamType convert(String value) {
-            if (value == null || value.isEmpty() || value.equals("N/A")) {
-                return null;
-            }
+    public static final ValueConverter<StreamType> STREAM_TYPE_CONVERTER =
+            new ValueConverter<StreamType>() {
+                @Override
+                public StreamType convert(final String value) {
+                    if (value == null || value.isEmpty() || value.equals("N/A")) {
+                        return null;
+                    }
 
-            try {
-                return StreamType.valueOf(value.toUpperCase());
-            } catch (Exception e) {
-                LOGGER.warn("Failed to parse StreamType: " + value, e);
-            }
+                    try {
+                        return StreamType.valueOf(value.toUpperCase());
+                    } catch (Exception e) {
+                        LOGGER.warn("Failed to parse StreamType: " + value, e);
+                    }
 
-            return null;
-        }
-    };
+                    return null;
+                }
+            };
 
-    public static final ValueConverter<Rational> RATIONAL_CONVERTER = new RationalConverter();
+    public static final ValueConverter<Rational> RATIONAL_CONVERTER = new RationalConverter("/");
 
     public static final ValueConverter<Rational> RATIO_CONVERTER = new RationalConverter(":");
 
-    public static class RationalConverter implements ValueConverter<Rational> {
+    private static class RationalConverter implements ValueConverter<Rational> {
         private final String delimiter;
 
-        public RationalConverter() {
-            this("/");
-        }
-
-        public RationalConverter(String delimiter) {
+        RationalConverter(final String delimiter) {
             this.delimiter = delimiter;
         }
 
         @Override
-        public Rational convert(String value) {
+        public Rational convert(final String value) {
             if (value == null || value.isEmpty() || value.equals("0/0") || value.equals("N/A")) {
                 return null;
             }

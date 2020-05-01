@@ -26,6 +26,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Executor starts threads with provided {@link Runnable}s and controls all threads it has started.
+ * <p>
+ * If exception appears in any of the threads the starter thread is interrupted.
+ */
 public class Executor {
     private final Thread starter;
     private final String contextName;
@@ -38,7 +43,12 @@ public class Executor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Executor.class);
 
-    public Executor(String contextName) {
+    /**
+     * Creates {@link Executor}.
+     *
+     * @param contextName context name for logging
+     */
+    public Executor(final String contextName) {
         this.starter = Thread.currentThread();
         this.contextName = contextName;
     }
@@ -56,7 +66,10 @@ public class Executor {
             throw new RuntimeException("Executor has been stopped already!");
         }
 
-        final Thread starter = Thread.currentThread();
+        if (starter != Thread.currentThread()) {
+            throw new RuntimeException("Executors must be supplied in the same thread "
+                    + "that created this Executor!");
+        }
 
         Thread thread = new Thread(new Runnable() {
             @Override
@@ -66,13 +79,15 @@ public class Executor {
                 try {
                     runnable.run();
                 } catch (Exception e) {
-                    LOGGER.debug("Exception in thread {}, collecting for later report. Message: {}", name, e.getMessage());
+                    LOGGER.debug("Exception in thread {}, collecting for later report. Message: {}",
+                            name, e.getMessage());
                     exceptions.add(e);
 
-                    // Starter thread MUST NOT be interrupted multiple times,
-                    // otherwise main thread may be marked for interruption after exiting ProcessHandler logic.
+                    // Starter thread MUST NOT be interrupted multiple times, otherwise main thread
+                    // may be marked for interruption after exiting ProcessHandler logic.
                     if (!stopped && starterInterrupted.compareAndSet(false, true)) {
-                        LOGGER.warn("Interrupting starter thread ({}) because of exception: {}", starter.getName(), e.getMessage());
+                        LOGGER.warn("Interrupting starter thread ({}) because of exception: {}",
+                                starter.getName(), e.getMessage());
                         starter.interrupt();
                     }
                 } finally {
@@ -87,6 +102,13 @@ public class Executor {
         threads.add(thread);
     }
 
+    /**
+     * Returns exceptions (if any) caught during execution.
+     * <p>
+     * The first exception is counted as cause. All others are added to suppressed exceptions.
+     *
+     * @return exception
+     */
     public Exception getException() {
         if (exceptions.isEmpty()) {
             return null;
@@ -100,6 +122,10 @@ public class Executor {
         return result;
     }
 
+    /**
+     * Stop execution of all threads started so far (by interruption) threads that are still alive
+     * and haven't been interrupted.
+     */
     public void stop() {
         stopped = true;
         LOGGER.debug("Stopping execution");
@@ -111,10 +137,18 @@ public class Executor {
         }
     }
 
+    /**
+     * @return true if at least one of threads is still running.
+     */
     public boolean isRunning() {
         return runningCounter.get() > 0;
     }
 
+    /**
+     * Returns names of all threads that are still running.
+     *
+     * @return threads' names
+     */
     public List<String> getRunningThreadNames() {
         List<String> result = new ArrayList<>();
         for (Thread thread : threads) {
@@ -126,7 +160,7 @@ public class Executor {
         return result;
     }
 
-    private String getThreadName(String name) {
+    private String getThreadName(final String name) {
         if (contextName == null) {
             return name;
         }

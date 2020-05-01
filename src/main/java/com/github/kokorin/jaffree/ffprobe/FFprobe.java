@@ -67,6 +67,7 @@ public class FFprobe {
 
     private final List<String> additionalArguments = new ArrayList<>();
 
+    // TODO: make it final?
     private Input input;
 
     private FormatParser parser = new FlatFormatParser();

@@ -70,7 +70,7 @@ public class FFmpegProgress {
 
     public Long getTime(TimeUnit timeUnit) {
         if (time == null) {
-            return null;
+            throw new IllegalArgumentException("TimeUnit must be non null");
         }
 
         return timeUnit.convert(time, TimeUnit.MILLISECONDS);

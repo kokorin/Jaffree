@@ -68,13 +68,13 @@ public abstract class SocketOutput<T extends SocketOutput<T>> extends BaseOutput
      *
      * @return negotiator
      */
-    // TODO make protected?
+    // TODO: make protected?
     abstract Negotiator negotiator();
 
     /**
      * {@link Negotiator} is capable of integrating with ffmpeg via Socket-based connection.
      */
-    // TODO make protected?
+    // TODO: make protected?
     interface Negotiator {
         /**
          * Negotiator <b>must</b> close passed in {@code ServerSocket}

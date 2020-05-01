@@ -31,6 +31,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+@Deprecated
+// TODO: delete it
+@SuppressWarnings({
+        "checkstyle:missingjavadoctype",
+        "checkstyle:missingjavadocmethod",
+        "checkstyle:finalparameters",
+        "checkstyle:designforextension"
+})
 public class DefaultFormatParser implements FormatParser {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultFormatParser.class);
@@ -118,7 +126,8 @@ public class DefaultFormatParser implements FormatParser {
         State state = stack.pollLast();
 
         if (!state.sectionName.equals(name)) {
-            throw new RuntimeException("Expecting end of " + state.sectionName + " but found " + name);
+            throw new RuntimeException("Expecting end of "
+                    + state.sectionName + " but found " + name);
         }
 
         State parent = stack.peekLast();
@@ -131,7 +140,8 @@ public class DefaultFormatParser implements FormatParser {
 
     public void startProperty(String key) {
         if (multilinePropertyKey != null || multilinePropertyValue != null) {
-            throw new IllegalStateException("Property already started, but not ended: " + multilinePropertyKey);
+            throw new IllegalStateException("Property already started, but not ended: "
+                    + multilinePropertyKey);
         }
 
         multilinePropertyKey = key;
@@ -209,13 +219,13 @@ public class DefaultFormatParser implements FormatParser {
         return result;
     }
 
-    public static class State {
-        public final String sectionName;
-        public final Map<String, String> properties = new HashMap<>();
-        public final Map<String, Map<String, String>> tags = new HashMap<>();
-        public final List<State> subSections = new ArrayList<>();
+    private static class State {
+        private final String sectionName;
+        private final Map<String, String> properties = new HashMap<>();
+        private final Map<String, Map<String, String>> tags = new HashMap<>();
+        private final List<State> subSections = new ArrayList<>();
 
-        public State(String sectionName) {
+        State(String sectionName) {
             this.sectionName = sectionName;
         }
     }

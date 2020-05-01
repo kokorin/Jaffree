@@ -23,28 +23,63 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Data structure which represents whole ffprobe output.
+ */
 public class Data {
     private final DSection sections;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Data.class);
 
-    public Data(Map<String, List<DSection>> sections) {
+    /**
+     * Creates {@link Data}.
+     *
+     * @param sections sections
+     */
+    public Data(final Map<String, List<DSection>> sections) {
         this.sections = new DSection(null, null, sections);
     }
 
-    public DTag getTag(String name) {
+    /**
+     * Returns root-level tag.
+     *
+     * @param name name
+     * @return tag
+     */
+    public DTag getTag(final String name) {
         return sections.getTag(name);
     }
 
-    public List<DSection> getSections(String name) {
+    /**
+     * Returns root-level sections by name.
+     *
+     * @param name name
+     * @return sections
+     */
+    public List<DSection> getSections(final String name) {
         return sections.getSections(name);
     }
 
-    public DSection getSection(String name) {
+    /**
+     * Returns single root-level section its name.
+     *
+     * @param name name
+     * @return sections
+     */
+    public DSection getSection(final String name) {
         return sections.getSection(name);
     }
 
-    public <T> List<T> getSections(String name, DSection.SectionConverter<T> converter) {
+    /**
+     * Handy method which returns root-level sections of the specified name converted to T type.
+     *
+     * @param name      name
+     * @param converter converter
+     * @param <T>       result type
+     * @return converted sections
+     */
+    public <T> List<T> getSections(final String name,
+                                   final DSection.SectionConverter<T> converter) {
         return sections.getSections(name, converter);
     }
 }
