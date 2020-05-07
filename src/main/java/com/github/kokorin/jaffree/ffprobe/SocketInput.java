@@ -17,6 +17,8 @@
 
 package com.github.kokorin.jaffree.ffprobe;
 
+import jdk.internal.vm.annotation.Hidden;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -70,4 +72,22 @@ public abstract class SocketInput implements Input {
          */
         void negotiateAndClose(ServerSocket serverSocket) throws IOException;
     }
+
+    /**
+     * User Agent does not apply to Socket-based connection
+     * @return null
+     */
+    @Override
+    @Hidden
+    public String getUserAgent() {
+      return null;
+    }
+
+    /**
+     * User Agent does not apply to Socket-based connection
+     * @param userAgent HTTP User Agent
+     */
+    @Override
+    @Hidden
+    public void setUserAgent(String userAgent) {  }
 }

@@ -532,6 +532,9 @@ public class FFprobe {
         result.addAll(additionalArguments);
 
         if (input != null) {
+            if(input.getUserAgent() != null){
+              result.addAll(Arrays.asList("-user_agent", input.getUserAgent()));
+            }
             result.addAll(Arrays.asList("-i", input.getUrl()));
         }
 

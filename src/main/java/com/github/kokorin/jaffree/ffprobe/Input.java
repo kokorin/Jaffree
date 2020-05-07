@@ -25,4 +25,7 @@ public interface Input {
      * @return null if no helper thread is needed, otherwise Runnable
      */
     Runnable helperThread();
+
+    String getUserAgent();
+    void setUserAgent(String userAgent);
 }
