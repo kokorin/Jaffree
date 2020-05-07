@@ -17,8 +17,6 @@
 
 package com.github.kokorin.jaffree.ffprobe;
 
-import jdk.internal.vm.annotation.Hidden;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -78,7 +76,6 @@ public abstract class SocketInput implements Input {
      * @return null
      */
     @Override
-    @Hidden
     public String getUserAgent() {
       return null;
     }
@@ -88,6 +85,5 @@ public abstract class SocketInput implements Input {
      * @param userAgent HTTP User Agent
      */
     @Override
-    @Hidden
     public void setUserAgent(String userAgent) {  }
 }
