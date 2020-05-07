@@ -47,7 +47,6 @@ public class FFmpeg {
     private FilterGraph complexFilter;
     // TODO audio and video specific filters: -vf and -af
     private String filter;
-    private String userAgent;
 
     private LogLevel logLevel = null;
     private String contextName = null;
@@ -138,11 +137,6 @@ public class FFmpeg {
         return this;
     }
 
-    public FFmpeg setUserAgent(String userAgent){
-      this.userAgent = userAgent;
-      return this;
-    }
-
     public FFmpegResult execute() {
         List<Runnable> helpers = new ArrayList<>();
 
@@ -212,10 +206,6 @@ public class FFmpeg {
                 throw new RuntimeException("Specified log level " + logLevel + " hides ffmpeg progress output");
             }
             result.addAll(Arrays.asList("-loglevel", Integer.toString(logLevel.code())));
-        }
-
-        if(!userAgent.isEmpty()){
-          result.addAll(Arrays.asList("-user_agent", userAgent));
         }
 
         for (Input input : inputs) {

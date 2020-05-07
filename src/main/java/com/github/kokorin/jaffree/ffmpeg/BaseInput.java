@@ -25,6 +25,7 @@ public abstract class BaseInput<T extends BaseInput<T>> extends BaseInOut<T> imp
     private String input;
     private Integer streamLoop;
     private boolean readAtFrameRate = false;
+    private String userAgent;
     //-itsoffset offset (input)
     //-dump_attachment[:stream_specifier] filename (input,per-stream)
 
@@ -52,6 +53,11 @@ public abstract class BaseInput<T extends BaseInput<T>> extends BaseInOut<T> imp
         return thisAsT();
     }
 
+    public T setUserAgent(String userAgent){
+      this.userAgent = userAgent;
+      return thisAsT();
+    }
+
     @Override
     public final List<String> buildArguments() {
         List<String> result = new ArrayList<>();
@@ -62,6 +68,10 @@ public abstract class BaseInput<T extends BaseInput<T>> extends BaseInOut<T> imp
 
         if (readAtFrameRate) {
             result.add("-re");
+        }
+
+        if(userAgent != null){
+          result.addAll(Arrays.asList("-user_agent",userAgent));
         }
 
         result.addAll(buildCommonArguments());
