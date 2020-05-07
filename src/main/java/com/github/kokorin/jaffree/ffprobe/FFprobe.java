@@ -60,6 +60,7 @@ public class FFprobe {
     private boolean showLibraryVersions;
     private boolean showVersions;
     private boolean showPixelFormats;
+    private String userAgent;
 
     private Long probeSize;
     private Long analyzeDuration;
@@ -431,6 +432,11 @@ public class FFprobe {
         return this;
     }
 
+    public FFprobe setUserAgent(String userAgent){
+      this.userAgent = userAgent;
+      return this;
+    }
+
     public FFprobeResult execute() {
         List<Runnable> helpers = new ArrayList<>();
         if (input != null) {
@@ -452,6 +458,10 @@ public class FFprobe {
 
         if (logLevel != null) {
             result.addAll(Arrays.asList("-loglevel", Integer.toString(logLevel.code())));
+        }
+
+        if(!userAgent.isEmpty()){
+          result.addAll(Arrays.asList("-user_agent", userAgent));
         }
 
         if (selectStreams != null) {
