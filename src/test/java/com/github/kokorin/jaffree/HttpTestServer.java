@@ -11,7 +11,7 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class HttpTestServer implements Runnable{
+public class HttpTestServer implements Runnable {
 
     InetSocketAddress socketAddress;
     HttpServer server;
@@ -23,7 +23,7 @@ public class HttpTestServer implements Runnable{
             server.setExecutor(null);
             // Define Route(s)
             server.createContext("/UserAgent", new UAHandler());
-        }catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
