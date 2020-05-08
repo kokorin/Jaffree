@@ -392,6 +392,21 @@ public class FFmpegTest {
         Assert.assertNotNull(result);
     }
 
+    @Test
+    public void testUserAgent() throws Exception{
+      FFmpegResult result;
+      String URL = "https://static.videezy.com/system/protected/files/000/007/213/Biking_Girl_Alpha.mov?md5=zJB3WS6tzcdWmKjzHnSTLA&expires=1553233302";
+
+      result = FFmpeg.atPath(BIN)
+              .addInput(UrlInput
+                      .fromUrl(URL)
+                      .setUserAgent("Jaffree/0.9.4")
+              )
+              .addOutput(new NullOutput())
+              .execute();
+
+      Assert.assertNotNull(result);
+    }
 
     @Test
     public void testExceptionIsThrownIfFfmpegExitsWithError() {

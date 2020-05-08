@@ -534,6 +534,19 @@ public class FFprobeTest {
         Assert.assertFalse(result.getStreams().isEmpty());
     }
 
+    @Test
+    public void testUserAgent() throws Exception {
+        FFprobeResult result;
+        String URL = "https://static.videezy.com/system/protected/files/000/007/213/Biking_Girl_Alpha.mov?md5=zJB3WS6tzcdWmKjzHnSTLA&expires=1553233302";
+
+        result = FFprobe.atPath(BIN)
+                .setUserAgent("Jaffree/0.9.4")
+                .setInput(URL)
+                .execute();
+
+        Assert.assertNotNull(result);
+    }
+
     private static List<? extends Class> noDeepCompare = Arrays.asList(
             int.class, short.class, long.class, float.class, double.class, boolean.class,
             Integer.class, Short.class, Long.class, Float.class, Double.class, Boolean.class,

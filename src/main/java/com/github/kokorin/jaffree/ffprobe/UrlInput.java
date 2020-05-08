@@ -19,7 +19,6 @@ package com.github.kokorin.jaffree.ffprobe;
 
 public class UrlInput implements Input {
     private final String url;
-    private String userAgent;
 
     public UrlInput(String url) {
         this.url = url;
@@ -35,13 +34,4 @@ public class UrlInput implements Input {
         return null;
     }
 
-    @Override
-    public String getUserAgent() {
-      return this.userAgent;
-    }
-
-    @Override
-    public void setUserAgent(String userAgent) {
-      this.userAgent = userAgent;
-    }
 }

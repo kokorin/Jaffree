@@ -70,20 +70,4 @@ public abstract class SocketInput implements Input {
          */
         void negotiateAndClose(ServerSocket serverSocket) throws IOException;
     }
-
-    /**
-     * User Agent does not apply to Socket-based connection
-     * @return null
-     */
-    @Override
-    public String getUserAgent() {
-      return null;
-    }
-
-    /**
-     * User Agent does not apply to Socket-based connection
-     * @param userAgent HTTP User Agent
-     */
-    @Override
-    public void setUserAgent(String userAgent) {  }
 }
