@@ -53,9 +53,9 @@ public abstract class BaseInput<T extends BaseInput<T>> extends BaseInOut<T> imp
         return thisAsT();
     }
 
-    public T setUserAgent(String userAgent){
-      this.userAgent = userAgent;
-      return thisAsT();
+    public T setUserAgent(String userAgent) {
+        this.userAgent = userAgent;
+        return thisAsT();
     }
 
     @Override

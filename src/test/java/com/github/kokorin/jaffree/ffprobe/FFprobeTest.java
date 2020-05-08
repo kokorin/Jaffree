@@ -13,6 +13,7 @@ import org.junit.rules.ExpectedException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.net.InetSocketAddress;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,6 +29,9 @@ public class FFprobeTest {
     public static Path VIDEO_MP4 = Artifacts.getFFmpegSample("MPEG-4/video.mp4");
     public static Path TRANSPORT_VOB = Artifacts.getFFmpegSample("MPEG-VOB/transport-stream/capture.neimeng");
 
+    private static final HttpTestServer server = new HttpTestServer();
+    private static final InetSocketAddress address = server.getServerAddress();
+
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
 
@@ -42,6 +46,8 @@ public class FFprobeTest {
 
         Assert.assertTrue("Sample videos weren't found: " + VIDEO_MP4.toAbsolutePath(), Files.exists(VIDEO_MP4));
         Assert.assertTrue("Sample videos weren't found: " + TRANSPORT_VOB.toAbsolutePath(), Files.exists(TRANSPORT_VOB));
+
+        server.run();
     }
 
     //private boolean showData;
@@ -537,7 +543,7 @@ public class FFprobeTest {
     @Test
     public void testUserAgent() throws Exception {
         FFprobeResult result;
-        String URL = "https://static.videezy.com/system/protected/files/000/007/213/Biking_Girl_Alpha.mov?md5=zJB3WS6tzcdWmKjzHnSTLA&expires=1553233302";
+        String URL = "http://" + address.getHostString() + ':' + address.getPort() + "/UserAgent";
 
         result = FFprobe.atPath(BIN)
                 .setUserAgent("Jaffree/0.9.4")
