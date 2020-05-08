@@ -29,8 +29,8 @@ public class FFprobeTest {
     public static Path VIDEO_MP4 = Artifacts.getFFmpegSample("MPEG-4/video.mp4");
     public static Path TRANSPORT_VOB = Artifacts.getFFmpegSample("MPEG-VOB/transport-stream/capture.neimeng");
 
-    private static final HttpTestServer server = new HttpTestServer();
-    private static final InetSocketAddress address = server.getServerAddress();
+    private final HttpTestServer server = new HttpTestServer();
+    private final InetSocketAddress address = server.getServerAddress();
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -46,8 +46,6 @@ public class FFprobeTest {
 
         Assert.assertTrue("Sample videos weren't found: " + VIDEO_MP4.toAbsolutePath(), Files.exists(VIDEO_MP4));
         Assert.assertTrue("Sample videos weren't found: " + TRANSPORT_VOB.toAbsolutePath(), Files.exists(TRANSPORT_VOB));
-
-        server.run();
     }
 
     //private boolean showData;
@@ -542,6 +540,7 @@ public class FFprobeTest {
 
     @Test
     public void testUserAgent() throws Exception {
+        server.run();
         FFprobeResult result;
         String URL = "http://" + address.getHostString() + ':' + address.getPort() + "/UserAgent";
 
@@ -551,6 +550,7 @@ public class FFprobeTest {
                 .execute();
 
         Assert.assertNotNull(result);
+        server.stop();
     }
 
     private static List<? extends Class> noDeepCompare = Arrays.asList(

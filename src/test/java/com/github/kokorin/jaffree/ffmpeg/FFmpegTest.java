@@ -38,8 +38,8 @@ public class FFmpegTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FFmpegTest.class);
 
-    private static final HttpTestServer server = new HttpTestServer();
-    private static final InetSocketAddress address = server.getServerAddress();
+    private final HttpTestServer server = new HttpTestServer();
+    private final InetSocketAddress address = server.getServerAddress();
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -56,8 +56,6 @@ public class FFmpegTest {
         Assert.assertTrue("Sample videos weren't found: " + VIDEO_MP4.toAbsolutePath(), Files.exists(VIDEO_MP4));
         Assert.assertTrue("Sample videos weren't found: " + SMALL_FLV.toAbsolutePath(), Files.exists(SMALL_FLV));
         Assert.assertTrue("Sample videos weren't found: " + SMALL_MP4.toAbsolutePath(), Files.exists(SMALL_MP4));
-
-        server.run();
     }
 
     @Test
@@ -400,17 +398,19 @@ public class FFmpegTest {
 
     @Test
     public void testUserAgent() throws Exception {
-          FFmpegResult result;
-          String URL = "http://" + address.getHostString() + ':' + address.getPort() + "/UserAgent";
-          result = FFmpeg.atPath(BIN)
-                  .addInput(UrlInput
-                          .fromUrl(URL)
-                          .setUserAgent("Jaffree/0.9.4")
-                  )
-                  .addOutput(new NullOutput())
-                  .execute();
+        server.run();
+        FFmpegResult result;
+        String URL = "http://" + address.getHostString() + ':' + address.getPort() + "/UserAgent";
+        result = FFmpeg.atPath(BIN)
+                .addInput(UrlInput
+                        .fromUrl(URL)
+                        .setUserAgent("Jaffree/0.9.4")
+                )
+                .addOutput(new NullOutput())
+                .execute();
 
-          Assert.assertNotNull(result);
+        Assert.assertNotNull(result);
+        server.stop();
     }
 
     @Test

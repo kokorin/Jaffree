@@ -29,8 +29,12 @@ public class HttpTestServer implements Runnable {
     }
 
     @Override
-    public void run() {
+    synchronized public void run() {
         server.start();
+    }
+
+    public void stop() {
+        server.stop(0);
     }
 
     public InetSocketAddress getServerAddress() {
