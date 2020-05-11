@@ -38,7 +38,7 @@ public class FFmpegProgress {
      *
      * @param frame   number of frames
      * @param fps     frames encoded per second
-     * @param q       quality of coded frames
+     * @param q       quality of coded frames (between 1 (good) and FF_LAMBDA_MAX (bad))
      * @param size    current size in bytes
      * @param time    encoded duration
      * @param dup     number of duplicate frames
@@ -76,6 +76,8 @@ public class FFmpegProgress {
     }
 
     /**
+     * Quality (between 1 (good) and FF_LAMBDA_MAX (bad))
+     *
      * @return quality of coded frames
      */
     public Double getQ() {
