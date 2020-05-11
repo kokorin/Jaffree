@@ -43,6 +43,8 @@ import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+// TODO NutFrameConsumer inner class if FrameOutput.
+// TODO extract common logic to somewhere
 public class NutFrameConsumer implements TcpOutput.Consumer {
     private final FrameConsumer frameConsumer;
     private final boolean alpha;

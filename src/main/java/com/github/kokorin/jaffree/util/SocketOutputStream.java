@@ -27,6 +27,7 @@ public class SocketOutputStream extends OutputStream {
     private final Socket socket;
     private final OutputStream outputStream;
 
+    // TODO make static constructor method
     public SocketOutputStream(ServerSocket serverSocket, Socket socket) throws IOException {
         this.serverSocket = serverSocket;
         this.socket = socket;
