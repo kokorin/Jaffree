@@ -25,7 +25,7 @@ import java.util.List;
 /**
  * Represents ffmpeg filter.
  * <p>
- * Mainly this class exists to make ffmpeg filters more readable for developers.
+ * Mainly this class exists to make ffmpeg filter graphs more readable for developers.
  *
  * @see <a href="https://ffmpeg.org/ffmpeg-filters.html">ffmpeg filters documentation</a>
  */
