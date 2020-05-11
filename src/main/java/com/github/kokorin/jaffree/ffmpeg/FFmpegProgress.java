@@ -76,7 +76,7 @@ public class FFmpegProgress {
     }
 
     /**
-     * Quality (between 1 (good) and FF_LAMBDA_MAX (bad))
+     * Quality (between 1 (good) and FF_LAMBDA_MAX (bad)).
      *
      * @return quality of coded frames
      */
