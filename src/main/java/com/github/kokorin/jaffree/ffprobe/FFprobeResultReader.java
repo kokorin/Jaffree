@@ -20,23 +20,30 @@ package com.github.kokorin.jaffree.ffprobe;
 import com.github.kokorin.jaffree.ffprobe.data.Data;
 import com.github.kokorin.jaffree.ffprobe.data.FormatParser;
 import com.github.kokorin.jaffree.process.StdReader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 
+/**
+ * {@link FFprobeResultReader} adapts {@link StdReader} to {@link FormatParser}.
+ */
 public class FFprobeResultReader implements StdReader<FFprobeResult> {
 
     private final FormatParser parser;
 
-    private static Logger LOGGER = LoggerFactory.getLogger(FFprobeResultReader.class);
-
-    public FFprobeResultReader(FormatParser parser) {
+    /**
+     * Creates {@link FFprobeResultReader}.
+     *
+     * @param parser parser
+     */
+    public FFprobeResultReader(final FormatParser parser) {
         this.parser = parser;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public FFprobeResult read(InputStream stdOut) {
+    public FFprobeResult read(final InputStream stdOut) {
         Data data = parser.parse(stdOut);
 
         return new FFprobeResult(data);
