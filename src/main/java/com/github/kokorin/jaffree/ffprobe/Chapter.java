@@ -29,7 +29,7 @@ public class Chapter {
     private final DSection section;
 
     /**
-     * Creates Chapter description based on provided data sections.
+     * Creates {@link Chapter} description based on provided data sections.
      * @param section data section
      */
     public Chapter(final DSection section) {
@@ -37,7 +37,7 @@ public class Chapter {
     }
 
     /**
-     * Returns data section which holds all the data provided by ffprobe for current Chapter.
+     * Returns data section which holds all the data provided by ffprobe for the current Chapter.
      * <p>
      * Use this method if you have to access properties which are not accessible through
      * other getters in this class.

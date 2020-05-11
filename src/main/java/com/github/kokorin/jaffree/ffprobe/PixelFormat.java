@@ -21,6 +21,7 @@ import com.github.kokorin.jaffree.ffprobe.data.DSection;
 
 import java.util.List;
 
+@Deprecated
 public class PixelFormat {
     private final DSection section;
 

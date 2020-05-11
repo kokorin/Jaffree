@@ -33,33 +33,49 @@ public class Frame {
     private final int[] samples;
 
     /**
-     * Constructor which creates Video Frame, samples are set to null
+     * Creates video {@link Frame}, samples are set to null.
      *
-     * @param streamId streamId
-     * @param pts      pts
-     * @param image    image
+     * @param streamId stream id (starting with 0)
+     * @param pts      pts in {@link Stream} timebase
+     * @param image    video frame image
+     * @see Stream#getTimebase()
      */
-    public Frame(int streamId, long pts, BufferedImage image) {
+    // TODO make static mathod
+    public Frame(final int streamId, final long pts, final BufferedImage image) {
         this(streamId, pts, image, null);
     }
 
     /**
-     * Constructor which creates Audio Frame, image is set to null
+     * Creates audio {@link Frame}, image is set to null.
      *
      * @param streamId streamId
-     * @param pts      pts
-     * @param samples  samples
+     * @param pts      pts in {@link Stream} timebase
+     * @param samples  audio samples in PCM S32BE format
+     * @see Stream#getTimebase()
      */
-    public Frame(int streamId, long pts, int[] samples) {
+    // TODO make static method
+    public Frame(final int streamId, final long pts, final int[] samples) {
         this(streamId, pts, null, samples);
     }
 
-    public Frame(int streamId, long pts, BufferedImage image, int[] samples) {
+    /**
+     * Creates {@link Frame}.
+     *
+     * @param streamId streamId
+     * @param pts      pts in {@link Stream} timebase
+     * @param image    video frame image
+     * @param samples  audio samples in PCM S32BE format
+     * @see Stream#getTimebase()
+     */
+    public Frame(final int streamId, final long pts, final BufferedImage image,
+                 final int[] samples) {
         if (image != null && samples != null) {
-            throw new IllegalArgumentException("Only one of image and samples parameters may be non null");
+            throw new IllegalArgumentException(
+                    "Only one of image and samples parameters may be non null");
         }
         if (image == null && samples == null) {
-            throw new IllegalArgumentException("One of image and samples parameters must be non null");
+            throw new IllegalArgumentException(
+                    "One of image and samples parameters must be non null");
         }
 
         this.streamId = streamId;
@@ -68,35 +84,53 @@ public class Frame {
         this.samples = samples;
     }
 
+    /**
+     * @return stream id (starting with 0)
+     */
     public int getStreamId() {
         return streamId;
     }
 
     /**
      * PTS in corresponding {@link Stream} timebase.
-     * E.g. Track's timebase is 44100 (audio track), timecode is 4410 - it means 0.1 second (100 milliseconds)
+     * E.g. Track's timebase is 44100 (audio track), timecode is 4410 - it means 0.1 second
+     * (100 milliseconds)
      *
      * @return timecode
+     * @see Stream#getTimebase()
      */
     public long getPts() {
         return pts;
     }
 
+    /**
+     * Returns video frame image (or null if current frame isn't video frame).
+     *
+     * @return video frame image
+     */
     public BufferedImage getImage() {
         return image;
     }
 
+    /**
+     * Returns audio samples (or null if current frame isn't audio frame).
+     *
+     * @return audio samples in PCM S32BE format
+     */
     public int[] getSamples() {
         return samples;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
-        return "Frame{" +
-                "streamId=" + streamId +
-                ", pts=" + pts +
-                ", image?=" + (image != null) +
-                ", samples?=" + (samples != null) +
-                '}';
+        return "Frame{"
+                + "streamId=" + streamId
+                + ", pts=" + pts
+                + ", image?=" + (image != null)
+                + ", samples?=" + (samples != null)
+                + '}';
     }
 }
