@@ -22,17 +22,35 @@ import com.github.kokorin.jaffree.ffprobe.data.Data;
 
 import java.util.List;
 
+/**
+ * {@link FFprobeResult} contains information about ffprobe execution result.
+ */
 public class FFprobeResult {
     private final Data data;
 
-    public FFprobeResult(Data data) {
+    /**
+     * Constructs {@link FFprobeResult} from parsed {@link Data}.
+     *
+     * @param data parsed ffprobe output
+     */
+    public FFprobeResult(final Data data) {
         this.data = data;
     }
 
+    /**
+     * This method allows direct access to parsed ffprobe output.
+     * <p>
+     * It can be used if {@link FFprobeResult} doesn't provide corresponding getter
+     *
+     * @return parsed ffprobe output
+     */
     public Data getData() {
         return data;
     }
 
+    /**
+     * @return ffprobe version
+     */
     // TODO: delete this?
     public ProgramVersion getProgramVersion() {
         DSection section = data.getSection("PROGRAM_VERSION");
@@ -43,6 +61,10 @@ public class FFprobeResult {
         return new ProgramVersion(section);
     }
 
+    /**
+     * @return format-related data
+     * @see FFprobe#setShowFormat(boolean)
+     */
     public Format getFormat() {
         DSection section = data.getSection("FORMAT");
         if (section == null) {
@@ -52,6 +74,9 @@ public class FFprobeResult {
         return new Format(section);
     }
 
+    /**
+     * @return ffprobe errors
+     */
     // TODO: delete this?
     public Error getError() {
         DSection section = data.getSection("ERROR");
@@ -62,70 +87,98 @@ public class FFprobeResult {
         return new Error(section);
     }
 
+    /**
+     * @return FF-library versions.
+     */
     // TODO: delete this?
     public List<LibraryVersion> getLibraryVersions() {
         return data.getSections("LIBRARY_VERSION", new DSection.SectionConverter<LibraryVersion>() {
             @Override
-            public LibraryVersion convert(DSection dSection) {
+            public LibraryVersion convert(final DSection dSection) {
                 return new LibraryVersion(dSection);
             }
         });
     }
 
+    /**
+     * @return supported pixel formats
+     */
     // TODO: delete this?
     public List<PixelFormat> getPixelFormats() {
         return data.getSections("PIXEL_FORMAT", new DSection.SectionConverter<PixelFormat>() {
             @Override
-            public PixelFormat convert(DSection dSection) {
+            public PixelFormat convert(final DSection dSection) {
                 return new PixelFormat(dSection);
             }
         });
     }
 
+    /**
+     * @return parsed packets
+     * @see FFprobe#setShowPackets(boolean)
+     */
     public List<Packet> getPackets() {
         return data.getSections("PACKET", new DSection.SectionConverter<Packet>() {
             @Override
-            public Packet convert(DSection dSection) {
+            public Packet convert(final DSection dSection) {
                 return new Packet(dSection);
             }
         });
     }
 
+    /**
+     * @return parsed frames
+     * @see FFprobe#setShowFrames(boolean)
+     */
     public List<Frame> getFrames() {
         return data.getSections("FRAME", new DSection.SectionConverter<Frame>() {
             @Override
-            public Frame convert(DSection dSection) {
+            public Frame convert(final DSection dSection) {
                 return new Frame(dSection);
             }
         });
     }
 
+    /**
+     * @return parsed subtitles
+     */
     public List<Subtitle> getSubtitles() {
         return data.getSections("SUBTITLE", new DSection.SectionConverter<Subtitle>() {
             @Override
-            public Subtitle convert(DSection dSection) {
+            public Subtitle convert(final DSection dSection) {
                 return new Subtitle(dSection);
             }
         });
     }
 
+    /**
+     * @return parsed programs
+     * @see FFprobe#setShowPrograms(boolean)
+     */
     public List<Program> getPrograms() {
         return data.getSections("PROGRAM", new DSection.SectionConverter<Program>() {
             @Override
-            public Program convert(DSection dSection) {
+            public Program convert(final DSection dSection) {
                 return new Program(dSection);
             }
         });
     }
 
-    public List<Stream> getStreams() {
+    /**
+     * @return parsed streams
+     * @see FFprobe#setShowStreams(boolean)
+     */    public List<Stream> getStreams() {
         return data.getSections("STREAM", DSection.STREAM_CONVERTER);
     }
 
+    /**
+     * @return parsed chapters
+     * @see FFprobe#setShowChapters(boolean)
+     */
     public List<Chapter> getChapters() {
         return data.getSections("CHAPTER", new DSection.SectionConverter<Chapter>() {
             @Override
-            public Chapter convert(DSection dSection) {
+            public Chapter convert(final DSection dSection) {
                 return new Chapter(dSection);
             }
         });
