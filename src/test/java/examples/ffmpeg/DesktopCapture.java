@@ -13,7 +13,7 @@ import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
 /**
- * This class demonstrates capturing the computer destktop and writing it to a file.
+ * This class demonstrates capturing the computer desktop and writing it to a file.
  * The default duration is 10 seconds and can be overridden with the -duration option
  * Sample use: DesktopCapture -ffmpeg_bin <path\to\ffmpeg\bin> -output desktop.mp4
  */
