@@ -184,7 +184,6 @@
                             <goal>check</goal>
                         </goals>
                     </execution>
-
                 </executions>
             </plugin>
         </plugins>

@@ -42,7 +42,8 @@ public class Frame {
     }
 
     /**
-     * Returns data section which holds all the data provided by ffprobe for the current Frame.
+     * Returns data section which holds all the data provided by ffprobe for
+     * the current {@link Frame}.
      * <p>
      * Use this method if you have to access properties which are not accessible through
      * other getters in this class.

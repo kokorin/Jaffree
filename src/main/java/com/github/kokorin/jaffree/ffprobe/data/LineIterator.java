@@ -22,16 +22,27 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+/**
+ * Adapts {@link BufferedReader} to line {@link Iterator}.
+ */
 // TODO: move to util package
 public class LineIterator implements Iterator<String> {
     private final BufferedReader reader;
     private String nextLine = null;
     private boolean depleted = false;
 
-    public LineIterator(BufferedReader reader) {
+    /**
+     * Creates {@link LineIterator} from reader.
+     *
+     * @param reader reader
+     */
+    public LineIterator(final BufferedReader reader) {
         this.reader = reader;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean hasNext() {
         if (nextLine != null) {
@@ -56,6 +67,9 @@ public class LineIterator implements Iterator<String> {
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String next() {
         if (!hasNext()) {
@@ -67,6 +81,11 @@ public class LineIterator implements Iterator<String> {
         return result;
     }
 
+    /**
+     * Not implemented.
+     * <p>
+     * It's not possible to remove a line from backed BufferedReader.
+     */
     @Override
     public void remove() {
         throw new UnsupportedOperationException("Remove not supported");

@@ -43,6 +43,7 @@ import java.util.concurrent.TimeUnit;
  */
 //TODO add debug statements for all methods
 public class FFprobe {
+    // TODO why final?
     private final LogLevel logLevel = LogLevel.ERROR;
 
     private String selectStreams;
@@ -382,8 +383,10 @@ public class FFprobe {
      *
      * @param showLibraryVersions true to show library version
      * @return this
+     * @deprecated not actually in use
      */
-    //TODO remove
+    @Deprecated
+    //TODO remove this method
     public FFprobe setShowLibraryVersions(final boolean showLibraryVersions) {
         this.showLibraryVersions = showLibraryVersions;
         return this;
