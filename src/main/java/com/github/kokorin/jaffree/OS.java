@@ -18,5 +18,8 @@
 package com.github.kokorin.jaffree;
 
 public class OS {
-    public static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("windows");
+    // Test and values taken from org.apache.commons.lang3.SystemUtils
+    public static final boolean IS_WINDOWS = System.getProperty("os.name").startsWith("Windows");
+    public static final boolean IS_MAC = System.getProperty("os.name").startsWith("Mac");
+    public static final boolean IS_LINUX = System.getProperty("os.name").startsWith("Linux") || System.getProperty("os.name").startsWith("LINUX");
 }
