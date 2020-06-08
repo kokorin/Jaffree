@@ -25,11 +25,21 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+/**
+ * {@link StdReader} implementation which reads and logs everything been read.
+ *
+ * @param <T>
+ */
 public class LoggingStdReader<T> implements StdReader<T> {
     private static final Logger LOGGER = LoggerFactory.getLogger(LoggingStdReader.class);
 
+    /**
+     * @param stdOut stream to read from
+     * @return null
+     */
     @Override
-    public T read(InputStream stdOut) {
+    public T read(final InputStream stdOut) {
+        // TODO use line iterator?
         BufferedReader reader = new BufferedReader(new InputStreamReader(stdOut));
 
         try {

@@ -17,6 +17,9 @@
 
 package com.github.kokorin.jaffree;
 
+/**
+ * FFmpeg & FFprobe log level.
+ */
 public enum LogLevel {
 
     /**
@@ -73,14 +76,20 @@ public enum LogLevel {
      */
     DEBUG(48),
 
+    /**
+     * Show everything, including trace information.
+     */
     TRACE(56);
 
-    private int code;
+    private final int code;
 
-    LogLevel(int code) {
+    LogLevel(final int code) {
         this.code = code;
     }
 
+    /**
+     * @return integer log level code
+     */
     public int code() {
         return code;
     }
