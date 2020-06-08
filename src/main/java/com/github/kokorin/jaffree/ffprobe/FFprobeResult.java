@@ -89,8 +89,10 @@ public class FFprobeResult {
 
     /**
      * @return FF-library versions.
+     * @deprecated not actually in use
      */
-    // TODO: delete this?
+    @Deprecated
+    // TODO: delete this
     public List<LibraryVersion> getLibraryVersions() {
         return data.getSections("LIBRARY_VERSION", new DSection.SectionConverter<LibraryVersion>() {
             @Override

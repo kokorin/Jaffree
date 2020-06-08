@@ -19,6 +19,14 @@ package com.github.kokorin.jaffree.ffmpeg;
 
 import java.util.List;
 
+/**
+ * Interface for any ffmpeg input.
+ * <p>
+ * This interface should not be implemented by custom solutions.
+ * It's better to use {@link BaseInput}.
+ *
+ * @see BaseInput
+ */
 public interface Input {
 
     /**
@@ -29,7 +37,7 @@ public interface Input {
     List<String> buildArguments();
 
     /**
-     * Helper {@link Runnable} which should be ran in dedicated thread
+     * Helper {@link Runnable} which should be ran in dedicated thread.
      * <p>
      * Return <b>null</b> if no helper thread is needed
      *
