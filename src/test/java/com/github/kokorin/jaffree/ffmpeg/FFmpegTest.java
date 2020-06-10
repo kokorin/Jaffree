@@ -699,6 +699,7 @@ public class FFmpegTest {
     }
 
     @Test
+    @Ignore("This test requires a non-headless environment to work")
     public void testDesktopCapture() throws Exception {
         Path tempDir = Files.createTempDirectory("jaffree");
         Path output = tempDir.resolve("desktop.mp4");
