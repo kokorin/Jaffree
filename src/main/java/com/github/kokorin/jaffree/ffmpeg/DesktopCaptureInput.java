@@ -61,9 +61,10 @@ public class DesktopCaptureInput extends BaseInput<DesktopCaptureInput> implemen
             else {
                 // Generic way to crop after capture
                 // TODO is this the right way to do ?
-                // TODO Having the filter part of the input seems wrong, but what else can we do ?
-                // TODO Or throw and exception and request that user adds a crop filter downstream in the chain ?
-                addArguments("-vf", "\"crop=" + area.width + ":" + area.height + ":" + area.x + ":" + area.y + "\"");
+                // addArguments("-vf", "\"crop=" + area.width + ":" + area.height + ":" + area.x + ":" + area.y + "\"");
+                // TODO This doesn't seem to work as filter should come after input.
+                // TODO Plus, having the filter part of the input seems wrong, but what else can we do ?
+                // TODO Or throw an exception and request that user adds a crop filter downstream in the chain ?
             }
         }
         return this;
