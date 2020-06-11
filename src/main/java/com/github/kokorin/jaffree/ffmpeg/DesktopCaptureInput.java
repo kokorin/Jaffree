@@ -18,10 +18,14 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.OS;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 
 /**
+ * This Input provides a live capture of your computer desktop as source.
+ * <p>
  * Most of the information comes from https://trac.ffmpeg.org/wiki/Capture/Desktop
  * <p>
  * TODO list:
@@ -31,9 +35,25 @@ import java.awt.*;
  * - Call ffmpeg to return list of devices? list of screens?
  */
 public class DesktopCaptureInput extends BaseInput<DesktopCaptureInput> implements Input {
-    private final boolean WINDOWS_USE_GDI = true;
+    // Constant to select Windows capture mode (GDI vs DirectShow). I don't know which one to choose...
+    private final static boolean WINDOWS_USE_GDI = true;
+
     private String input = "";
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(DesktopCaptureInput.class);
+
+    /**
+     * Test if the current OS and configuration supports selecting an area to capture.
+     * @return true if setArea() is effective on this platform, false if it is ignored (with a warning).
+     */
+    public static boolean isAreaSelectionSupported() {
+        return (OS.IS_LINUX || (OS.IS_WINDOWS && WINDOWS_USE_GDI));
+    }
+
+    /**
+     * Create a DesktopCaptureInput suitable for your platform
+     * @param screen (unused for now)
+     */
     public DesktopCaptureInput(String screen) {
         if (OS.IS_LINUX) {
             setFormat("x11grab");
@@ -61,32 +81,51 @@ public class DesktopCaptureInput extends BaseInput<DesktopCaptureInput> implemen
         }
     }
 
+    /**
+     * Limit capture to the given area.
+     * <p>
+     * Note that this feature is not supported on all OS/configuration combination.
+     * In case it is not supported, a warning will be printed and the full desktop will be captured.
+     * @param area the Rectangle to limit capture to
+     * @return this
+     */
     public DesktopCaptureInput setArea(Rectangle area) {
         if (area != null) {
-            if (OS.IS_LINUX) {
-                // Specific way to select area with avfoundation
-                addArguments("-video_size", area.width + "x" + area.height);
-                setInput(input + "+" + area.x + "," + area.y);
-                return this;
-            }
-            else if (OS.IS_WINDOWS && WINDOWS_USE_GDI) {
-                // Specific way to select area with gdigrab
-                addArguments("-video_size", area.width + "x" + area.height);
-                addArguments("-offset_x", String.valueOf(area.x));
-                addArguments("-offset_y", String.valueOf(area.x));
+            if (isAreaSelectionSupported()) {
+                if (OS.IS_LINUX) {
+                    // Specific way to select area with avfoundation
+                    addArguments("-video_size", area.width + "x" + area.height);
+                    setInput(input + "+" + area.x + "," + area.y);
+                    return this;
+                }
+                else if (OS.IS_WINDOWS && WINDOWS_USE_GDI) {
+                    // Specific way to select area with gdigrab
+                    addArguments("-video_size", area.width + "x" + area.height);
+                    addArguments("-offset_x", String.valueOf(area.x));
+                    addArguments("-offset_y", String.valueOf(area.x));
+                }
+                else {
+                    LOGGER.error("Error selecting area - Unknown OS/Device configuration");
+                }
             }
             else {
-                // Generic way to crop after capture
-                // TODO is this the right way to do ?
-                // addArguments("-vf", "\"crop=" + area.width + ":" + area.height + ":" + area.x + ":" + area.y + "\"");
-                // TODO This doesn't seem to work as filter should come after input.
-                // TODO Plus, having the filter part of the input seems wrong, but what else can we do ?
-                // TODO Or throw an exception and request that user adds a crop filter downstream in the chain ?
+                LOGGER.warn("Setting an area is not supported with this OS/configuration. " +
+                            "Please add the following filter to your FFmpeg chain: " +
+                            ".setFilter(\"crop=" + area.width + ":" + area.height + ":" + area.x + ":" + area.y + "\")");
             }
         }
         return this;
     }
 
+
+    /**
+     * Set frame rate.
+     * <p>
+     * Captures the desktop at the given frame rate
+     *
+     * @param value Hz value, fraction or abbreviation
+     * @return this
+     */
     @Override
     public DesktopCaptureInput setFrameRate(Number value) {
         return super.setFrameRate(value);
@@ -94,6 +133,9 @@ public class DesktopCaptureInput extends BaseInput<DesktopCaptureInput> implemen
 
     /**
      * Include mouse cursor (only works on Mac)
+     * <p>
+     * Note that this feature is not supported on all OS/configuration combination.
+     * In case it is not supported, a warning will be printed and the full desktop will be captured.
      *
      * @param includeCursor
      * @return
@@ -101,6 +143,9 @@ public class DesktopCaptureInput extends BaseInput<DesktopCaptureInput> implemen
     public DesktopCaptureInput includeMouseCursor(boolean includeCursor) {
         if (OS.IS_MAC && includeCursor) {
             addArguments("-capture_cursor", "1");
+        }
+        else {
+            LOGGER.warn("Choosing whether mouse cursor should be included is not supported with your configuration. ");
         }
         return this;
     }
