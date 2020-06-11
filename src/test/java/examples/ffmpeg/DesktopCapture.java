@@ -34,7 +34,7 @@ import java.util.concurrent.TimeUnit;
  * This class demonstrates capturing the computer desktop and writing it to a file.
  * The default duration is 10 seconds and can be overridden with the -duration option
  * If the -center-only option is passed, only a 640x480 rectangle centered on the screen is grabbed
- * Sample use: DesktopCapture -ffmpeg_bin <path\to\ffmpeg\bin> -output desktop.mp4
+ * Sample use: DesktopCapture -ffmpeg_bin <path\to\ffmpeg\bin> -output <desktop.mp4>
  */
 public class DesktopCapture {
     private final Path ffmpegBin;
@@ -51,23 +51,54 @@ public class DesktopCapture {
     }
 
     public void execute() {
-        Rectangle area = null;
         if (centerOnly) {
             final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-            area = new Rectangle(screenSize.width / 2 - 320, screenSize.height / 2 - 240, 640, 480);
+            Rectangle area = new Rectangle(screenSize.width / 2 - 320, screenSize.height / 2 - 240, 640, 480);
+
+            if (DesktopCaptureInput.isAreaSelectionSupported()) {
+                FFmpegResult result = FFmpeg.atPath(ffmpegBin)
+                        .addInput(DesktopCaptureInput
+                                .fromScreen()
+                                .setArea(area)  // Limit area at the capture level if supported
+                                .setFrameRate(frameRate)
+                        )
+                        .addOutput(UrlOutput
+                                .toPath(output)
+                                .setDuration(duration, TimeUnit.SECONDS)
+                        )
+                        .setOverwriteOutput(true)
+                        .execute();
+            }
+            else {
+                FFmpegResult result = FFmpeg.atPath(ffmpegBin)
+                        .addInput(DesktopCaptureInput
+                                .fromScreen()
+                                .setFrameRate(frameRate)
+                        )
+                        // Add a separate filter to limit area if not supported at capture level
+                        .setFilter("crop=" + area.width + ":" + area.height + ":" + area.x + ":" + area.y)
+                        .addOutput(UrlOutput
+                                .toPath(output)
+                                .setDuration(duration, TimeUnit.SECONDS)
+                        )
+                        .setOverwriteOutput(true)
+                        .execute();
+            }
         }
-        FFmpegResult result = FFmpeg.atPath(ffmpegBin)
-                .addInput(DesktopCaptureInput
-                        .fromScreen()
-                        .setArea(area)
-                        .setFrameRate(frameRate)
-                )
-                .addOutput(UrlOutput
-                        .toPath(output)
-                        .setDuration(duration, TimeUnit.SECONDS)
-                )
-                .setOverwriteOutput(true)
-                .execute();
+        else {
+            // Capture the whole screen
+            FFmpegResult result = FFmpeg.atPath(ffmpegBin)
+                    .addInput(DesktopCaptureInput
+                            .fromScreen()
+                            .setFrameRate(frameRate)
+                    )
+                    .addOutput(UrlOutput
+                            .toPath(output)
+                            .setDuration(duration, TimeUnit.SECONDS)
+                    )
+                    .setOverwriteOutput(true)
+                    .execute();
+        }
     }
 
     public static void main(String[] args) throws Exception {
