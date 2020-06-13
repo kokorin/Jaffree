@@ -18,6 +18,7 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.LogLevel;
+import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.process.LoggingStdReader;
 import com.github.kokorin.jaffree.process.ProcessHandler;
 import com.github.kokorin.jaffree.process.StdReader;
@@ -27,9 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
@@ -45,8 +44,11 @@ public class FFmpeg {
     //-filter_threads nb_threads (global)
     //-debug_ts (global)
     private FilterGraph complexFilter;
-    // TODO audio and video specific filters: -vf and -af
-    private String filter;
+
+    /**
+     * A map with 0 or 1 filter per stream type. Type can be A (audio), V (video) or null (plain 'filter')
+     */
+    private Map<String,String> filters = new HashMap<>();
 
     private LogLevel logLevel = null;
     private String contextName = null;
@@ -79,8 +81,46 @@ public class FFmpeg {
         return this;
     }
 
+    /**
+     * Sets the 'generic' filter value (equivalent to the "-filter" command-line parameter).
+     *
+     * @param filter a String describing the filter to apply
+     * @return this
+     */
     public FFmpeg setFilter(String filter) {
-        this.filter = filter;
+        return setFilter((String) null, filter);
+    }
+
+    /**
+     * Sets a 'stream specific' filter value (equivalent to the "-av" / "-filter:a" or "-fv" / "-filter:v" command-line parameters).
+     *
+     * @param streamType the stream type to apply this filter to (StreamType.A for audio, StreamType.V for video)
+     * @param filter     a String describing the filter to apply
+     * @return this
+     */
+    public FFmpeg setFilter(StreamType streamType, String filter) {
+        return setFilter(streamType.code(), filter);
+    }
+
+    /**
+     * Sets a 'stream specific' filter value (equivalent to the "-av" / "-filter:a" or "-fv" / "-filter:v" / "-filter" command-line parameters).
+     *
+     * @param streamSpecifier the String specifying to which stream this filter must be applied ("a" for audio, "v" "for video, or null for generic 'filter')
+     * @param filter          a String describing the filter to apply
+     * @return this
+     */
+    public FFmpeg setFilter(String streamSpecifier, String filter) {
+        if (filters.get(streamSpecifier) != null) {
+            if (streamSpecifier == null) {
+                LOGGER.error("Only one generic filter is supported. Ignoring additional generic filter '" + filter + "'.");
+            }
+            else {
+                LOGGER.error("Only one filter per stream is supported. Ignoring additional filter '" + filter + "' for stream '" + streamSpecifier + "'.");
+            }
+        }
+        else {
+            filters.put(streamSpecifier, filter);
+        }
         return this;
     }
 
@@ -224,8 +264,21 @@ public class FFmpeg {
             result.addAll(Arrays.asList("-filter_complex", complexFilter.getValue()));
         }
 
-        if (filter != null) {
-            result.addAll(Arrays.asList("-filter", filter));
+        for (String streamSpecifier : filters.keySet()) {
+            String option = null;
+            if (streamSpecifier == null) {
+                option = "-filter";
+            }
+            else if (streamSpecifier.equals(StreamType.VIDEO.code())) {
+                option = "-vf";
+            }
+            else if (streamSpecifier.equals(StreamType.AUDIO.code())) {
+                option = "-af";
+            }
+            else {
+                LOGGER.error("Unrecognized filter stream specifier: '" + streamSpecifier + "'. Ignoring");
+            }
+            result.addAll(Arrays.asList(option, filters.get(streamSpecifier)));
         }
 
         result.addAll(additionalArguments);
