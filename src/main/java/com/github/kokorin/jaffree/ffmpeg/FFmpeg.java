@@ -110,17 +110,18 @@ public class FFmpeg {
      * @return this
      */
     public FFmpeg setFilter(String streamSpecifier, String filter) {
-        if (filters.get(streamSpecifier) != null) {
+        // If a previous filter was set, warn that it is replaced by the new one
+        final String previousFilter = filters.get(streamSpecifier);
+        if (previousFilter != null) {
             if (streamSpecifier == null) {
-                LOGGER.error("Only one generic filter is supported. Ignoring additional generic filter '" + filter + "'.");
+                LOGGER.warn("Only one generic filter is supported. Ignoring previous filter '" + previousFilter + "'.");
             }
             else {
-                LOGGER.error("Only one filter per stream is supported. Ignoring additional filter '" + filter + "' for stream '" + streamSpecifier + "'.");
+                LOGGER.error("Only one filter per stream is supported. Ignoring previous filter '" + previousFilter + "' for stream '" + streamSpecifier + "'.");
             }
         }
-        else {
-            filters.put(streamSpecifier, filter);
-        }
+        // Store the new filter
+        filters.put(streamSpecifier, filter);
         return this;
     }
 
