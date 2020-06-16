@@ -46,9 +46,9 @@ public class FFmpeg {
     private FilterGraph complexFilter;
 
     /**
-     * A map with 0 or 1 filter per stream type. Type can be A (audio), V (video) or null (plain 'filter')
+     * A map with 0 or 1 filter per stream type. Type can be "a" (audio), "v" (video) or "" (plain 'filter')
      */
-    private Map<String,String> filters = new HashMap<>();
+    private final Map<String,Object> filters = new HashMap<>();
 
     private LogLevel logLevel = null;
     private String contextName = null;
@@ -88,13 +88,13 @@ public class FFmpeg {
      * @return this
      */
     public FFmpeg setFilter(String filter) {
-        return setFilter((String) null, filter);
+        return setFilter("", filter);
     }
 
     /**
      * Sets a 'stream specific' filter value (equivalent to the "-av" / "-filter:a" or "-fv" / "-filter:v" command-line parameters).
      *
-     * @param streamType the stream type to apply this filter to (StreamType.A for audio, StreamType.V for video)
+     * @param streamType the stream type to apply this filter to (StreamType.AUDIO or StreamType.VIDEO)
      * @param filter     a String describing the filter to apply
      * @return this
      */
@@ -105,15 +105,15 @@ public class FFmpeg {
     /**
      * Sets a 'stream specific' filter value (equivalent to the "-av" / "-filter:a" or "-fv" / "-filter:v" / "-filter" command-line parameters).
      *
-     * @param streamSpecifier the String specifying to which stream this filter must be applied ("a" for audio, "v" "for video, or null for generic 'filter')
+     * @param streamSpecifier a String specifying to which stream this filter must be applied ("a" for audio, "v" "for video, or "" for generic 'filter')
      * @param filter          a String describing the filter to apply
      * @return this
      */
     public FFmpeg setFilter(String streamSpecifier, String filter) {
         // If a previous filter was set, warn that it is replaced by the new one
-        final String previousFilter = filters.get(streamSpecifier);
+        final String previousFilter = (String) filters.get(streamSpecifier);
         if (previousFilter != null) {
-            if (streamSpecifier == null) {
+            if (streamSpecifier.isEmpty()) {
                 LOGGER.warn("Only one generic filter is supported. Ignoring previous filter '" + previousFilter + "'.");
             }
             else {
@@ -265,22 +265,7 @@ public class FFmpeg {
             result.addAll(Arrays.asList("-filter_complex", complexFilter.getValue()));
         }
 
-        for (String streamSpecifier : filters.keySet()) {
-            String option = null;
-            if (streamSpecifier == null) {
-                option = "-filter";
-            }
-            else if (streamSpecifier.equals(StreamType.VIDEO.code())) {
-                option = "-vf";
-            }
-            else if (streamSpecifier.equals(StreamType.AUDIO.code())) {
-                option = "-af";
-            }
-            else {
-                LOGGER.error("Unrecognized filter stream specifier: '" + streamSpecifier + "'. Ignoring");
-            }
-            result.addAll(Arrays.asList(option, filters.get(streamSpecifier)));
-        }
+        result.addAll(BaseInOut.toArguments("-filter", filters));
 
         result.addAll(additionalArguments);
 
