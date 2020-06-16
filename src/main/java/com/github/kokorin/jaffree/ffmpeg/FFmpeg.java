@@ -94,12 +94,34 @@ public class FFmpeg {
     /**
      * Sets a 'stream specific' filter value (equivalent to the "-av" / "-filter:a" or "-fv" / "-filter:v" command-line parameters).
      *
+     * @param streamType  the stream type to apply this filter to (StreamType.AUDIO or StreamType.VIDEO)
+     * @param filterGraph a graph describing the filters to apply
+     * @return this
+     */
+    public FFmpeg setFilter(StreamType streamType, FilterGraph filterGraph) {
+        return setFilter(streamType.code(), filterGraph.getValue());
+    }
+
+    /**
+     * Sets a 'stream specific' filter value (equivalent to the "-av" / "-filter:a" or "-fv" / "-filter:v" command-line parameters).
+     *
      * @param streamType the stream type to apply this filter to (StreamType.AUDIO or StreamType.VIDEO)
      * @param filter     a String describing the filter to apply
      * @return this
      */
     public FFmpeg setFilter(StreamType streamType, String filter) {
         return setFilter(streamType.code(), filter);
+    }
+
+    /**
+     * Sets a 'stream specific' filter value (equivalent to the "-av" / "-filter:a" or "-fv" / "-filter:v" / "-filter" command-line parameters).
+     *
+     * @param streamSpecifier a String specifying to which stream this filter must be applied ("a" for audio, "v" "for video, or "" for generic 'filter')
+     * @param filterGraph     a graph describing the filters to apply
+     * @return this
+     */
+    public FFmpeg setFilter(String streamSpecifier, FilterGraph filterGraph) {
+        return setFilter(streamSpecifier, filterGraph.getValue());
     }
 
     /**
