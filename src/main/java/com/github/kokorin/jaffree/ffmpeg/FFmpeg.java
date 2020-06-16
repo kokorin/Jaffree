@@ -92,6 +92,16 @@ public class FFmpeg {
     }
 
     /**
+     * Sets the 'generic' filter value (equivalent to the "-filter" command-line parameter).
+     *
+     * @param filter a FilterGraph describing the filter to apply
+     * @return this
+     */
+    public FFmpeg setFilter(FilterGraph filter) {
+        return setFilter("", filter.getValue());
+    }
+
+    /**
      * Sets a 'stream specific' filter value (equivalent to the "-av" / "-filter:a" or "-fv" / "-filter:v" command-line parameters).
      *
      * @param streamType  the stream type to apply this filter to (StreamType.AUDIO or StreamType.VIDEO)
