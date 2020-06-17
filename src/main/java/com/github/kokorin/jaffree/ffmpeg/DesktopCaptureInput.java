@@ -102,7 +102,7 @@ public class DesktopCaptureInput extends BaseInput<DesktopCaptureInput> implemen
                     // Specific way to select area with gdigrab
                     addArguments("-video_size", area.width + "x" + area.height);
                     addArguments("-offset_x", String.valueOf(area.x));
-                    addArguments("-offset_y", String.valueOf(area.x));
+                    addArguments("-offset_y", String.valueOf(area.y));
                 }
                 else {
                     LOGGER.error("Error selecting area - Unknown OS/Device configuration");
