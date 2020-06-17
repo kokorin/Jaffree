@@ -60,11 +60,11 @@ public class DesktopCapture {
                         .addInput(DesktopCaptureInput
                                 .fromScreen()
                                 .setArea(area)  // Limit area at the capture level if supported
-                                .setFrameRate(frameRate)
                         )
                         .addOutput(UrlOutput
                                 .toPath(output)
                                 .setDuration(duration, TimeUnit.SECONDS)
+                                .setFrameRate(frameRate)
                         )
                         .setOverwriteOutput(true)
                         .execute();
@@ -73,13 +73,13 @@ public class DesktopCapture {
                 FFmpegResult result = FFmpeg.atPath(ffmpegBin)
                         .addInput(DesktopCaptureInput
                                 .fromScreen()
-                                .setFrameRate(frameRate)
                         )
                         // Add a separate filter to limit area if not supported at capture level
                         .setFilter("crop=" + area.width + ":" + area.height + ":" + area.x + ":" + area.y)
                         .addOutput(UrlOutput
                                 .toPath(output)
                                 .setDuration(duration, TimeUnit.SECONDS)
+                                .setFrameRate(frameRate)
                         )
                         .setOverwriteOutput(true)
                         .execute();
@@ -90,11 +90,11 @@ public class DesktopCapture {
             FFmpegResult result = FFmpeg.atPath(ffmpegBin)
                     .addInput(DesktopCaptureInput
                             .fromScreen()
-                            .setFrameRate(frameRate)
                     )
                     .addOutput(UrlOutput
                             .toPath(output)
                             .setDuration(duration, TimeUnit.SECONDS)
+                            .setFrameRate(frameRate)
                     )
                     .setOverwriteOutput(true)
                     .execute();
