@@ -665,6 +665,29 @@ public class FFmpegTest {
         Assert.assertTrue(Files.size(outputPath) > 1000);
     }
 
+    @Test
+    public void testStreamFilters() throws IOException {
+        Path tempDir = Files.createTempDirectory("jaffree");
+        Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
+
+        LOGGER.debug("Will write to " + outputPath);
+
+        FFmpegResult result = FFmpeg.atPath(BIN)
+                .addInput(UrlInput.fromPath(VIDEO_MP4))
+                .setFilter(StreamType.VIDEO, "crop=64:48:32:32")
+                .setFilter(StreamType.AUDIO, "aecho=0.8:0.88:6:0.4")
+                .addOutput(UrlOutput
+                        .toPath(outputPath)
+                          )
+                .execute();
+
+        Assert.assertNotNull(result);
+        Assert.assertNotNull(result.getVideoSize());
+        Assert.assertTrue(Files.exists(outputPath));
+        Assert.assertTrue(Files.size(outputPath) > 1000);
+    }
+
+
     private static double getDuration(Path path) {
         FFprobeResult probe = FFprobe.atPath(BIN)
                 .setShowStreams(true)
