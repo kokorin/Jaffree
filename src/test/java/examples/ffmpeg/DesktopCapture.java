@@ -17,6 +17,7 @@
 
 package examples.ffmpeg;
 
+import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffmpeg.DesktopCaptureInput;
 import com.github.kokorin.jaffree.ffmpeg.FFmpeg;
 import com.github.kokorin.jaffree.ffmpeg.FFmpegResult;
@@ -75,7 +76,7 @@ public class DesktopCapture {
                                 .fromScreen()
                         )
                         // Add a separate filter to limit area if not supported at capture level
-                        .setFilter("crop=" + area.width + ":" + area.height + ":" + area.x + ":" + area.y)
+                        .setFilter(StreamType.VIDEO, "crop=" + area.width + ":" + area.height + ":" + area.x + ":" + area.y)
                         .addOutput(UrlOutput
                                 .toPath(output)
                                 .setDuration(duration, TimeUnit.SECONDS)
