@@ -35,23 +35,42 @@ import java.awt.*;
  * - Call ffmpeg to return list of devices? list of screens?
  */
 public class DesktopCaptureInput extends BaseInput<DesktopCaptureInput> implements Input {
-    // Constant to select Windows capture mode (GDI vs DirectShow). I don't know which one to choose...
-    private final static boolean WINDOWS_USE_GDI = true;
+    private static boolean useDirectShow = false;
 
     private String input = "";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DesktopCaptureInput.class);
 
     /**
+     * FFmpeg has two capture modes under Windows: GDI (Jaffree's default) and DirectShow.
+     * @return true if the current mode is DirectShow, false if it is GDI
+     */
+    public static boolean isUseDirectShow() {
+        return useDirectShow;
+    }
+
+    /**
+     * FFmpeg has two capture modes under Windows: GDI (Jaffree's default) and DirectShow.
+     * Use DesktopCaptureInput.useDirectShow(true) to switch to DirectShow mode.
+     * @param useDirectShow true to use DirectShow, false to use GDI.
+     */
+    public static void setUseDirectShow(boolean useDirectShow) {
+        if (!OS.IS_WINDOWS) {
+            LOGGER.warn("DesktopCaptureInput.setUseDirectShow has no effect when using a non-Windows OS");
+        }
+        DesktopCaptureInput.useDirectShow = useDirectShow;
+    }
+
+    /**
      * Test if the current OS and configuration supports selecting an area to capture.
      * @return true if setArea() is effective on this platform, false if it is ignored (with a warning).
      */
     public static boolean isAreaSelectionSupported() {
-        return (OS.IS_LINUX || (OS.IS_WINDOWS && WINDOWS_USE_GDI));
+        return (OS.IS_LINUX || (OS.IS_WINDOWS && !useDirectShow));
     }
 
     /**
-     * Create a DesktopCaptureInput suitable for your platform
+     * Create a DesktopCaptureInput suitable for your platform.
      * @param screen (unused for now)
      */
     public DesktopCaptureInput(String screen) {
@@ -67,16 +86,17 @@ public class DesktopCaptureInput extends BaseInput<DesktopCaptureInput> implemen
             // For audio: setInput("default:default");
         }
         else if (OS.IS_WINDOWS) {
-            if (WINDOWS_USE_GDI) {
-                setFormat("gdigrab");
-                setInput("desktop");
-            }
-            else {
+            if (useDirectShow) {
                 // Using DirectShow
                 // Device list can be obtained with ffmpeg -f dshow -list_devices true -i ""
                 setFormat("dshow");
                 setInput("video=\"screen-capture-recorder\"");
                 // For audio: setInput("video=\"screen-capture-recorder\":audio=\"virtual-audio-capturer\"");
+            }
+            else {
+                // Using GDI
+                setFormat("gdigrab");
+                setInput("desktop");
             }
         }
     }
@@ -98,7 +118,7 @@ public class DesktopCaptureInput extends BaseInput<DesktopCaptureInput> implemen
                     setInput(input + "+" + area.x + "," + area.y);
                     return this;
                 }
-                else if (OS.IS_WINDOWS && WINDOWS_USE_GDI) {
+                else if (OS.IS_WINDOWS && !useDirectShow) {
                     // Specific way to select area with gdigrab
                     addArguments("-video_size", area.width + "x" + area.height);
                     addArguments("-offset_x", String.valueOf(area.x));
@@ -110,7 +130,7 @@ public class DesktopCaptureInput extends BaseInput<DesktopCaptureInput> implemen
             }
             else {
                 LOGGER.warn("Setting an area is not supported with this OS/configuration. " +
-                            "Please add the following filter to your FFmpeg chain: " +
+                            "Please add the following filter to your FFmpeg chain before .setOutput(): " +
                             ".setFilter(\"crop=" + area.width + ":" + area.height + ":" + area.x + ":" + area.y + "\")");
             }
         }
