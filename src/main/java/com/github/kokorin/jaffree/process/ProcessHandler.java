@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -35,6 +36,7 @@ public class ProcessHandler<T> {
     private StdReader<T> stdOutReader = new GobblingStdReader<>();
     private StdReader<T> stdErrReader = new GobblingStdReader<>();
     private List<Runnable> runnables = null;
+    private List<String> arguments = Collections.emptyList();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessHandler.class);
 
@@ -69,10 +71,15 @@ public class ProcessHandler<T> {
         return this;
     }
 
-    public T execute(List<String> options) {
+    public ProcessHandler<T> setArguments(List<String> arguments) {
+        this.arguments = arguments;
+        return this;
+    }
+
+    public T execute() {
         List<String> command = new ArrayList<>();
         command.add(executable.toString());
-        command.addAll(options);
+        command.addAll(arguments);
 
         LOGGER.info("Command constructed:\n{}", joinArguments(command));
 

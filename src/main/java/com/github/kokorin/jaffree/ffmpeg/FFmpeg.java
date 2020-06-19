@@ -28,7 +28,11 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
@@ -231,7 +235,8 @@ public class FFmpeg {
                 .setStdErrReader(createStdErrReader())
                 .setStdOutReader(createStdOutReader())
                 .setRunnables(helpers)
-                .execute(buildArguments());
+                .setArguments(buildArguments())
+                .execute();
     }
 
     /**
@@ -243,14 +248,48 @@ public class FFmpeg {
      * @return ffmpeg result future
      */
     public Future<FFmpegResult> executeAsync() {
+
+        List<Runnable> helpers = new ArrayList<>();
+
+        for (Input input : inputs) {
+            Runnable helper = input.helperThread();
+            if (helper != null) {
+                helpers.add(helper);
+            }
+        }
+        for (Output output : outputs) {
+            Runnable helper = output.helperThread();
+            if (helper != null) {
+                helpers.add(helper);
+            }
+        }
+
+        final StopStdWriter stopStdWriter = new StopStdWriter();
+
+        final ProcessHandler<FFmpegResult> processHandler = new ProcessHandler<FFmpegResult>(executable, contextName)
+                .setStdInWriter(stopStdWriter)
+                .setStdErrReader(createStdErrReader())
+                .setStdOutReader(createStdOutReader())
+                .setRunnables(helpers)
+                .setArguments(buildArguments());
+
         Callable<FFmpegResult> callable = new Callable<FFmpegResult>() {
             @Override
             public FFmpegResult call() throws Exception {
-                return execute();
+                return processHandler.execute();
             }
         };
 
-        final FutureTask<FFmpegResult> result = new FutureTask<>(callable);
+        final FutureTask<FFmpegResult> result = new FutureTask<FFmpegResult>(callable) {
+            @Override
+            public boolean cancel(boolean mayInterruptIfRunning) {
+                if (!mayInterruptIfRunning) {
+                    stopStdWriter.stop();
+                }
+
+                return super.cancel(mayInterruptIfRunning);
+            }
+        };
 
         Thread runner = new Thread(result, "FFmpeg-async-runner");
         runner.setDaemon(true);
