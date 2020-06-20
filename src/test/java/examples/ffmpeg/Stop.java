@@ -80,7 +80,7 @@ public class Stop {
         stopWithInterruption(ffmpeg);
 
         ffmpeg = createTestFFmpeg();
-        stopWithInterruption(ffmpeg);
+        stopWithFutureCancellation(ffmpeg);
     }
 
     public static FFmpeg createTestFFmpeg() {
