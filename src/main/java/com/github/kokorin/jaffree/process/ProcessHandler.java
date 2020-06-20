@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -160,9 +159,8 @@ public class ProcessHandler<T> {
             executor.execute("StdIn", new Runnable() {
                 @Override
                 public void run() {
-                    // Explicitly close stdIn to notify process, that there will be no more data
-                    try (OutputStream outputStream = process.getOutputStream()) {
-                        stdInWriter.write(outputStream);
+                    try {
+                        stdInWriter.write(process.getOutputStream());
                     } catch (Exception e) {
                         throw new RuntimeException("Error while writing to Process", e);
                     }

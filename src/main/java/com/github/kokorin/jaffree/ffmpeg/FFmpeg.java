@@ -285,6 +285,7 @@ public class FFmpeg {
             public boolean cancel(boolean mayInterruptIfRunning) {
                 if (!mayInterruptIfRunning) {
                     stopStdWriter.stop();
+                    return true;
                 }
 
                 return super.cancel(mayInterruptIfRunning);

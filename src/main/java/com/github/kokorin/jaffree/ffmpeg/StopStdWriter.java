@@ -36,6 +36,7 @@ public class StopStdWriter implements StdWriter {
                 Thread.sleep(100);
             }
             stdIn.write('q');
+            stdIn.flush();
         } catch (InterruptedException | IOException e) {
             LOGGER.info("Ignoring {}: {}", e.getClass(), e.getMessage());
         }
