@@ -32,7 +32,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -277,7 +276,7 @@ public class FFmpegTest {
                 )
                 .addOutput(UrlOutput.toPath(outputPath));
 
-        Future<FFmpegResult> futureResult = ffmpeg.executeAsync();
+        FFmpegResultFuture futureResult = ffmpeg.executeAsync();
 
         Thread.sleep(5_000);
 
@@ -290,7 +289,7 @@ public class FFmpegTest {
         Path tempDir = Files.createTempDirectory("jaffree");
         Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
 
-        final AtomicReference<Future<FFmpegResult>> futureRef = new AtomicReference<>();
+        final AtomicReference<FFmpegResultFuture> futureRef = new AtomicReference<>();
         final long startedAtMillis = System.currentTimeMillis();
         final ProgressListener progressListener = new ProgressListener() {
             @Override
@@ -310,7 +309,7 @@ public class FFmpegTest {
                 .setProgressListener(progressListener)
                 .addOutput(UrlOutput.toPath(outputPath));
 
-        Future<FFmpegResult> futureResult = ffmpeg.executeAsync();
+        FFmpegResultFuture futureResult = ffmpeg.executeAsync();
         futureRef.set(futureResult);
 
         FFmpegResult encodingResult = futureResult.get(7, TimeUnit.SECONDS);

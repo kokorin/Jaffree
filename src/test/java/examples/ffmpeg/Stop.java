@@ -1,8 +1,13 @@
 package examples.ffmpeg;
 
-import com.github.kokorin.jaffree.ffmpeg.*;
+import com.github.kokorin.jaffree.ffmpeg.FFmpeg;
+import com.github.kokorin.jaffree.ffmpeg.FFmpegProgress;
+import com.github.kokorin.jaffree.ffmpeg.FFmpegResult;
+import com.github.kokorin.jaffree.ffmpeg.FFmpegResultFuture;
+import com.github.kokorin.jaffree.ffmpeg.NullOutput;
+import com.github.kokorin.jaffree.ffmpeg.ProgressListener;
+import com.github.kokorin.jaffree.ffmpeg.UrlInput;
 
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -57,7 +62,7 @@ public class Stop {
     }
 
     public static void stopWithFutureCancellation(final FFmpeg ffmpeg) throws Exception {
-        Future<FFmpegResult> future = ffmpeg.executeAsync();
+        FFmpegResultFuture future = ffmpeg.executeAsync();
 
         Thread.sleep(5_000);
         // We must pass mayInterruptIfRunning true, otherwise process won't be interrupted

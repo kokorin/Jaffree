@@ -30,10 +30,10 @@ public class StopStdWriter implements StdWriter {
     private static final Logger LOGGER = LoggerFactory.getLogger(StopStdWriter.class);
 
     @Override
-    public void write(OutputStream stdIn) {
+    public synchronized void write(OutputStream stdIn) {
         try {
             while (!stopped) {
-                Thread.sleep(100);
+                wait(1_000);
             }
             stdIn.write('q');
             stdIn.flush();
@@ -42,7 +42,8 @@ public class StopStdWriter implements StdWriter {
         }
     }
 
-    public void stop() {
+    public synchronized void stop() {
         stopped = true;
+        notifyAll();
     }
 }

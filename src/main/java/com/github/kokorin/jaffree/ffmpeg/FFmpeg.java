@@ -34,7 +34,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
 public class FFmpeg {
@@ -242,12 +241,10 @@ public class FFmpeg {
     /**
      * Runs ffmpeg in separate Thread.
      * <p>
-     * <b>Note</b>: execution is started immediately, so invocation of <code>Future.cancel(false)</code> has no effect.
-     * Use <code>Future.cancel(true)</code>
      *
      * @return ffmpeg result future
      */
-    public Future<FFmpegResult> executeAsync() {
+    public FFmpegResultFuture executeAsync() {
 
         List<Runnable> helpers = new ArrayList<>();
 
@@ -265,6 +262,12 @@ public class FFmpeg {
         }
 
         final StopStdWriter stopStdWriter = new StopStdWriter();
+        final Runnable stopper = new Runnable() {
+            @Override
+            public void run() {
+                stopStdWriter.stop();
+            }
+        };
 
         final ProcessHandler<FFmpegResult> processHandler = new ProcessHandler<FFmpegResult>(executable, contextName)
                 .setStdInWriter(stopStdWriter)
@@ -280,23 +283,13 @@ public class FFmpeg {
             }
         };
 
-        final FutureTask<FFmpegResult> result = new FutureTask<FFmpegResult>(callable) {
-            @Override
-            public boolean cancel(boolean mayInterruptIfRunning) {
-                if (!mayInterruptIfRunning) {
-                    stopStdWriter.stop();
-                    return true;
-                }
+        FutureTask<FFmpegResult> resultFuture = new FutureTask<FFmpegResult>(callable);
 
-                return super.cancel(mayInterruptIfRunning);
-            }
-        };
-
-        Thread runner = new Thread(result, "FFmpeg-async-runner");
+        Thread runner = new Thread(resultFuture, "FFmpeg-async-runner");
         runner.setDaemon(true);
         runner.start();
 
-        return result;
+        return new FFmpegResultFuture(resultFuture, stopper);
     }
 
     protected StdWriter createStdInWriter() {
