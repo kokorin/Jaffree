@@ -17,33 +17,45 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-import com.github.kokorin.jaffree.process.StdWriter;
+import com.github.kokorin.jaffree.process.Stopper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
 
-public class StopStdWriter implements StdWriter {
-    private volatile boolean stopped = false;
+public class FFmpegStopper implements Stopper {
+    private volatile Process process;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(StopStdWriter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FFmpegStopper.class);
 
     @Override
-    public synchronized void write(OutputStream stdIn) {
-        try {
-            while (!stopped) {
-                wait(1_000);
-            }
+    public void graceStop() {
+        if (process == null) {
+            LOGGER.error("No Process set yet, can't stop");
+            return;
+        }
+
+        try (OutputStream stdIn = process.getOutputStream()) {
             stdIn.write('q');
             stdIn.flush();
-        } catch (InterruptedException | IOException e) {
+        } catch (IOException e) {
             LOGGER.info("Ignoring {}: {}", e.getClass(), e.getMessage());
         }
     }
 
-    public synchronized void stop() {
-        stopped = true;
-        notifyAll();
+    @Override
+    public void forceStop() {
+        if (process == null) {
+            LOGGER.error("No Process set yet, can't stop");
+            return;
+        }
+
+        process.destroy();
+    }
+
+    @Override
+    public void setProcess(Process process) {
+        this.process = process;
     }
 }

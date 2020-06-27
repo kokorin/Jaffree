@@ -31,10 +31,10 @@ import java.util.concurrent.atomic.AtomicReference;
 public class ProcessHandler<T> {
     private final Path executable;
     private final String contextName;
-    private StdWriter stdInWriter = null;
     private StdReader<T> stdOutReader = new GobblingStdReader<>();
     private StdReader<T> stdErrReader = new GobblingStdReader<>();
     private List<Runnable> runnables = null;
+    private Stopper stopper = null;
     private List<String> arguments = Collections.emptyList();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessHandler.class);
@@ -44,17 +44,12 @@ public class ProcessHandler<T> {
         this.contextName = contextName;
     }
 
-    public ProcessHandler<T> setStdInWriter(StdWriter stdInWriter) {
-        this.stdInWriter = stdInWriter;
-        return this;
-    }
-
-    public ProcessHandler<T> setStdOutReader(StdReader<T> stdOutReader) {
+    public synchronized ProcessHandler<T> setStdOutReader(StdReader<T> stdOutReader) {
         this.stdOutReader = stdOutReader;
         return this;
     }
 
-    public ProcessHandler<T> setStdErrReader(StdReader<T> stdErrReader) {
+    public synchronized ProcessHandler<T> setStdErrReader(StdReader<T> stdErrReader) {
         this.stdErrReader = stdErrReader;
         return this;
     }
@@ -65,17 +60,22 @@ public class ProcessHandler<T> {
      * @param runnables list
      * @return this
      */
-    public ProcessHandler<T> setRunnables(List<Runnable> runnables) {
+    public synchronized ProcessHandler<T> setRunnables(List<Runnable> runnables) {
         this.runnables = runnables;
         return this;
     }
 
-    public ProcessHandler<T> setArguments(List<String> arguments) {
+    public synchronized ProcessHandler<T> setStopper(Stopper stopper) {
+        this.stopper = stopper;
+        return this;
+    }
+
+    public synchronized ProcessHandler<T> setArguments(List<String> arguments) {
         this.arguments = arguments;
         return this;
     }
 
-    public T execute() {
+    public synchronized T execute() {
         List<String> command = new ArrayList<>();
         command.add(executable.toString());
         command.addAll(arguments);
@@ -87,6 +87,9 @@ public class ProcessHandler<T> {
             LOGGER.info("Starting process: {}", executable);
             process = new ProcessBuilder(command)
                     .start();
+            if (stopper != null) {
+                stopper.setProcess(process);
+            }
 
             return interactWithProcess(process);
         } catch (IOException e) {
@@ -154,19 +157,6 @@ public class ProcessHandler<T> {
         Executor executor = new Executor(contextName);
 
         LOGGER.debug("Starting IO interaction with process");
-
-        if (stdInWriter != null) {
-            executor.execute("StdIn", new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        stdInWriter.write(process.getOutputStream());
-                    } catch (Exception e) {
-                        throw new RuntimeException("Error while writing to Process", e);
-                    }
-                }
-            });
-        }
 
         if (stdErrReader != null) {
             executor.execute("StdErr", new Runnable() {

@@ -22,7 +22,7 @@ import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.process.LoggingStdReader;
 import com.github.kokorin.jaffree.process.ProcessHandler;
 import com.github.kokorin.jaffree.process.StdReader;
-import com.github.kokorin.jaffree.process.StdWriter;
+import com.github.kokorin.jaffree.process.Stopper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +51,7 @@ public class FFmpeg {
     /**
      * A map with 0 or 1 filter per stream type. Type can be "a" (audio), "v" (video) or "" (plain 'filter')
      */
-    private final Map<String,Object> filters = new HashMap<>();
+    private final Map<String, Object> filters = new HashMap<>();
 
     private LogLevel logLevel = null;
     private String contextName = null;
@@ -150,8 +150,7 @@ public class FFmpeg {
         if (previousFilter != null) {
             if (streamSpecifier.isEmpty()) {
                 LOGGER.warn("Only one generic filter is supported. Ignoring previous filter '" + previousFilter + "'.");
-            }
-            else {
+            } else {
                 LOGGER.error("Only one filter per stream is supported. Ignoring previous filter '" + previousFilter + "' for stream '" + streamSpecifier + "'.");
             }
         }
@@ -179,6 +178,7 @@ public class FFmpeg {
 
     /**
      * Supply custom ProgressListener to receive progress events
+     *
      * @param progressListener listener
      * @return this
      */
@@ -189,6 +189,7 @@ public class FFmpeg {
 
     /**
      * Supply custom OutputListener to receive ffmpeg output.
+     *
      * @param outputListener listener
      * @return this
      */
@@ -214,6 +215,36 @@ public class FFmpeg {
     }
 
     public FFmpegResult execute() {
+        ProcessHandler<FFmpegResult> processHandler = createProcessHandler();
+        return processHandler.execute();
+    }
+
+    /**
+     * Runs ffmpeg in separate Thread.
+     * <p>
+     *
+     * @return ffmpeg result future
+     */
+    public FFmpegResultFuture executeAsync() {
+        final ProcessHandler<FFmpegResult> processHandler = createProcessHandler();
+        Stopper stopper = createStopper();
+        processHandler.setStopper(stopper);
+
+        FutureTask<FFmpegResult> resultFuture = new FutureTask<>(new Callable<FFmpegResult>() {
+            @Override
+            public FFmpegResult call() throws Exception {
+                return processHandler.execute();
+            }
+        });
+
+        Thread runner = new Thread(resultFuture, "FFmpeg-async-runner");
+        runner.setDaemon(true);
+        runner.start();
+
+        return new FFmpegResultFuture(resultFuture, stopper);
+    }
+
+    protected ProcessHandler<FFmpegResult> createProcessHandler() {
         List<Runnable> helpers = new ArrayList<>();
 
         for (Input input : inputs) {
@@ -230,70 +261,14 @@ public class FFmpeg {
         }
 
         return new ProcessHandler<FFmpegResult>(executable, contextName)
-                .setStdInWriter(createStdInWriter())
-                .setStdErrReader(createStdErrReader())
-                .setStdOutReader(createStdOutReader())
-                .setRunnables(helpers)
-                .setArguments(buildArguments())
-                .execute();
-    }
-
-    /**
-     * Runs ffmpeg in separate Thread.
-     * <p>
-     *
-     * @return ffmpeg result future
-     */
-    public FFmpegResultFuture executeAsync() {
-
-        List<Runnable> helpers = new ArrayList<>();
-
-        for (Input input : inputs) {
-            Runnable helper = input.helperThread();
-            if (helper != null) {
-                helpers.add(helper);
-            }
-        }
-        for (Output output : outputs) {
-            Runnable helper = output.helperThread();
-            if (helper != null) {
-                helpers.add(helper);
-            }
-        }
-
-        final StopStdWriter stopStdWriter = new StopStdWriter();
-        final Runnable stopper = new Runnable() {
-            @Override
-            public void run() {
-                stopStdWriter.stop();
-            }
-        };
-
-        final ProcessHandler<FFmpegResult> processHandler = new ProcessHandler<FFmpegResult>(executable, contextName)
-                .setStdInWriter(stopStdWriter)
                 .setStdErrReader(createStdErrReader())
                 .setStdOutReader(createStdOutReader())
                 .setRunnables(helpers)
                 .setArguments(buildArguments());
-
-        Callable<FFmpegResult> callable = new Callable<FFmpegResult>() {
-            @Override
-            public FFmpegResult call() throws Exception {
-                return processHandler.execute();
-            }
-        };
-
-        FutureTask<FFmpegResult> resultFuture = new FutureTask<FFmpegResult>(callable);
-
-        Thread runner = new Thread(resultFuture, "FFmpeg-async-runner");
-        runner.setDaemon(true);
-        runner.start();
-
-        return new FFmpegResultFuture(resultFuture, stopper);
     }
 
-    protected StdWriter createStdInWriter() {
-        return null;
+    protected Stopper createStopper() {
+        return new FFmpegStopper();
     }
 
     protected StdReader<FFmpegResult> createStdErrReader() {

@@ -17,6 +17,8 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
+import com.github.kokorin.jaffree.process.Stopper;
+
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -24,27 +26,27 @@ import java.util.concurrent.TimeoutException;
 
 public class FFmpegResultFuture {
     private final Future<FFmpegResult> resultFuture;
-    private final Runnable stopper;
+    private final Stopper stopper;
 
-    public FFmpegResultFuture(Future<FFmpegResult> resultFuture, Runnable stopper) {
+    public FFmpegResultFuture(Future<FFmpegResult> resultFuture, Stopper stopper) {
         this.resultFuture = resultFuture;
         this.stopper = stopper;
     }
 
     public void forceStop() {
-        stop(true);
+        stopper.forceStop();
     }
 
     public void graceStop() {
-        stop(false);
+        stopper.graceStop();
     }
 
-    public void stop(boolean forceStop) {
-        if (forceStop) {
-            resultFuture.cancel(true);
+    public void stop(boolean forcefully) {
+        if (forcefully) {
+            forceStop();
         }
 
-        stopper.run();
+        graceStop();
     }
 
     @Deprecated

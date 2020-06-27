@@ -247,11 +247,16 @@ public class FFmpegTest {
                 )
                 .addOutput(UrlOutput.toPath(outputPath));
 
+        final AtomicReference<Exception> executeException = new AtomicReference<>();
         Thread thread = new Thread() {
             @Override
             public void run() {
-                FFmpegResult r = ffmpeg.execute();
-                result.set(r);
+                try {
+                    FFmpegResult r = ffmpeg.execute();
+                    result.set(r);
+                } catch (Exception e) {
+                    executeException.set(e);
+                }
             }
         };
         thread.start();
@@ -262,6 +267,8 @@ public class FFmpegTest {
         Thread.sleep(1_000);
         Assert.assertNull(result.get());
         Assert.assertTrue(Files.exists(outputPath));
+        Assert.assertTrue(executeException.get() instanceof RuntimeException);
+        Assert.assertEquals("Failed to execute, was interrupted", executeException.get().getMessage());
     }
 
     @Test
@@ -280,8 +287,13 @@ public class FFmpegTest {
 
         Thread.sleep(5_000);
 
-        boolean cancelled = futureResult.cancel(true);
-        Assert.assertTrue(cancelled);
+        futureResult.forceStop();
+
+        Thread.sleep(1_000);
+
+        Assert.assertTrue(Files.exists(outputPath));
+        expectedException.expect(new StackTraceMatcher("Process execution has ended with non-zero status: 1"));
+        futureResult.get();
     }
 
     @Test
@@ -290,29 +302,25 @@ public class FFmpegTest {
         Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
 
         final AtomicReference<FFmpegResultFuture> futureRef = new AtomicReference<>();
-        final long startedAtMillis = System.currentTimeMillis();
         final ProgressListener progressListener = new ProgressListener() {
             @Override
             public void onProgress(FFmpegProgress progress) {
                 System.out.println(progress);
-                if (System.currentTimeMillis() - startedAtMillis > 5_000) {
-                    futureRef.get().cancel(false);
+                if (progress.getTime(TimeUnit.SECONDS) >= 15) {
+                    futureRef.get().graceStop();
                 }
             }
         };
 
         FFmpeg ffmpeg = FFmpeg.atPath(BIN)
-                .addInput(UrlInput
-                        .fromPath(VIDEO_MP4)
-                        .setReadAtFrameRate(true)
-                )
+                .addInput(UrlInput.fromPath(VIDEO_MP4))
                 .setProgressListener(progressListener)
                 .addOutput(UrlOutput.toPath(outputPath));
 
         FFmpegResultFuture futureResult = ffmpeg.executeAsync();
         futureRef.set(futureResult);
 
-        FFmpegResult encodingResult = futureResult.get(7, TimeUnit.SECONDS);
+        FFmpegResult encodingResult = futureResult.get(12, TimeUnit.SECONDS);
         Assert.assertNotNull(encodingResult);
 
         FFprobeResult probeResult = FFprobe.atPath(BIN)
@@ -322,14 +330,23 @@ public class FFmpegTest {
 
         Assert.assertEquals(2, probeResult.getStreams().size());
 
+
+        final AtomicReference<Long> durationRef = new AtomicReference<>();
+        final ProgressListener progressDurationListener = new ProgressListener() {
+            @Override
+            public void onProgress(FFmpegProgress progress) {
+                System.out.println(progress);
+                durationRef.set(progress.getTime(TimeUnit.SECONDS));
+            }
+        };
         FFmpegResult result = FFmpeg.atPath(BIN)
-                .addInput(UrlInput
-                        .fromPath(outputPath)
-                )
+                .addInput(UrlInput.fromPath(outputPath))
+                .setProgressListener(progressDurationListener)
                 .addOutput(new NullOutput())
                 .execute();
 
         Assert.assertNotNull(result);
+        Assert.assertTrue(durationRef.get() >= 15);
     }
 
     @Test
