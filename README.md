@@ -20,7 +20,7 @@ Inspired by [ffmpeg-cli-wrapper](https://github.com/bramp/ffmpeg-cli-wrapper)
 <dependency>
     <groupId>com.github.kokorin.jaffree</groupId>
     <artifactId>jaffree</artifactId>
-    <version>0.9.4</version>
+    <version>0.9.5</version>
 </dependency>
 
 <!--
@@ -216,9 +216,31 @@ try (OutputStream outputStream = Files.newOutputStream(outputPath, StandardOpenO
 
 ```
 
-## Forceful stop
+## FFmpeg stop
 
-It's not possible to stop ffmpeg/ffprobw gracefully with Jaffree. But to stop them forcefully one can use 3 ways:
+See whole examples [here](/src/test/java/examples/ffmpeg/Stop.java).
+
+### Grace stop
+
+Start ffmpeg with FFmpeg#executeAsync and stop it with FFmpegResultFuture#graceStop (ffmpeg only).
+This will pass `q` symbol to ffmpeg's stdin.
+
+**Note** output media finalization may take some time - up to several seconds.
+
+```java
+FFmpegResultFuture future = ffmpeg.executeAsync();
+
+Thread.sleep(5_000);
+future.graceStop();
+```
+
+
+### Force stop
+
+There are 3 ways to stop ffmpeg forcefully.
+
+**Note**: ffmpeg may not (depending on output format) correctly finalize output. 
+It's very likely that produced media will be corrupted with force stop.
 
 * Throw an exception in ProgressListener (ffmpeg only)
 ```java
@@ -235,13 +257,12 @@ ffmpeg.setProgressListener(
 );
 ```
 
-* Start ffmpeg with FFmpeg#executeAsync and cancel received Future (ffmpeg only)
+* Start ffmpeg with FFmpeg#executeAsync and stop it with FFmpegResultFuture#forceStop (ffmpeg only)
 ```java
-Future<FFmpegResult> future = ffmpeg.executeAsync();
+FFmpegResultFuture future = ffmpeg.executeAsync();
 
 Thread.sleep(5_000);
-// We must pass mayInterruptIfRunning true, otherwise process won't be interrupted
-future.cancel(true);
+future.forceStop();
 ```
 
 * Start ffmpeg with FFmpeg#execute (or ffprobe with FFprobe#execute) and interrupt thread
@@ -257,7 +278,6 @@ thread.start();
 Thread.sleep(5_000);
 thread.interrupt();
 ```
-See whole example [here](/src/test/java/examples/ffmpeg/Stop.java).
 
 ## Complex filtergraph (mosaic video)
 

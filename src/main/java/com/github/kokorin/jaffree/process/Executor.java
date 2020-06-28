@@ -76,8 +76,8 @@ public class Executor {
                         starter.interrupt();
                     }
                 } finally {
-                    LOGGER.debug("{} thread has finished", name);
                     runningCounter.decrementAndGet();
+                    LOGGER.debug("{} thread has finished", name);
                 }
             }
         }, getThreadName(name));

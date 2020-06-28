@@ -1,5 +1,5 @@
 /*
- *    Copyright  2017 Denis Kokorin
+ *    Copyright  2020 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,8 +17,12 @@
 
 package com.github.kokorin.jaffree.process;
 
-import java.io.OutputStream;
+public interface Stopper {
+    void graceStop();
+    void forceStop();
+    void setProcess(Process process);
 
-public interface StdWriter {
-    void write(OutputStream stdIn);
+    interface Factory {
+        Stopper createStopper(Process process);
+    }
 }

@@ -1,11 +1,23 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
-import com.github.kokorin.jaffree.*;
+import com.github.kokorin.jaffree.Artifacts;
+import com.github.kokorin.jaffree.LogLevel;
+import com.github.kokorin.jaffree.SizeUnit;
+import com.github.kokorin.jaffree.StackTraceMatcher;
+import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffprobe.FFprobe;
 import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
 import com.github.kokorin.jaffree.ffprobe.Stream;
+import static java.nio.file.StandardOpenOption.CREATE;
+import static java.nio.file.StandardOpenOption.READ;
+import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
+import static java.nio.file.StandardOpenOption.WRITE;
 import org.apache.commons.io.IOUtils;
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,13 +33,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static java.nio.file.StandardOpenOption.*;
 
 public class FFmpegTest {
     public static Path BIN;
@@ -199,24 +208,144 @@ public class FFmpegTest {
     }
 
     @Test
-    public void testStopping() throws Exception {
+    public void testForceStopWithProgressListenerException() throws Exception {
+        expectedException.expect(new StackTraceMatcher("Stop ffmpeg with ProgressListener Exception"));
+
+        Path tempDir = Files.createTempDirectory("jaffree");
+        Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
+
+        final long startedAtMillis = System.currentTimeMillis();
+        final ProgressListener progressListener = new ProgressListener() {
+            @Override
+            public void onProgress(FFmpegProgress progress) {
+                System.out.println(progress);
+                if (System.currentTimeMillis() - startedAtMillis > 5_000) {
+                    throw new RuntimeException("Stop ffmpeg with ProgressListener Exception");
+                }
+            }
+        };
+
+        final FFmpegResult result = FFmpeg.atPath(BIN)
+                .addInput(UrlInput
+                        .fromPath(VIDEO_MP4)
+                        .setReadAtFrameRate(true)
+                )
+                .setProgressListener(progressListener)
+                .addOutput(UrlOutput.toPath(outputPath))
+                .execute();
+    }
+
+    @Test
+    public void testForceStopWithThreadInterruption() throws Exception {
+        Path tempDir = Files.createTempDirectory("jaffree");
+        Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
+
+        final AtomicReference<FFmpegResult> result = new AtomicReference<>();
+        final FFmpeg ffmpeg = FFmpeg.atPath(BIN)
+                .addInput(UrlInput
+                        .fromPath(VIDEO_MP4)
+                        .setReadAtFrameRate(true)
+                )
+                .addOutput(UrlOutput.toPath(outputPath));
+
+        final AtomicReference<Exception> executeException = new AtomicReference<>();
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    FFmpegResult r = ffmpeg.execute();
+                    result.set(r);
+                } catch (Exception e) {
+                    executeException.set(e);
+                }
+            }
+        };
+        thread.start();
+
+        Thread.sleep(5_000);
+        thread.interrupt();
+
+        Thread.sleep(1_000);
+        Assert.assertNull(result.get());
+        Assert.assertTrue(Files.exists(outputPath));
+        Assert.assertTrue(executeException.get() instanceof RuntimeException);
+        Assert.assertEquals("Failed to execute, was interrupted", executeException.get().getMessage());
+    }
+
+    @Test
+    public void testForceAsyncStop() throws Exception {
         Path tempDir = Files.createTempDirectory("jaffree");
         Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
 
         FFmpeg ffmpeg = FFmpeg.atPath(BIN)
                 .addInput(UrlInput
                         .fromPath(VIDEO_MP4)
+                        .setReadAtFrameRate(true)
                 )
                 .addOutput(UrlOutput.toPath(outputPath));
 
-        Future<FFmpegResult> futureResult = ffmpeg.executeAsync();
+        FFmpegResultFuture futureResult = ffmpeg.executeAsync();
+
+        Thread.sleep(5_000);
+
+        futureResult.forceStop();
 
         Thread.sleep(1_000);
 
-        boolean cancelled = futureResult.cancel(true);
-        Assert.assertTrue(cancelled);
+        Assert.assertTrue(Files.exists(outputPath));
+    }
 
-        Thread.sleep(1_000);
+    @Test
+    public void testGraceAsyncStop() throws Exception {
+        Path tempDir = Files.createTempDirectory("jaffree");
+        Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
+
+        final AtomicReference<FFmpegResultFuture> futureRef = new AtomicReference<>();
+        final ProgressListener progressListener = new ProgressListener() {
+            @Override
+            public void onProgress(FFmpegProgress progress) {
+                System.out.println(progress);
+                if (progress.getTime(TimeUnit.SECONDS) >= 15) {
+                    futureRef.get().graceStop();
+                }
+            }
+        };
+
+        FFmpeg ffmpeg = FFmpeg.atPath(BIN)
+                .addInput(UrlInput.fromPath(VIDEO_MP4))
+                .setProgressListener(progressListener)
+                .addOutput(UrlOutput.toPath(outputPath));
+
+        FFmpegResultFuture futureResult = ffmpeg.executeAsync();
+        futureRef.set(futureResult);
+
+        FFmpegResult encodingResult = futureResult.get(12, TimeUnit.SECONDS);
+        Assert.assertNotNull(encodingResult);
+
+        FFprobeResult probeResult = FFprobe.atPath(BIN)
+                .setShowStreams(true)
+                .setInput(outputPath)
+                .execute();
+
+        Assert.assertEquals(2, probeResult.getStreams().size());
+
+
+        final AtomicReference<Long> durationRef = new AtomicReference<>();
+        final ProgressListener progressDurationListener = new ProgressListener() {
+            @Override
+            public void onProgress(FFmpegProgress progress) {
+                System.out.println(progress);
+                durationRef.set(progress.getTime(TimeUnit.SECONDS));
+            }
+        };
+        FFmpegResult result = FFmpeg.atPath(BIN)
+                .addInput(UrlInput.fromPath(outputPath))
+                .setProgressListener(progressDurationListener)
+                .addOutput(new NullOutput())
+                .execute();
+
+        Assert.assertNotNull(result);
+        Assert.assertTrue(durationRef.get() >= 15);
     }
 
     @Test
@@ -370,7 +499,7 @@ public class FFmpegTest {
         FrameConsumer frameConsumer = new FrameConsumer() {
             @Override
             public void consumeStreams(List<com.github.kokorin.jaffree.ffmpeg.Stream> streams) {
-               LOGGER.debug(streams + "");
+                LOGGER.debug(streams + "");
             }
 
             @Override
@@ -679,7 +808,7 @@ public class FFmpegTest {
                 .setFilter(StreamType.AUDIO, "aecho=0.8:0.88:6:0.4")
                 .addOutput(UrlOutput
                         .toPath(outputPath)
-                          )
+                )
                 .execute();
 
         Assert.assertNotNull(result);

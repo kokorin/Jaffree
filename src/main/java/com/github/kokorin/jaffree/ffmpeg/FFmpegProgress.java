@@ -92,4 +92,19 @@ public class FFmpegProgress {
     public Double getSpeed() {
         return speed;
     }
+
+    @Override
+    public String toString() {
+        return "FFmpegProgress{" +
+                "frame=" + frame +
+                ", fps=" + fps +
+                ", q=" + q +
+                ", size=" + size +
+                ", time=" + time +
+                ", dup=" + dup +
+                ", drop=" + drop +
+                ", bitrate=" + bitrate +
+                ", speed=" + speed +
+                '}';
+    }
 }
