@@ -96,6 +96,7 @@ public class ProcessHandler<T> {
             throw new RuntimeException("Failed to start process.", e);
         } finally {
             if (process != null) {
+                // TODO on Windows process sometimes doesn't stop and keeps running
                 process.destroy();
                 // Process must be destroyed before closing streams, can't use try-with-resources,
                 // as resources are closing when leaving try block, before finally

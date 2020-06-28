@@ -86,17 +86,17 @@ public class Stop {
 
     public static void main(String[] args) throws Exception {
         FFmpeg ffmpeg;
-        //ffmpeg = createTestFFmpeg();
-        //stopWithException(ffmpeg);
+        ffmpeg = createTestFFmpeg();
+        stopWithException(ffmpeg);
 
-        //ffmpeg = createTestFFmpeg();
-        //stopWithInterruption(ffmpeg);
+        ffmpeg = createTestFFmpeg();
+        stopWithInterruption(ffmpeg);
 
         ffmpeg = createTestFFmpeg();
         stopForcefully(ffmpeg);
 
-        //ffmpeg = createTestFFmpeg();
-        //stopGracefully(ffmpeg);
+        ffmpeg = createTestFFmpeg();
+        stopGracefully(ffmpeg);
     }
 
     public static FFmpeg createTestFFmpeg() {
