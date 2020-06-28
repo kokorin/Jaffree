@@ -5,9 +5,9 @@
 publiccodeYmlVersion: '0.2'
 name: Jaffree
 url: 'https://github.com/kokorin/Jaffree'
-releaseDate: '2019-09-17'
+releaseDate: '2020-06-28'
 developmentStatus: stable
-softwareVersion: 0.9.3
+softwareVersion: 0.9.5
 platforms:
   - web
   - windows
@@ -62,7 +62,7 @@ description:
 
       - Programmatic (pure Java) video and audio consumption and production.
 
-      - Forceful stopping of ffmpeg
+      - Forceful & graceful stopping of ffmpeg
 
       - Reads/writes  video from/to Java SeekableByteChannel/InputStream/OutputStream
     features:
