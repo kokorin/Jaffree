@@ -22,15 +22,18 @@ import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.process.LoggingStdReader;
 import com.github.kokorin.jaffree.process.ProcessHandler;
 import com.github.kokorin.jaffree.process.StdReader;
-import com.github.kokorin.jaffree.process.StdWriter;
+import com.github.kokorin.jaffree.process.Stopper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
 public class FFmpeg {
@@ -48,7 +51,7 @@ public class FFmpeg {
     /**
      * A map with 0 or 1 filter per stream type. Type can be "a" (audio), "v" (video) or "" (plain 'filter')
      */
-    private final Map<String,Object> filters = new HashMap<>();
+    private final Map<String, Object> filters = new HashMap<>();
 
     private LogLevel logLevel = null;
     private String contextName = null;
@@ -147,8 +150,7 @@ public class FFmpeg {
         if (previousFilter != null) {
             if (streamSpecifier.isEmpty()) {
                 LOGGER.warn("Only one generic filter is supported. Ignoring previous filter '" + previousFilter + "'.");
-            }
-            else {
+            } else {
                 LOGGER.error("Only one filter per stream is supported. Ignoring previous filter '" + previousFilter + "' for stream '" + streamSpecifier + "'.");
             }
         }
@@ -176,6 +178,7 @@ public class FFmpeg {
 
     /**
      * Supply custom ProgressListener to receive progress events
+     *
      * @param progressListener listener
      * @return this
      */
@@ -186,6 +189,7 @@ public class FFmpeg {
 
     /**
      * Supply custom OutputListener to receive ffmpeg output.
+     *
      * @param outputListener listener
      * @return this
      */
@@ -211,6 +215,36 @@ public class FFmpeg {
     }
 
     public FFmpegResult execute() {
+        ProcessHandler<FFmpegResult> processHandler = createProcessHandler();
+        return processHandler.execute();
+    }
+
+    /**
+     * Runs ffmpeg in separate Thread.
+     * <p>
+     *
+     * @return ffmpeg result future
+     */
+    public FFmpegResultFuture executeAsync() {
+        final ProcessHandler<FFmpegResult> processHandler = createProcessHandler();
+        Stopper stopper = createStopper();
+        processHandler.setStopper(stopper);
+
+        FutureTask<FFmpegResult> resultFuture = new FutureTask<>(new Callable<FFmpegResult>() {
+            @Override
+            public FFmpegResult call() throws Exception {
+                return processHandler.execute();
+            }
+        });
+
+        Thread runner = new Thread(resultFuture, "FFmpeg-async-runner");
+        runner.setDaemon(true);
+        runner.start();
+
+        return new FFmpegResultFuture(resultFuture, stopper);
+    }
+
+    protected ProcessHandler<FFmpegResult> createProcessHandler() {
         List<Runnable> helpers = new ArrayList<>();
 
         for (Input input : inputs) {
@@ -227,40 +261,14 @@ public class FFmpeg {
         }
 
         return new ProcessHandler<FFmpegResult>(executable, contextName)
-                .setStdInWriter(createStdInWriter())
                 .setStdErrReader(createStdErrReader())
                 .setStdOutReader(createStdOutReader())
                 .setRunnables(helpers)
-                .execute(buildArguments());
+                .setArguments(buildArguments());
     }
 
-    /**
-     * Runs ffmpeg in separate Thread.
-     * <p>
-     * <b>Note</b>: execution is started immediately, so invocation of <code>Future.cancel(false)</code> has no effect.
-     * Use <code>Future.cancel(true)</code>
-     *
-     * @return ffmpeg result future
-     */
-    public Future<FFmpegResult> executeAsync() {
-        Callable<FFmpegResult> callable = new Callable<FFmpegResult>() {
-            @Override
-            public FFmpegResult call() throws Exception {
-                return execute();
-            }
-        };
-
-        final FutureTask<FFmpegResult> result = new FutureTask<>(callable);
-
-        Thread runner = new Thread(result, "FFmpeg-async-runner");
-        runner.setDaemon(true);
-        runner.start();
-
-        return result;
-    }
-
-    protected StdWriter createStdInWriter() {
-        return null;
+    protected Stopper createStopper() {
+        return new FFmpegStopper();
     }
 
     protected StdReader<FFmpegResult> createStdErrReader() {

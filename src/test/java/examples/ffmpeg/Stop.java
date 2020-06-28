@@ -3,11 +3,11 @@ package examples.ffmpeg;
 import com.github.kokorin.jaffree.ffmpeg.FFmpeg;
 import com.github.kokorin.jaffree.ffmpeg.FFmpegProgress;
 import com.github.kokorin.jaffree.ffmpeg.FFmpegResult;
+import com.github.kokorin.jaffree.ffmpeg.FFmpegResultFuture;
 import com.github.kokorin.jaffree.ffmpeg.NullOutput;
 import com.github.kokorin.jaffree.ffmpeg.ProgressListener;
 import com.github.kokorin.jaffree.ffmpeg.UrlInput;
 
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -61,26 +61,42 @@ public class Stop {
         System.out.println(result.get());
     }
 
-    public static void stopWithFutureCancellation(final FFmpeg ffmpeg) throws Exception {
-        Future<FFmpegResult> future = ffmpeg.executeAsync();
+    public static void stopForcefully(final FFmpeg ffmpeg) throws Exception {
+        FFmpegResultFuture future = ffmpeg.executeAsync();
 
         Thread.sleep(5_000);
-        // We must pass mayInterruptIfRunning true, otherwise process won't be interrupted
-        future.cancel(true);
+        future.forceStop();
+
+        Thread.sleep(1_000);
+        System.out.println(future.get());
+
+        // Uncaught exception in executeAsync thread:
+        // Process execution has ended with non-zero status: 1
+    }
+
+    public static void stopGracefully(final FFmpeg ffmpeg) throws Exception {
+        FFmpegResultFuture future = ffmpeg.executeAsync();
+
+        Thread.sleep(5_000);
+        future.graceStop();
 
         Thread.sleep(1_000);
         System.out.println(future.get());
     }
 
     public static void main(String[] args) throws Exception {
-        FFmpeg ffmpeg = createTestFFmpeg();
+        FFmpeg ffmpeg;
+        ffmpeg = createTestFFmpeg();
         stopWithException(ffmpeg);
 
         ffmpeg = createTestFFmpeg();
         stopWithInterruption(ffmpeg);
 
         ffmpeg = createTestFFmpeg();
-        stopWithFutureCancellation(ffmpeg);
+        stopForcefully(ffmpeg);
+
+        ffmpeg = createTestFFmpeg();
+        stopGracefully(ffmpeg);
     }
 
     public static FFmpeg createTestFFmpeg() {
@@ -90,6 +106,12 @@ public class Stop {
                                 .fromUrl("testsrc=duration=3600:size=1280x720:rate=30")
                                 .setFormat("lavfi")
                 )
+                .setProgressListener(new ProgressListener() {
+                    @Override
+                    public void onProgress(FFmpegProgress progress) {
+                        //System.out.println(progress);
+                    }
+                })
                 .addOutput(
                         new NullOutput()
                 );
