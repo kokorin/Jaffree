@@ -22,19 +22,20 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ProcessHandler<T> {
     private final Path executable;
     private final String contextName;
-    private StdWriter stdInWriter = null;
     private StdReader<T> stdOutReader = new GobblingStdReader<>();
     private StdReader<T> stdErrReader = new GobblingStdReader<>();
     private List<Runnable> runnables = null;
+    private Stopper stopper = null;
+    private List<String> arguments = Collections.emptyList();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessHandler.class);
 
@@ -43,17 +44,12 @@ public class ProcessHandler<T> {
         this.contextName = contextName;
     }
 
-    public ProcessHandler<T> setStdInWriter(StdWriter stdInWriter) {
-        this.stdInWriter = stdInWriter;
-        return this;
-    }
-
-    public ProcessHandler<T> setStdOutReader(StdReader<T> stdOutReader) {
+    public synchronized ProcessHandler<T> setStdOutReader(StdReader<T> stdOutReader) {
         this.stdOutReader = stdOutReader;
         return this;
     }
 
-    public ProcessHandler<T> setStdErrReader(StdReader<T> stdErrReader) {
+    public synchronized ProcessHandler<T> setStdErrReader(StdReader<T> stdErrReader) {
         this.stdErrReader = stdErrReader;
         return this;
     }
@@ -64,15 +60,25 @@ public class ProcessHandler<T> {
      * @param runnables list
      * @return this
      */
-    public ProcessHandler<T> setRunnables(List<Runnable> runnables) {
+    public synchronized ProcessHandler<T> setRunnables(List<Runnable> runnables) {
         this.runnables = runnables;
         return this;
     }
 
-    public T execute(List<String> options) {
+    public synchronized ProcessHandler<T> setStopper(Stopper stopper) {
+        this.stopper = stopper;
+        return this;
+    }
+
+    public synchronized ProcessHandler<T> setArguments(List<String> arguments) {
+        this.arguments = arguments;
+        return this;
+    }
+
+    public synchronized T execute() {
         List<String> command = new ArrayList<>();
         command.add(executable.toString());
-        command.addAll(options);
+        command.addAll(arguments);
 
         LOGGER.info("Command constructed:\n{}", joinArguments(command));
 
@@ -81,12 +87,16 @@ public class ProcessHandler<T> {
             LOGGER.info("Starting process: {}", executable);
             process = new ProcessBuilder(command)
                     .start();
+            if (stopper != null) {
+                stopper.setProcess(process);
+            }
 
             return interactWithProcess(process);
         } catch (IOException e) {
             throw new RuntimeException("Failed to start process.", e);
         } finally {
             if (process != null) {
+                // TODO on Windows process sometimes doesn't stop and keeps running
                 process.destroy();
                 // Process must be destroyed before closing streams, can't use try-with-resources,
                 // as resources are closing when leaving try block, before finally
@@ -148,20 +158,6 @@ public class ProcessHandler<T> {
         Executor executor = new Executor(contextName);
 
         LOGGER.debug("Starting IO interaction with process");
-
-        if (stdInWriter != null) {
-            executor.execute("StdIn", new Runnable() {
-                @Override
-                public void run() {
-                    // Explicitly close stdIn to notify process, that there will be no more data
-                    try (OutputStream outputStream = process.getOutputStream()) {
-                        stdInWriter.write(outputStream);
-                    } catch (Exception e) {
-                        throw new RuntimeException("Error while writing to Process", e);
-                    }
-                }
-            });
-        }
 
         if (stdErrReader != null) {
             executor.execute("StdErr", new Runnable() {
