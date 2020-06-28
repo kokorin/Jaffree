@@ -292,8 +292,6 @@ public class FFmpegTest {
         Thread.sleep(1_000);
 
         Assert.assertTrue(Files.exists(outputPath));
-        expectedException.expect(new StackTraceMatcher("Process execution has ended with non-zero status: 1"));
-        futureResult.get();
     }
 
     @Test
