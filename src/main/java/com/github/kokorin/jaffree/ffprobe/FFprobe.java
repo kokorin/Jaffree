@@ -444,7 +444,8 @@ public class FFprobe {
                 .setStdOutReader(createStdOutReader())
                 .setStdErrReader(createStdErrReader())
                 .setRunnables(helpers)
-                .execute(buildArguments());
+                .setArguments(buildArguments())
+                .execute();
     }
 
     protected List<String> buildArguments() {
