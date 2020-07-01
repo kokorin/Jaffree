@@ -26,6 +26,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
@@ -45,6 +46,9 @@ public class FFmpegTest {
     public static Path ERROR_MP4 = Paths.get("non_existent.mp4");
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FFmpegTest.class);
+
+    private final HttpTestServer server = new HttpTestServer();
+    private final InetSocketAddress address = server.getServerAddress();
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -521,6 +525,22 @@ public class FFmpegTest {
         Assert.assertNotNull(result);
     }
 
+    @Test
+    public void testUserAgent() throws Exception {
+        server.run();
+        FFmpegResult result;
+        String URL = "http://" + address.getHostString() + ':' + address.getPort() + "/UserAgent";
+        result = FFmpeg.atPath(BIN)
+                .addInput(UrlInput
+                        .fromUrl(URL)
+                        .setUserAgent("Jaffree/0.9.4")
+                )
+                .addOutput(new NullOutput())
+                .execute();
+
+        Assert.assertNotNull(result);
+        server.stop();
+    }
 
     @Test
     public void testExceptionIsThrownIfFfmpegExitsWithError() {
@@ -848,4 +868,5 @@ public class FFmpegTest {
 
         return progressRef.get().getTime(TimeUnit.SECONDS);
     }
+
 }

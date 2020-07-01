@@ -60,6 +60,7 @@ public class FFprobe {
     private boolean showLibraryVersions;
     private boolean showVersions;
     private boolean showPixelFormats;
+    private String userAgent;
 
     private Long probeSize;
     private Long analyzeDuration;
@@ -421,6 +422,11 @@ public class FFprobe {
         return this;
     }
 
+    public FFprobe setUserAgent(String userAgent){
+      this.userAgent = userAgent;
+      return this;
+    }
+
 
     public FFprobe setFormatParser(FormatParser parser) {
         if (parser == null) {
@@ -526,6 +532,10 @@ public class FFprobe {
         }
         if (fpsProbeSize != null) {
             result.addAll(Arrays.asList("-fpsprobesize", fpsProbeSize.toString()));
+        }
+
+        if(userAgent != null){
+            result.addAll(Arrays.asList("-user_agent", userAgent));
         }
 
         result.addAll(Arrays.asList("-print_format", parser.getFormatName()));

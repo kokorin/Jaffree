@@ -13,6 +13,7 @@ import org.junit.rules.ExpectedException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.net.InetSocketAddress;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -27,6 +28,9 @@ public class FFprobeTest {
     public static Path BIN;
     public static Path VIDEO_MP4 = Artifacts.getFFmpegSample("MPEG-4/video.mp4");
     public static Path TRANSPORT_VOB = Artifacts.getFFmpegSample("MPEG-VOB/transport-stream/capture.neimeng");
+
+    private final HttpTestServer server = new HttpTestServer();
+    private final InetSocketAddress address = server.getServerAddress();
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -532,6 +536,21 @@ public class FFprobeTest {
         Assert.assertNotNull(result);
         Assert.assertNotNull(result.getStreams());
         Assert.assertFalse(result.getStreams().isEmpty());
+    }
+
+    @Test
+    public void testUserAgent() throws Exception {
+        server.run();
+        FFprobeResult result;
+        String URL = "http://" + address.getHostString() + ':' + address.getPort() + "/UserAgent";
+
+        result = FFprobe.atPath(BIN)
+                .setUserAgent("Jaffree/0.9.4")
+                .setInput(URL)
+                .execute();
+
+        Assert.assertNotNull(result);
+        server.stop();
     }
 
     private static List<? extends Class> noDeepCompare = Arrays.asList(

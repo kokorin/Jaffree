@@ -33,4 +33,5 @@ public class UrlInput implements Input {
     public Runnable helperThread() {
         return null;
     }
+
 }
