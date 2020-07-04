@@ -17,20 +17,19 @@
 
 package examples.ffmpeg;
 
-import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffmpeg.CaptureInput;
 import com.github.kokorin.jaffree.ffmpeg.FFmpeg;
 import com.github.kokorin.jaffree.ffmpeg.FFmpegResult;
+import com.github.kokorin.jaffree.ffmpeg.UrlInput;
 import com.github.kokorin.jaffree.ffmpeg.UrlOutput;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 
-import java.awt.Dimension;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -41,80 +40,53 @@ import java.util.concurrent.TimeUnit;
  */
 public class DesktopCapture {
     private final Path ffmpegBin;
-    private final boolean centerOnly;
     private final Long duration;
     private final Path output;
     private final int frameRate = 25;
 
-    public DesktopCapture(Path ffmpegBin, boolean centerOnly, Long duration, Path output) {
+    public DesktopCapture(Path ffmpegBin, Long duration, Path output) {
         this.ffmpegBin = ffmpegBin;
-        this.centerOnly = centerOnly;
         this.duration = duration;
         this.output = output;
     }
 
-    public void execute() {
-        if (centerOnly) {
-            final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-            Rectangle area = new Rectangle(screenSize.width / 2 - 320, screenSize.height / 2 - 240, 640, 480);
+    public void execute() throws Exception {
+        //final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        //Rectangle area = new Rectangle(screenSize.width / 2 - 320, screenSize.height / 2 - 240, 640, 480);
 
-            if (CaptureInput.isAreaSelectionSupported()) {
-                FFmpegResult result = FFmpeg.atPath(ffmpegBin)
-                        .addInput(CaptureInput
-                                .fromScreen()
-                                .setArea(area)  // Limit area at the capture level if supported
-                        )
-                        .addOutput(UrlOutput
-                                .toPath(output)
-                                .setDuration(duration, TimeUnit.SECONDS)
-                                .setFrameRate(frameRate)
-                        )
-                        .setOverwriteOutput(true)
-                        .execute();
-            }
-            else {
-                FFmpegResult result = FFmpeg.atPath(ffmpegBin)
-                        .addInput(CaptureInput
-                                .fromScreen()
-                        )
-                        // Add a separate filter to limit area if not supported at capture level
-                        .setFilter(StreamType.VIDEO, "crop=" + area.width + ":" + area.height + ":" + area.x + ":" + area.y)
-                        .addOutput(UrlOutput
-                                .toPath(output)
-                                .setDuration(duration, TimeUnit.SECONDS)
-                                .setFrameRate(frameRate)
-                        )
-                        .setOverwriteOutput(true)
-                        .execute();
-            }
-        }
-        else {
-            // Capture the whole screen
-            FFmpegResult result = FFmpeg.atPath(ffmpegBin)
-                    .addInput(CaptureInput
-                            .fromScreen()
-                    )
-                    .addOutput(UrlOutput
-                            .toPath(output)
-                            .setDuration(duration, TimeUnit.SECONDS)
-                            .setFrameRate(frameRate)
-                    )
-                    .setOverwriteOutput(true)
-                    .execute();
-        }
+        FFmpegResult result = FFmpeg.atPath(ffmpegBin)
+                .addInput(CaptureInput
+                        .captureDesktop()
+                        .setCaptureFrameRate(frameRate)
+                        .setCaptureCursor(true)
+                )
+                .addOutput(UrlOutput
+                        .toPath(output)
+                        .addArguments("-preset", "ultrafast")
+                        .setDuration(duration, TimeUnit.SECONDS)
+                )
+                .setOverwriteOutput(true)
+                .execute();
+
+        Path outputOptimized = output.resolveSibling("opt-" + output.getFileName());
+        FFmpegResult optimizedResult = FFmpeg.atPath(ffmpegBin)
+                .addInput(UrlInput.fromPath(output))
+                .addOutput(UrlOutput.toPath(outputOptimized))
+                .execute();
+
+        Files.move(outputOptimized, output, StandardCopyOption.REPLACE_EXISTING);
+
     }
 
     public static void main(String[] args) throws Exception {
         Options options = new Options()
                 .addOption("ffmpeg_bin", true, "FFmpeg binaries location")
-                .addOption("center_only", false, "If specified, only capture the center of the screen")
                 .addOption("duration", true, "Duration")
                 .addOption("output", true, "Output");
         CommandLine commandLine = new DefaultParser().parse(options, args);
 
         new DesktopCapture(
                 Paths.get(commandLine.getOptionValue("ffmpeg_bin")),
-                commandLine.hasOption("center_only"),
                 Long.valueOf(commandLine.getOptionValue("duration", "10")),
                 Paths.get(commandLine.getOptionValue("output"))
         ).execute();
