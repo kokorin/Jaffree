@@ -37,37 +37,6 @@ public abstract class CaptureInput<T extends CaptureInput<T>> extends BaseInput<
     private static final Logger LOGGER = LoggerFactory.getLogger(CaptureInput.class);
 
     /**
-     * Create a DesktopCaptureInput suitable for your platform.
-     *
-     * @param screen (unused for now)
-     */
-    /*public CaptureInput(String screen) {
-        if (OS.IS_LINUX) {
-            setFormat("x11grab");
-            input = ":0.0";
-            setInput(input);
-        } else if (OS.IS_MAC) {
-            // Device list can be obtained with ffmpeg -f avfoundation -list_devices true -i ""
-            setFormat("avfoundation");
-            setInput("default:none");
-            // For audio: setInput("default:default");
-        } else if (OS.IS_WINDOWS) {
-            if (useDirectShow) {
-                // Using DirectShow
-                // Device list can be obtained with ffmpeg -f dshow -list_devices true -i ""
-                setFormat("dshow");
-                setInput("video=\"screen-capture-recorder\"");
-                // For audio: setInput("video=\"screen-capture-recorder\":audio=\"virtual-audio-capturer\"");
-            } else {
-                // Using GDI
-                setFormat("gdigrab");
-                setInput("desktop");
-            }
-        }
-    }*/
-
-
-    /**
      * Set capture frame rate.
      * <p>
      * Captures the desktop at the given frame rate
@@ -109,14 +78,14 @@ public abstract class CaptureInput<T extends CaptureInput<T>> extends BaseInput<
     public abstract CaptureInput<T> setCaptureCursor(boolean captureCursor);
 
     // TODO check static method references
-    public static <T extends CaptureInput<T>> CaptureInput<T> fromDesktop1() {
-        CaptureInput<T> result = null;
+    public static CaptureInput<?> captureDesktop() {
+        CaptureInput<?> result = null;
         if (OS.IS_LINUX) {
-            result = LinuxX11Grab.fromDesktop();
+            result = LinuxX11Grab.captureDesktop();
         } else if (OS.IS_MAC) {
-            result = MacOsAvFoundation.fromDesktop();
+            result = MacOsAvFoundation.captureDesktop();
         } else if (OS.IS_WINDOWS) {
-            result = WindowsGdiGrab.fromDesktop();
+            result = WindowsGdiGrab.captureDesktop();
         }
 
         if (result == null) {
@@ -175,13 +144,13 @@ public abstract class CaptureInput<T extends CaptureInput<T>> extends BaseInput<
      * @see <a href="https://ffmpeg.org/ffmpeg-devices.html#gdigrab">gdigrab documentation</a>
      */
     public static class WindowsGdiGrab extends CaptureInput<WindowsGdiGrab> {
-        public static WindowsGdiGrab fromDesktop() {
+        public static WindowsGdiGrab captureDesktop() {
             return new WindowsGdiGrab()
                     .setInput("desktop")
                     .setFormat("gdigrab");
         }
 
-        public static WindowsGdiGrab fromWindow(String windowTitle) {
+        public static WindowsGdiGrab captureWindow(String windowTitle) {
             return new WindowsGdiGrab()
                     .setInput("title=" + windowTitle)
                     .setFormat("gdigrab");
@@ -207,11 +176,11 @@ public abstract class CaptureInput<T extends CaptureInput<T>> extends BaseInput<
     public static class MacOsAvFoundation extends CaptureInput<MacOsAvFoundation> {
         private static final Logger LOGGER = LoggerFactory.getLogger(MacOsAvFoundation.class);
 
-        public static MacOsAvFoundation fromDesktop() {
-            return fromVideoAndAudio("default", null);
+        public static MacOsAvFoundation captureDesktop() {
+            return captureVideoAndAudio("default", null);
         }
 
-        public static MacOsAvFoundation fromVideoAndAudio(String videoDevice, String audioDevice) {
+        public static MacOsAvFoundation captureVideoAndAudio(String videoDevice, String audioDevice) {
             if (videoDevice == null) {
                 videoDevice = "none";
             }
@@ -240,15 +209,15 @@ public abstract class CaptureInput<T extends CaptureInput<T>> extends BaseInput<
      * @see <a href="https://ffmpeg.org/ffmpeg-devices.html#x11grab">x11grab documentation</a>
      */
     public static class LinuxX11Grab extends CaptureInput<LinuxX11Grab> {
-        public static LinuxX11Grab fromDesktop() {
-            return fromDisplayAndScreen(0, 0);
+        public static LinuxX11Grab captureDesktop() {
+            return captureDisplayAndScreen(0, 0);
         }
 
-        public static LinuxX11Grab fromDisplayAndScreen(int display, int screen) {
-            return fromHostDisplayAndScreen("", display, screen);
+        public static LinuxX11Grab captureDisplayAndScreen(int display, int screen) {
+            return captureHostDisplayAndScreen("", display, screen);
         }
 
-        public static LinuxX11Grab fromHostDisplayAndScreen(String host, int display, int screen) {
+        public static LinuxX11Grab captureHostDisplayAndScreen(String host, int display, int screen) {
             return new LinuxX11Grab()
                     .setInput(host + ":" + display + "." + screen)
                     .setFormat("x11grab");

@@ -22,7 +22,6 @@ import org.junit.rules.ExpectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Rectangle;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
@@ -857,11 +856,11 @@ public class FFmpegTest {
         Path output = tempDir.resolve("desktop.mp4");
         LOGGER.debug("Will write to " + output);
 
-        Rectangle area = new Rectangle(80, 60, 160, 120);
+        //Rectangle area = new Rectangle(80, 60, 160, 120);
         FFmpegResult result = FFmpeg.atPath(BIN)
                 .addInput(CaptureInput
-                        .fromScreen()
-                        .setArea(area)
+                        .captureDesktop()
+                        //.setArea(area)
                         .setFrameRate(10)
                 )
                 .addOutput(UrlOutput
