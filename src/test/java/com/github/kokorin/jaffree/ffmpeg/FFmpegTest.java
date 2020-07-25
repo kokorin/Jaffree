@@ -848,4 +848,46 @@ public class FFmpegTest {
 
         return progressRef.get().getTime(TimeUnit.SECONDS);
     }
+
+    @Test
+    @Ignore("This test requires a non-headless environment to work")
+    public void testDesktopCapture() throws Exception {
+        Path tempDir = Files.createTempDirectory("jaffree");
+        Path output = tempDir.resolve("desktop.mp4");
+        LOGGER.debug("Will write to " + output);
+
+        //Rectangle area = new Rectangle(80, 60, 160, 120);
+        FFmpegResult result = FFmpeg.atPath(BIN)
+                .addInput(CaptureInput
+                        .captureDesktop()
+                        //.setArea(area)
+                        .setFrameRate(10)
+                )
+                .addOutput(UrlOutput
+                        .toPath(output)
+                        .setDuration(10, TimeUnit.SECONDS)
+                )
+                .setOverwriteOutput(true)
+                .execute();
+
+        Assert.assertNotNull(result);
+
+
+        FFprobeResult probe = FFprobe.atPath(BIN)
+                .setShowStreams(true)
+                .setInput(output)
+                .execute();
+        Assert.assertNull(probe.getError());
+
+        List<Stream> streamTypes = probe.getStreams();
+
+        Assert.assertEquals(1, streamTypes.size());
+
+        final Stream stream0 = streamTypes.get(0);
+        Assert.assertEquals(StreamType.VIDEO, stream0.getCodecType());
+        Assert.assertEquals(10.0, stream0.getDuration(), 0.1);
+        Assert.assertEquals(160L, (long) stream0.getWidth());
+        Assert.assertEquals(120L, (long) stream0.getHeight());
+    }
+
 }
