@@ -29,7 +29,6 @@ import org.slf4j.LoggerFactory;
  * TODO list:
  * - Screen selection when multiscreen?
  * - Audio Capture?
- * - Warn if framerate is not set (like FrameInput)
  * - Call ffmpeg to return list of devices? list of screens?
  */
 public abstract class CaptureInput<T extends CaptureInput<T>> extends BaseInput<T> implements Input {
@@ -55,6 +54,28 @@ public abstract class CaptureInput<T extends CaptureInput<T>> extends BaseInput<
      */
     public CaptureInput<T> setCaptureFrameRate(Number value) {
         return addArguments("-framerate", String.valueOf(value));
+    }
+
+    /**
+     * Be careful <b>not</b> to specify framerate with the "-r" parameter,
+     * like this "ffmpeg -f dshow -r 7.5 -i video=XXX". This actually specifies that the devices
+     * incoming PTS timestamps be <b>ignored</b> and replaced as if the device were running
+     * at 7.5 fps [so it runs at default fps, but its timestamps are treated as if 7.5 fps].
+     * This can cause the recording to appear to have "video slower than audio" or, under high
+     * cpu load (if video frames are dropped) it will cause the video to fall "behind" the audio
+     * [after playback of the recording is done, audio continues on--and gets highly out of sync,
+     * video appears to go into "fast forward" mode during high cpu scenes].
+     * @param streamSpecifier stream specifier
+     * @param value           Hz value, fraction or abbreviation
+     * @return this
+     *
+     * @see #setCaptureFrameRate(Number)
+     */
+    @Override
+    public T setFrameRate(String streamSpecifier, Number value) {
+        LOGGER.warn("Be careful not to specify framerate with the \"-r\" parameter, rather use " +
+                "setCaptureFrameRate method or \"-framerate\" parameter");
+        return super.setFrameRate(streamSpecifier, value);
     }
 
     public CaptureInput<T> setCaptureVideoSize(int width, int height) {
