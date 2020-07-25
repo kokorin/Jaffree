@@ -5,9 +5,10 @@
 publiccodeYmlVersion: '0.2'
 name: Jaffree
 url: 'https://github.com/kokorin/Jaffree'
+# TODO update
 releaseDate: '2020-06-28'
 developmentStatus: stable
-softwareVersion: 0.9.5
+softwareVersion: 0.9.6
 platforms:
   - web
   - windows
