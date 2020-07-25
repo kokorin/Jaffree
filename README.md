@@ -20,7 +20,7 @@ Inspired by [ffmpeg-cli-wrapper](https://github.com/bramp/ffmpeg-cli-wrapper)
 <dependency>
     <groupId>com.github.kokorin.jaffree</groupId>
     <artifactId>jaffree</artifactId>
-    <version>0.9.6</version>
+    <version>0.9.7</version>
 </dependency>
 
 <!--
