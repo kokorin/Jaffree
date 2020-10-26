@@ -12,26 +12,25 @@ import java.util.List;
 public class FFprobeResultTest {
 
     @Test
-    public void testWithDefaultFormat() throws Exception {
+    public void testChaptersWithDefaultFormat() throws Exception {
         FFprobeResult result;
         try (InputStream input = this.getClass().getResourceAsStream("./data/ffprobe_streams_and_chapters.out")) {
             result = new FFprobeResult(new DefaultFormatParser().parse(input));
         }
-        verifyFFprobeResult(result);
+        verifyChaptersFFprobeResult(result);
 
     }
 
     @Test
-    public void testWithFlatFormat() throws Exception {
+    public void testChaptersWithFlatFormat() throws Exception {
         FFprobeResult result;
         try (InputStream input = this.getClass().getResourceAsStream("./data/ffprobe_streams_and_chapters.flat")) {
             result = new FFprobeResult(new FlatFormatParser().parse(input));
         }
-        verifyFFprobeResult(result);
-
+        verifyChaptersFFprobeResult(result);
     }
 
-    public void verifyFFprobeResult(FFprobeResult result) {
+    public void verifyChaptersFFprobeResult(FFprobeResult result) {
         List<Stream> streams = result.getStreams();
         Assert.assertEquals(8, streams.size());
 
@@ -51,5 +50,45 @@ public class FFprobeResultTest {
         Chapter chapter = chapters.get(0);
         Assert.assertEquals(1, chapter.getTags().size());
         Assert.assertEquals("Chapter 01", chapter.getTag("title"));
+    }
+
+    @Test
+    public void testProgramsWithDefaultFormat() throws Exception {
+        FFprobeResult result;
+        try (InputStream input = this.getClass().getResourceAsStream("./data/ffprobe_programs.out")) {
+            result = new FFprobeResult(new DefaultFormatParser().parse(input));
+        }
+        verifyProgramsFFprobeResult(result);
+
+    }
+
+    @Test
+    public void testProgramsWithFlatFormat() throws Exception {
+        FFprobeResult result;
+        try (InputStream input = this.getClass().getResourceAsStream("./data/ffprobe_programs.flat")) {
+            result = new FFprobeResult(new FlatFormatParser().parse(input));
+        }
+        verifyProgramsFFprobeResult(result);
+    }
+
+    public void verifyProgramsFFprobeResult(FFprobeResult result) {
+        List<Program> programs = result.getPrograms();
+        Assert.assertEquals(3, programs.size());
+
+        for (int i = 0; i < 3; i++) {
+            Program program = programs.get(i);
+            Assert.assertEquals("program " + i, i+1, program.getProgramId());
+            Assert.assertEquals("program " + i, i+1, program.getProgramNum());
+            Assert.assertEquals("program " + i, 2, program.getNbStreams());
+            Assert.assertEquals("program " + i, "FFmpeg", program.getTag("service_provider"));
+            List<Stream> streams = program.getStreams();
+            Assert.assertEquals(2, streams.size());
+            Stream video = streams.get(0);
+            Assert.assertEquals(StreamType.VIDEO, video.getCodecType());
+            Assert.assertEquals("mpeg2video", video.getCodecName());
+            Stream audio = streams.get(1);
+            Assert.assertEquals(StreamType.AUDIO, audio.getCodecType());
+            Assert.assertEquals("mp2", audio.getCodecName());
+        }
     }
 }

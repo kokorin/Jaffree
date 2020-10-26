@@ -33,11 +33,14 @@ public class Program {
         return section;
     }
 
-    public List<Tag> getTag() {
-        return section.getTag("TAG").getValues(DTag.TAG_CONVERTER);
+    public List<Tag> getTags() {
+        return section.getTag("TAG", "TAGS").getValues(DTag.TAG_CONVERTER);
     }
 
-    // TODO add Program Streams test
+    public String getTag(String name) {
+        return section.getTag("TAG", "TAGS").getString(name);
+    }
+
     public List<Stream> getStreams() {
         return section.getSections("STREAM", DSection.STREAM_CONVERTER);
     }
