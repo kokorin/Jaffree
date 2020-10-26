@@ -115,12 +115,7 @@ public class FFprobeResult {
     }
 
     public List<Stream> getStreams() {
-        return data.getSections("STREAM", new DSection.SectionConverter<Stream>() {
-            @Override
-            public Stream convert(DSection dSection) {
-                return new Stream(dSection);
-            }
-        });
+        return data.getSections("STREAM", DSection.STREAM_CONVERTER);
     }
 
     public List<Chapter> getChapters() {
