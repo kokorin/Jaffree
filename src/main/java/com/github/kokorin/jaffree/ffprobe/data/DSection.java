@@ -17,6 +17,7 @@
 
 package com.github.kokorin.jaffree.ffprobe.data;
 
+import com.github.kokorin.jaffree.ffprobe.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -99,4 +100,11 @@ public class DSection extends DBase {
     public interface SectionConverter<T> {
         T convert(DSection dSection);
     }
+
+    public static final SectionConverter<Stream> STREAM_CONVERTER = new SectionConverter<Stream>() {
+        @Override
+        public Stream convert(DSection dSection) {
+            return new Stream(dSection);
+        }
+    };
 }

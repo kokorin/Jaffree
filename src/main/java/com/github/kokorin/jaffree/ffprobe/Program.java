@@ -20,7 +20,6 @@ package com.github.kokorin.jaffree.ffprobe;
 import com.github.kokorin.jaffree.ffprobe.data.DSection;
 import com.github.kokorin.jaffree.ffprobe.data.DTag;
 
-import java.util.Collections;
 import java.util.List;
 
 public class Program {
@@ -38,8 +37,9 @@ public class Program {
         return section.getTag("TAG").getValues(DTag.TAG_CONVERTER);
     }
 
+    // TODO add Program Streams test
     public List<Stream> getStreams() {
-        return Collections.emptyList();
+        return section.getSections("STREAM", DSection.STREAM_CONVERTER);
     }
 
     public int getProgramId() {
