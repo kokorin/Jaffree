@@ -40,7 +40,15 @@ public class Stream {
         return new StreamDisposition(section.getTag("DISPOSITION"));
     }
 
+    /**
+     * @deprecated use {@link #getTags()}
+     */
+    @Deprecated
     public List<Tag> getTagList() {
+        return getTags();
+    }
+
+    public List<Tag> getTags() {
         return section.getTag("TAG", "TAGS").getValues(DTag.TAG_CONVERTER);
     }
 
