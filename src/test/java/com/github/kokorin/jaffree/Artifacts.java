@@ -10,7 +10,7 @@ import java.nio.file.StandardCopyOption;
 public class Artifacts {
 
     public static Path getFFmpegSample(String relativeUrl) {
-        URI uri = URI.create("http://samples.ffmpeg.org/").resolve(relativeUrl);
+        URI uri = URI.create("https://samples.ffmpeg.org/").resolve(relativeUrl);
         return getSample(uri);
     }
 
