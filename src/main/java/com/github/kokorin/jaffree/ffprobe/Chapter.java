@@ -33,8 +33,12 @@ public class Chapter {
         return section;
     }
 
-    public List<Tag> getTag() {
-        return section.getTag("TAG").getValues(DTag.TAG_CONVERTER);
+    public List<Tag> getTags() {
+        return section.getTag("TAG", "TAGS").getValues(DTag.TAG_CONVERTER);
+    }
+
+    public String getTag(String name) {
+        return section.getTag("TAG", "TAGS").getString(name);
     }
 
     public int getId() {
