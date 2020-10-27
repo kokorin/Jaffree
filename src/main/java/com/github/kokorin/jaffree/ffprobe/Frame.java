@@ -35,8 +35,14 @@ public class Frame {
         return section;
     }
 
-    public List<Tag> getTag() {
-        return section.getTag("TAG").getValues(DTag.TAG_CONVERTER);
+    // TODO Does Frame contain any tags?
+    public List<Tag> getTags() {
+        return section.getTag("TAG", "TAGS").getValues(DTag.TAG_CONVERTER);
+    }
+
+    // TODO Does Frame contain any tags?
+    public String getTag(String name) {
+        return section.getTag("TAG", "TAGS").getString(name);
     }
 
     public List<Log> getLogs() {
