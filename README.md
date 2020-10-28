@@ -16,6 +16,8 @@ Inspired by [ffmpeg-cli-wrapper](https://github.com/bramp/ffmpeg-cli-wrapper)
 
 # Usage 
 
+[![Maven Central](https://img.shields.io/maven-central/v/com.github.kokorin.jaffree/jaffree.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22com.github.kokorin.jaffree%22%20AND%20a:%22jaffree%22)
+
 ```xml
 <dependency>
     <groupId>com.github.kokorin.jaffree</groupId>
