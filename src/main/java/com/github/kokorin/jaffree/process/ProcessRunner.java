@@ -19,7 +19,6 @@ package com.github.kokorin.jaffree.process;
 
 import com.zaxxer.nuprocess.NuProcess;
 import com.zaxxer.nuprocess.NuProcessBuilder;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +37,7 @@ public class ProcessRunner<T> {
     private List<String> arguments = Collections.emptyList();
     private List<Runnable> helpers = Collections.emptyList();
     
-    public ProcessRunner(@NotNull Path executable, @NotNull SimplifiedProcessHandler<T> processHandler) {
+    public ProcessRunner(Path executable, SimplifiedProcessHandler<T> processHandler) {
         Objects.requireNonNull(executable, "executable must not be null");
         Objects.requireNonNull(processHandler, "processHandler must not be null");
         
@@ -46,15 +45,13 @@ public class ProcessRunner<T> {
         this.processHandler = processHandler;
     }
     
-    @NotNull
-    public ProcessRunner<T> setArguments(@NotNull List<String> arguments) {
+    public ProcessRunner<T> setArguments(List<String> arguments) {
         Objects.requireNonNull(arguments, "arguments must not be null");
         
         this.arguments = arguments;
         return this;
     }
     
-    @NotNull
     private List<String> getArguments() {
         return arguments;
     }
@@ -63,15 +60,13 @@ public class ProcessRunner<T> {
         return helpers;
     }
     
-    @NotNull
-    public ProcessRunner<T> setHelpers(@NotNull List<Runnable> helpers) {
+    public ProcessRunner<T> setHelpers(List<Runnable> helpers) {
         Objects.requireNonNull(helpers, "helpers must not be null");
         
         this.helpers = helpers;
         return this;
     }
     
-    @NotNull
     public synchronized ProcessFuture<T> executeAsync() {
         final List<String> command = new ArrayList<>();
         command.add(executable.toString());

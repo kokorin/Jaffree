@@ -1,5 +1,5 @@
 /*
- *    Copyright  2020 Alex Katlein
+ *    Copyright  2020 Denis Kokorin, Alex Katlein
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 
 package com.github.kokorin.jaffree.ffprobe.data;
 
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,14 +36,13 @@ class StreamingDefaultFormatParser implements StreamingFormatParser {
         this.stack.addLast(new State("ROOT"));
     }
     
-    @NotNull
     @Override
     public String getFormatName() {
         return "default";
     }
     
     @Override
-    public void pushLine(@NotNull String line) {
+    public void pushLine(String line) {
         if (line.startsWith("[/") && line.endsWith("]")) {
             String name = line.substring(2, line.length() - 1);
             sectionEnd(name);
@@ -147,7 +145,6 @@ class StreamingDefaultFormatParser implements StreamingFormatParser {
         tag.put(key, value);
     }
     
-    @NotNull
     @Override
     public Data getResult() {
         if (stack.size() != 1) {

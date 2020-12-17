@@ -18,8 +18,6 @@
 package com.github.kokorin.jaffree.process;
 
 import com.zaxxer.nuprocess.NuProcess;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.nio.ByteBuffer;
 
@@ -27,7 +25,7 @@ class DelegatingProcessHandler extends DefaultProcessHandler {
     private final SimplifiedProcessHandler<?> delegate;
     private final ProcessAccessImpl processAccess;
     
-    public DelegatingProcessHandler(@NotNull SimplifiedProcessHandler<?> delegate, @Nullable ProcessAccessImpl processAccess) {
+    public DelegatingProcessHandler(SimplifiedProcessHandler<?> delegate, ProcessAccessImpl processAccess) {
         super();
         
         this.delegate = delegate;

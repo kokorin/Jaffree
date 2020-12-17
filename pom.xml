@@ -6,7 +6,7 @@
 
     <groupId>com.github.kokorin.jaffree</groupId>
     <artifactId>jaffree</artifactId>
-    <version>0.10.0</version>
+    <version>0.9.8</version>
     <packaging>jar</packaging>
 
     <name>Jaffree</name>
@@ -53,12 +53,6 @@
             <groupId>com.zaxxer</groupId>
             <artifactId>nuprocess</artifactId>
             <version>2.0.1</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations-java5</artifactId>
-            <version>20.1.0</version>
         </dependency>
 
         <dependency>

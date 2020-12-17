@@ -1,5 +1,5 @@
 /*
- *    Copyright  2020 Alex Katlein
+ *    Copyright  2020 Denis Kokorin, Alex Katlein
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 
 package com.github.kokorin.jaffree.ffprobe.data;
 
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,14 +30,13 @@ class StreamingFlatFormatParser implements StreamingFormatParser {
     
     private final Data result = new Data(new TreeMap<String, List<DSection>>(String.CASE_INSENSITIVE_ORDER));
     
-    @NotNull
     @Override
     public String getFormatName() {
         return "flat";
     }
     
     @Override
-    public void pushLine(@NotNull String line) {
+    public void pushLine(String line) {
         try {
             String[] keyValue = line.split("=", 2);
             
@@ -242,7 +240,6 @@ class StreamingFlatFormatParser implements StreamingFormatParser {
         return false;
     }
     
-    @NotNull
     @Override
     public Data getResult() {
         return result;

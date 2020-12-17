@@ -19,8 +19,6 @@ package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.SizeUnit;
 import com.github.kokorin.jaffree.process.LinesProcessHandler;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,13 +34,13 @@ public class FFmpegProcessHandler extends LinesProcessHandler<FFmpegResult> {
     private volatile FFmpegResult finalResult;
     private volatile String finalErrorMessage;
     
-    public FFmpegProcessHandler(@Nullable ProgressListener progressListener, @Nullable OutputListener outputListener) {
+    public FFmpegProcessHandler(ProgressListener progressListener, OutputListener outputListener) {
         this.progressListener = progressListener;
         this.outputListener = outputListener;
     }
     
     @Override
-    public void onStderrLine(@NotNull String line) {
+    public void onStderrLine(String line) {
         LOGGER.debug(line);
         
         FFmpegProgress progress = parseProgress(line);
@@ -84,7 +82,7 @@ public class FFmpegProcessHandler extends LinesProcessHandler<FFmpegResult> {
     }
     
     @Override
-    public void onStdoutLine(@NotNull String line) {
+    public void onStdoutLine(String line) {
         LOGGER.info(line);
     }
     

@@ -19,7 +19,6 @@ package com.github.kokorin.jaffree.ffprobe;
 
 import com.github.kokorin.jaffree.ffprobe.data.StreamingFormatParser;
 import com.github.kokorin.jaffree.process.LinesProcessHandler;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,20 +29,20 @@ class FFprobeProcessHandler extends LinesProcessHandler<FFprobeResult> {
     
     private final StreamingFormatParser parser;
     
-    public FFprobeProcessHandler(@NotNull StreamingFormatParser parser) {
+    public FFprobeProcessHandler(StreamingFormatParser parser) {
         Objects.requireNonNull(parser, "parser must not be null");
         
         this.parser = parser;
     }
     
     @Override
-    public void onStderrLine(@NotNull String line) {
+    public void onStderrLine(String line) {
         LOGGER.error(line);
         setException(new RuntimeException(line));
     }
     
     @Override
-    public void onStdoutLine(@NotNull String line) {
+    public void onStdoutLine(String line) {
         try {
             parser.pushLine(line);
         } catch (Exception x) {

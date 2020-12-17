@@ -17,9 +17,6 @@
 
 package com.github.kokorin.jaffree.process;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +32,7 @@ public abstract class LinesProcessHandler<R> implements SimplifiedProcessHandler
     private final List<byte[]> currentStdoutBytes = new ArrayList<>();
     
     @Override
-    public final void onStderr(@NotNull ByteBuffer buffer, boolean closed) {
+    public final void onStderr(ByteBuffer buffer, boolean closed) {
         while (buffer.hasRemaining()) {
             if (addToBytes(buffer, currentStderrBytes) && currentStderrBytes.size() > 0) {
                 onStderrLine(new String(mergeBytes(currentStderrBytes)));
@@ -49,7 +46,7 @@ public abstract class LinesProcessHandler<R> implements SimplifiedProcessHandler
     }
     
     @Override
-    public final void onStdout(@NotNull ByteBuffer buffer, boolean closed) {
+    public final void onStdout(ByteBuffer buffer, boolean closed) {
         while (buffer.hasRemaining()) {
             if (addToBytes(buffer, currentStdoutBytes) && currentStdoutBytes.size() > 0) {
                 onStdoutLine(new String(mergeBytes(currentStdoutBytes)));
@@ -112,17 +109,16 @@ public abstract class LinesProcessHandler<R> implements SimplifiedProcessHandler
         return result;
     }
     
-    protected void setResult(@NotNull R result) {
+    protected void setResult(R result) {
         this.result = result;
     }
     
-    @NotNull
     @Override
     public R getResult() {
         return result;
     }
     
-    protected void setException(@NotNull Exception exception) {
+    protected void setException(Exception exception) {
         if (this.exception == null) {
             this.exception = exception;
         } else {
@@ -130,13 +126,12 @@ public abstract class LinesProcessHandler<R> implements SimplifiedProcessHandler
         }
     }
     
-    @Nullable
     @Override
     public Exception getException() {
         return exception;
     }
     
-    public abstract void onStderrLine(@NotNull String line);
+    public abstract void onStderrLine(String line);
     
-    public abstract void onStdoutLine(@NotNull String line);
+    public abstract void onStdoutLine(String line);
 }

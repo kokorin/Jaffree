@@ -1,5 +1,5 @@
 /*
- *    Copyright  2020 Alex Katlein
+ *    Copyright  2020 Denis Kokorin, Alex Katlein
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,14 +17,10 @@
 
 package com.github.kokorin.jaffree.ffprobe.data;
 
-import org.jetbrains.annotations.NotNull;
-
 public interface StreamingFormatParser {
-    @NotNull
     String getFormatName();
     
-    void pushLine(@NotNull String line);
+    void pushLine(String line);
     
-    @NotNull
     Data getResult();
 }

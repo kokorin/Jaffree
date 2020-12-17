@@ -17,8 +17,6 @@
 
 package com.github.kokorin.jaffree.process;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -29,7 +27,7 @@ class ProcessFutureImpl<V> implements ProcessFuture<V> {
     private final Future<V> delegate;
     private final ProcessAccess processAccess;
     
-    public ProcessFutureImpl(@NotNull Future<V> delegate, @NotNull ProcessAccess processAccess) {
+    public ProcessFutureImpl(Future<V> delegate, ProcessAccess processAccess) {
         Objects.requireNonNull(delegate, "delegate must not be null");
         
         this.delegate = delegate;
@@ -37,7 +35,6 @@ class ProcessFutureImpl<V> implements ProcessFuture<V> {
     }
     
     @Override
-    @NotNull
     public ProcessAccess getProcessAccess() {
         return processAccess;
     }
@@ -69,7 +66,7 @@ class ProcessFutureImpl<V> implements ProcessFuture<V> {
     }
     
     @Override
-    public V get(long timeout, @NotNull TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+    public V get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
         return delegate.get(timeout, unit);
     }
 }

@@ -1,5 +1,5 @@
 /*
- *    Copyright  2020 Alex Katlein
+ *    Copyright  2020 Denis Kokorin, Alex Katlein
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -18,17 +18,15 @@
 package com.github.kokorin.jaffree.process;
 
 import com.zaxxer.nuprocess.NuProcess;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 class ProcessAccessImpl implements ProcessAccess {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessAccessImpl.class);
     
-    @Nullable
     private volatile NuProcess process;
     
-    public synchronized void setProcess(@Nullable NuProcess process) {
+    public synchronized void setProcess(NuProcess process) {
         this.process = process;
     }
     
