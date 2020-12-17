@@ -1,8 +1,7 @@
 package com.github.kokorin.jaffree.ffprobe;
 
 import com.github.kokorin.jaffree.*;
-import com.github.kokorin.jaffree.ffprobe.data.DefaultFormatParser;
-import com.github.kokorin.jaffree.ffprobe.data.FlatFormatParser;
+import com.github.kokorin.jaffree.ffprobe.data.StreamingFormatParsers;
 import junit.framework.AssertionFailedError;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -487,14 +486,14 @@ public class FFprobeTest {
         FFprobeResult defaultResult = FFprobe.atPath(BIN)
                 .setShowStreams(true)
                 .setInput(VIDEO_MP4)
-                .setFormatParser(new DefaultFormatParser())
+                .setFormatParser(StreamingFormatParsers.createDefault())
                 .execute();
 
 
         FFprobeResult flatResult = FFprobe.atPath(BIN)
                 .setShowStreams(true)
                 .setInput(VIDEO_MP4)
-                .setFormatParser(new FlatFormatParser())
+                .setFormatParser(StreamingFormatParsers.createFlat())
                 .execute();
 
         compareByGetters("", defaultResult, flatResult);
@@ -508,7 +507,7 @@ public class FFprobeTest {
             result = FFprobe.atPath(BIN)
                     .setShowStreams(true)
                     .setInput(inputStream)
-                    .setFormatParser(new DefaultFormatParser())
+                    .setFormatParser(StreamingFormatParsers.createDefault())
                     .execute();
         }
 
@@ -525,7 +524,7 @@ public class FFprobeTest {
             result = FFprobe.atPath(BIN)
                     .setShowStreams(true)
                     .setInput(channel)
-                    .setFormatParser(new DefaultFormatParser())
+                    .setFormatParser(StreamingFormatParsers.createDefault())
                     .execute();
         }
 

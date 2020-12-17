@@ -1,12 +1,7 @@
 package examples.ffmpeg;
 
-import com.github.kokorin.jaffree.ffmpeg.FFmpeg;
-import com.github.kokorin.jaffree.ffmpeg.FFmpegProgress;
-import com.github.kokorin.jaffree.ffmpeg.FFmpegResult;
-import com.github.kokorin.jaffree.ffmpeg.FFmpegResultFuture;
-import com.github.kokorin.jaffree.ffmpeg.NullOutput;
-import com.github.kokorin.jaffree.ffmpeg.ProgressListener;
-import com.github.kokorin.jaffree.ffmpeg.UrlInput;
+import com.github.kokorin.jaffree.ffmpeg.*;
+import com.github.kokorin.jaffree.process.ProcessFuture;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -62,10 +57,10 @@ public class Stop {
     }
 
     public static void stopForcefully(final FFmpeg ffmpeg) throws Exception {
-        FFmpegResultFuture future = ffmpeg.executeAsync();
+        ProcessFuture<FFmpegResult> future = ffmpeg.executeAsync();
 
         Thread.sleep(5_000);
-        future.forceStop();
+        future.getProcessAccess().stopForcefully();
 
         Thread.sleep(1_000);
         System.out.println(future.get());
@@ -75,10 +70,10 @@ public class Stop {
     }
 
     public static void stopGracefully(final FFmpeg ffmpeg) throws Exception {
-        FFmpegResultFuture future = ffmpeg.executeAsync();
+        ProcessFuture<FFmpegResult> future = ffmpeg.executeAsync();
 
         Thread.sleep(5_000);
-        future.graceStop();
+        future.getProcessAccess().stopGracefully();
 
         Thread.sleep(1_000);
         System.out.println(future.get());

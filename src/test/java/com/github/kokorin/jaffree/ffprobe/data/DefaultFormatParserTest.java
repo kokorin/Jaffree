@@ -6,6 +6,8 @@ import org.junit.Test;
 import java.io.InputStream;
 import java.util.List;
 
+import static com.github.kokorin.jaffree.ffprobe.FFprobeResultTest.readData;
+
 public class DefaultFormatParserTest {
 
     @Test
@@ -37,7 +39,7 @@ public class DefaultFormatParserTest {
 
     public static Data parseResource(String name) throws Exception {
         try (InputStream input = DefaultFormatParserTest.class.getResourceAsStream(name)){
-            return new DefaultFormatParser().parse(input);
+            return readData(input, StreamingFormatParsers.createDefault());
         }
     }
 }
