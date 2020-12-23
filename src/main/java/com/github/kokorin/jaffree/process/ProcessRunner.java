@@ -79,17 +79,16 @@ public class ProcessRunner<T> {
         return new ProcessFutureImpl<>(forkJoinPool.submit(new Callable<T>() {
             @Override
             public T call() throws Exception {
-                final List<ForkJoinTask<Void>> helperTasks = new ArrayList<>();
+                final List<RecursiveAction> helperTasks = new ArrayList<>();
                 for (final Runnable helper : getHelpers()) {
-                    helperTasks.add(new RecursiveAction() {
+                    RecursiveAction helperTask = new RecursiveAction() {
                         @Override
                         protected void compute() {
                             helper.run();
                         }
-                    });
-                }
-                
-                for (ForkJoinTask<Void> helperTask : helperTasks) {
+                    };
+                    
+                    helperTasks.add(helperTask);
                     helperTask.fork();
                 }
                 
@@ -102,7 +101,7 @@ public class ProcessRunner<T> {
                 int status = process.waitFor(0, TimeUnit.SECONDS);
                 LOGGER.info("Process has finished with status: {}", status);
                 
-                for (ForkJoinTask<Void> helper : helperTasks) {
+                for (RecursiveAction helper : helperTasks) {
                     helper.join();
                 }
                 

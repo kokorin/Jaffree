@@ -1,5 +1,5 @@
 /*
- *    Copyright  2020 Alex Katlein
+ *    Copyright  2020 Denis Kokorin, Alex Katlein
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
