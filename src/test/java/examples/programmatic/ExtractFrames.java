@@ -1,7 +1,13 @@
 package examples.programmatic;
 
 import com.github.kokorin.jaffree.StreamType;
-import com.github.kokorin.jaffree.ffmpeg.*;
+import com.github.kokorin.jaffree.ffmpeg.FFmpeg;
+import com.github.kokorin.jaffree.ffmpeg.FFmpegResult;
+import com.github.kokorin.jaffree.ffmpeg.Frame;
+import com.github.kokorin.jaffree.ffmpeg.FrameConsumer;
+import com.github.kokorin.jaffree.ffmpeg.FrameOutput;
+import com.github.kokorin.jaffree.ffmpeg.Stream;
+import com.github.kokorin.jaffree.ffmpeg.UrlInput;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;

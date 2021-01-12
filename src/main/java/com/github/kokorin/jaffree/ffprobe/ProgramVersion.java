@@ -19,6 +19,7 @@ package com.github.kokorin.jaffree.ffprobe;
 
 import com.github.kokorin.jaffree.ffprobe.data.DSection;
 
+@Deprecated
 public class ProgramVersion {
     private final DSection section;
 

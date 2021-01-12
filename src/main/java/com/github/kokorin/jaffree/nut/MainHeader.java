@@ -23,10 +23,24 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 
+/**
+ * Nut format main header.
+ */
+@SuppressWarnings("checkstyle:visibilitymodifier")
 public class MainHeader {
+    /**
+     * Nut major version.
+     */
     public final long majorVersion;
+
+    /**
+     * Nut minor version.
+     */
     public final long minorVersion;
 
+    /**
+     * Number of streams in a file.
+     */
     public final int streamCount;
 
     /**
@@ -51,7 +65,14 @@ public class MainHeader {
      */
     public final long maxDistance;
 
+    /**
+     * Different time bases used in a file.
+     */
     public final Rational[] timeBases;
+
+    /**
+     * Nut frame codes.
+     */
     public final FrameCode[] frameCodes;
 
     /**
@@ -68,10 +89,28 @@ public class MainHeader {
      */
     public final long[] elisionHeaderSize;
 
+    /**
+     * Main Header flags.
+     */
     public final Set<Flag> flags;
 
-    public MainHeader(long majorVersion, long minorVersion, int streamCount, long maxDistance,
-                      Rational[] timeBases, FrameCode[] frameCodes, long[] elisionHeaderSize, Set<Flag> flags) {
+    /**
+     * Creates {@link MainHeader}.
+     *
+     * @param majorVersion      nut major version
+     * @param minorVersion      nut minor version
+     * @param streamCount       stream count
+     * @param maxDistance       aximum distance between startcodes
+     * @param timeBases         time bases
+     * @param frameCodes        frame codes
+     * @param elisionHeaderSize elision header size
+     * @param flags             flags
+     */
+    @SuppressWarnings("checkstyle:parameternumber")
+    public MainHeader(final long majorVersion, final long minorVersion,
+                      final int streamCount, final long maxDistance,
+                      final Rational[] timeBases, final FrameCode[] frameCodes,
+                      final long[] elisionHeaderSize, final Set<Flag> flags) {
         this.majorVersion = majorVersion;
         this.minorVersion = minorVersion;
         this.streamCount = streamCount;
@@ -82,20 +121,26 @@ public class MainHeader {
         this.flags = Collections.unmodifiableSet(flags);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
-        return "MainHeader{" +
-                "majorVersion=" + majorVersion +
-                ", minorVersion=" + minorVersion +
-                ", streamCount=" + streamCount +
-                ", maxDistance=" + maxDistance +
-                ", timeBases=" + Arrays.toString(timeBases) +
-                ", frameCodes=" + Arrays.toString(frameCodes) +
-                ", elisionHeaderSize=" + Arrays.toString(elisionHeaderSize) +
-                ", flags=" + flags +
-                '}';
+        return "MainHeader{"
+                + "majorVersion=" + majorVersion
+                + ", minorVersion=" + minorVersion
+                + ", streamCount=" + streamCount
+                + ", maxDistance=" + maxDistance
+                + ", timeBases=" + Arrays.toString(timeBases)
+                + ", frameCodes=" + Arrays.toString(frameCodes)
+                + ", elisionHeaderSize=" + Arrays.toString(elisionHeaderSize)
+                + ", flags=" + flags
+                + '}';
     }
 
+    /**
+     * Main Header's flags.
+     */
     public enum Flag {
         /**
          * Set if broadcast mode is in use.
@@ -104,11 +149,17 @@ public class MainHeader {
 
         private final long code;
 
-        Flag(long code) {
+        Flag(final long code) {
             this.code = code;
         }
 
-        public static Set<Flag> fromBitCode(long value) {
+        /**
+         * Creates Set of {@link Flag} from passed in bitmask value.
+         *
+         * @param value bitmask value
+         * @return flags
+         */
+        public static Set<Flag> fromBitCode(final long value) {
             if (value == BROADCAST_MODE.code) {
                 return Collections.singleton(BROADCAST_MODE);
             }
@@ -116,7 +167,13 @@ public class MainHeader {
             return Collections.emptySet();
         }
 
-        public static long toBitCode(Set<Flag> flags) {
+        /**
+         * Converts set of {@link Flag} to bitmask value.
+         *
+         * @param flags flags
+         * @return bitmask value
+         */
+        public static long toBitCode(final Set<Flag> flags) {
             long result = 0;
             for (Flag flag : flags) {
                 result += flag.code;

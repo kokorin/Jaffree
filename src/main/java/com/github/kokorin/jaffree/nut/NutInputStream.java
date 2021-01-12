@@ -22,25 +22,42 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+/**
+ * {@link NutInputStream} adapts {@link InputStream} and provides methods to read
+ * Nut-specific data structures.
+ */
+@SuppressWarnings("checkstyle:magicnumber")
 public class NutInputStream implements AutoCloseable {
 
     private final InputStream input;
     private long position = 0;
 
-    public NutInputStream(InputStream input) {
-        if (!(input instanceof BufferedInputStream)) {
-            input = new BufferedInputStream(input);
+    /**
+     * Creates {@link NutInputStream}.
+     *
+     * @param input input stream
+     */
+    public NutInputStream(final InputStream input) {
+        BufferedInputStream bufferedInputStream;
+
+        if (input instanceof BufferedInputStream) {
+            bufferedInputStream = (BufferedInputStream) input;
+        } else {
+            bufferedInputStream = new BufferedInputStream(input);
         }
 
-        this.input = input;
+        this.input = bufferedInputStream;
     }
 
+    /**
+     * @return current position
+     */
     public long getPosition() {
         return position;
     }
 
     /**
-     * v   (variable length value, unsigned)
+     * Reads v type (variable length value, unsigned).
      *
      * @return unsigned value
      */
@@ -52,17 +69,18 @@ public class NutInputStream implements AutoCloseable {
             position++;
 
             boolean hasMore = (tmp & 0x80) > 0;
-            if (hasMore)
+            if (hasMore) {
                 result = (result << 7) + tmp - 0x80;
-            else
+            } else {
                 return (result << 7) + tmp;
+            }
         }
 
         return -1;
     }
 
     /**
-     * s   (variable length value, signed)
+     * Reads s type (variable length value, signed).
      *
      * @return signed value
      */
@@ -77,7 +95,7 @@ public class NutInputStream implements AutoCloseable {
     }
 
     /**
-     * f(n)    (n fixed bits in big-endian order)
+     * Reads f(n) type (n fixed bits in big-endian order).
      * n == 64
      *
      * @return long
@@ -94,7 +112,7 @@ public class NutInputStream implements AutoCloseable {
     }
 
     /**
-     * u(n)    (unsigned number encoded in n bits in MSB-first order)
+     * Reads u(n) type (unsigned number encoded in n bits in MSB-first order).
      * n == 32
      *
      * @return int as long
@@ -111,7 +129,7 @@ public class NutInputStream implements AutoCloseable {
     }
 
     /**
-     * f(n)    (n fixed bits in big-endian order)
+     * Reads f(n) type (n fixed bits in big-endian order).
      * n == 8
      *
      * @return byte
@@ -124,7 +142,7 @@ public class NutInputStream implements AutoCloseable {
     }
 
     /**
-     * vb  (variable length binary data or string)
+     * Reads vb type (variable length binary data or string).
      *
      * @return String
      */
@@ -134,7 +152,9 @@ public class NutInputStream implements AutoCloseable {
     }
 
     /**
-     * Reads input till char \0 not found
+     * Reads input till char \0 not found.
+     *
+     * @return String
      */
     public String readCString() throws IOException {
         try (ByteArrayOutputStream buffer = new ByteArrayOutputStream(32)) {
@@ -150,7 +170,7 @@ public class NutInputStream implements AutoCloseable {
     }
 
     /**
-     * vb  (variable length binary data or string)
+     * Reads vb type (variable length binary data or string).
      *
      * @return String
      */
@@ -159,7 +179,13 @@ public class NutInputStream implements AutoCloseable {
         return readBytes(length);
     }
 
-    public Timestamp readTimestamp(int timeBaseCount) throws IOException {
+    /**
+     * Reads t type (v coded universal timestamp).
+     *
+     * @param timeBaseCount time base count
+     * @return Timestamp
+     */
+    public Timestamp readTimestamp(final int timeBaseCount) throws IOException {
         long tmp = readValue();
         int timebaseId = (int) (tmp % timeBaseCount);
         long pts = tmp / timeBaseCount;
@@ -168,7 +194,7 @@ public class NutInputStream implements AutoCloseable {
     }
 
     /**
-     * Returns next byte, which will be read with any read*() method
+     * Returns next byte, which will be read with any read*() method.
      *
      * @return next byte
      */
@@ -181,7 +207,7 @@ public class NutInputStream implements AutoCloseable {
     }
 
     /**
-     * Returns true if stream contains more data
+     * Returns true if stream contains more data.
      *
      * @return next byte
      */
@@ -193,7 +219,13 @@ public class NutInputStream implements AutoCloseable {
         return result != -1;
     }
 
-    public byte[] readBytes(long toRead) throws IOException {
+    /**
+     * Reads specified number of bytes.
+     *
+     * @param toRead bytes to read
+     * @return byte array
+     */
+    public byte[] readBytes(final long toRead) throws IOException {
         byte[] result = new byte[(int) toRead];
         int start = 0;
 
@@ -210,14 +242,23 @@ public class NutInputStream implements AutoCloseable {
         return result;
     }
 
-    public void skipBytes(long toSkip) throws IOException {
-        while (toSkip > 0) {
+    /**
+     * Skips specified number of bytes.
+     *
+     * @param toSkip bytes to skip
+     */
+    public void skipBytes(final long toSkip) throws IOException {
+        long leftToSkip = toSkip;
+        while (leftToSkip > 0) {
             long skipped = input.skip(toSkip);
             position += skipped;
-            toSkip -= skipped;
+            leftToSkip -= skipped;
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void close() throws IOException {
         input.close();

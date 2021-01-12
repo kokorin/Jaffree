@@ -29,10 +29,12 @@ import java.net.Socket;
 /**
  * Provides possibility to consume ffmpeg output via TCP socket.
  * <b>Note</b> there are limitation because of non-seekable nature of TCP output.
+ *
  * @param <T>
  */
 public abstract class TcpOutput<T extends TcpOutput<T>> extends SocketOutput<T> implements Output {
     private static final Logger LOGGER = LoggerFactory.getLogger(TcpOutput.class);
+
     public TcpOutput() {
         super("tcp");
     }

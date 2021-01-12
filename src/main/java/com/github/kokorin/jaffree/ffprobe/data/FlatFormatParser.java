@@ -23,19 +23,33 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.TreeMap;
 
+/**
+ * {@link com.github.kokorin.jaffree.ffprobe.FFprobe} output parser which parses
+ * ffprobe "flat" output.
+ */
 public class FlatFormatParser implements FormatParser {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FlatFormatParser.class);
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getFormatName() {
         return "flat";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public Data parse(InputStream inputStream) {
+    public Data parse(final InputStream inputStream) {
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
         Iterator<String> lines = new LineIterator(reader);
 
@@ -72,18 +86,29 @@ public class FlatFormatParser implements FormatParser {
         return data;
     }
 
-    protected boolean setKeyValue(Data data, String key, String value) {
+    /**
+     * Parses and sets key-value to specified {@link Data}.
+     *
+     * @param data  data to add key-value to
+     * @param key   key
+     * @param value value
+     * @return true if parsed and set
+     */
+    // TODO: refactor me
+    protected boolean setKeyValue(final Data data, final String key, final String value) {
         String[] pathStr = key.split("\\.");
         List<Path> path = new ArrayList<>();
 
-        for (int i = 0; i < pathStr.length; ) {
+        int inc;
+        for (int i = 0; i < pathStr.length; i += inc) {
             Path step = null;
-            int inc = 1;
+            inc = 1;
 
             if (i + 2 < pathStr.length) {
                 step = SectionPath.parse(pathStr[i], pathStr[i + 1], pathStr[i + 2]);
                 if (step != null) {
-                    inc = 3;
+                    // TODO checkstyle?
+                    inc = 1 + 1 + 1;
                 }
             }
 
@@ -105,7 +130,6 @@ public class FlatFormatParser implements FormatParser {
             }
 
             path.add(step);
-            i += inc;
         }
 
         if (path.isEmpty()) {
@@ -121,20 +145,27 @@ public class FlatFormatParser implements FormatParser {
             current = step.next(current);
         }
 
-        value = fixValue(value);
+        String fixedValue = fixValue(value);
 
-        return step.set(current, value);
+        return step.set(current, fixedValue);
     }
 
-    protected String fixValue(String value) {
+    /**
+     * Removes starting-ending quotes and back slashes form value.
+     *
+     * @param value value
+     * @return un-escaped value
+     */
+    protected String fixValue(final String value) {
+        String unquotedValue = value;
         if (value.startsWith("\"") && value.endsWith("\"")) {
-            value = value.substring(1, value.length() - 1);
+            unquotedValue = value.substring(1, value.length() - 1);
         }
 
-        return value.replaceAll("\\\\n", "\n");
+        return unquotedValue.replaceAll("\\\\n", "\n");
     }
 
-    private static interface Path {
+    private interface Path {
         Object next(Object prev);
 
         boolean set(Object current, String value);
@@ -144,13 +175,13 @@ public class FlatFormatParser implements FormatParser {
         private final String name;
         private final Integer index;
 
-        public SectionPath(String name, Integer index) {
+        SectionPath(final String name, final Integer index) {
             this.name = name;
             this.index = index;
         }
 
         @Override
-        public Object next(Object prev) {
+        public Object next(final Object prev) {
             List<DSection> dSections = null;
 
             if (prev instanceof Data) {
@@ -176,11 +207,11 @@ public class FlatFormatParser implements FormatParser {
         }
 
         @Override
-        public boolean set(Object current, String value) {
+        public boolean set(final Object current, final String value) {
             return false;
         }
 
-        public static SectionPath parse(String group, String name, String index) {
+        public static SectionPath parse(final String group, final String name, final String index) {
             if (!isNumeric(index)) {
                 return null;
             }
@@ -192,13 +223,13 @@ public class FlatFormatParser implements FormatParser {
     private static class TagPath implements Path {
         private final String name;
 
-        public TagPath(String name) {
+        TagPath(final String name) {
             this.name = name;
         }
 
         @Override
-        public Object next(Object prev) {
-            if (!(prev instanceof  DSection)) {
+        public Object next(final Object prev) {
+            if (!(prev instanceof DSection)) {
                 return null;
             }
 
@@ -213,7 +244,7 @@ public class FlatFormatParser implements FormatParser {
         }
 
         @Override
-        public boolean set(Object current, String value) {
+        public boolean set(final Object current, final String value) {
             return false;
         }
     }
@@ -221,17 +252,17 @@ public class FlatFormatParser implements FormatParser {
     private static class PropertyPath implements Path {
         private final String name;
 
-        public PropertyPath(String name) {
+        PropertyPath(final String name) {
             this.name = name;
         }
 
         @Override
-        public Object next(Object prev) {
+        public Object next(final Object prev) {
             return prev;
         }
 
         @Override
-        public boolean set(Object current, String value) {
+        public boolean set(final Object current, final String value) {
             if (current instanceof DBase) {
                 ((DBase) current).setValue(name, value);
                 return true;
@@ -239,12 +270,12 @@ public class FlatFormatParser implements FormatParser {
             return false;
         }
 
-        public static PropertyPath parse(String name) {
+        public static PropertyPath parse(final String name) {
             return new PropertyPath(name);
         }
     }
 
-    private static boolean isNumeric(String value) {
+    private static boolean isNumeric(final String value) {
         try {
             Integer.parseInt(value);
             return true;

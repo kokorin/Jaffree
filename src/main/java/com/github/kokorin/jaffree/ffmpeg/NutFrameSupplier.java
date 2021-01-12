@@ -18,7 +18,13 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.Rational;
-import com.github.kokorin.jaffree.nut.*;
+import com.github.kokorin.jaffree.nut.DataItem;
+import com.github.kokorin.jaffree.nut.FrameCode;
+import com.github.kokorin.jaffree.nut.Info;
+import com.github.kokorin.jaffree.nut.NutFrame;
+import com.github.kokorin.jaffree.nut.NutOutputStream;
+import com.github.kokorin.jaffree.nut.NutWriter;
+import com.github.kokorin.jaffree.nut.StreamHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,6 +38,9 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * {@link TcpInput.Supplier} implementation which allows writing Nut format.
+ */
 public class NutFrameSupplier implements TcpInput.Supplier {
     private final FrameProducer producer;
     private final boolean alpha;
@@ -45,18 +54,37 @@ public class NutFrameSupplier implements TcpInput.Supplier {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NutFrameSupplier.class);
 
-    public NutFrameSupplier(FrameProducer producer, boolean alpha) {
+    /**
+     * Creates {@link NutFrameSupplier} with default frame reordering buffer length.
+     *
+     * @param producer frame producer
+     * @param alpha    video stream alpha channel
+     */
+    public NutFrameSupplier(final FrameProducer producer, final boolean alpha) {
         this(producer, alpha, null);
     }
 
-    public NutFrameSupplier(FrameProducer producer, boolean alpha, Long frameOrderingBufferMillis) {
+    /**
+     * Creates {@link NutFrameSupplier}.
+     *
+     * @param producer                  frame producer
+     * @param alpha                     video stream alpha channel
+     * @param frameOrderingBufferMillis frame reordering buffer length
+     */
+    public NutFrameSupplier(final FrameProducer producer, final boolean alpha,
+                            final Long frameOrderingBufferMillis) {
         this.producer = producer;
         this.alpha = alpha;
         this.frameOrderingBufferMillis = frameOrderingBufferMillis;
     }
 
+    /**
+     * Writes media in Nut format to output stream and closes it.
+     *
+     * @param out OutputStream output stream
+     */
     @Override
-    public void supplyAndClose(OutputStream out) {
+    public void supplyAndClose(final OutputStream out) {
         try (Closeable toClose = out) {
             NutWriter writer = new NutWriter(new NutOutputStream(out));
             if (frameOrderingBufferMillis != null) {
@@ -69,8 +97,8 @@ public class NutFrameSupplier implements TcpInput.Supplier {
         }
     }
 
-    // package private for test
-    void write(NutWriter writer) throws IOException {
+    @SuppressWarnings("checkstyle:magicnumber")
+    private void write(final NutWriter writer) throws IOException {
         List<Stream> tracks = producer.produceStreams();
         LOGGER.debug("Streams: {}", tracks.toArray());
 
@@ -80,7 +108,8 @@ public class NutFrameSupplier implements TcpInput.Supplier {
         for (int i = 0; i < streamHeaders.length; i++) {
             Stream stream = tracks.get(i);
             if (stream.getId() != i) {
-                throw new RuntimeException("Stream ids must start with 0 and increase by 1 subsequently!");
+                throw new RuntimeException("Stream ids must start with 0 and "
+                        + "increase by 1 subsequently!");
             }
             final StreamHeader streamHeader;
 
@@ -112,8 +141,10 @@ public class NutFrameSupplier implements TcpInput.Supplier {
                     );
                     break;
                 case AUDIO:
-                    Objects.requireNonNull(stream.getSampleRate(), "Samplerate must be specified");
-                    Objects.requireNonNull(stream.getChannels(), "Number of channels must be specified");
+                    Objects.requireNonNull(stream.getSampleRate(),
+                            "Samplerate must be specified");
+                    Objects.requireNonNull(stream.getChannels(),
+                            "Number of channels must be specified");
                     streamHeader = new StreamHeader(
                             stream.getId(),
                             StreamHeader.Type.AUDIO,

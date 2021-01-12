@@ -63,8 +63,18 @@ public abstract class SocketOutput<T extends SocketOutput<T>> extends BaseOutput
         throw new RuntimeException("SocketOutput output can't be changed");
     }
 
+    /**
+     * Creates {@link Negotiator}.
+     *
+     * @return negotiator
+     */
+    // TODO: make protected?
     abstract Negotiator negotiator();
 
+    /**
+     * {@link Negotiator} is capable of integrating with ffmpeg via Socket-based connection.
+     */
+    // TODO: make protected?
     interface Negotiator {
         /**
          * Negotiator <b>must</b> close passed in {@code ServerSocket}
