@@ -62,11 +62,22 @@ public abstract class SocketInput<T extends SocketInput<T>> extends BaseInput<T>
         throw new RuntimeException("SocketInput input can't be changed");
     }
 
+    /**
+     * Creates {@link Negotiator}.
+     *
+     * @return negotiator
+     */
+    // TODO: make protected?
     abstract Negotiator negotiator();
 
+    /**
+     * {@link Negotiator} is capable of integrating with ffmpeg via Socket-based connection.
+     */
+    // TODO: make protected?
     interface Negotiator {
         /**
          * Negotiator <b>must</b> close passed in {@code ServerSocket}
+         *
          * @param serverSocket socket to communicate
          * @throws IOException
          */

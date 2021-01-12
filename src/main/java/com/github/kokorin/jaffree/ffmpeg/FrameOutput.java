@@ -19,11 +19,20 @@ package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.StreamType;
 
+/**
+ * Allows to consume in Java audio & video frames produced by ffmpeg.
+ */
 public class FrameOutput extends TcpOutput<FrameOutput> implements Output {
     private final FrameConsumer consumer;
     private final boolean alpha;
 
-    public FrameOutput(FrameConsumer consumer, boolean alpha) {
+    /**
+     * Creates {@link FrameOutput}.
+     *
+     * @param consumer frame consumer
+     * @param alpha    alpha channel
+     */
+    public FrameOutput(final FrameConsumer consumer, final boolean alpha) {
         this.consumer = consumer;
         this.alpha = alpha;
         setFormat("nut");
@@ -36,20 +45,32 @@ public class FrameOutput extends TcpOutput<FrameOutput> implements Output {
         setCodec(StreamType.AUDIO, "pcm_s32be");
     }
 
-    public FrameConsumer getConsumer() {
-        return consumer;
-    }
-
+    /**
+     * Creates {@link com.github.kokorin.jaffree.ffmpeg.TcpOutput.Consumer} which is capable of
+     * reading frames from ffmpeg via TCP socket and passing them to {@link FrameConsumer}.
+     *
+     * @return byte consumer
+     */
     @Override
     protected Consumer consumer() {
         return new NutFrameConsumer(consumer, alpha);
     }
 
-    public static FrameOutput withConsumer(FrameConsumer consumer) {
+    /**
+     * Creates {@link FrameOutput}.
+     * @param consumer frame consumer
+     * @return FrameOutput
+     */
+    public static FrameOutput withConsumer(final FrameConsumer consumer) {
         return new FrameOutput(consumer, false);
     }
 
-    public static FrameOutput withConsumerAlpha(FrameConsumer consumer) {
+    /**
+     * Creates {@link FrameOutput} with alpha channel.
+     * @param consumer frame consumer
+     * @return FrameOutput
+     */
+    public static FrameOutput withConsumerAlpha(final FrameConsumer consumer) {
         return new FrameOutput(consumer, true);
     }
 }

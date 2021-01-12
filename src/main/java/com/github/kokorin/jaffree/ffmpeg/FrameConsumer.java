@@ -19,13 +19,25 @@ package com.github.kokorin.jaffree.ffmpeg;
 
 import java.util.List;
 
+/**
+ * Allows custom implementation to be notified about available streams and every frame.
+ */
 public interface FrameConsumer {
+
+    /**
+     * Called once before any call to {@link #consume(Frame)}.
+     *
+     * @param streams streams
+     */
     void consumeStreams(List<Stream> streams);
 
     /**
-     * Called for every frame in video file. When there is no more frame this method is called one more time
+     * Called for every frame in video file.
+     * <p>
+     * When there is no more frame this method is called one more time
      * with {@code}null{@code} to notify consumer about EOF.
-     * @param frame
+     *
+     * @param frame frame
      */
     void consume(Frame frame);
 }

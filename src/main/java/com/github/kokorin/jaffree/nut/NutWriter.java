@@ -22,7 +22,13 @@ import com.github.kokorin.jaffree.nut.FrameCode.Flag;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.EnumSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 public class NutWriter {
     private final NutOutputStream output;
@@ -301,7 +307,7 @@ public class NutWriter {
         initialize();
 
         // EOR frames by specification use TS of the previous frame in the same stream.
-        // TODO do we need this check?
+        // TODO: do we need this check?
         if (!frame.eor) {
             Rational maxTs = Rational.ZERO;
             for (int i = 0; i < mainHeader.timeBases.length; i++) {
@@ -454,7 +460,7 @@ public class NutWriter {
             output.writeCrc32();
         }
 
-        // TODO elision headers?
+        // TODO: elision headers?
         output.writeBytes(frame.data);
 
         lastPts[frame.streamId] = frame.pts;

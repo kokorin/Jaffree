@@ -19,12 +19,29 @@ package com.github.kokorin.jaffree.ffmpeg;
 
 import java.util.List;
 
+/**
+ * Interface for any ffmpeg input.
+ * <p>
+ * This interface should not be implemented by custom solutions.
+ * It's better to use {@link BaseInput}.
+ *
+ * @see BaseInput
+ */
 public interface Input {
+
+    /**
+     * Build a list of command line arguments for this input.
+     *
+     * @return list of command line arguments
+     */
     List<String> buildArguments();
 
     /**
-     * Helper {@link Runnable} which should be ran in dedicated thread
-     * @return null if no helper thread is needed, otherwise Runnable
+     * Helper {@link Runnable} which should be ran in dedicated thread.
+     * <p>
+     * Return <b>null</b> if no helper thread is needed
+     *
+     * @return runnable
      */
     Runnable helperThread();
 }

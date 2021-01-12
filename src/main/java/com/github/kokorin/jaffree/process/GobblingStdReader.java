@@ -23,14 +23,26 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 
+/**
+ * {@link StdReader} implementation which reads and ignores bytes read.
+ *
+ * @param <T>
+ */
 public class GobblingStdReader<T> implements StdReader<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GobblingStdReader.class);
     private static final long REPORT_EVERY_BYTES = 1_000_000;
+    private static final int BUFFER_SIZE = 1014;
 
+    /**
+     * Reads and ignores bytes read.
+     *
+     * @param stdOut input to read from
+     * @return null
+     */
     @Override
-    public T read(InputStream stdOut) {
-        byte[] bytes = new byte[1024];
+    public T read(final InputStream stdOut) {
+        byte[] bytes = new byte[BUFFER_SIZE];
         int read = 0;
         long total = 0;
         long lastReport = 0;

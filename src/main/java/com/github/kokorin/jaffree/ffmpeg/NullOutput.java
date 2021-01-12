@@ -20,17 +20,33 @@ package com.github.kokorin.jaffree.ffmpeg;
 import com.github.kokorin.jaffree.OS;
 
 /**
- * In some cases usage of ffprobe is not enough. Use this output when you don't care about ffmpeg output and
- * you only want to analyze input file.
+ * FFmpeg Null output implementation.
  * <p>
- * Pay attention that it may be required also to set {@link FFmpeg#setOverwriteOutput(boolean)} to true
+ * The null muxer does not generate any output file.
+ * The null muxer uses a wrapped frame so there is no muxing overhead (i.e. it can accept
+ * any type of input codec, doesn't have to be rawvideo for instance).
+ * <p>
+ * Null output can be combined with codec copying to achieve fast & exact file length detection.
+ * <p>
+ * It may be required also to set {@link FFmpeg#setOverwriteOutput(boolean)} to true.
+ *
+ * @see FFmpeg#setOverwriteOutput(boolean)
+ * @see <a href="https://trac.ffmpeg.org/wiki/Null">ffmpeg Null</a>
  */
 public class NullOutput extends BaseOutput<NullOutput> implements Output {
+    /**
+     * Creates {@link NullOutput} with codec copying.
+     */
     public NullOutput() {
         this(true);
     }
 
-    public NullOutput(boolean copyCodecs) {
+    /**
+     * Creates {@link NullOutput}.
+     *
+     * @param copyCodecs true to use copy codecs
+     */
+    public NullOutput(final boolean copyCodecs) {
         if (copyCodecs) {
             copyAllCodecs();
         }

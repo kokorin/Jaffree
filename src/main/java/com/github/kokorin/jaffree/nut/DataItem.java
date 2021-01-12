@@ -17,23 +17,74 @@
 
 package com.github.kokorin.jaffree.nut;
 
+/**
+ * This data structure is used both in frames for per frame side and metadata
+ * as well as info tags for metadata covering the whole file, a stream
+ * chapter or other.
+ * <p>
+ * Metadata is data that is about the actual data and generally not essential
+ * for correct presentation
+ * <p>
+ * Sidedata is semantically part of the data and essential for its correct
+ * presentation. The same syntax is used by both for simplicity.
+ * <p>
+ * Types of per frame side data:
+ * <uL>
+ * <li>"Channels", "ChannelLayout", "SampleRate", "Width", "Height"</li>
+ * This frame changes the number of channels, the channel layout, ... to
+ * the given value (ChannelLayout vb, else v)
+ * If used in any frame of a stream then every keyframe of the stream
+ * SHOULD carry such sidedata to allow seeking.
+ * <li>"Extradata", "Palette"</li>
+ * This frame changes the codec_specific_data or palette to the given
+ * value (vb)
+ * If used in any frame of a stream then every keyframe of the stream
+ * SHOULD carry such sidedata to allow seeking.
+ * <li>"CodecSpecificSide&lt;num&gt;"</li>
+ * Codec specific side data, equivalent to matroskas BlockAdditional (vb)
+ * the "&lt;num&gt;" should be replaced by a number identifying the type of
+ * side data, it is equivalent/equal to BlockAddId in matroska.
+ * <li>"SkipStart", "SkipEnd"</li>
+ * The decoder should skip/drop the specified number of samples at the
+ * start/end of this frame (v)
+ *
+ * <li>"UserData<identifer here>"</li>
+ * User specific side data, the "&lt;identifer here\&gt;" should be replaced
+ * by a globally unique identifer of the project that
+ * uses/creates/understands the side data. For example "UserDataFFmpeg"
+ * </uL>
+ * <p>
+ * Nut specification references to this data as <b>side/meta data</b> or <b>sm_data</b>
+ */
+@SuppressWarnings("checkstyle:visibilitymodifier")
 public class DataItem {
     public final String name;
     public final Object value;
+    // TODO: introduce type enum?
     public final String type;
 
-    public DataItem(String name, Object value, String type) {
+    /**
+     * Creates {@link DataItem}.
+     *
+     * @param name  name
+     * @param value value
+     * @param type  type
+     */
+    public DataItem(final String name, final Object value, final String type) {
         this.name = name;
         this.value = value;
         this.type = type;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
-        return "DataItem{" +
-                "name='" + name + '\'' +
-                ", value=" + value +
-                ", type='" + type + '\'' +
-                '}';
+        return "DataItem{"
+                + "name='" + name + '\''
+                + ", value=" + value
+                + ", type='" + type + '\''
+                + '}';
     }
 }

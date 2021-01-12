@@ -6,9 +6,7 @@ import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Warmup;
 
-import java.awt.*;
 import java.awt.color.ColorSpace;
-import java.awt.image.*;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
@@ -29,7 +27,7 @@ public class ImageConversion {
                 int pos = y * WIDTH + x;
 
                 RGB_SRC[pos * 3 + 0] = (byte) (x + y);
-                RGB_SRC[pos * 3 + 1] = (byte) ((x + y)/ 10);
+                RGB_SRC[pos * 3 + 1] = (byte) ((x + y) / 10);
                 RGB_SRC[pos * 3 + 2] = (byte) (x + y);
 
                 RGBA_SRC[pos * 4 + 0] = (byte) (x + y);
@@ -103,7 +101,7 @@ public class ImageConversion {
     public BufferedImage ABGR_to_4ByteABGR_arraycopy() {
         BufferedImage image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_4BYTE_ABGR);
 
-        DataBufferByte buffer = (DataBufferByte)(image.getRaster().getDataBuffer());
+        DataBufferByte buffer = (DataBufferByte) (image.getRaster().getDataBuffer());
         byte[] data = buffer.getData();
         System.arraycopy(ABGR_SRC, 0, data, 0, ABGR_SRC.length);
 
@@ -124,7 +122,7 @@ public class ImageConversion {
         DataBufferByte buffer = new DataBufferByte(ABGR_SRC, ABGR_SRC.length);
         raster = Raster.createInterleavedRaster(buffer,
                 WIDTH, HEIGHT,
-                WIDTH*4, 4,
+                WIDTH * 4, 4,
                 bOffs, null);
 
         BufferedImage image = new BufferedImage(colorModel, raster, false, null);
@@ -143,7 +141,7 @@ public class ImageConversion {
         DataBufferByte buffer = new DataBufferByte(RGB_SRC, RGB_SRC.length);
         WritableRaster raster = Raster.createInterleavedRaster(buffer,
                 WIDTH, HEIGHT,
-                WIDTH*3, 3,
+                WIDTH * 3, 3,
                 bOffs, null);
 
         BufferedImage image = new BufferedImage(colorModel, raster, false, null);

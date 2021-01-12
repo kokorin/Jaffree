@@ -19,6 +19,7 @@ package com.github.kokorin.jaffree;
 
 /**
  * Stream specifiers are used to precisely specify which stream(s) a given option belongs to.
+ *
  * @see <a href="https://ffmpeg.org/ffprobe.html#toc-Stream-specifiers-1">stream specifiers</a>
  */
 public class StreamSpecifier {

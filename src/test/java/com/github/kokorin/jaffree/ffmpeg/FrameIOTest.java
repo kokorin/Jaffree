@@ -5,13 +5,22 @@ import com.github.kokorin.jaffree.StackTraceMatcher;
 import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffprobe.FFprobe;
 import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
-import javax.sound.sampled.*;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.LineEvent;
+import javax.sound.sampled.LineListener;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.SourceDataLine;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -299,7 +308,7 @@ public class FrameIOTest {
                 graphics.fillRect(0, 0, 320, 240);
                 frameCounter++;
 
-                return new Frame(0,frameCounter * 1000 / 10, image);
+                return new Frame(0, frameCounter * 1000 / 10, image);
             }
         };
 
@@ -506,7 +515,7 @@ public class FrameIOTest {
 
             Assert.assertEquals(frame.getStreamId(), actualFrame.getStreamId());
             Assert.assertArrayEquals(frame.getSamples(), actualFrame.getSamples());
-            // TODO compare images
+            // TODO: compare images
         }
     }
 
@@ -516,7 +525,7 @@ public class FrameIOTest {
 
         final AtomicReference<FFmpegProgress> progressRef = new AtomicReference<>();
 
-        // TODO convert outputPath to MP4 with ffmpeg and check how long will it take
+        // TODO: convert outputPath to MP4 with ffmpeg and check how long will it take
         FFmpeg.atPath(BIN)
                 .addInput(FrameInput.withProducer(
                         new FrameProducer() {

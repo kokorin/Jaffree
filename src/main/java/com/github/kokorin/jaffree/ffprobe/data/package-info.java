@@ -1,5 +1,5 @@
 /*
- *    Copyright  2019 Denis Kokorin
+ *    Copyright  2020 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -15,26 +15,7 @@
  *
  */
 
-package com.github.kokorin.jaffree.ffprobe.data;
-
-import java.io.InputStream;
-
 /**
- * Represents ffprobe output format parser.
+ * Package contains classes for data structures and parsers for ffprobe result.
  */
-public interface FormatParser {
-    /**
-     * Returns format name which is passed to ffprobe via <b>-print_format</b> argument.
-     *
-     * @return format name
-     */
-    String getFormatName();
-
-    /**
-     * Parses input stream.
-     *
-     * @param inputStream input stream
-     * @return parsed Data
-     */
-    Data parse(InputStream inputStream);
-}
+package com.github.kokorin.jaffree.ffprobe.data;
