@@ -18,7 +18,7 @@
 package com.github.kokorin.jaffree.ffprobe;
 
 import com.github.kokorin.jaffree.util.IOUtil;
-import com.github.kokorin.jaffree.util.SocketOutputStream;
+import com.github.kokorin.jaffree.network.SocketOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

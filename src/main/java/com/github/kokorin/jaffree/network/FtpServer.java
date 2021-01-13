@@ -1,5 +1,5 @@
 /*
- *    Copyright  2019 Denis Kokorin
+ *    Copyright  2019-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
  *
  */
 
-package com.github.kokorin.jaffree.util;
+package com.github.kokorin.jaffree.network;
 
+import com.github.kokorin.jaffree.util.IOUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,9 +39,8 @@ import java.nio.channels.SeekableByteChannel;
  * This class <b>is not intended for use as production FTP server</b>
  * since it uses knowledge of how ffmpeg operates with FTP input & output.
  */
-public class FtpServer implements Runnable {
+public class FtpServer extends TcpServer {
     private final SeekableByteChannel channel;
-    private final ServerSocket serverSocket;
     private final int bufferSize = 1_000_000;
 
     private static final byte[] NEW_LINE = "\r\n".getBytes();
@@ -49,35 +49,29 @@ public class FtpServer implements Runnable {
     /**
      * Creates {@link FtpServer}.
      *
-     * @param channel      channel to read/write to/from
-     * @param serverSocket socket to accept connections
+     * @param channel channel to read/write to/from
      */
     // TODO introduce buffer size constructor parameter
-    public FtpServer(final SeekableByteChannel channel, final ServerSocket serverSocket) {
+    public FtpServer(final SeekableByteChannel channel) {
         this.channel = channel;
-        this.serverSocket = serverSocket;
     }
 
+
     /**
-     * Starts FTP server.
+     * Serves FTP control connection.
+     *
+     * @param controlSocket socket with established control connection
      */
     @Override
-    public void run() {
-        LOGGER.debug("Starting FTP server {}", serverSocket);
+    protected void serve(Socket controlSocket) throws IOException {
+        LOGGER.debug("Serving FTP control connection {}", getAddressAndPort());
 
-        InetAddress address = InetAddress.getLoopbackAddress();
-        try (AutoCloseable toClose = serverSocket;
-             ServerSocket dataServerSocket = new ServerSocket(0, 1, address)) {
+        try (ServerSocket dataServerSocket = allocateSocket();
+             BufferedReader controlReader = new BufferedReader(
+                     new InputStreamReader(controlSocket.getInputStream()));
+             OutputStream controlOutput = controlSocket.getOutputStream()) {
 
-            Socket controlSocket = serverSocket.accept();
-            LOGGER.debug("Control connection established: {}", controlSocket);
-
-            try (BufferedReader controlReader = new BufferedReader(
-                    new InputStreamReader(controlSocket.getInputStream()));
-                 OutputStream controlOutput = controlSocket.getOutputStream()) {
-
-                operate(controlReader, controlOutput, dataServerSocket);
-            }
+            operate(controlReader, controlOutput, dataServerSocket);
         } catch (Exception e) {
             throw new RuntimeException("Failed to serve FTP", e);
         }
@@ -209,7 +203,7 @@ public class FtpServer implements Runnable {
      * Sends response to REST control command.
      *
      * @param output output to write response
-     * @param args arguments, ignored
+     * @param args   arguments, ignored
      * @throws IOException socket IO exception
      */
     private void doRest(final OutputStream output, final String args) throws IOException {
@@ -234,7 +228,7 @@ public class FtpServer implements Runnable {
      * Sends response to SIZE control command.
      *
      * @param output output to write response
-     * @param args arguments, ignored
+     * @param args   arguments, ignored
      * @throws IOException socket IO exception
      */
     private void doSize(final OutputStream output, final String args) throws IOException {

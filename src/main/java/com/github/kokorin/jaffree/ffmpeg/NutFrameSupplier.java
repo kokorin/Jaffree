@@ -18,6 +18,7 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.Rational;
+import com.github.kokorin.jaffree.network.OutputStreamSupplier;
 import com.github.kokorin.jaffree.nut.DataItem;
 import com.github.kokorin.jaffree.nut.FrameCode;
 import com.github.kokorin.jaffree.nut.Info;
@@ -39,9 +40,9 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * {@link TcpInput.Supplier} implementation which allows writing Nut format.
+ * {@link OutputStreamSupplier} implementation which allows writing Nut format.
  */
-public class NutFrameSupplier implements TcpInput.Supplier {
+public class NutFrameSupplier implements OutputStreamSupplier {
     private final FrameProducer producer;
     private final boolean alpha;
     private final Long frameOrderingBufferMillis;
@@ -78,23 +79,20 @@ public class NutFrameSupplier implements TcpInput.Supplier {
         this.frameOrderingBufferMillis = frameOrderingBufferMillis;
     }
 
+
     /**
      * Writes media in Nut format to output stream and closes it.
      *
-     * @param out OutputStream output stream
+     * @param outputStream OutputStream output stream to write to
      */
     @Override
-    public void supplyAndClose(final OutputStream out) {
-        try (Closeable toClose = out) {
-            NutWriter writer = new NutWriter(new NutOutputStream(out));
-            if (frameOrderingBufferMillis != null) {
-                writer.setFrameOrderingBufferMillis(frameOrderingBufferMillis);
-            }
-            write(writer);
-            writer.writeFooter();
-        } catch (Exception e) {
-            throw new RuntimeException("Write failed", e);
+    public void supply(final OutputStream outputStream) throws IOException {
+        NutWriter writer = new NutWriter(new NutOutputStream(outputStream));
+        if (frameOrderingBufferMillis != null) {
+            writer.setFrameOrderingBufferMillis(frameOrderingBufferMillis);
         }
+        write(writer);
+        writer.writeFooter();
     }
 
     @SuppressWarnings("checkstyle:magicnumber")

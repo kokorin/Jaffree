@@ -1,5 +1,5 @@
 /*
- *    Copyright  2019 Denis Kokorin
+ *    Copyright  2019-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,19 +17,15 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-import com.github.kokorin.jaffree.util.FtpServer;
+import com.github.kokorin.jaffree.network.FtpServer;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.net.ServerSocket;
 import java.nio.channels.SeekableByteChannel;
 
 /**
  * {@link ChannelInput} is the implementation of {@link Input}
  * which allows usage of {@link SeekableByteChannel} as ffmpeg input.
  */
-public class ChannelInput extends SocketInput<ChannelInput> implements Input {
-    private final SeekableByteChannel channel;
+public class ChannelInput extends TcpInput<ChannelInput> implements Input {
 
     /**
      * Creates {@link ChannelInput}.
@@ -40,26 +36,7 @@ public class ChannelInput extends SocketInput<ChannelInput> implements Input {
      * @param channel  byte channel
      */
     public ChannelInput(final String fileName, final SeekableByteChannel channel) {
-        super("ftp", "/" + fileName);
-        this.channel = channel;
-    }
-
-    /**
-     * Creates {@link Negotiator} which adapts byte chanel to be used as ffmpeg input.
-     *
-     * @return negotiator
-     */
-    @Override
-    Negotiator negotiator() {
-        return new Negotiator() {
-            @Override
-            public void negotiateAndClose(final ServerSocket serverSocket) throws IOException {
-                try (Closeable toClose = serverSocket) {
-                    Runnable server = new FtpServer(channel, serverSocket);
-                    server.run();
-                }
-            }
-        };
+        super("ftp", "/" + fileName, new FtpServer(channel));
     }
 
     /**

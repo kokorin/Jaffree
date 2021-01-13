@@ -17,7 +17,7 @@
 
 package com.github.kokorin.jaffree.ffprobe;
 
-import com.github.kokorin.jaffree.util.FtpServer;
+import com.github.kokorin.jaffree.network.FtpServer;
 
 import java.io.Closeable;
 import java.io.IOException;

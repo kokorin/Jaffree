@@ -1,5 +1,5 @@
 /*
- *    Copyright  2019 Denis Kokorin
+ *    Copyright  2019-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
+import com.github.kokorin.jaffree.network.OutputStreamSupplier;
+import com.github.kokorin.jaffree.network.OutputStreamTcpNegotiator;
 import com.github.kokorin.jaffree.util.IOUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,18 +30,12 @@ import java.io.OutputStream;
 import java.net.SocketException;
 
 public class PipeInput extends TcpInput<PipeInput> implements Input {
-    private final Supplier supplier;
-
-    public PipeInput(Supplier supplier) {
-        this.supplier = supplier;
+    // TODO probably it's better for constructor to accept OutputStream, not OutputStreamSupplier
+    public PipeInput(OutputStreamSupplier supplier) {
+        super(new OutputStreamTcpNegotiator(supplier));
     }
 
-    @Override
-    protected Supplier supplier() {
-        return supplier;
-    }
-
-    public static PipeInput withSupplier(Supplier supplier) {
+    public static PipeInput withSupplier(OutputStreamSupplier supplier) {
         return new PipeInput(supplier);
     }
 
@@ -51,7 +47,7 @@ public class PipeInput extends TcpInput<PipeInput> implements Input {
         return new PipeInput(new PipeSupplier(source, bufferSize));
     }
 
-    private static class PipeSupplier implements Supplier {
+    private static class PipeSupplier implements OutputStreamSupplier {
         private final InputStream source;
         private final int bufferSize;
 
@@ -64,14 +60,12 @@ public class PipeInput extends TcpInput<PipeInput> implements Input {
         }
 
         @Override
-        public void supplyAndClose(OutputStream destination) {
-            try (Closeable toClose = destination) {
+        public void supply(OutputStream destination) throws IOException {
+            try {
                 IOUtil.copy(source, destination, bufferSize);
             } catch (SocketException e) {
                 // client has no way to notify server that no more data is needed
                 LOGGER.debug("Ignoring exception: " + e.getMessage());
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to copy data", e);
             }
         }
     }

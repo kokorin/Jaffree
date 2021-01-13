@@ -17,6 +17,7 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
+import com.github.kokorin.jaffree.network.OutputStreamTcpNegotiator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,10 +42,12 @@ public class FrameInput extends TcpInput<FrameInput> implements Input {
     /**
      * Creates {@link FrameInput} for {@link FFmpeg}.
      *
-     * @param producer frame producer
+     * @param producer                  frame producer
+     * @param alphaChannel
+     * @param frameOrderingBufferMillis
      */
-    public FrameInput(final FrameProducer producer) {
-        super();
+    public FrameInput(final FrameProducer producer, final boolean alphaChannel, final Long frameOrderingBufferMillis) {
+        super(new OutputStreamTcpNegotiator(new NutFrameSupplier(producer, alphaChannel, frameOrderingBufferMillis)));
         this.producer = producer;
         setFormat("nut");
     }

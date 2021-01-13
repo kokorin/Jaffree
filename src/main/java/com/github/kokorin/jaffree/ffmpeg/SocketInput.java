@@ -1,5 +1,5 @@
 /*
- *    Copyright  2019 Denis Kokorin
+ *    Copyright  2019-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,70 +17,29 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.ServerSocket;
+import com.github.kokorin.jaffree.network.NegotiatingTcpServer;
+import com.github.kokorin.jaffree.network.TcpNegotiator;
+import com.github.kokorin.jaffree.network.TcpServer;
 
 public abstract class SocketInput<T extends SocketInput<T>> extends BaseInput<T> implements Input {
-    private final ServerSocket serverSocket;
+    private final TcpServer tcpServer;
 
-    public SocketInput(String protocol) {
-        this(protocol, "");
+    public SocketInput(String protocol, TcpNegotiator tcpNegotiator) {
+        this(protocol, "", tcpNegotiator);
     }
 
-    public SocketInput(String protocol, String suffix) {
-        this.serverSocket = allocateSocket();
-        super.setInput(protocol + "://127.0.0.1:" + serverSocket.getLocalPort() + suffix);
-    }
-
-    protected ServerSocket allocateSocket() {
-        try {
-            return new ServerSocket(0, 1, InetAddress.getLoopbackAddress());
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to allocate socket", e);
-        }
+    public SocketInput(String protocol, String suffix, TcpNegotiator tcpNegotiator) {
+        this.tcpServer = new NegotiatingTcpServer(tcpNegotiator);
+        super.setInput(protocol + "://" + tcpServer.getAddressAndPort() + suffix);
     }
 
     @Override
     public final Runnable helperThread() {
-        final Negotiator negotiator = negotiator();
-
-        return new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    negotiator.negotiateAndClose(serverSocket);
-                } catch (IOException e) {
-                    throw new RuntimeException("Failed to negotiate via socket " + serverSocket, e);
-                }
-            }
-        };
+        return tcpServer;
     }
 
     @Override
     public T setInput(String input) {
         throw new RuntimeException("SocketInput input can't be changed");
-    }
-
-    /**
-     * Creates {@link Negotiator}.
-     *
-     * @return negotiator
-     */
-    // TODO: make protected?
-    abstract Negotiator negotiator();
-
-    /**
-     * {@link Negotiator} is capable of integrating with ffmpeg via Socket-based connection.
-     */
-    // TODO: make protected?
-    interface Negotiator {
-        /**
-         * Negotiator <b>must</b> close passed in {@code ServerSocket}
-         *
-         * @param serverSocket socket to communicate
-         * @throws IOException
-         */
-        void negotiateAndClose(ServerSocket serverSocket) throws IOException;
     }
 }

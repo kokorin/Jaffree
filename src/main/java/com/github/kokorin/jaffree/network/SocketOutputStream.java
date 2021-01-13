@@ -15,7 +15,7 @@
  *
  */
 
-package com.github.kokorin.jaffree.util;
+package com.github.kokorin.jaffree.network;
 
 import java.io.IOException;
 import java.io.OutputStream;
