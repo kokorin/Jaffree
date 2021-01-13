@@ -412,13 +412,16 @@ public class FFmpeg {
     protected List<String> buildArguments() {
         List<String> result = new ArrayList<>();
 
+        // "level" is required for ffmpeg to add [loglevel] to output lines
+        String logLevelArgument = "level";
         if (logLevel != null) {
             if (progressListener != null && logLevel.code() < LogLevel.INFO.code()) {
                 throw new RuntimeException("Specified log level " + logLevel
                         + " hides ffmpeg progress output");
             }
-            result.addAll(Arrays.asList("-loglevel", Integer.toString(logLevel.code())));
+            logLevelArgument += "+" + logLevel.name().toLowerCase();
         }
+        result.addAll(Arrays.asList("-loglevel", logLevelArgument));
 
         for (Input input : inputs) {
             result.addAll(input.buildArguments());
