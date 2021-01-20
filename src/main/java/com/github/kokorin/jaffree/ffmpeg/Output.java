@@ -17,6 +17,8 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
+import com.github.kokorin.jaffree.process.FFHelper;
+
 import java.util.List;
 
 public interface Output {
@@ -25,12 +27,13 @@ public interface Output {
      * Build a list of command line arguments for this output.
      *
      * @return list of command line arguments
-     */    List<String> buildArguments();
+     */
+    List<String> buildArguments();
 
     /**
-     * Helper {@link Runnable} which should be ran in dedicated thread
+     * Helper {@link FFHelper} which should be ran in dedicated thread
      *
      * @return null if no helper thread is need, otherwise Runnable
      */
-    Runnable helperThread();
+    FFHelper helperThread();
 }

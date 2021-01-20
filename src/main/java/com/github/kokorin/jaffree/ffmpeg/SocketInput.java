@@ -20,6 +20,7 @@ package com.github.kokorin.jaffree.ffmpeg;
 import com.github.kokorin.jaffree.network.NegotiatingTcpServer;
 import com.github.kokorin.jaffree.network.TcpNegotiator;
 import com.github.kokorin.jaffree.network.TcpServer;
+import com.github.kokorin.jaffree.process.FFHelper;
 
 public abstract class SocketInput<T extends SocketInput<T>> extends BaseInput<T> implements Input {
     private final TcpServer tcpServer;
@@ -34,7 +35,7 @@ public abstract class SocketInput<T extends SocketInput<T>> extends BaseInput<T>
     }
 
     @Override
-    public final Runnable helperThread() {
+    public final FFHelper helperThread() {
         return tcpServer;
     }
 

@@ -1,5 +1,6 @@
 package com.github.kokorin.jaffree.network;
 
+import com.github.kokorin.jaffree.process.FFHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,12 +10,27 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public abstract class TcpServer implements Runnable {
-    // TODO allocate socket in run() method - would require to run Runnables before
-    //  command-line construction
-    private final ServerSocket serverSocket = allocateSocket();
+public abstract class TcpServer implements FFHelper {
+    private final ServerSocket serverSocket;
+    private final String addressAndPort;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TcpServer.class);
+
+    /**
+     * Creates TCP server.
+     * <p>
+     * This implementation is not intended to be used anywhere except this project.
+     * It servers only the first accepted connection in single thread.
+     *
+     * @param serverSocket server socket to accept connection.
+     *                     Pay attention that server socket should listen on <b>loopback</b>
+     *                     (127.0.0.1) address for security reasons.
+     */
+    protected TcpServer(ServerSocket serverSocket) {
+        this.serverSocket = serverSocket;
+        this.addressAndPort = serverSocket.getInetAddress().getHostAddress() + ":"
+                + serverSocket.getLocalPort();
+    }
 
     @Override
     public final void run() {
@@ -30,12 +46,24 @@ public abstract class TcpServer implements Runnable {
 
     protected abstract void serve(Socket socket) throws IOException;
 
-    // TODO introduce property addressAndPort
-    public String getAddressAndPort() {
-        return "127.0.0.1:" + serverSocket.getLocalPort();
+    @Override
+    protected final void finalize() throws Throwable {
+        super.finalize();
+        close();
     }
 
-    protected ServerSocket allocateSocket() {
+    @Override
+    public void close() throws IOException {
+        if (serverSocket != null) {
+            serverSocket.close();
+        }
+    }
+
+    public String getAddressAndPort() {
+        return addressAndPort;
+    }
+
+    protected static ServerSocket allocateSocket() {
         try {
             return new ServerSocket(0, 1, InetAddress.getLoopbackAddress());
         } catch (IOException e) {

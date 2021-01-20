@@ -372,7 +372,7 @@ public class FFmpeg {
         return new ProcessHandler<FFmpegResult>(executable, contextName)
                 .setStdErrReader(createStdErrReader())
                 .setStdOutReader(createStdOutReader())
-                .setRunnables(helpers)
+                .setHelpers(helpers)
                 .setArguments(buildArguments());
     }
 

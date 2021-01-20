@@ -22,11 +22,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
@@ -36,44 +36,60 @@ import java.nio.channels.SeekableByteChannel;
 /**
  * Simple FTP server intended to work <b>only</b> with ffmpeg.
  * <p>
- * This class <b>is not intended for use as production FTP server</b>
+ * This class <b>is not intended to be used as production FTP server</b>
  * since it uses knowledge of how ffmpeg operates with FTP input & output.
  */
 public class FtpServer extends TcpServer {
+    private final ServerSocket dataServerSocket;
     private final SeekableByteChannel channel;
-    private final int bufferSize = 1_000_000;
+    private final int bufferSize;
 
     private static final byte[] NEW_LINE = "\r\n".getBytes();
+    private static final int DEFAULT_BUFFER_SIZE = 1_000_000;
     private static final Logger LOGGER = LoggerFactory.getLogger(FtpServer.class);
 
     /**
      * Creates {@link FtpServer}.
      *
-     * @param channel channel to read/write to/from
+     * @param controlServerSocket server socket to establish FTP control connection
+     * @param dataServerSocket server socket to establish FTP data connection
+     * @param channel channel to read from or write to
+     * @param bufferSize size of buffer to copy data to or from Channel
      */
-    // TODO introduce buffer size constructor parameter
-    public FtpServer(final SeekableByteChannel channel) {
+    protected FtpServer(ServerSocket controlServerSocket,
+                     ServerSocket dataServerSocket,
+                     SeekableByteChannel channel,
+                     int bufferSize) {
+        super(controlServerSocket);
+        this.dataServerSocket = dataServerSocket;
         this.channel = channel;
+        this.bufferSize = bufferSize;
     }
-
 
     /**
      * Serves FTP control connection.
      *
-     * @param controlSocket socket with established control connection
+     * @param controlServerSocket socket with established control connection
      */
     @Override
-    protected void serve(Socket controlSocket) throws IOException {
+    protected void serve(Socket controlServerSocket) throws IOException {
         LOGGER.debug("Serving FTP control connection {}", getAddressAndPort());
 
-        try (ServerSocket dataServerSocket = allocateSocket();
+        try (Closeable toClose = dataServerSocket;
              BufferedReader controlReader = new BufferedReader(
-                     new InputStreamReader(controlSocket.getInputStream()));
-             OutputStream controlOutput = controlSocket.getOutputStream()) {
+                     new InputStreamReader(controlServerSocket.getInputStream()));
+             OutputStream controlOutput = controlServerSocket.getOutputStream()) {
 
             operate(controlReader, controlOutput, dataServerSocket);
         } catch (Exception e) {
             throw new RuntimeException("Failed to serve FTP", e);
+        }
+    }
+
+    @Override
+    public void close() throws IOException {
+        try (Closeable toClose = dataServerSocket) {
+            super.close();
         }
     }
 
@@ -137,8 +153,8 @@ public class FtpServer extends TcpServer {
                     doAbor(controlOutput);
                     break;
                 case "FEAT":
-                case "EPSV":
                     // intentional fall through
+                case "EPSV":
                     doNotImplemented(controlOutput);
                     break;
                 case "QUIT":
@@ -246,14 +262,17 @@ public class FtpServer extends TcpServer {
     @SuppressWarnings("checkstyle:magicnumber")
     private void doPasv(final OutputStream output, final ServerSocket dataServerSocket)
             throws IOException {
+        String address = dataServerSocket.getInetAddress().getHostAddress()
+                .replaceAll("\\.", ",");
         int port = dataServerSocket.getLocalPort();
         int portHi = port >> 8;
         int portLow = port & 0xFF;
-        println(output, "227 Entering Passive Mode (127,0,0,1," + portHi + "," + portLow + ").");
+        println(output, "227 Entering Passive Mode (" + address + ","
+                + portHi + "," + portLow + ").");
     }
 
     /**
-     * Sends response to RETR control command, accepts data connection amd transfers data.
+     * Sends response to RETR control command, accepts data connection and transfers data.
      *
      * @param output           output to write response
      * @param dataServerSocket server socket for data transfer

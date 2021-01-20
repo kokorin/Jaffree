@@ -383,7 +383,7 @@ public abstract class BaseInOut<T extends BaseInOut<T>> {
      *
      * @return list of command line arguments
      */
-    protected final List<String> buildCommonArguments() {
+    protected List<String> buildArguments() {
         List<String> result = new ArrayList<>();
 
         if (format != null) {

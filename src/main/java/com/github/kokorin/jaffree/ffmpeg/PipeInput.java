@@ -17,55 +17,53 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-import com.github.kokorin.jaffree.network.OutputStreamSupplier;
-import com.github.kokorin.jaffree.network.OutputStreamTcpNegotiator;
+import com.github.kokorin.jaffree.network.TcpNegotiator;
 import com.github.kokorin.jaffree.util.IOUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.Socket;
 import java.net.SocketException;
 
 public class PipeInput extends TcpInput<PipeInput> implements Input {
-    // TODO probably it's better for constructor to accept OutputStream, not OutputStreamSupplier
-    public PipeInput(OutputStreamSupplier supplier) {
-        super(new OutputStreamTcpNegotiator(supplier));
-    }
+    private static final int DEFAULT_BUFFER_SIZE = 1_000_000;
 
-    public static PipeInput withSupplier(OutputStreamSupplier supplier) {
-        return new PipeInput(supplier);
+    public PipeInput(InputStream source, int bufferSize) {
+        super(new PipeInputNegotiator(source, bufferSize));
     }
 
     public static PipeInput pumpFrom(InputStream source) {
-        return pumpFrom(source, 1_000_000);
+        return pumpFrom(source, DEFAULT_BUFFER_SIZE);
     }
 
     public static PipeInput pumpFrom(InputStream source, int bufferSize) {
-        return new PipeInput(new PipeSupplier(source, bufferSize));
+        return new PipeInput(source, bufferSize);
     }
 
-    private static class PipeSupplier implements OutputStreamSupplier {
+    private static class PipeInputNegotiator implements TcpNegotiator {
         private final InputStream source;
         private final int bufferSize;
 
-        private static final Logger LOGGER = LoggerFactory.getLogger(PipeSupplier.class);
+        private static final Logger LOGGER = LoggerFactory.getLogger(PipeInputNegotiator.class);
 
-
-        public PipeSupplier(InputStream source, int bufferSize) {
+        public PipeInputNegotiator(InputStream source, int bufferSize) {
             this.source = source;
             this.bufferSize = bufferSize;
         }
 
         @Override
-        public void supply(OutputStream destination) throws IOException {
-            try {
-                IOUtil.copy(source, destination, bufferSize);
-            } catch (SocketException e) {
-                // client has no way to notify server that no more data is needed
-                LOGGER.debug("Ignoring exception: " + e.getMessage());
+        public void negotiate(Socket socket) throws IOException {
+            try (OutputStream destination = socket.getOutputStream()) {
+                try {
+                    IOUtil.copy(source, destination, bufferSize);
+                } catch (SocketException e) {
+                    // Client (ffmpeg) has no way to notify server that no more data is needed.
+                    // It just closes TCP connection on its side.
+                    LOGGER.debug("Ignoring exception: " + e.getMessage());
+                }
             }
         }
     }

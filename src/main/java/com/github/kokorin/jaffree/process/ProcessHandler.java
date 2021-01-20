@@ -24,6 +24,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -33,7 +34,7 @@ public class ProcessHandler<T> {
     private final String contextName;
     private StdReader<T> stdOutReader = new GobblingStdReader<>();
     private StdReader<T> stdErrReader = new GobblingStdReader<>();
-    private List<Runnable> runnables = null;
+    private List<FFHelper> helpers = null;
     private Stopper stopper = null;
     private List<String> arguments = Collections.emptyList();
 
@@ -57,11 +58,11 @@ public class ProcessHandler<T> {
     /**
      * Set extra {@link Runnable}s that must be executed in parallel with process
      *
-     * @param runnables list
+     * @param helpers list
      * @return this
      */
-    public synchronized ProcessHandler<T> setRunnables(List<Runnable> runnables) {
-        this.runnables = runnables;
+    public synchronized ProcessHandler<T> setHelpers(List<FFHelper> helpers) {
+        this.helpers = helpers;
         return this;
     }
 
@@ -76,34 +77,38 @@ public class ProcessHandler<T> {
     }
 
     public synchronized T execute() {
-        List<String> command = new ArrayList<>();
-        command.add(executable.toString());
-        command.addAll(arguments);
-
-        LOGGER.info("Command constructed:\n{}", joinArguments(command));
-
-        Process process = null;
         try {
-            LOGGER.info("Starting process: {}", executable);
-            process = new ProcessBuilder(command)
-                    .start();
-            if (stopper != null) {
-                stopper.setProcess(process);
-            }
+            List<String> command = new ArrayList<>();
+            command.add(executable.toString());
+            command.addAll(arguments);
 
-            return interactWithProcess(process);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to start process.", e);
-        } finally {
-            if (process != null) {
-                // TODO on Windows process sometimes doesn't stop and keeps running
-                process.destroy();
-                // Process must be destroyed before closing streams, can't use try-with-resources,
-                // as resources are closing when leaving try block, before finally
-                closeQuietly(process.getInputStream());
-                closeQuietly(process.getOutputStream());
-                closeQuietly(process.getErrorStream());
+            LOGGER.info("Command constructed:\n{}", joinArguments(command));
+
+            Process process = null;
+            try {
+                LOGGER.info("Starting process: {}", executable);
+                process = new ProcessBuilder(command)
+                        .start();
+                if (stopper != null) {
+                    stopper.setProcess(process);
+                }
+
+                return interactWithProcess(process);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to start process.", e);
+            } finally {
+                if (process != null) {
+                    // TODO on Windows process sometimes doesn't stop and keeps running
+                    process.destroy();
+                    // Process must be destroyed before closing streams, can't use try-with-resources,
+                    // as resources are closing when leaving try block, before finally
+                    closeQuietly(process.getInputStream());
+                    closeQuietly(process.getOutputStream());
+                    closeQuietly(process.getErrorStream());
+                }
             }
+        } finally {
+            closeQuietly(helpers);
         }
     }
 
@@ -189,9 +194,9 @@ public class ProcessHandler<T> {
             });
         }
 
-        if (runnables != null) {
-            for (int i = 0; i < runnables.size(); i++) {
-                Runnable runnable = runnables.get(i);
+        if (helpers != null) {
+            for (int i = 0; i < helpers.size(); i++) {
+                Runnable runnable = helpers.get(i);
                 executor.execute("Runnable-" + i, runnable);
             }
         }
@@ -214,7 +219,6 @@ public class ProcessHandler<T> {
         return result.toString();
     }
 
-
     private static void closeQuietly(Closeable toClose) {
         try {
             if (toClose != null) {
@@ -222,6 +226,15 @@ public class ProcessHandler<T> {
             }
         } catch (Exception e) {
             LOGGER.warn("Ignoring exception: " + e.getMessage());
+        }
+    }
+
+    private static void closeQuietly(final Collection<? extends Closeable> toClose) {
+        if (toClose == null) {
+            return;
+        }
+        for (Closeable toCloseItem : toClose) {
+            closeQuietly(toCloseItem);
         }
     }
 

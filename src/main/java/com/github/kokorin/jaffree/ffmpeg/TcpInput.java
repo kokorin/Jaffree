@@ -20,24 +20,25 @@ package com.github.kokorin.jaffree.ffmpeg;
 import com.github.kokorin.jaffree.network.NegotiatingTcpServer;
 import com.github.kokorin.jaffree.network.TcpNegotiator;
 import com.github.kokorin.jaffree.network.TcpServer;
+import com.github.kokorin.jaffree.process.FFHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class TcpInput<T extends TcpInput<T>> extends BaseInput<T> implements Input {
+    private final TcpServer tcpServer;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(TcpInput.class);
 
     public TcpInput(TcpNegotiator tcpNegotiator) {
         this("tcp", tcpNegotiator);
     }
 
-    private final TcpServer tcpServer;
-
     public TcpInput(String protocol, TcpNegotiator tcpNegotiator) {
         this(protocol, "", tcpNegotiator);
     }
 
     public TcpInput(String protocol, String suffix, TcpNegotiator tcpNegotiator) {
-        this(protocol, suffix, new NegotiatingTcpServer(tcpNegotiator));
+        this(protocol, suffix, NegotiatingTcpServer.onRandomPort(tcpNegotiator));
     }
 
     public TcpInput(String protocol, String suffix, TcpServer tcpServer) {
@@ -46,7 +47,7 @@ public abstract class TcpInput<T extends TcpInput<T>> extends BaseInput<T> imple
     }
 
     @Override
-    public final Runnable helperThread() {
+    public final FFHelper helperThread() {
         return tcpServer;
     }
 

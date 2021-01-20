@@ -17,6 +17,8 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
+import com.github.kokorin.jaffree.process.FFHelper;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -84,7 +86,7 @@ public abstract class BaseInput<T extends BaseInput<T>> extends BaseInOut<T> imp
      */
     @Override
     public final List<String> buildArguments() {
-        List<String> result = new ArrayList<>();
+        List<String> result = new ArrayList<>(super.buildArguments());
 
         if (streamLoop != null) {
             result.addAll(Arrays.asList("-stream_loop", streamLoop.toString()));
@@ -93,8 +95,6 @@ public abstract class BaseInput<T extends BaseInput<T>> extends BaseInOut<T> imp
         if (readAtFrameRate) {
             result.add("-re");
         }
-
-        result.addAll(buildCommonArguments());
 
         if (input == null) {
             throw new IllegalArgumentException("Input must be specified");
@@ -108,10 +108,11 @@ public abstract class BaseInput<T extends BaseInput<T>> extends BaseInOut<T> imp
 
     /**
      * {@inheritDoc}
+     * @return
      */
     //TODO: remove and keep helperThread abstract?
     @Override
-    public Runnable helperThread() {
+    public FFHelper helperThread() {
         return null;
     }
 }

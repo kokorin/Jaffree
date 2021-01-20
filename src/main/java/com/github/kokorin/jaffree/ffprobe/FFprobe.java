@@ -570,7 +570,7 @@ public class FFprobe {
         return new ProcessHandler<FFprobeResult>(executable, null)
                 .setStdOutReader(createStdOutReader())
                 .setStdErrReader(createStdErrReader())
-                .setRunnables(helpers)
+                .setHelpers(helpers)
                 .setArguments(buildArguments())
                 .execute();
     }

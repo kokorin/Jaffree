@@ -19,6 +19,7 @@ package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.SizeUnit;
 import com.github.kokorin.jaffree.StreamType;
+import com.github.kokorin.jaffree.process.FFHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -274,7 +275,7 @@ public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements
      */
     @Override
     public final List<String> buildArguments() {
-        List<String> result = new ArrayList<>();
+        List<String> result = new ArrayList<>(super.buildArguments());
 
         if (outputPosition != null) {
             result.addAll(Arrays.asList("-to", formatDuration(outputPosition)));
@@ -292,8 +293,6 @@ public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements
         }
 
         result.addAll(toArguments("-frames", frames));
-
-        result.addAll(buildCommonArguments());
 
         for (Mapping map : maps) {
             result.addAll(Arrays.asList("-map", map.toValue()));
@@ -313,7 +312,7 @@ public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements
      */
     //TODO: remove and keep helperThread abstract?
     @Override
-    public Runnable helperThread() {
+    public FFHelper helperThread() {
         return null;
     }
 
