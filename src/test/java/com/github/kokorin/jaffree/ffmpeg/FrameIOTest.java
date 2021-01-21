@@ -478,7 +478,7 @@ public class FrameIOTest {
 
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
-        NutFrameSupplier writer = new NutFrameSupplier(producer, false, null);
+        NutFrameWriter writer = new NutFrameWriter(producer, false, null);
         writer.supplyAndClose(buffer);
 
         final List<Stream> actualTracks = new CopyOnWriteArrayList<>();

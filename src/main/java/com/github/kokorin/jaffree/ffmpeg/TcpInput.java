@@ -17,9 +17,9 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-import com.github.kokorin.jaffree.network.NegotiatingTcpServer;
-import com.github.kokorin.jaffree.network.TcpNegotiator;
-import com.github.kokorin.jaffree.network.TcpServer;
+import com.github.kokorin.jaffree.net.NegotiatingTcpServer;
+import com.github.kokorin.jaffree.net.TcpNegotiator;
+import com.github.kokorin.jaffree.net.TcpServer;
 import com.github.kokorin.jaffree.process.FFHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

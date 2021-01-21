@@ -15,7 +15,7 @@
  *
  */
 
-package com.github.kokorin.jaffree.network;
+package com.github.kokorin.jaffree.net;
 
 import com.github.kokorin.jaffree.util.IOUtil;
 import org.slf4j.Logger;
@@ -358,5 +358,18 @@ public class FtpServer extends TcpServer {
         LOGGER.debug("Responding: {}", line);
         output.write(line.getBytes());
         output.write(NEW_LINE);
+    }
+
+    public static FtpServer onRandomPorts(SeekableByteChannel channel) {
+        return onRandomPorts(channel, DEFAULT_BUFFER_SIZE);
+    }
+
+    public static FtpServer onRandomPorts(SeekableByteChannel channel, int bufferSize) {
+        return new FtpServer(
+                allocateSocket(),
+                allocateSocket(),
+                channel,
+                bufferSize
+        );
     }
 }

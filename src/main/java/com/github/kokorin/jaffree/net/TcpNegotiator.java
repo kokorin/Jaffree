@@ -1,4 +1,4 @@
-package com.github.kokorin.jaffree.network;
+package com.github.kokorin.jaffree.net;
 
 import java.io.IOException;
 import java.net.Socket;

@@ -21,8 +21,4 @@ public interface Stopper {
     void graceStop();
     void forceStop();
     void setProcess(Process process);
-
-    interface Factory {
-        Stopper createStopper(Process process);
-    }
 }

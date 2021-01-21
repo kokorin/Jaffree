@@ -1,4 +1,4 @@
-package com.github.kokorin.jaffree.network;
+package com.github.kokorin.jaffree.net;
 
 import com.github.kokorin.jaffree.process.FFHelper;
 import org.slf4j.Logger;

@@ -17,7 +17,7 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-import com.github.kokorin.jaffree.network.FtpServer;
+import com.github.kokorin.jaffree.net.FtpServer;
 
 import java.nio.channels.SeekableByteChannel;
 
@@ -36,7 +36,7 @@ public class ChannelInput extends TcpInput<ChannelInput> implements Input {
      * @param channel  byte channel
      */
     public ChannelInput(final String fileName, final SeekableByteChannel channel) {
-        super("ftp", "/" + fileName, new FtpServer(channel));
+        super("ftp", "/" + fileName, FtpServer.onRandomPorts(channel));
     }
 
     /**

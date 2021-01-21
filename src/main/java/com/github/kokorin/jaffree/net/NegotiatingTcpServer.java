@@ -1,9 +1,12 @@
-package com.github.kokorin.jaffree.network;
+package com.github.kokorin.jaffree.net;
+
+import net.jcip.annotations.ThreadSafe;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+@ThreadSafe
 public class NegotiatingTcpServer extends TcpServer {
     protected final TcpNegotiator negotiator;
 

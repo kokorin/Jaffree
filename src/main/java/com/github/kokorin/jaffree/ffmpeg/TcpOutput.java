@@ -17,7 +17,7 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-import com.github.kokorin.jaffree.network.SocketInputStream;
+import com.github.kokorin.jaffree.net.SocketInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
