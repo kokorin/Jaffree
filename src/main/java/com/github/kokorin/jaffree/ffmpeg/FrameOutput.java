@@ -45,8 +45,8 @@ public class FrameOutput extends TcpOutput<FrameOutput> implements Output {
         super(negotiator);
         this.negotiator = negotiator;
         super.setFormat("nut");
-        super.setCodec(StreamType.VIDEO, "rawvideo");
-        super.setCodec(StreamType.AUDIO, "pcm_s32be");
+        super.setCodec(StreamType.VIDEO.code(), "rawvideo");
+        super.setCodec(StreamType.AUDIO.code(), "pcm_s32be");
     }
 
     /**

@@ -19,6 +19,7 @@ package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.LogLevel;
 import com.github.kokorin.jaffree.StreamType;
+import com.github.kokorin.jaffree.process.FFHelper;
 import com.github.kokorin.jaffree.process.LoggingStdReader;
 import com.github.kokorin.jaffree.process.ProcessHandler;
 import com.github.kokorin.jaffree.process.StdReader;
@@ -354,16 +355,16 @@ public class FFmpeg {
     }
 
     protected ProcessHandler<FFmpegResult> createProcessHandler() {
-        List<Runnable> helpers = new ArrayList<>();
+        List<FFHelper> helpers = new ArrayList<>();
 
         for (Input input : inputs) {
-            Runnable helper = input.helperThread();
+            FFHelper helper = input.helperThread();
             if (helper != null) {
                 helpers.add(helper);
             }
         }
         for (Output output : outputs) {
-            Runnable helper = output.helperThread();
+            FFHelper helper = output.helperThread();
             if (helper != null) {
                 helpers.add(helper);
             }

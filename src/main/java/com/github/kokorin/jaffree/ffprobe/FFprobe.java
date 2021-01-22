@@ -22,6 +22,7 @@ import com.github.kokorin.jaffree.SizeUnit;
 import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffprobe.data.FlatFormatParser;
 import com.github.kokorin.jaffree.ffprobe.data.FormatParser;
+import com.github.kokorin.jaffree.process.FFHelper;
 import com.github.kokorin.jaffree.process.LoggingStdReader;
 import com.github.kokorin.jaffree.process.ProcessHandler;
 import com.github.kokorin.jaffree.process.StdReader;
@@ -506,7 +507,7 @@ public class FFprobe {
      * @return this
      */
     public FFprobe setInput(final InputStream inputStream) {
-        this.input = new PipeInput(inputStream);
+        this.input = PipeInput.pumpFrom(inputStream);
         return this;
     }
 
@@ -518,7 +519,7 @@ public class FFprobe {
      * @return this
      */
     public FFprobe setInput(final InputStream inputStream, final int bufferSize) {
-        this.input = new PipeInput(inputStream, bufferSize);
+        this.input = PipeInput.pumpFrom(inputStream, bufferSize);
         return this;
     }
 
@@ -530,7 +531,7 @@ public class FFprobe {
      */
     //TODO add setInput(SeekableByteChannel, int) to allow custom buffer size
     public FFprobe setInput(final SeekableByteChannel inputChannel) {
-        this.input = new ChannelInput(inputChannel);
+        this.input = ChannelInput.fromChannel(inputChannel);
         return this;
     }
 
@@ -559,9 +560,9 @@ public class FFprobe {
      * @return ffprobe result
      */
     public FFprobeResult execute() {
-        List<Runnable> helpers = new ArrayList<>();
+        List<FFHelper> helpers = new ArrayList<>();
         if (input != null) {
-            Runnable helper = input.helperThread();
+            FFHelper helper = input.helperThread();
             if (helper != null) {
                 helpers.add(helper);
             }

@@ -179,7 +179,7 @@ public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements
      */
     public T disableStream(final StreamType streamType) {
         disabledStreams.add(streamType);
-        // TODO: check if this foolproof is required
+        // this foolproof is required because FrameOutput sets video & audio codecs
         switch (streamType) {
             case VIDEO:
                 setCodec(StreamType.VIDEO, null);

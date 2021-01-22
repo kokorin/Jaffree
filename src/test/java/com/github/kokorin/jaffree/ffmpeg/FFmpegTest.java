@@ -600,42 +600,6 @@ public class FFmpegTest {
         Assert.assertTrue(getDuration(outputPath) > 10.);
     }
 
-
-    @Test
-    public void testPipeInputAsync() throws IOException {
-        Path tempDir = Files.createTempDirectory("jaffree");
-        Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
-
-        FFmpegResult result = FFmpeg.atPath(BIN)
-                .addInput(PipeInput.withSupplier(new TcpInput.Supplier() {
-                    @Override
-                    public void supplyAndClose(final OutputStream out) {
-                        Runnable runnable = new Runnable() {
-                            @Override
-                            public void run() {
-                                try (InputStream inputStream = Files.newInputStream(VIDEO_MP4);
-                                     Closeable toClose = out) {
-                                    IOUtils.copyLarge(inputStream, out);
-                                } catch (IOException e) {
-                                    throw new RuntimeException(e);
-                                }
-                            }
-                        };
-
-                        Thread thread = new Thread(runnable, "Supplier");
-                        thread.start();
-                    }
-                }))
-                .addOutput(UrlOutput.toPath(outputPath))
-                .execute();
-
-
-        Assert.assertNotNull(result);
-        Assert.assertNotNull(result.getVideoSize());
-
-        Assert.assertTrue(getDuration(outputPath) > 10.);
-    }
-
     @Test
     public void testPipeOutput() throws IOException {
         Path tempDir = Files.createTempDirectory("jaffree");
@@ -649,43 +613,6 @@ public class FFmpegTest {
                     .setOverwriteOutput(true)
                     .execute();
         }
-
-        Assert.assertNotNull(result);
-        Assert.assertNotNull(result.getVideoSize());
-
-        Assert.assertTrue(getExactDuration(outputPath) > 10.);
-    }
-
-    @Test
-    public void testPipeOutputAsync() throws IOException {
-        Path tempDir = Files.createTempDirectory("jaffree");
-        final Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
-
-        FFmpegResult result = FFmpeg.atPath(BIN)
-                .addInput(UrlInput.fromPath(VIDEO_MP4))
-                .addOutput(PipeOutput.withConsumer(
-                        new TcpOutput.Consumer() {
-                            @Override
-                            public void consumeAndClose(final InputStream in) {
-                                Runnable runnable = new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        try (OutputStream outputStream = Files.newOutputStream(outputPath, CREATE);
-                                             Closeable toClose = in) {
-                                            IOUtils.copyLarge(in, outputStream);
-                                        } catch (IOException e) {
-                                            throw new RuntimeException(e);
-                                        }
-                                    }
-                                };
-
-                                Thread thread = new Thread(runnable, "Consumer");
-                                thread.start();
-                            }
-                        }
-                ).setFormat("flv"))
-                .setOverwriteOutput(true)
-                .execute();
 
         Assert.assertNotNull(result);
         Assert.assertNotNull(result.getVideoSize());

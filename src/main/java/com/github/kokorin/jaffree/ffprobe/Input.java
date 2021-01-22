@@ -17,6 +17,8 @@
 
 package com.github.kokorin.jaffree.ffprobe;
 
+import com.github.kokorin.jaffree.process.FFHelper;
+
 /**
  * Interface for any ffprobe input.
  */
@@ -29,9 +31,9 @@ public interface Input {
     String getUrl();
 
     /**
-     * Helper {@link Runnable} which should be ran in dedicated thread.
+     * Helper {@link FFHelper} which should be ran in dedicated thread.
      *
      * @return null if no helper thread is needed, otherwise Runnable
      */
-    Runnable helperThread();
+    FFHelper helperThread();
 }

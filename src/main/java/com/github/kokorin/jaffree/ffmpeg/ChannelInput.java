@@ -31,11 +31,34 @@ public class ChannelInput extends TcpInput<ChannelInput> implements Input {
      * <p>
      * ffmpeg uses fileName's extension to autodetect input format
      *
+     * @param channel byte channel
+     */
+    public ChannelInput(final SeekableByteChannel channel) {
+        this("", channel);
+    }
+
+    /**
+     * Creates {@link ChannelInput}.
+     * <p>
+     * ffmpeg uses fileName's extension to autodetect input format
+     *
      * @param fileName file name
      * @param channel  byte channel
      */
     public ChannelInput(final String fileName, final SeekableByteChannel channel) {
         super("ftp", "/" + fileName, FtpServer.onRandomPorts(channel));
+    }
+
+    /**
+     * Creates {@link ChannelInput}.
+     * <p>
+     * ffmpeg uses fileName's extension to autodetect input format
+     *
+     * @param channel byte channel
+     * @return ChannelInput
+     */
+    public static ChannelInput fromChannel(final SeekableByteChannel channel) {
+        return new ChannelInput(channel);
     }
 
     /**
