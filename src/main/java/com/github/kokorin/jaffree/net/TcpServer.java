@@ -1,5 +1,7 @@
 package com.github.kokorin.jaffree.net;
 
+import com.github.kokorin.jaffree.ffmpeg.Input;
+import com.github.kokorin.jaffree.ffmpeg.Output;
 import com.github.kokorin.jaffree.process.FFHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +12,12 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+/**
+ * Abstract TCP Server implementing {@link FFHelper}.
+ * <p>
+ * This class is intended to be used in different ffmpeg {@link Input} & {@link Output}
+ * implementations which interact with ffmpeg via TCP sockets.
+ */
 public abstract class TcpServer implements FFHelper {
     private final ServerSocket serverSocket;
     private final String addressAndPort;
@@ -61,6 +69,11 @@ public abstract class TcpServer implements FFHelper {
 
     public String getAddressAndPort() {
         return addressAndPort;
+    }
+
+    @Override
+    public String toString() {
+        return "TcpServer{addressAndPort=" + addressAndPort + '}';
     }
 
     protected static ServerSocket allocateSocket() {

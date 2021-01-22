@@ -36,7 +36,7 @@ import java.util.concurrent.TimeUnit;
  * @see FrameProducer
  */
 public class FrameInput extends TcpInput<FrameInput> implements Input {
-    private final FrameInputNegotiator frameInputNegotiator;
+    private final FrameInputNegotiator negotiator;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FrameInput.class);
 
@@ -49,9 +49,9 @@ public class FrameInput extends TcpInput<FrameInput> implements Input {
         this(new FrameInputNegotiator(producer));
     }
 
-    protected FrameInput(FrameInputNegotiator frameInputNegotiator) {
-        super(frameInputNegotiator);
-        this.frameInputNegotiator = frameInputNegotiator;
+    protected FrameInput(FrameInputNegotiator negotiator) {
+        super(negotiator);
+        this.negotiator = negotiator;
         super.setFormat("nut");
     }
 
@@ -63,7 +63,7 @@ public class FrameInput extends TcpInput<FrameInput> implements Input {
      */
     // TODO rename method
     public FrameInput produceAlpha(final boolean containsAlphaChannel) {
-        frameInputNegotiator.setAlpha(containsAlphaChannel);
+        negotiator.setAlpha(containsAlphaChannel);
         return this;
     }
 
@@ -78,7 +78,7 @@ public class FrameInput extends TcpInput<FrameInput> implements Input {
      */
     @Override
     public FrameInput setFrameRate(final Number frameRate) {
-        frameInputNegotiator.setFrameRateSet(true);
+        negotiator.setFrameRateSet(true);
         return super.setFrameRate(frameRate);
     }
 
@@ -94,7 +94,7 @@ public class FrameInput extends TcpInput<FrameInput> implements Input {
      */
     @Override
     public FrameInput setFrameRate(final String streamSpecifier, final Number frameRate) {
-        frameInputNegotiator.setFrameRateSet(true);
+        negotiator.setFrameRateSet(true);
         return super.setFrameRate(streamSpecifier, frameRate);
     }
 
@@ -126,7 +126,7 @@ public class FrameInput extends TcpInput<FrameInput> implements Input {
      * @return this
      */
     public FrameInput setFrameOrderingBuffer(final long bufferTimeMillis) {
-        frameInputNegotiator.setFrameOrderingBufferMillis(bufferTimeMillis);
+        negotiator.setFrameOrderingBufferMillis(bufferTimeMillis);
         return this;
     }
 
@@ -146,7 +146,7 @@ public class FrameInput extends TcpInput<FrameInput> implements Input {
     }
 
     @ThreadSafe
-    private static class FrameInputNegotiator implements TcpNegotiator {
+    protected static class FrameInputNegotiator implements TcpNegotiator {
         private final FrameProducer producer;
 
         @GuardedBy("this")

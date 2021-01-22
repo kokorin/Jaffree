@@ -444,7 +444,7 @@ public class FrameIOTest {
     }
 
     @Test
-    public void writeAndRead() {
+    public void writeAndRead() throws Exception {
         int sampleRate = 44100;
         int samplesPerFrame = 4410;
         final Stream track = new Stream()
@@ -479,7 +479,7 @@ public class FrameIOTest {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
         NutFrameWriter writer = new NutFrameWriter(producer, false, null);
-        writer.supplyAndClose(buffer);
+        writer.write(buffer);
 
         final List<Stream> actualTracks = new CopyOnWriteArrayList<>();
         final List<Frame> actualFrames = new CopyOnWriteArrayList<>();
@@ -498,8 +498,8 @@ public class FrameIOTest {
         };
 
         ByteArrayInputStream input = new ByteArrayInputStream(buffer.toByteArray());
-        NutFrameConsumer reader = new NutFrameConsumer(consumer, false);
-        reader.consumeAndClose(input);
+        NutFrameReader reader = new NutFrameReader(consumer, false);
+        reader.read(input);
 
         Assert.assertEquals(1, actualTracks.size());
         Assert.assertEquals(track.getId(), actualTracks.get(0).getId());

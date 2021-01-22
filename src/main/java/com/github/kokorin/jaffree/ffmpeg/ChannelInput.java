@@ -22,8 +22,7 @@ import com.github.kokorin.jaffree.net.FtpServer;
 import java.nio.channels.SeekableByteChannel;
 
 /**
- * {@link ChannelInput} is the implementation of {@link Input}
- * which allows usage of {@link SeekableByteChannel} as ffmpeg input.
+ * {@link Input} which allows usage of {@link SeekableByteChannel} as ffmpeg input.
  */
 public class ChannelInput extends TcpInput<ChannelInput> implements Input {
 

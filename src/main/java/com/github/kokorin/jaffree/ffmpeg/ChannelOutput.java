@@ -19,48 +19,24 @@ package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.net.FtpServer;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.net.ServerSocket;
 import java.nio.channels.SeekableByteChannel;
 
 /**
- * {@link ChannelOutput} is the implementation of {@link Output}
- * which allows usage of {@link SeekableByteChannel} as ffmpeg output.
+ * {@link Output} implementationwhich allows usage of {@link SeekableByteChannel} as ffmpeg output.
  */
-public class ChannelOutput extends SocketOutput<ChannelOutput> implements Output {
-    private final SeekableByteChannel channel;
+public class ChannelOutput extends TcpOutput<ChannelOutput> implements Output {
 
     /**
      * Creates {@link ChannelOutput}.
      * <p>
      * ffmpeg uses fileName's extension to autodetect output format
      *
-     * @param filename file name
+     * @param fileName file name
      * @param channel  byte channel
      */
-    public ChannelOutput(final String filename, final SeekableByteChannel channel) {
-        super("ftp", "/" + filename);
-        this.channel = channel;
+    public ChannelOutput(final String fileName, final SeekableByteChannel channel) {
+        super("ftp", "/" + fileName, FtpServer.onRandomPorts(channel));
         this.addArguments("-ftp-write-seekable", "1");
-    }
-
-    /**
-     * Creates {@link Negotiator} which adapts byte chanel to be used as ffmpeg output.
-     *
-     * @return negotiator
-     */
-    @Override
-    Negotiator negotiator() {
-        return new Negotiator() {
-            @Override
-            public void negotiateAndClose(final ServerSocket serverSocket) throws IOException {
-                try (Closeable toClose = serverSocket) {
-                    Runnable server = new FtpServer(channel, serverSocket);
-                    server.run();
-                }
-            }
-        };
     }
 
     /**

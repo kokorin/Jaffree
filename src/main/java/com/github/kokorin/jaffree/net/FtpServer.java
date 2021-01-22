@@ -42,7 +42,7 @@ import java.nio.channels.SeekableByteChannel;
 public class FtpServer extends TcpServer {
     private final ServerSocket dataServerSocket;
     private final SeekableByteChannel channel;
-    private final int bufferSize;
+    private final byte[] buffer;
 
     private static final byte[] NEW_LINE = "\r\n".getBytes();
     private static final int DEFAULT_BUFFER_SIZE = 1_000_000;
@@ -61,9 +61,14 @@ public class FtpServer extends TcpServer {
                      SeekableByteChannel channel,
                      int bufferSize) {
         super(controlServerSocket);
+
+        if (bufferSize <= 0) {
+            throw new IllegalArgumentException("Buffer size must be positive");
+        }
+
         this.dataServerSocket = dataServerSocket;
         this.channel = channel;
-        this.bufferSize = bufferSize;
+        this.buffer = new byte[bufferSize];
     }
 
     /**
@@ -287,7 +292,7 @@ public class FtpServer extends TcpServer {
              OutputStream dataOutput = dataSocket.getOutputStream()) {
             LOGGER.debug("Data connection established: {}", dataSocket);
 
-            copied = IOUtil.copy(Channels.newInputStream(channel), dataOutput, bufferSize);
+            copied = IOUtil.copy(Channels.newInputStream(channel), dataOutput, buffer);
         } catch (SocketException e) {
             // ffmpeg can close connection without fully reading requested data.
             // This is not an error.
@@ -321,7 +326,7 @@ public class FtpServer extends TcpServer {
              InputStream dataInput = dataSocket.getInputStream()) {
             LOGGER.debug("Data connection established: {}", dataSocket);
 
-            copied = IOUtil.copy(dataInput, Channels.newOutputStream(channel), bufferSize);
+            copied = IOUtil.copy(dataInput, Channels.newOutputStream(channel), buffer);
         } catch (SocketException e) {
             if (e.getMessage().startsWith("Connection reset by peer")) {
                 LOGGER.debug("Client closed socket: {}", e.getMessage());

@@ -56,7 +56,7 @@ public class PipeInput extends TcpInput<PipeInput> implements Input {
     }
 
     public static PipeInput pumpFrom(InputStream source) {
-        return pumpFrom(source);
+        return new PipeInput(source);
     }
 
     public static PipeInput pumpFrom(InputStream source, int bufferSize) {
