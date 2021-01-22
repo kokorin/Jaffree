@@ -17,7 +17,11 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
+import com.github.kokorin.jaffree.net.NegotiatingTcpServer;
 import com.github.kokorin.jaffree.net.SocketInputStream;
+import com.github.kokorin.jaffree.net.TcpNegotiator;
+import com.github.kokorin.jaffree.net.TcpServer;
+import com.github.kokorin.jaffree.process.FFHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,42 +32,40 @@ import java.net.Socket;
 
 /**
  * Provides possibility to consume ffmpeg output via TCP socket.
+ * <p>
  * <b>Note</b> there are limitation because of non-seekable nature of TCP output.
  *
  * @param <T>
  */
-public abstract class TcpOutput<T extends TcpOutput<T>> extends SocketOutput<T> implements Output {
+public abstract class TcpOutput<T extends TcpOutput<T>> extends BaseOutput<T> implements Output {
+    private final TcpServer tcpServer;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(TcpOutput.class);
 
-    public TcpOutput() {
-        super("tcp");
+    public TcpOutput(TcpNegotiator tcpNegotiator) {
+        this("tcp", tcpNegotiator);
     }
 
-    protected abstract Consumer consumer();
+    public TcpOutput(String protocol, TcpNegotiator tcpNegotiator) {
+        this(protocol, "", tcpNegotiator);
+    }
+
+    public TcpOutput(String protocol, String suffix, TcpNegotiator tcpNegotiator) {
+        this(protocol, suffix, NegotiatingTcpServer.onRandomPort(tcpNegotiator));
+    }
+
+    public TcpOutput(String protocol, String suffix, TcpServer tcpServer) {
+        this.tcpServer = tcpServer;
+        super.setOutput(protocol + "://" + tcpServer.getAddressAndPort() + suffix);
+    }
 
     @Override
-    Negotiator negotiator() {
-        final Consumer consumer = consumer();
-
-        return new Negotiator() {
-            @Override
-            public void negotiateAndClose(ServerSocket serverSocket) throws IOException {
-                LOGGER.debug("Accepting connection: {}", serverSocket);
-                Socket socket = serverSocket.accept();
-                InputStream inputStream = new SocketInputStream(serverSocket, socket);
-                LOGGER.debug("Passing output stream to consumer: {}", consumer);
-                consumer.consumeAndClose(inputStream);
-            }
-        };
+    public final FFHelper helperThread() {
+        return tcpServer;
     }
 
-    public interface Consumer {
-
-        /**
-         * Consumer <b>must</b> close passed {@link InputStream} either in current or another thread.
-         *
-         * @param in InputStream
-         */
-        void consumeAndClose(InputStream in);
+    @Override
+    public T setOutput(String output) {
+        throw new RuntimeException("TcpOutput output can't be changed");
     }
 }

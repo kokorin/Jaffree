@@ -43,6 +43,10 @@ public final class IOUtil {
      */
     public static long copy(final InputStream input, final OutputStream output,
                             final int bufferSize) throws IOException {
+        if (bufferSize <= 0) {
+            throw new IllegalArgumentException("Buffer size must be positive");
+        }
+
         return copy(input, output, new byte[bufferSize]);
     }
 
@@ -57,6 +61,10 @@ public final class IOUtil {
      */
     public static long copy(final InputStream input, final OutputStream output, final byte[] buffer)
             throws IOException {
+        if (buffer.length == 0) {
+            throw new IllegalArgumentException("Buffer  must be not empty");
+        }
+
         long count = 0;
         int n;
         while (EOF != (n = input.read(buffer))) {

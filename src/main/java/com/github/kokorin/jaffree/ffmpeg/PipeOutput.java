@@ -1,5 +1,5 @@
 /*
- *    Copyright  2019 Denis Kokorin
+ *    Copyright  2019-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,62 +17,75 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
+import com.github.kokorin.jaffree.net.TcpNegotiator;
 import com.github.kokorin.jaffree.util.IOUtil;
+import net.jcip.annotations.GuardedBy;
+import net.jcip.annotations.ThreadSafe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.Socket;
 
 /**
- * Provides possibility to consume ffmpeg output via TCP socket.
+ * {@link Output} implementation which passes ffmpeg output to {@link OutputStream}.
  * <p>
- * <b>Note</b> there are limitations because of non-seekable nature of TCP output.
+ * <b>Note</b> {@link OutputStream} is non seekable, so ffmpeg may not correctly finalize many
+ * formats. Consider using {@link ChannelOutput}
+ *
+ * @see ChannelOutput
  */
 public class PipeOutput extends TcpOutput<PipeOutput> implements Output {
-    private final Consumer consumer;
+    private final PipeOutputNegotiator negotiator;
 
+    private static final int DEFAULT_BUFFER_SIZE = 1_000_000;
     private static final Logger LOGGER = LoggerFactory.getLogger(PipeOutput.class);
 
-    public PipeOutput(Consumer consumer) {
-        this.consumer = consumer;
+    public PipeOutput(OutputStream destination) {
+        this(new PipeOutputNegotiator(destination));
     }
 
-    @Override
-    protected Consumer consumer() {
-        LOGGER.warn("It's recommended to use ChannelOutput since ffmpeg requires seekable output for many formats");
-        return consumer;
+    protected PipeOutput(PipeOutputNegotiator negotiator) {
+        super(negotiator);
+        this.negotiator = negotiator;
+        LOGGER.warn("It's recommended to use ChannelOutput since ffmpeg requires seekable output"
+                + " for many formats");
     }
 
-    public static PipeOutput withConsumer(Consumer consumer) {
-        return new PipeOutput(consumer);
+    public PipeOutput setBufferSize(int bufferSize) {
+        negotiator.setBufferSize(bufferSize);
+        return this;
     }
 
     public static PipeOutput pumpTo(OutputStream destination) {
-        return pumpTo(destination, 1_000_000);
+        return new PipeOutput(destination);
     }
 
     public static PipeOutput pumpTo(OutputStream destination, int bufferSize) {
-        return new PipeOutput(new PipeConsumer(destination, bufferSize));
+        return pumpTo(destination)
+                .setBufferSize(bufferSize);
     }
 
-    private static class PipeConsumer implements Consumer {
+    @ThreadSafe
+    protected static class PipeOutputNegotiator implements TcpNegotiator {
         private final OutputStream destination;
-        private final int bufferSize;
+        @GuardedBy("this")
+        private int bufferSize = DEFAULT_BUFFER_SIZE;
 
-        public PipeConsumer(OutputStream destination, int bufferSize) {
+        public PipeOutputNegotiator(OutputStream destination) {
             this.destination = destination;
+        }
+
+        public synchronized void setBufferSize(int bufferSize) {
             this.bufferSize = bufferSize;
         }
 
         @Override
-        public void consumeAndClose(InputStream source) {
-            try (Closeable toClose = source) {
+        public synchronized void negotiate(Socket socket) throws IOException {
+            try (InputStream source = socket.getInputStream()) {
                 IOUtil.copy(source, destination, bufferSize);
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to copy data", e);
             }
         }
     }

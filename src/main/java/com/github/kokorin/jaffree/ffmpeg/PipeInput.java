@@ -19,6 +19,8 @@ package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.net.TcpNegotiator;
 import com.github.kokorin.jaffree.util.IOUtil;
+import net.jcip.annotations.GuardedBy;
+import net.jcip.annotations.ThreadSafe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,42 +30,62 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketException;
 
+/**
+ * {@link Input} implementation which passes {@link InputStream} to ffmpeg as input.
+ *
+ * @see ChannelInput
+ */
 public class PipeInput extends TcpInput<PipeInput> implements Input {
-    private static final int DEFAULT_BUFFER_SIZE = 1_000_000;
+    private final PipeInputNegotiator negotiator;
 
-    public PipeInput(InputStream source, int bufferSize) {
-        super(new PipeInputNegotiator(source, bufferSize));
+    private static final int DEFAULT_BUFFER_SIZE = 1_000_000;
+    private static final Logger LOGGER = LoggerFactory.getLogger(PipeInput.class);
+
+    public PipeInput(InputStream source) {
+        this(new PipeInputNegotiator(source));
+    }
+
+    public PipeInput(PipeInputNegotiator negotiator) {
+        super(negotiator);
+        this.negotiator = negotiator;
+    }
+
+    public PipeInput setBufferSize(int bufferSize) {
+        negotiator.setBufferSize(bufferSize);
+        return this;
     }
 
     public static PipeInput pumpFrom(InputStream source) {
-        return pumpFrom(source, DEFAULT_BUFFER_SIZE);
+        return pumpFrom(source);
     }
 
     public static PipeInput pumpFrom(InputStream source, int bufferSize) {
-        return new PipeInput(source, bufferSize);
+        return pumpFrom(source)
+                .setBufferSize(bufferSize);
     }
 
-    private static class PipeInputNegotiator implements TcpNegotiator {
+    @ThreadSafe
+    protected static class PipeInputNegotiator implements TcpNegotiator {
         private final InputStream source;
-        private final int bufferSize;
+        @GuardedBy("this")
+        private int bufferSize = DEFAULT_BUFFER_SIZE;
 
-        private static final Logger LOGGER = LoggerFactory.getLogger(PipeInputNegotiator.class);
-
-        public PipeInputNegotiator(InputStream source, int bufferSize) {
+        public PipeInputNegotiator(InputStream source) {
             this.source = source;
+        }
+
+        public synchronized void setBufferSize(int bufferSize) {
             this.bufferSize = bufferSize;
         }
 
         @Override
-        public void negotiate(Socket socket) throws IOException {
+        public synchronized void negotiate(Socket socket) throws IOException {
             try (OutputStream destination = socket.getOutputStream()) {
-                try {
-                    IOUtil.copy(source, destination, bufferSize);
-                } catch (SocketException e) {
-                    // Client (ffmpeg) has no way to notify server that no more data is needed.
-                    // It just closes TCP connection on its side.
-                    LOGGER.debug("Ignoring exception: " + e.getMessage());
-                }
+                IOUtil.copy(source, destination, bufferSize);
+            } catch (SocketException e) {
+                // Client (ffmpeg) has no way to notify server that no more data is needed.
+                // It just closes TCP connection on its side.
+                LOGGER.debug("Ignoring exception: " + e.getMessage());
             }
         }
     }
