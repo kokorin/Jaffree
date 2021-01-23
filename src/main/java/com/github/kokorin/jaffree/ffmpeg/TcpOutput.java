@@ -1,5 +1,5 @@
 /*
- *    Copyright  2019 Denis Kokorin
+ *    Copyright 2019-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -18,17 +18,11 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.net.NegotiatingTcpServer;
-import com.github.kokorin.jaffree.net.SocketInputStream;
 import com.github.kokorin.jaffree.net.TcpNegotiator;
 import com.github.kokorin.jaffree.net.TcpServer;
 import com.github.kokorin.jaffree.process.FFHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.ServerSocket;
-import java.net.Socket;
 
 /**
  * Provides possibility to consume ffmpeg output via TCP socket.
