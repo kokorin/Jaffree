@@ -21,19 +21,45 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Represents ffmpeg filter graph.
+ * <p>
+ * Mainly this class exists to make ffmpeg filter graphs more readable for developers.
+ *
+ * @see <a href="https://ffmpeg.org/ffmpeg-filters.html">ffmpeg filters documentation</a>
+ */
 public class FilterGraph {
     private final List<FilterChain> chains = new ArrayList<>();
 
-    public FilterGraph addFilterChain(FilterChain chain) {
+    /**
+     * Adds filter chain to filter graph.
+     *
+     * @param chain filter chain
+     * @return this
+     */
+    public FilterGraph addFilterChain(final FilterChain chain) {
         chains.add(chain);
         return this;
     }
 
-    public FilterGraph addFilterChains(List<FilterChain> chain) {
-        chains.addAll(chain);
+    /**
+     * Adds multiple filter chains to filter graph.
+     *
+     * @param chainsToAdd filter chains to add
+     * @return this
+     */
+    public FilterGraph addFilterChains(final List<FilterChain> chainsToAdd) {
+        chains.addAll(chainsToAdd);
         return this;
     }
 
+    /**
+     * Prints filter graph description according to ffmpeg filtergraph syntax.
+     *
+     * @return filter description
+     * @see <a href="https://ffmpeg.org/ffmpeg-filters.html#toc-Filtergraph-syntax-1">
+     * filtergraph syntax</a>
+     */
     public String getValue() {
         StringBuilder result = new StringBuilder();
 
@@ -49,7 +75,13 @@ public class FilterGraph {
         return result.toString();
     }
 
-    public static FilterGraph of(FilterChain ...chains) {
-        return new FilterGraph().addFilterChains(Arrays.asList(chains));
+    /**
+     * Create {@link FilterGraph} from several filter chains.
+     *
+     * @param filterChains filter chains
+     * @return FilterGraph
+     */
+    public static FilterGraph of(final FilterChain... filterChains) {
+        return new FilterGraph().addFilterChains(Arrays.asList(filterChains));
     }
 }

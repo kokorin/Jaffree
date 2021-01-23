@@ -1,6 +1,11 @@
 package com.github.kokorin.jaffree.ffprobe;
 
-import com.github.kokorin.jaffree.*;
+import com.github.kokorin.jaffree.Artifacts;
+import com.github.kokorin.jaffree.LogLevel;
+import com.github.kokorin.jaffree.Rational;
+import com.github.kokorin.jaffree.StackTraceMatcher;
+import com.github.kokorin.jaffree.StreamSpecifier;
+import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffprobe.data.DefaultFormatParser;
 import com.github.kokorin.jaffree.ffprobe.data.FlatFormatParser;
 import junit.framework.AssertionFailedError;
@@ -22,6 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class FFprobeTest {
     public static Path BIN;
@@ -227,7 +233,7 @@ public class FFprobeTest {
                 Assert.assertNotNull(stream.getMaxBitRate());
             }
 
-            // TODO find video sample for which ffprobe reports bits_per_raw_sample
+            // TODO: find video sample for which ffprobe reports bits_per_raw_sample
             // Assert.assertNotNull(stream.getBitsPerRawSample());
 
             bitsPerSampleIsPresent |= stream.getBitsPerSample() != null;
@@ -287,7 +293,7 @@ public class FFprobeTest {
                 .execute();
 
         Assert.assertNotNull(result);
-        //TODO Find media file with chapters
+        //TODO: Find media file with chapters
         Assert.assertNotNull(result.getChapters());
     }
 
@@ -534,11 +540,50 @@ public class FFprobeTest {
         Assert.assertFalse(result.getStreams().isEmpty());
     }
 
+    @Test
+    public void testAsyncExecution() throws Exception {
+        FFprobeResult result = FFprobe.atPath(BIN)
+                .setShowStreams(true)
+                .setInput(VIDEO_MP4)
+                .executeAsync()
+                .get();
+
+        Assert.assertNotNull(result);
+        Assert.assertEquals(6, result.getStreams().size());
+
+        Stream stream = result.getStreams().get(0);
+        Assert.assertEquals(StreamType.VIDEO, stream.getCodecType());
+
+        stream = result.getStreams().get(2);
+        Assert.assertEquals(StreamType.AUDIO, stream.getCodecType());
+    }
+
+
+    @Test
+    public void testAsyncExecutionWithException() throws Exception {
+        expectedException.expect(new StackTraceMatcher("No such file or directory"));
+
+        FFprobeResult result = FFprobe.atPath(BIN)
+                .setShowStreams(true)
+                .setInput("non_existent.mp4")
+                .executeAsync()
+                .get();
+
+        Assert.assertNotNull(result);
+        Assert.assertEquals(6, result.getStreams().size());
+
+        Stream stream = result.getStreams().get(0);
+        Assert.assertEquals(StreamType.VIDEO, stream.getCodecType());
+
+        stream = result.getStreams().get(2);
+        Assert.assertEquals(StreamType.AUDIO, stream.getCodecType());
+    }
+
     private static List<? extends Class> noDeepCompare = Arrays.asList(
             int.class, short.class, long.class, float.class, double.class, boolean.class,
             Integer.class, Short.class, Long.class, Float.class, Double.class, Boolean.class,
             String.class
-    ) ;
+    );
 
     private static void compareByGetters(String context, Object o1, Object o2) throws Exception {
         if (Objects.equals(o1, o2)) {
@@ -560,14 +605,14 @@ public class FFprobeTest {
         }
 
         if (o1 instanceof List) {
-            List l1 = (List)o1;
-            List l2 = (List)o2;
+            List l1 = (List) o1;
+            List l2 = (List) o2;
 
             if (l1.size() != l2.size()) {
                 throw new AssertionFailedError(context + " size: " + o1 + " " + o2);
             }
 
-            for (int i =0; i < l1.size(); i++) {
+            for (int i = 0; i < l1.size(); i++) {
                 String subContext = context + "[" + i + "]";
                 compareByGetters(subContext, l1.get(i), l2.get(i));
             }

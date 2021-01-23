@@ -1,5 +1,5 @@
 /*
- *    Copyright  2017 Denis Kokorin
+ *    Copyright 2017-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -18,14 +18,23 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.Rational;
-import com.github.kokorin.jaffree.nut.*;
+import com.github.kokorin.jaffree.nut.MainHeader;
+import com.github.kokorin.jaffree.nut.NutFrame;
+import com.github.kokorin.jaffree.nut.NutInputStream;
+import com.github.kokorin.jaffree.nut.NutReader;
+import com.github.kokorin.jaffree.nut.StreamHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.awt.color.ColorSpace;
-import java.awt.image.*;
-import java.io.Closeable;
+import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.ComponentColorModel;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
+import java.awt.image.Raster;
+import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -33,27 +42,35 @@ import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NutFrameConsumer implements TcpOutput.Consumer {
+/**
+ * {@link NutFrameReader} reads InputStream in Nut format and passes parsed frames
+ * to {@link FrameConsumer}.
+ */
+public class NutFrameReader {
     private final FrameConsumer frameConsumer;
-    private final boolean alpha;
+    private final boolean alphaChannel;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NutFrameConsumer.class);
+    private static final int RGB_BYTES_PER_PIXEL = 3;
+    private static final int ALPHA_BYTES_PER_PIXEL = 3;
+    private static final Logger LOGGER = LoggerFactory.getLogger(NutFrameReader.class);
 
-    public NutFrameConsumer(FrameConsumer frameConsumer, boolean alpha) {
+    /**
+     * Creates {@link NutFrameReader}.
+     *
+     * @param frameConsumer frame consumer
+     * @param alphaChannel  video stream alpha channel
+     */
+    public NutFrameReader(final FrameConsumer frameConsumer, final boolean alphaChannel) {
         this.frameConsumer = frameConsumer;
-        this.alpha = alpha;
+        this.alphaChannel = alphaChannel;
     }
 
-    @Override
-    public void consumeAndClose(InputStream input) {
-        try (Closeable toClose = input) {
-            read(input);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to read stream", e);
-        }
-    }
-
-    void read(InputStream input) throws IOException {
+    /**
+     * Reads media in Nut format from input stream and closes it.
+     *
+     * @param input input to read
+     */
+    public void read(final InputStream input) throws IOException {
         NutInputStream stream = new NutInputStream(input);
         NutReader nutReader = new NutReader(stream);
 
@@ -82,7 +99,8 @@ public class NutFrameConsumer implements TcpOutput.Consumer {
         frameConsumer.consume(null);
     }
 
-    private static List<Stream> parseTracks(MainHeader mainHeader, StreamHeader[] streamHeaders) {
+    private static List<Stream> parseTracks(final MainHeader mainHeader,
+                                            final StreamHeader[] streamHeaders) {
         List<Stream> result = new ArrayList<>();
 
         for (StreamHeader streamHeader : streamHeaders) {
@@ -95,7 +113,7 @@ public class NutFrameConsumer implements TcpOutput.Consumer {
             } else if (streamHeader.streamType == StreamHeader.Type.AUDIO) {
                 Rational samplerate = streamHeader.audio.samplerate;
                 if (samplerate.denominator != 1) {
-                    LOGGER.warn("Samplerate denominator is'n equal to 1 (?). This may lead to incorrect audio decoding", samplerate);
+                    LOGGER.warn("Samplerate should be integer but it is ({}).", samplerate);
                 }
 
                 stream = new Stream()
@@ -115,7 +133,8 @@ public class NutFrameConsumer implements TcpOutput.Consumer {
         return result;
     }
 
-    private Frame parseFrame(StreamHeader track, NutFrame frame) {
+    @SuppressWarnings("checkstyle:magicnumber")
+    private Frame parseFrame(final StreamHeader track, final NutFrame frame) {
         if (frame == null || frame.data == null || frame.data.length == 0 || frame.eor) {
             return null;
         }
@@ -127,9 +146,11 @@ public class NutFrameConsumer implements TcpOutput.Consumer {
             int width = track.video.width;
             int height = track.video.height;
 
-            // Sometimes if duration limit is specified, ffmpeg creates NutFrame with insufficient data
-            if (!alpha && width * height * 3 != frame.data.length
-                    || alpha && width * height * 4 != frame.data.length) {
+            // Sometimes if duration limit is specified, ffmpeg creates
+            // NutFrame with insufficient data
+            int pixelCount = width * height;
+            if (!alphaChannel && pixelCount * RGB_BYTES_PER_PIXEL != frame.data.length
+                    || alphaChannel && pixelCount * ALPHA_BYTES_PER_PIXEL != frame.data.length) {
                 return null;
             }
 
@@ -139,7 +160,8 @@ public class NutFrameConsumer implements TcpOutput.Consumer {
             final ColorModel colorModel;
             final WritableRaster raster;
 
-            if (!alpha) {
+            // TODO extract to BufferedImageUtil
+            if (!alphaChannel) {
                 int[] nBits = {8, 8, 8};
                 int[] bOffs = {2, 1, 0};
                 colorModel = new ComponentColorModel(cs, nBits, false, false,

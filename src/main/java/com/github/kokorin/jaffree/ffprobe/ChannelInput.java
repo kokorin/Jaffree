@@ -1,5 +1,5 @@
 /*
- *    Copyright  2019 Denis Kokorin
+ *    Copyright 2019-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,31 +17,58 @@
 
 package com.github.kokorin.jaffree.ffprobe;
 
-import com.github.kokorin.jaffree.util.FtpServer;
+import com.github.kokorin.jaffree.net.FtpServer;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.net.ServerSocket;
 import java.nio.channels.SeekableByteChannel;
 
-public class ChannelInput extends SocketInput {
-    private final SeekableByteChannel channel;
+/**
+ * {@link ChannelInput} is the implementation of {@link Input}
+ * which allows usage of {@link SeekableByteChannel} as ffprobe input.
+ */
+public class ChannelInput extends TcpInput {
 
-    public ChannelInput(SeekableByteChannel channel) {
-        super("ftp");
-        this.channel = channel;
+    /**
+     * Creates {@link ChannelInput}.
+     *
+     * @param channel byte channel
+     */
+    public ChannelInput(final SeekableByteChannel channel) {
+        this("", channel);
     }
 
-    @Override
-    Negotiator negotiator() {
-        return new Negotiator() {
-            @Override
-            public void negotiateAndClose(ServerSocket serverSocket) throws IOException {
-                try (Closeable toClose = serverSocket) {
-                    Runnable server = new FtpServer(channel, serverSocket);
-                    server.run();
-                }
-            }
-        };
+    /**
+     * Creates {@link ChannelInput}.
+     *
+     * @param channel  byte channel
+     * @param fileName file name
+     */
+    public ChannelInput(final String fileName, final SeekableByteChannel channel) {
+        super("ftp", "/" + fileName, FtpServer.onRandomPorts(channel));
+    }
+
+    /**
+     * Creates {@link ChannelInput}.
+     * <p>
+     * ffmpeg uses fileName's extension to autodetect input format
+     *
+     * @param channel byte channel
+     * @return ChannelInput
+     */
+    public static ChannelInput fromChannel(final SeekableByteChannel channel) {
+        return new ChannelInput(channel);
+    }
+
+    /**
+     * Creates {@link ChannelInput}.
+     * <p>
+     * ffmpeg uses fileName's extension to autodetect input format
+     *
+     * @param fileName file name
+     * @param channel  byte channel
+     * @return ChannelInput
+     */
+    public static ChannelInput fromChannel(final String fileName,
+                                           final SeekableByteChannel channel) {
+        return new ChannelInput(fileName, channel);
     }
 }

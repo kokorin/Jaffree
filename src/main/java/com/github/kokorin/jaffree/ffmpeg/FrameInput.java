@@ -1,5 +1,5 @@
 /*
- *    Copyright  2017 Denis Kokorin
+ *    Copyright 2017-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,87 +17,174 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-
+import com.github.kokorin.jaffree.net.TcpNegotiator;
+import net.jcip.annotations.GuardedBy;
+import net.jcip.annotations.ThreadSafe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.Socket;
 import java.util.concurrent.TimeUnit;
 
 /**
- * <b>It's strongly recommended</b> to specify {@link #setFrameRate(Number)}  for video producing
+ * Allows to supply ffmpeg with audio & video frames constructed in Java.
+ *
+ * <b>It's strongly recommended</b> to specify {@link #setFrameRate(Number)} for video producing.
+ *
+ * @see FrameProducer
  */
 public class FrameInput extends TcpInput<FrameInput> implements Input {
-    private boolean alpha;
-    private boolean frameRateSet;
-    private Long frameOrderingBufferMillis;
-
-    private final FrameProducer producer;
+    private final FrameInputNegotiator negotiator;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FrameInput.class);
 
-    public FrameInput(FrameProducer producer) {
-        super();
-        this.producer = producer;
-        setFormat("nut");
+    /**
+     * Creates {@link FrameInput} for {@link FFmpeg}.
+     *
+     * @param producer frame producer
+     */
+    public FrameInput(final FrameProducer producer) {
+        this(new FrameInputNegotiator(producer));
+    }
+
+    protected FrameInput(FrameInputNegotiator negotiator) {
+        super(negotiator);
+        this.negotiator = negotiator;
+        super.setFormat("nut");
     }
 
     /**
-     * Whether produced video stream should contain alpha channel
+     * Whether produced video stream should contain alpha channel.
      *
-     * @param alpha alpha
+     * @param containsAlphaChannel alpha channel
      * @return this
      */
-    public FrameInput produceAlpha(boolean alpha) {
-        this.alpha = alpha;
+    // TODO rename method
+    public FrameInput produceAlpha(final boolean containsAlphaChannel) {
+        negotiator.setAlpha(containsAlphaChannel);
         return this;
     }
 
     /**
      * <b>It's strongly recommended</b> to specify videoFrameRate for video producing.
      * <p>
-     * Otherwise conversion can be very slow (20-50 times slower) and even can result in corrupted video
+     * Otherwise conversion can be very slow (20-50 times slower) and even can result in
+     * corrupted video.
      *
-     * @param value video frames per second
+     * @param frameRate video frames per second
      * @return this
      */
     @Override
-    public FrameInput setFrameRate(Number value) {
-        return super.setFrameRate(value);
+    public FrameInput setFrameRate(final Number frameRate) {
+        negotiator.setFrameRateSet(true);
+        return super.setFrameRate(frameRate);
     }
 
     /**
      * <b>It's strongly recommended</b> to specify videoFrameRate for video producing.
      * <p>
-     * Otherwise conversion can be very slow (20-50 times slower) and even can result in corrupted video
+     * Otherwise conversion can be very slow (20-50 times slower) and even can result in
+     * corrupted video.
+     *
      * @param streamSpecifier stream specifier
-     * @param value video frames per second
+     * @param frameRate       video frames per second
      * @return this
      */
     @Override
-    public FrameInput setFrameRate(String streamSpecifier, Number value) {
-        frameRateSet = true;
-        return super.setFrameRate(streamSpecifier, value);
+    public FrameInput setFrameRate(final String streamSpecifier, final Number frameRate) {
+        negotiator.setFrameRateSet(true);
+        return super.setFrameRate(streamSpecifier, frameRate);
     }
 
-    public FrameInput setFrameOrderingBuffer(long bufferTime, TimeUnit unit) {
+    /**
+     * Sets frame ordering buffer while producing NUT video. Default is 200 ms.
+     * <p>
+     * Frame ordering buffer allows {@link FrameProducer} to produce frame without strict ordering
+     * (which is required by NUT format).
+     * <p>
+     * Note: high values may cause OutOfMemoryError or performance degradation.
+     *
+     * @param bufferTime buffer time
+     * @param unit       time unit
+     * @return this
+     */
+    public FrameInput setFrameOrderingBuffer(final long bufferTime, final TimeUnit unit) {
         return setFrameOrderingBuffer(unit.toMillis(bufferTime));
     }
 
-    public FrameInput setFrameOrderingBuffer(long bufferTimeMillis) {
-        frameOrderingBufferMillis = bufferTimeMillis;
+    /**
+     * Sets frame ordering buffer while producing NUT video. Default is 200 ms.
+     * <p>
+     * Frame ordering buffer allows {@link FrameProducer} to produce frame without strict ordering
+     * (which is required by NUT format).
+     * <p>
+     * Note: high values may cause OutOfMemoryError or performance degradation.
+     *
+     * @param bufferTimeMillis buffer time in milliseconds
+     * @return this
+     */
+    public FrameInput setFrameOrderingBuffer(final long bufferTimeMillis) {
+        negotiator.setFrameOrderingBufferMillis(bufferTimeMillis);
         return this;
     }
 
     @Override
-    protected Supplier supplier() {
-        if (!frameRateSet) {
-            LOGGER.warn("It's strongly recommended to specify video frame rate, " +
-                    "otherwise video encoding may be slower (by 20-50 times) and may produce corrupted video");
-        }
-        return new NutFrameSupplier(producer, alpha, frameOrderingBufferMillis);
+    public final FrameInput setFormat(String format) {
+        throw new RuntimeException("Format can't be changed");
     }
 
-    public static FrameInput withProducer(FrameProducer producer) {
+    /**
+     * Creates {@link FrameInput} with {@link FrameProducer}.
+     *
+     * @param producer frame producer
+     * @return FrameInput
+     */
+    public static FrameInput withProducer(final FrameProducer producer) {
         return new FrameInput(producer);
+    }
+
+    @ThreadSafe
+    protected static class FrameInputNegotiator implements TcpNegotiator {
+        private final FrameProducer producer;
+
+        @GuardedBy("this")
+        private boolean alpha;
+        @GuardedBy("this")
+        private boolean frameRateSet;
+        @GuardedBy("this")
+        private Long frameOrderingBufferMillis;
+
+        public FrameInputNegotiator(FrameProducer producer) {
+            this.producer = producer;
+        }
+
+        public synchronized void setAlpha(final boolean alpha) {
+            this.alpha = alpha;
+        }
+
+        public synchronized void setFrameRateSet(final boolean frameRateSet) {
+            this.frameRateSet = frameRateSet;
+        }
+
+        public synchronized void setFrameOrderingBufferMillis(
+                final Long frameOrderingBufferMillis) {
+            this.frameOrderingBufferMillis = frameOrderingBufferMillis;
+        }
+
+        @Override
+        public synchronized void negotiate(final Socket socket) throws IOException {
+            if (!frameRateSet) {
+                LOGGER.warn("It's strongly recommended to specify video frame rate, "
+                        + "otherwise video encoding may be slower (by 20-50 times) "
+                        + "and may produce corrupted video");
+            }
+
+            NutFrameWriter supplier = new NutFrameWriter(producer, alpha, frameOrderingBufferMillis);
+            try (OutputStream output = socket.getOutputStream()) {
+                supplier.write(output);
+            }
+        }
     }
 }

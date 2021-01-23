@@ -19,8 +19,22 @@ package com.github.kokorin.jaffree.ffprobe.data;
 
 import java.io.InputStream;
 
+/**
+ * Represents ffprobe output format parser.
+ */
 public interface FormatParser {
+    /**
+     * Returns format name which is passed to ffprobe via <b>-print_format</b> argument.
+     *
+     * @return format name
+     */
     String getFormatName();
 
+    /**
+     * Parses input stream.
+     *
+     * @param inputStream input stream
+     * @return parsed Data
+     */
     Data parse(InputStream inputStream);
 }

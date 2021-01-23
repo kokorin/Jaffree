@@ -1,5 +1,5 @@
 /*
- *    Copyright  2019 Apache commons-io participants, Denis Kokorin
+ *    Copyright 2019 Apache commons-io participants, Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -22,50 +22,54 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
+ * Simple IO utils.
+ * <p>
  * Kindly borrowed from commons-io.
  */
-public class IOUtil {
+public final class IOUtil {
     private IOUtil() {
     }
 
     public static final int EOF = -1;
-    private static final int DEFAULT_BUFFER_SIZE = 1024 * 4;
 
-    public static long copy(final InputStream input, final OutputStream output)
-            throws IOException {
-        return copy(input, output, DEFAULT_BUFFER_SIZE);
-    }
+    /**
+     * Copies everything form input to output.
+     *
+     * @param input      input stream
+     * @param output     output stream
+     * @param bufferSize buffer size to use
+     * @return bytes been copied
+     * @throws IOException Stream IO exception
+     */
+    public static long copy(final InputStream input, final OutputStream output,
+                            final int bufferSize) throws IOException {
+        if (bufferSize <= 0) {
+            throw new IllegalArgumentException("Buffer size must be positive");
+        }
 
-    public static long copy(final InputStream input, final OutputStream output, final int bufferSize)
-            throws IOException {
         return copy(input, output, new byte[bufferSize]);
     }
 
-    public static long copy(final InputStream input, final OutputStream output, final int bufferSize, long length)
-            throws IOException {
-        return copy(input, output, new byte[bufferSize], length);
-    }
-
+    /**
+     * Copies everything form input to output.
+     *
+     * @param input  input stream
+     * @param output output stream
+     * @param buffer buffer to use
+     * @return bytes been copied
+     * @throws IOException Stream IO exception
+     */
     public static long copy(final InputStream input, final OutputStream output, final byte[] buffer)
             throws IOException {
+        if (buffer.length == 0) {
+            throw new IllegalArgumentException("Buffer  must be not empty");
+        }
+
         long count = 0;
         int n;
         while (EOF != (n = input.read(buffer))) {
             output.write(buffer, 0, n);
             count += n;
-        }
-        return count;
-    }
-
-    public static long copy(final InputStream input, final OutputStream output, final byte[] buffer, long length)
-            throws IOException {
-        long count = 0;
-        int n;
-        long leftToCopy = length;
-        while (leftToCopy > 0 && EOF != (n = input.read(buffer, 0, (int) Math.min(leftToCopy, buffer.length)))) {
-            output.write(buffer, 0, n);
-            count += n;
-            leftToCopy -= n;
         }
         return count;
     }

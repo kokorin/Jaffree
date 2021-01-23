@@ -17,6 +17,9 @@
 
 package com.github.kokorin.jaffree;
 
+/**
+ * FFmpeg & FFprobe log level.
+ */
 public enum LogLevel {
 
     /**
@@ -26,7 +29,7 @@ public enum LogLevel {
 
     /**
      * Only show fatal errors which could lead the process to crash, such as an assertion failure.
-     *
+     * <p>
      * This is not currently used for anything.
      */
     PANIC(0),
@@ -34,7 +37,7 @@ public enum LogLevel {
 
     /**
      * Only show fatal errors.
-     *
+     * <p>
      * These are errors after which the process absolutely cannot continue.
      */
     FATAL(8),
@@ -48,7 +51,7 @@ public enum LogLevel {
 
     /**
      * Show all warnings and errors.
-     *
+     * <p>
      * Any message related to possibly incorrect or unexpected events will be shown.
      */
     WARNING(24),
@@ -56,7 +59,7 @@ public enum LogLevel {
 
     /**
      * Show informative messages during processing.
-     *
+     * <p>
      * This is in addition to warnings and errors. This is the default value.
      */
     INFO(32),
@@ -73,14 +76,20 @@ public enum LogLevel {
      */
     DEBUG(48),
 
+    /**
+     * Show everything, including trace information.
+     */
     TRACE(56);
 
-    private int code;
+    private final int code;
 
-    LogLevel(int code) {
+    LogLevel(final int code) {
         this.code = code;
     }
 
+    /**
+     * @return integer log level code
+     */
     public int code() {
         return code;
     }

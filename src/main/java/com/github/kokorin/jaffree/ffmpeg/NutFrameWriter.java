@@ -1,5 +1,5 @@
 /*
- *    Copyright  2017 Denis Kokorin
+ *    Copyright 2017-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -18,13 +18,18 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.Rational;
-import com.github.kokorin.jaffree.nut.*;
+import com.github.kokorin.jaffree.nut.DataItem;
+import com.github.kokorin.jaffree.nut.FrameCode;
+import com.github.kokorin.jaffree.nut.Info;
+import com.github.kokorin.jaffree.nut.NutFrame;
+import com.github.kokorin.jaffree.nut.NutOutputStream;
+import com.github.kokorin.jaffree.nut.NutWriter;
+import com.github.kokorin.jaffree.nut.StreamHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
@@ -32,7 +37,11 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 
-public class NutFrameSupplier implements TcpInput.Supplier {
+/**
+ * {@link NutFrameWriter} allows writing uncompressed (raw) Frames in Nut format.
+ */
+// TODO combine with NutWriter
+public class NutFrameWriter {
     private final FrameProducer producer;
     private final boolean alpha;
     private final Long frameOrderingBufferMillis;
@@ -43,34 +52,49 @@ public class NutFrameSupplier implements TcpInput.Supplier {
     private static final byte[] FOURCC_PCM_S32BE = {32, 'D', 'S', 'P'};
 
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NutFrameSupplier.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(NutFrameWriter.class);
 
-    public NutFrameSupplier(FrameProducer producer, boolean alpha) {
+    /**
+     * Creates {@link NutFrameWriter} with default frame reordering buffer length.
+     *
+     * @param producer frame producer
+     * @param alpha    video stream alpha channel
+     */
+    public NutFrameWriter(final FrameProducer producer, final boolean alpha) {
         this(producer, alpha, null);
     }
 
-    public NutFrameSupplier(FrameProducer producer, boolean alpha, Long frameOrderingBufferMillis) {
+    /**
+     * Creates {@link NutFrameWriter}.
+     *
+     * @param producer                  frame producer
+     * @param alpha                     video stream alpha channel
+     * @param frameOrderingBufferMillis frame reordering buffer length
+     */
+    public NutFrameWriter(final FrameProducer producer, final boolean alpha,
+                          final Long frameOrderingBufferMillis) {
         this.producer = producer;
         this.alpha = alpha;
         this.frameOrderingBufferMillis = frameOrderingBufferMillis;
     }
 
-    @Override
-    public void supplyAndClose(OutputStream out) {
-        try (Closeable toClose = out) {
-            NutWriter writer = new NutWriter(new NutOutputStream(out));
-            if (frameOrderingBufferMillis != null) {
-                writer.setFrameOrderingBufferMillis(frameOrderingBufferMillis);
-            }
-            write(writer);
-            writer.writeFooter();
-        } catch (Exception e) {
-            throw new RuntimeException("Write failed", e);
+
+    /**
+     * Writes media in Nut format to output stream and closes it.
+     *
+     * @param outputStream OutputStream output stream to write to
+     */
+    public void write(final OutputStream outputStream) throws IOException {
+        NutWriter writer = new NutWriter(new NutOutputStream(outputStream));
+        if (frameOrderingBufferMillis != null) {
+            writer.setFrameOrderingBufferMillis(frameOrderingBufferMillis);
         }
+        write(writer);
+        writer.writeFooter();
     }
 
-    // package private for test
-    void write(NutWriter writer) throws IOException {
+    @SuppressWarnings("checkstyle:magicnumber")
+    private void write(final NutWriter writer) throws IOException {
         List<Stream> tracks = producer.produceStreams();
         LOGGER.debug("Streams: {}", tracks.toArray());
 
@@ -80,7 +104,8 @@ public class NutFrameSupplier implements TcpInput.Supplier {
         for (int i = 0; i < streamHeaders.length; i++) {
             Stream stream = tracks.get(i);
             if (stream.getId() != i) {
-                throw new RuntimeException("Stream ids must start with 0 and increase by 1 subsequently!");
+                throw new RuntimeException("Stream ids must start with 0 and "
+                        + "increase by 1 subsequently!");
             }
             final StreamHeader streamHeader;
 
@@ -112,8 +137,10 @@ public class NutFrameSupplier implements TcpInput.Supplier {
                     );
                     break;
                 case AUDIO:
-                    Objects.requireNonNull(stream.getSampleRate(), "Samplerate must be specified");
-                    Objects.requireNonNull(stream.getChannels(), "Number of channels must be specified");
+                    Objects.requireNonNull(stream.getSampleRate(),
+                            "Samplerate must be specified");
+                    Objects.requireNonNull(stream.getChannels(),
+                            "Number of channels must be specified");
                     streamHeader = new StreamHeader(
                             stream.getId(),
                             StreamHeader.Type.AUDIO,
@@ -182,11 +209,13 @@ public class NutFrameSupplier implements TcpInput.Supplier {
 
                 case AUDIO:
                     data = new byte[frame.getSamples().length * 4];
+                    // TODO check number of samples provided
                     ByteBuffer.wrap(data).asIntBuffer().put(frame.getSamples());
                     break;
 
                 default:
-                    throw new RuntimeException("Unexpected track: " + frame.getStreamId());
+                    throw new RuntimeException("Unexpected track: " + streamHeader.streamId
+                            + ", type: " + streamHeader.streamType);
             }
 
             NutFrame nutFrame = new NutFrame(

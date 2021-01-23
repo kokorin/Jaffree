@@ -1,5 +1,5 @@
 /*
- *    Copyright  2019 Denis Kokorin
+ *    Copyright 2019-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,47 +17,42 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-import com.github.kokorin.jaffree.util.SocketOutputStream;
+import com.github.kokorin.jaffree.net.NegotiatingTcpServer;
+import com.github.kokorin.jaffree.net.TcpNegotiator;
+import com.github.kokorin.jaffree.net.TcpServer;
+import com.github.kokorin.jaffree.process.FFHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.ServerSocket;
-import java.net.Socket;
+public abstract class TcpInput<T extends TcpInput<T>> extends BaseInput<T> implements Input {
+    private final TcpServer tcpServer;
 
-public abstract class TcpInput<T extends TcpInput<T>> extends SocketInput<T> implements Input {
     private static final Logger LOGGER = LoggerFactory.getLogger(TcpInput.class);
 
-    public TcpInput() {
-        super("tcp");
+    public TcpInput(TcpNegotiator tcpNegotiator) {
+        this("tcp", tcpNegotiator);
     }
 
-    protected abstract Supplier supplier();
+    public TcpInput(String protocol, TcpNegotiator tcpNegotiator) {
+        this(protocol, "", tcpNegotiator);
+    }
+
+    public TcpInput(String protocol, String suffix, TcpNegotiator tcpNegotiator) {
+        this(protocol, suffix, NegotiatingTcpServer.onRandomPort(tcpNegotiator));
+    }
+
+    public TcpInput(String protocol, String suffix, TcpServer tcpServer) {
+        this.tcpServer = tcpServer;
+        super.setInput(protocol + "://" + tcpServer.getAddressAndPort() + suffix);
+    }
 
     @Override
-    final Negotiator negotiator() {
-        final Supplier supplier = supplier();
-
-        return new Negotiator() {
-            @Override
-            public void negotiateAndClose(ServerSocket serverSocket) throws IOException {
-                LOGGER.debug("Accepting connection: {}", serverSocket);
-                Socket socket = serverSocket.accept();
-                OutputStream outputStream = new SocketOutputStream(serverSocket, socket);
-                LOGGER.debug("Passing output stream to supplier: {}", supplier);
-                supplier.supplyAndClose(outputStream);
-            }
-        };
+    public final FFHelper helperThread() {
+        return tcpServer;
     }
 
-    public interface Supplier {
-
-        /**
-         * Supplier <b>must</b> close passed {@link OutputStream} either in current or another thread.
-         *
-         * @param out OutputStream
-         */
-        void supplyAndClose(OutputStream out);
+    @Override
+    public T setInput(String input) {
+        throw new RuntimeException("SocketInput input can't be changed");
     }
 }

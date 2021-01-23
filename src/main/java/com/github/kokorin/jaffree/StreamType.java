@@ -19,7 +19,7 @@ package com.github.kokorin.jaffree;
 
 public enum StreamType {
     /**
-     *  Matches all video streams
+     * Matches all video streams
      */
     VIDEO("v"),
 
