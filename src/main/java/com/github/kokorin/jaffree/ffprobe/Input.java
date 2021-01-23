@@ -1,5 +1,5 @@
 /*
- *    Copyright  2019 Denis Kokorin
+ *    Copyright  2019-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,12 +17,23 @@
 
 package com.github.kokorin.jaffree.ffprobe;
 
+import com.github.kokorin.jaffree.process.FFHelper;
+
+/**
+ * Interface for any ffprobe input.
+ */
 public interface Input {
+    /**
+     * Path or URL to be analyzed by ffprobe.
+     *
+     * @return path or URL
+     */
     String getUrl();
 
     /**
-     * Helper {@link Runnable} which should be ran in dedicated thread
+     * Helper {@link FFHelper} which should be ran in dedicated thread.
+     *
      * @return null if no helper thread is needed, otherwise Runnable
      */
-    Runnable helperThread();
+    FFHelper helperThread();
 }

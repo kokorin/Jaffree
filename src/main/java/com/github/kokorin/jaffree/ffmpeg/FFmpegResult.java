@@ -17,6 +17,9 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
+/**
+ * {@link FFmpegResult} contains information about ffmpeg encoding result.
+ */
 public class FFmpegResult {
     private final Long videoSize;
     private final Long audioSize;
@@ -25,7 +28,19 @@ public class FFmpegResult {
     private final Long globalHeadersSize;
     private final Double muxingOverheadRatio;
 
-    public FFmpegResult(Long videoSize, Long audioSize, Long subtitleSize, Long otherStreamsSize, Long globalHeadersSize, Double muxingOverheadRatio) {
+    /**
+     * Creates {@link FFmpegResult}.
+     *
+     * @param videoSize           output video stream size in bytes
+     * @param audioSize           output audio stream size in bytes
+     * @param subtitleSize        output subtitles stream size in bytes
+     * @param otherStreamsSize    output other streams size in bytes
+     * @param globalHeadersSize   output global headers size in bytes
+     * @param muxingOverheadRatio ratio of extra information size to output size
+     */
+    public FFmpegResult(final Long videoSize, final Long audioSize, final Long subtitleSize,
+                        final Long otherStreamsSize, final Long globalHeadersSize,
+                        final Double muxingOverheadRatio) {
         this.videoSize = videoSize;
         this.audioSize = audioSize;
         this.subtitleSize = subtitleSize;
@@ -35,42 +50,54 @@ public class FFmpegResult {
     }
 
     /**
-     * @return size in bytes
+     * Note: value may be not exact.
+     *
+     * @return video stream size in bytes.
      */
     public Long getVideoSize() {
         return videoSize;
     }
 
     /**
-     * @return size in bytes
+     * Note: value may be not exact.
+     *
+     * @return audio stream size in bytes.
      */
     public Long getAudioSize() {
         return audioSize;
     }
 
     /**
-     * @return size in bytes
+     * Note: value may be not exact.
+     *
+     * @return subtitles stream size in bytes.
      */
     public Long getSubtitleSize() {
         return subtitleSize;
     }
 
     /**
-     * @return size in bytes
+     * Note: value may be not exact.
+     *
+     * @return output other streams size in bytes.
      */
     public Long getOtherStreamsSize() {
         return otherStreamsSize;
     }
 
     /**
-     * @return size in bytes
+     * Note: value may be not exact.
+     *
+     * @return output global headers size in bytes.
      */
     public Long getGlobalHeadersSize() {
         return globalHeadersSize;
     }
 
     /**
-     * @return value in range [0..1]
+     * Note: value may be not exact.
+     *
+     * @return ratio of extra information size to output size.
      */
     public Double getMuxingOverheadRatio() {
         return muxingOverheadRatio;

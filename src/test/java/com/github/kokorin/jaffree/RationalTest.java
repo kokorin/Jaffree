@@ -46,10 +46,12 @@ public class RationalTest {
     public void valueOfNFE_1() {
         Rational.valueOf("a");
     }
+
     @Test(expected = NumberFormatException.class)
     public void valueOfNFE_2() {
         Rational.valueOf("1/a");
     }
+
     @Test(expected = NumberFormatException.class)
     public void valueOfNFE_3() {
         Rational.valueOf("1/2/3");

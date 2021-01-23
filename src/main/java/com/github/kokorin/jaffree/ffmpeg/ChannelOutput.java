@@ -1,5 +1,5 @@
 /*
- *    Copyright  2019 Denis Kokorin
+ *    Copyright 2019-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,37 +17,39 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-import com.github.kokorin.jaffree.util.FtpServer;
+import com.github.kokorin.jaffree.net.FtpServer;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.net.ServerSocket;
 import java.nio.channels.SeekableByteChannel;
 
-public class ChannelOutput extends SocketOutput<ChannelOutput> implements Output {
-    private final SeekableByteChannel channel;
+/**
+ * {@link Output} implementationwhich allows usage of {@link SeekableByteChannel} as ffmpeg output.
+ */
+public class ChannelOutput extends TcpOutput<ChannelOutput> implements Output {
 
-    public ChannelOutput(String filename, SeekableByteChannel channel) {
-        super("ftp", "/" + filename);
-        this.channel = channel;
+    /**
+     * Creates {@link ChannelOutput}.
+     * <p>
+     * ffmpeg uses fileName's extension to autodetect output format
+     *
+     * @param fileName file name
+     * @param channel  byte channel
+     */
+    public ChannelOutput(final String fileName, final SeekableByteChannel channel) {
+        super("ftp", "/" + fileName, FtpServer.onRandomPorts(channel));
         this.addArguments("-ftp-write-seekable", "1");
     }
 
-    @Override
-    Negotiator negotiator() {
-
-        return new Negotiator() {
-            @Override
-            public void negotiateAndClose(ServerSocket serverSocket) throws IOException {
-                try (Closeable toClose = serverSocket) {
-                    Runnable server = new FtpServer(channel, serverSocket);
-                    server.run();
-                }
-            }
-        };
-    }
-
-    public static ChannelOutput toChannel(String filename, SeekableByteChannel channel) {
+    /**
+     * Creates {@link ChannelInput}.
+     * <p>
+     * ffmpeg uses fileName's extension to autodetect output format
+     *
+     * @param filename file name
+     * @param channel  byte channel
+     * @return ChannelOutput
+     */
+    public static ChannelOutput toChannel(final String filename,
+                                          final SeekableByteChannel channel) {
         return new ChannelOutput(filename, channel);
     }
 }

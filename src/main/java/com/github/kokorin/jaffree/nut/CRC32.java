@@ -24,10 +24,11 @@ package com.github.kokorin.jaffree.nut;
  * <p>
  * Can't be replaced with java.util.zip.CRC32 because it has different polynomial generator
  */
+@SuppressWarnings("checkstyle:magicnumber")
 class CRC32 {
     private int crc = 0;
 
-    private static int[] table = {
+    private static final int[] TABLE = {
             0x00000000, 0x04C11DB7, 0x09823B6E, 0x0D4326D9,
             0x130476DC, 0x17C56B6B, 0x1A864DB2, 0x1E475005,
             0x2608EDB8, 0x22C9F00F, 0x2F8AD6D6, 0x2B4BCB61,
@@ -38,13 +39,13 @@ class CRC32 {
         crc = 0;
     }
 
-    public void update(int value) {
+    public void update(final int value) {
         crc ^= value << 24;
-        crc = (crc << 4) ^ table[crc >>> 28];
-        crc = (crc << 4) ^ table[crc >>> 28];
+        crc = (crc << 4) ^ TABLE[crc >>> 28];
+        crc = (crc << 4) ^ TABLE[crc >>> 28];
     }
 
-    public void update(byte[] data) {
+    public void update(final byte[] data) {
         for (int value : data) {
             update(value);
         }

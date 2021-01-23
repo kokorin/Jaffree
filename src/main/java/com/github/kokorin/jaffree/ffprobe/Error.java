@@ -19,6 +19,14 @@ package com.github.kokorin.jaffree.ffprobe;
 
 import com.github.kokorin.jaffree.ffprobe.data.DSection;
 
+@Deprecated
+// TODO: delete it
+@SuppressWarnings({
+        "checkstyle:missingjavadoctype",
+        "checkstyle:missingjavadocmethod",
+        "checkstyle:finalparameters",
+        "checkstyle:designforextension"
+})
 public class Error {
     private final DSection section;
 

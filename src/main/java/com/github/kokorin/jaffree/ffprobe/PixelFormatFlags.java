@@ -19,6 +19,7 @@ package com.github.kokorin.jaffree.ffprobe;
 
 import com.github.kokorin.jaffree.ffprobe.data.DTag;
 
+@Deprecated
 public class PixelFormatFlags {
     private final DTag tag;
 
