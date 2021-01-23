@@ -8,7 +8,8 @@ import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffprobe.FFprobe;
 import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
 import com.github.kokorin.jaffree.ffprobe.Stream;
-import org.apache.commons.io.IOUtils;
+import com.github.kokorin.jaffree.net.TcpServer;
+import com.github.kokorin.jaffree.process.FFHelper;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -18,10 +19,11 @@ import org.junit.rules.ExpectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Closeable;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.Socket;
 import java.net.URI;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
@@ -818,4 +820,48 @@ public class FFmpegTest {
         Assert.assertEquals(120L, (long) stream0.getHeight());
     }
 
+    @Test
+    public void testHelperIsClosedAfterExecution() {
+        final AtomicBoolean inputHelperClosed = new AtomicBoolean(false);
+        final AtomicBoolean outputHelperClosed = new AtomicBoolean(false);
+
+        class NotifyCloseHelper implements FFHelper {
+            private final AtomicBoolean helperClosed;
+
+            public NotifyCloseHelper(AtomicBoolean helperClosed) {
+                this.helperClosed = helperClosed;
+            }
+
+            @Override
+            public void close() throws IOException {
+                helperClosed.set(true);
+            }
+
+            @Override
+            public void run() {
+            }
+        }
+
+        FFmpegResult result = FFmpeg.atPath(BIN)
+                .addInput(
+                        new UrlInput() {
+                            @Override
+                            public FFHelper helperThread() {
+                                return new NotifyCloseHelper(inputHelperClosed);
+                            }
+                        }.setInput(VIDEO_MP4.toString())
+                )
+                .addOutput(
+                        new NullOutput() {
+                            @Override
+                            public FFHelper helperThread() {
+                                return new NotifyCloseHelper(outputHelperClosed);
+                            }
+                        }
+                )
+                .execute();
+
+        Assert.assertTrue(inputHelperClosed.get());
+        Assert.assertTrue(outputHelperClosed.get());
+    }
 }
