@@ -20,6 +20,7 @@ package com.github.kokorin.jaffree.ffprobe;
 import com.github.kokorin.jaffree.LogLevel;
 import com.github.kokorin.jaffree.SizeUnit;
 import com.github.kokorin.jaffree.StreamType;
+import com.github.kokorin.jaffree.ffmpeg.FFmpegResult;
 import com.github.kokorin.jaffree.ffprobe.data.FlatFormatParser;
 import com.github.kokorin.jaffree.ffprobe.data.FormatParser;
 import com.github.kokorin.jaffree.process.FFHelper;
@@ -37,6 +38,9 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -550,6 +554,23 @@ public class FFprobe {
 
         this.formatParser = formatParser;
         return this;
+    }
+
+    public Future<FFprobeResult> executeAsync() {
+        FutureTask<FFprobeResult> resultFuture = new FutureTask<>(
+                new Callable<FFprobeResult>() {
+                    @Override
+                    public FFprobeResult call() throws Exception {
+                        return execute();
+                    }
+                }
+        );
+
+        Thread runner = new Thread(resultFuture, "FFprobe-async-runner");
+        runner.setDaemon(true);
+        runner.start();
+
+        return resultFuture;
     }
 
     /**

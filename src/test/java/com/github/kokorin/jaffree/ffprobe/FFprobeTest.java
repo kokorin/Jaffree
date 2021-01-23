@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class FFprobeTest {
     public static Path BIN;
@@ -537,6 +538,45 @@ public class FFprobeTest {
         Assert.assertNotNull(result);
         Assert.assertNotNull(result.getStreams());
         Assert.assertFalse(result.getStreams().isEmpty());
+    }
+
+    @Test
+    public void testAsyncExecution() throws Exception {
+        FFprobeResult result = FFprobe.atPath(BIN)
+                .setShowStreams(true)
+                .setInput(VIDEO_MP4)
+                .executeAsync()
+                .get();
+
+        Assert.assertNotNull(result);
+        Assert.assertEquals(6, result.getStreams().size());
+
+        Stream stream = result.getStreams().get(0);
+        Assert.assertEquals(StreamType.VIDEO, stream.getCodecType());
+
+        stream = result.getStreams().get(2);
+        Assert.assertEquals(StreamType.AUDIO, stream.getCodecType());
+    }
+
+
+    @Test
+    public void testAsyncExecutionWithException() throws Exception {
+        expectedException.expect(new StackTraceMatcher("No such file or directory"));
+
+        FFprobeResult result = FFprobe.atPath(BIN)
+                .setShowStreams(true)
+                .setInput("non_existent.mp4")
+                .executeAsync()
+                .get();
+
+        Assert.assertNotNull(result);
+        Assert.assertEquals(6, result.getStreams().size());
+
+        Stream stream = result.getStreams().get(0);
+        Assert.assertEquals(StreamType.VIDEO, stream.getCodecType());
+
+        stream = result.getStreams().get(2);
+        Assert.assertEquals(StreamType.AUDIO, stream.getCodecType());
     }
 
     private static List<? extends Class> noDeepCompare = Arrays.asList(

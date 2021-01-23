@@ -166,7 +166,6 @@ public class FFmpeg {
      *
      * @param filter a String describing the filter to apply
      * @return this
-     *
      * @see <a href="https://ffmpeg.org/ffmpeg-all.html#Simple-filtergraphs">Simple filtergraphs</a>
      */
     public FFmpeg setFilter(String filter) {
@@ -178,7 +177,6 @@ public class FFmpeg {
      *
      * @param filter a FilterGraph describing the filter to apply
      * @return this
-     *
      * @see <a href="https://ffmpeg.org/ffmpeg-all.html#Simple-filtergraphs">Simple filtergraphs</a>
      */
     public FFmpeg setFilter(FilterGraph filter) {
@@ -191,7 +189,6 @@ public class FFmpeg {
      * @param streamType  the stream type to apply this filter to (StreamType.AUDIO or StreamType.VIDEO)
      * @param filterGraph a graph describing the filters to apply
      * @return this
-     *
      * @see <a href="https://ffmpeg.org/ffmpeg-all.html#Simple-filtergraphs">Simple filtergraphs</a>
      */
     public FFmpeg setFilter(StreamType streamType, FilterGraph filterGraph) {
@@ -204,7 +201,6 @@ public class FFmpeg {
      * @param streamType the stream type to apply this filter to (StreamType.AUDIO or StreamType.VIDEO)
      * @param filter     a String describing the filter to apply
      * @return this
-     *
      * @see <a href="https://ffmpeg.org/ffmpeg-all.html#Simple-filtergraphs">Simple filtergraphs</a>
      */
     public FFmpeg setFilter(StreamType streamType, String filter) {
@@ -217,7 +213,6 @@ public class FFmpeg {
      * @param streamSpecifier a String specifying to which stream this filter must be applied ("a" for audio, "v" "for video, or "" for generic 'filter')
      * @param filterGraph     a graph describing the filters to apply
      * @return this
-     *
      * @see <a href="https://ffmpeg.org/ffmpeg-all.html#Simple-filtergraphs">Simple filtergraphs</a>
      */
     public FFmpeg setFilter(String streamSpecifier, FilterGraph filterGraph) {
@@ -230,7 +225,6 @@ public class FFmpeg {
      * @param streamSpecifier a String specifying to which stream this filter must be applied ("a" for audio, "v" "for video, or "" for generic 'filter')
      * @param filter          a String describing the filter to apply
      * @return this
-     *
      * @see <a href="https://ffmpeg.org/ffmpeg-all.html#Simple-filtergraphs">Simple filtergraphs</a>
      */
     public FFmpeg setFilter(String streamSpecifier, String filter) {
@@ -331,7 +325,6 @@ public class FFmpeg {
 
     /**
      * Starts asynchronous ffmpeg execution.
-     * <p>
      *
      * @return ffmpeg result future
      */
