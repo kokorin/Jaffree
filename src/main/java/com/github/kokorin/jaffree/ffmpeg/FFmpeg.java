@@ -1,5 +1,5 @@
 /*
- *    Copyright  2017 Denis Kokorin
+ *    Copyright 2017-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.LogLevel;
 import com.github.kokorin.jaffree.StreamType;
+import com.github.kokorin.jaffree.process.FFHelper;
 import com.github.kokorin.jaffree.process.LoggingStdReader;
 import com.github.kokorin.jaffree.process.ProcessHandler;
 import com.github.kokorin.jaffree.process.StdReader;
@@ -333,7 +334,8 @@ public class FFmpeg {
      * <p>
      *
      * @return ffmpeg result future
-     */    public FFmpegResultFuture executeAsync() {
+     */
+    public FFmpegResultFuture executeAsync() {
         final ProcessHandler<FFmpegResult> processHandler = createProcessHandler();
         Stopper stopper = createStopper();
         processHandler.setStopper(stopper);
@@ -353,16 +355,16 @@ public class FFmpeg {
     }
 
     protected ProcessHandler<FFmpegResult> createProcessHandler() {
-        List<Runnable> helpers = new ArrayList<>();
+        List<FFHelper> helpers = new ArrayList<>();
 
         for (Input input : inputs) {
-            Runnable helper = input.helperThread();
+            FFHelper helper = input.helperThread();
             if (helper != null) {
                 helpers.add(helper);
             }
         }
         for (Output output : outputs) {
-            Runnable helper = output.helperThread();
+            FFHelper helper = output.helperThread();
             if (helper != null) {
                 helpers.add(helper);
             }
@@ -371,7 +373,7 @@ public class FFmpeg {
         return new ProcessHandler<FFmpegResult>(executable, contextName)
                 .setStdErrReader(createStdErrReader())
                 .setStdOutReader(createStdOutReader())
-                .setRunnables(helpers)
+                .setHelpers(helpers)
                 .setArguments(buildArguments());
     }
 

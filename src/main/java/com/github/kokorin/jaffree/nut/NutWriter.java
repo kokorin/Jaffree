@@ -467,7 +467,7 @@ public class NutWriter {
         eor[frame.streamId] = codedFlags.contains(Flag.EOR);
     }
 
-    public void writeFooter() throws Exception {
+    public void writeFooter() throws IOException {
         // writeEorFrame uses lastPts, it is updated by writeFrameInternal
         for (TsFrame tsFrame : frameOrderingBuffer) {
             writeFrameInternal(tsFrame.frame);

@@ -1,5 +1,5 @@
 /*
- *    Copyright  2019 Denis Kokorin
+ *    Copyright 2019-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,62 +17,39 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-import com.github.kokorin.jaffree.util.IOUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.github.kokorin.jaffree.net.PipeInputNegotiator;
 
-import java.io.Closeable;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.SocketException;
 
+/**
+ * {@link Input} implementation which passes {@link InputStream} to ffmpeg as input.
+ *
+ * @see ChannelInput
+ */
 public class PipeInput extends TcpInput<PipeInput> implements Input {
-    private final Supplier supplier;
+    private final PipeInputNegotiator negotiator;
 
-    public PipeInput(Supplier supplier) {
-        this.supplier = supplier;
+    public PipeInput(InputStream source) {
+        this(new PipeInputNegotiator(source));
     }
 
-    @Override
-    protected Supplier supplier() {
-        return supplier;
+    public PipeInput(PipeInputNegotiator negotiator) {
+        super(negotiator);
+        this.negotiator = negotiator;
     }
 
-    public static PipeInput withSupplier(Supplier supplier) {
-        return new PipeInput(supplier);
+    public PipeInput setBufferSize(int bufferSize) {
+        negotiator.setBufferSize(bufferSize);
+        return this;
     }
 
     public static PipeInput pumpFrom(InputStream source) {
-        return pumpFrom(source, 1_000_000);
+        return new PipeInput(source);
     }
 
     public static PipeInput pumpFrom(InputStream source, int bufferSize) {
-        return new PipeInput(new PipeSupplier(source, bufferSize));
+        return pumpFrom(source)
+                .setBufferSize(bufferSize);
     }
 
-    private static class PipeSupplier implements Supplier {
-        private final InputStream source;
-        private final int bufferSize;
-
-        private static final Logger LOGGER = LoggerFactory.getLogger(PipeSupplier.class);
-
-
-        public PipeSupplier(InputStream source, int bufferSize) {
-            this.source = source;
-            this.bufferSize = bufferSize;
-        }
-
-        @Override
-        public void supplyAndClose(OutputStream destination) {
-            try (Closeable toClose = destination) {
-                IOUtil.copy(source, destination, bufferSize);
-            } catch (SocketException e) {
-                // client has no way to notify server that no more data is needed
-                LOGGER.debug("Ignoring exception: " + e.getMessage());
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to copy data", e);
-            }
-        }
-    }
 }

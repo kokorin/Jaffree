@@ -1,5 +1,5 @@
 /*
- *    Copyright  2017 Denis Kokorin
+ *    Copyright 2017-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import com.github.kokorin.jaffree.StreamType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -383,7 +384,7 @@ public abstract class BaseInOut<T extends BaseInOut<T>> {
      *
      * @return list of command line arguments
      */
-    protected final List<String> buildCommonArguments() {
+    protected List<String> buildArguments() {
         List<String> result = new ArrayList<>();
 
         if (format != null) {
@@ -407,9 +408,11 @@ public abstract class BaseInOut<T extends BaseInOut<T>> {
         result.addAll(toArguments("-c", codecs));
         result.addAll(toArguments("-pix_fmt", pixelFormats));
 
-        result.addAll(additionalArguments);
-
         return result;
+    }
+
+    protected List<String> getAdditionalArguments() {
+        return Collections.unmodifiableList(additionalArguments);
     }
 
     @SuppressWarnings("unchecked")

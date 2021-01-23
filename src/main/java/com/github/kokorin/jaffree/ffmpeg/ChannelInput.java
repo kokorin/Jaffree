@@ -1,5 +1,5 @@
 /*
- *    Copyright  2019 Denis Kokorin
+ *    Copyright 2019-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,19 +17,25 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-import com.github.kokorin.jaffree.util.FtpServer;
+import com.github.kokorin.jaffree.net.FtpServer;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.net.ServerSocket;
 import java.nio.channels.SeekableByteChannel;
 
 /**
- * {@link ChannelInput} is the implementation of {@link Input}
- * which allows usage of {@link SeekableByteChannel} as ffmpeg input.
+ * {@link Input} which allows usage of {@link SeekableByteChannel} as ffmpeg input.
  */
-public class ChannelInput extends SocketInput<ChannelInput> implements Input {
-    private final SeekableByteChannel channel;
+public class ChannelInput extends TcpInput<ChannelInput> implements Input {
+
+    /**
+     * Creates {@link ChannelInput}.
+     * <p>
+     * ffmpeg uses fileName's extension to autodetect input format
+     *
+     * @param channel byte channel
+     */
+    public ChannelInput(final SeekableByteChannel channel) {
+        this("", channel);
+    }
 
     /**
      * Creates {@link ChannelInput}.
@@ -40,26 +46,19 @@ public class ChannelInput extends SocketInput<ChannelInput> implements Input {
      * @param channel  byte channel
      */
     public ChannelInput(final String fileName, final SeekableByteChannel channel) {
-        super("ftp", "/" + fileName);
-        this.channel = channel;
+        super("ftp", "/" + fileName, FtpServer.onRandomPorts(channel));
     }
 
     /**
-     * Creates {@link Negotiator} which adapts byte chanel to be used as ffmpeg input.
+     * Creates {@link ChannelInput}.
+     * <p>
+     * ffmpeg uses fileName's extension to autodetect input format
      *
-     * @return negotiator
+     * @param channel byte channel
+     * @return ChannelInput
      */
-    @Override
-    Negotiator negotiator() {
-        return new Negotiator() {
-            @Override
-            public void negotiateAndClose(final ServerSocket serverSocket) throws IOException {
-                try (Closeable toClose = serverSocket) {
-                    Runnable server = new FtpServer(channel, serverSocket);
-                    server.run();
-                }
-            }
-        };
+    public static ChannelInput fromChannel(final SeekableByteChannel channel) {
+        return new ChannelInput(channel);
     }
 
     /**
