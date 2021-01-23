@@ -1,5 +1,5 @@
 /*
- *    Copyright  2019 Denis Kokorin
+ *    Copyright 2019-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -15,17 +15,18 @@
  *
  */
 
-package com.github.kokorin.jaffree.util;
+package com.github.kokorin.jaffree.net;
 
+import com.github.kokorin.jaffree.util.IOUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
@@ -35,51 +36,65 @@ import java.nio.channels.SeekableByteChannel;
 /**
  * Simple FTP server intended to work <b>only</b> with ffmpeg.
  * <p>
- * This class <b>is not intended for use as production FTP server</b>
+ * This class <b>is not intended to be used as production FTP server</b>
  * since it uses knowledge of how ffmpeg operates with FTP input & output.
  */
-public class FtpServer implements Runnable {
+public class FtpServer extends TcpServer {
+    private final ServerSocket dataServerSocket;
     private final SeekableByteChannel channel;
-    private final ServerSocket serverSocket;
-    private final int bufferSize = 1_000_000;
+    private final byte[] buffer;
 
     private static final byte[] NEW_LINE = "\r\n".getBytes();
+    private static final int DEFAULT_BUFFER_SIZE = 1_000_000;
     private static final Logger LOGGER = LoggerFactory.getLogger(FtpServer.class);
 
     /**
      * Creates {@link FtpServer}.
      *
-     * @param channel      channel to read/write to/from
-     * @param serverSocket socket to accept connections
+     * @param controlServerSocket server socket to establish FTP control connection
+     * @param dataServerSocket server socket to establish FTP data connection
+     * @param channel channel to read from or write to
+     * @param bufferSize size of buffer to copy data to or from Channel
      */
-    // TODO introduce buffer size constructor parameter
-    public FtpServer(final SeekableByteChannel channel, final ServerSocket serverSocket) {
+    protected FtpServer(ServerSocket controlServerSocket,
+                     ServerSocket dataServerSocket,
+                     SeekableByteChannel channel,
+                     int bufferSize) {
+        super(controlServerSocket);
+
+        if (bufferSize <= 0) {
+            throw new IllegalArgumentException("Buffer size must be positive");
+        }
+
+        this.dataServerSocket = dataServerSocket;
         this.channel = channel;
-        this.serverSocket = serverSocket;
+        this.buffer = new byte[bufferSize];
     }
 
     /**
-     * Starts FTP server.
+     * Serves FTP control connection.
+     *
+     * @param controlServerSocket socket with established control connection
      */
     @Override
-    public void run() {
-        LOGGER.debug("Starting FTP server {}", serverSocket);
+    protected void serve(Socket controlServerSocket) throws IOException {
+        LOGGER.debug("Serving FTP control connection {}", getAddressAndPort());
 
-        InetAddress address = InetAddress.getLoopbackAddress();
-        try (AutoCloseable toClose = serverSocket;
-             ServerSocket dataServerSocket = new ServerSocket(0, 1, address)) {
+        try (Closeable toClose = dataServerSocket;
+             BufferedReader controlReader = new BufferedReader(
+                     new InputStreamReader(controlServerSocket.getInputStream()));
+             OutputStream controlOutput = controlServerSocket.getOutputStream()) {
 
-            Socket controlSocket = serverSocket.accept();
-            LOGGER.debug("Control connection established: {}", controlSocket);
-
-            try (BufferedReader controlReader = new BufferedReader(
-                    new InputStreamReader(controlSocket.getInputStream()));
-                 OutputStream controlOutput = controlSocket.getOutputStream()) {
-
-                operate(controlReader, controlOutput, dataServerSocket);
-            }
+            operate(controlReader, controlOutput, dataServerSocket);
         } catch (Exception e) {
             throw new RuntimeException("Failed to serve FTP", e);
+        }
+    }
+
+    @Override
+    public void close() throws IOException {
+        try (Closeable toClose = dataServerSocket) {
+            super.close();
         }
     }
 
@@ -143,8 +158,8 @@ public class FtpServer implements Runnable {
                     doAbor(controlOutput);
                     break;
                 case "FEAT":
-                case "EPSV":
                     // intentional fall through
+                case "EPSV":
                     doNotImplemented(controlOutput);
                     break;
                 case "QUIT":
@@ -209,7 +224,7 @@ public class FtpServer implements Runnable {
      * Sends response to REST control command.
      *
      * @param output output to write response
-     * @param args arguments, ignored
+     * @param args   arguments, ignored
      * @throws IOException socket IO exception
      */
     private void doRest(final OutputStream output, final String args) throws IOException {
@@ -234,7 +249,7 @@ public class FtpServer implements Runnable {
      * Sends response to SIZE control command.
      *
      * @param output output to write response
-     * @param args arguments, ignored
+     * @param args   arguments, ignored
      * @throws IOException socket IO exception
      */
     private void doSize(final OutputStream output, final String args) throws IOException {
@@ -252,14 +267,17 @@ public class FtpServer implements Runnable {
     @SuppressWarnings("checkstyle:magicnumber")
     private void doPasv(final OutputStream output, final ServerSocket dataServerSocket)
             throws IOException {
+        String address = dataServerSocket.getInetAddress().getHostAddress()
+                .replaceAll("\\.", ",");
         int port = dataServerSocket.getLocalPort();
         int portHi = port >> 8;
         int portLow = port & 0xFF;
-        println(output, "227 Entering Passive Mode (127,0,0,1," + portHi + "," + portLow + ").");
+        println(output, "227 Entering Passive Mode (" + address + ","
+                + portHi + "," + portLow + ").");
     }
 
     /**
-     * Sends response to RETR control command, accepts data connection amd transfers data.
+     * Sends response to RETR control command, accepts data connection and transfers data.
      *
      * @param output           output to write response
      * @param dataServerSocket server socket for data transfer
@@ -274,7 +292,7 @@ public class FtpServer implements Runnable {
              OutputStream dataOutput = dataSocket.getOutputStream()) {
             LOGGER.debug("Data connection established: {}", dataSocket);
 
-            copied = IOUtil.copy(Channels.newInputStream(channel), dataOutput, bufferSize);
+            copied = IOUtil.copy(Channels.newInputStream(channel), dataOutput, buffer);
         } catch (SocketException e) {
             // ffmpeg can close connection without fully reading requested data.
             // This is not an error.
@@ -308,7 +326,7 @@ public class FtpServer implements Runnable {
              InputStream dataInput = dataSocket.getInputStream()) {
             LOGGER.debug("Data connection established: {}", dataSocket);
 
-            copied = IOUtil.copy(dataInput, Channels.newOutputStream(channel), bufferSize);
+            copied = IOUtil.copy(dataInput, Channels.newOutputStream(channel), buffer);
         } catch (SocketException e) {
             if (e.getMessage().startsWith("Connection reset by peer")) {
                 LOGGER.debug("Client closed socket: {}", e.getMessage());
@@ -345,5 +363,18 @@ public class FtpServer implements Runnable {
         LOGGER.debug("Responding: {}", line);
         output.write(line.getBytes());
         output.write(NEW_LINE);
+    }
+
+    public static FtpServer onRandomPorts(SeekableByteChannel channel) {
+        return onRandomPorts(channel, DEFAULT_BUFFER_SIZE);
+    }
+
+    public static FtpServer onRandomPorts(SeekableByteChannel channel, int bufferSize) {
+        return new FtpServer(
+                allocateSocket(),
+                allocateSocket(),
+                channel,
+                bufferSize
+        );
     }
 }

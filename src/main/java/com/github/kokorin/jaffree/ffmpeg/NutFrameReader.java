@@ -1,5 +1,5 @@
 /*
- *    Copyright  2017 Denis Kokorin
+ *    Copyright 2017-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import com.github.kokorin.jaffree.nut.StreamHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Transparency;
+import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
@@ -35,7 +35,6 @@ import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -44,25 +43,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * {@link TcpOutput.Consumer} implementation which allows reading Nut format.
+ * {@link NutFrameReader} reads InputStream in Nut format and passes parsed frames
+ * to {@link FrameConsumer}.
  */
-// TODO NutFrameConsumer inner class if FrameOutput.
-// TODO extract common logic to somewhere
-public class NutFrameConsumer implements TcpOutput.Consumer {
+public class NutFrameReader {
     private final FrameConsumer frameConsumer;
     private final boolean alphaChannel;
 
     private static final int RGB_BYTES_PER_PIXEL = 3;
     private static final int ALPHA_BYTES_PER_PIXEL = 3;
-    private static final Logger LOGGER = LoggerFactory.getLogger(NutFrameConsumer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(NutFrameReader.class);
 
     /**
-     * Creates {@link NutFrameConsumer}.
+     * Creates {@link NutFrameReader}.
      *
      * @param frameConsumer frame consumer
      * @param alphaChannel  video stream alpha channel
      */
-    public NutFrameConsumer(final FrameConsumer frameConsumer, final boolean alphaChannel) {
+    public NutFrameReader(final FrameConsumer frameConsumer, final boolean alphaChannel) {
         this.frameConsumer = frameConsumer;
         this.alphaChannel = alphaChannel;
     }
@@ -72,16 +70,7 @@ public class NutFrameConsumer implements TcpOutput.Consumer {
      *
      * @param input input to read
      */
-    @Override
-    public void consumeAndClose(final InputStream input) {
-        try (Closeable toClose = input) {
-            read(input);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to read stream", e);
-        }
-    }
-
-    private void read(final InputStream input) throws IOException {
+    public void read(final InputStream input) throws IOException {
         NutInputStream stream = new NutInputStream(input);
         NutReader nutReader = new NutReader(stream);
 

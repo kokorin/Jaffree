@@ -1,5 +1,5 @@
 /*
- *    Copyright  2017 Denis Kokorin
+ *    Copyright 2017 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 
 package com.github.kokorin.jaffree.ffmpeg;
+
+import com.github.kokorin.jaffree.process.FFHelper;
 
 import java.util.List;
 
@@ -37,11 +39,11 @@ public interface Input {
     List<String> buildArguments();
 
     /**
-     * Helper {@link Runnable} which should be ran in dedicated thread.
+     * Helper {@link FFHelper} which should be ran in dedicated thread.
      * <p>
      * Return <b>null</b> if no helper thread is needed
      *
      * @return runnable
      */
-    Runnable helperThread();
+    FFHelper helperThread();
 }

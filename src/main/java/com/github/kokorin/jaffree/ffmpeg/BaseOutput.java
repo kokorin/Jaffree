@@ -1,5 +1,5 @@
 /*
- *    Copyright  2017 Denis Kokorin
+ *    Copyright 2017-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.SizeUnit;
 import com.github.kokorin.jaffree.StreamType;
+import com.github.kokorin.jaffree.process.FFHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -178,18 +179,6 @@ public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements
      */
     public T disableStream(final StreamType streamType) {
         disabledStreams.add(streamType);
-        // TODO: check if this foolproof is required
-        switch (streamType) {
-            case VIDEO:
-                setCodec(StreamType.VIDEO, null);
-                setPixelFormat(null);
-                break;
-            case AUDIO:
-                setCodec(StreamType.AUDIO, null);
-                break;
-            default:
-        }
-
         return thisAsT();
     }
 
@@ -274,7 +263,7 @@ public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements
      */
     @Override
     public final List<String> buildArguments() {
-        List<String> result = new ArrayList<>();
+        List<String> result = new ArrayList<>(super.buildArguments());
 
         if (outputPosition != null) {
             result.addAll(Arrays.asList("-to", formatDuration(outputPosition)));
@@ -293,11 +282,11 @@ public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements
 
         result.addAll(toArguments("-frames", frames));
 
-        result.addAll(buildCommonArguments());
-
         for (Mapping map : maps) {
             result.addAll(Arrays.asList("-map", map.toValue()));
         }
+
+        result.addAll(getAdditionalArguments());
 
         if (output == null) {
             throw new IllegalArgumentException("Output must be specified");
@@ -313,7 +302,7 @@ public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements
      */
     //TODO: remove and keep helperThread abstract?
     @Override
-    public Runnable helperThread() {
+    public FFHelper helperThread() {
         return null;
     }
 

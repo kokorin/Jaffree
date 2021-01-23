@@ -1,5 +1,5 @@
 /*
- *    Copyright  2019 Denis Kokorin
+ *    Copyright 2019-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,51 +17,33 @@
 
 package com.github.kokorin.jaffree.ffprobe;
 
-import com.github.kokorin.jaffree.util.IOUtil;
-import com.github.kokorin.jaffree.util.SocketOutputStream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.github.kokorin.jaffree.net.PipeInputNegotiator;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketException;
 
-public class PipeInput extends SocketInput {
-    private final InputStream inputStream;
-    private final int bufferSize;
+public class PipeInput extends TcpInput {
+    private final PipeInputNegotiator negotiator;
 
-    private static final int DEFAULT_BUFFER_SIZE = 1_000_000;
-    private static final Logger LOGGER = LoggerFactory.getLogger(PipeInput.class);
-
-    public PipeInput(InputStream inputStream) {
-        this(inputStream, DEFAULT_BUFFER_SIZE);
+    public PipeInput(InputStream source) {
+        this(new PipeInputNegotiator(source));
     }
 
-    public PipeInput(InputStream inputStream, int bufferSize) {
-        super("tcp");
-        this.inputStream = inputStream;
-        this.bufferSize = bufferSize;
+    public PipeInput(PipeInputNegotiator negotiator) {
+        super(negotiator);
+        this.negotiator = negotiator;
     }
 
-    @Override
-    Negotiator negotiator() {
-        return new Negotiator() {
-            @Override
-            public void negotiateAndClose(ServerSocket serverSocket) throws IOException {
-                LOGGER.debug("Accepting connection: {}", serverSocket);
+    public PipeInput setBufferSize(int bufferSize) {
+        negotiator.setBufferSize(bufferSize);
+        return this;
+    }
 
-                try (Socket socket = serverSocket.accept();
-                     OutputStream outputStream = new SocketOutputStream(serverSocket, socket)) {
-                    LOGGER.debug("Connection accepted, copying");
-                    IOUtil.copy(inputStream, outputStream, bufferSize);
-                } catch (SocketException e) {
-                    // client has no way to notify server that no more data is needed
-                    LOGGER.debug("Ignoring exception: " + e.getMessage());
-                }
-            }
-        };
+    public static PipeInput pumpFrom(InputStream source) {
+        return new PipeInput(source);
+    }
+
+    public static PipeInput pumpFrom(InputStream source, int bufferSize) {
+        return pumpFrom(source)
+                .setBufferSize(bufferSize);
     }
 }

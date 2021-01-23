@@ -17,22 +17,39 @@
 
 package com.github.kokorin.jaffree.ffprobe;
 
+import com.github.kokorin.jaffree.net.NegotiatingTcpServer;
+import com.github.kokorin.jaffree.net.TcpNegotiator;
+import com.github.kokorin.jaffree.net.TcpServer;
 import com.github.kokorin.jaffree.process.FFHelper;
 
-public class UrlInput implements Input {
+public abstract class TcpInput implements Input {
     private final String url;
+    private final TcpServer tcpServer;
 
-    public UrlInput(String url) {
-        this.url = url;
+    public TcpInput(TcpNegotiator negotiator) {
+        this("tcp", negotiator);
+    }
+
+    public TcpInput(String protocol, TcpNegotiator negotiator) {
+        this(protocol, "", negotiator);
+    }
+
+    public TcpInput(String protocol, String suffix, TcpNegotiator negotiator) {
+        this(protocol, suffix, NegotiatingTcpServer.onRandomPort(negotiator));
+    }
+
+    protected TcpInput(String protocol, String suffix, TcpServer tcpServer) {
+        this.url = protocol + "://" + tcpServer.getAddressAndPort() + suffix;
+        this.tcpServer = tcpServer;
     }
 
     @Override
-    public String getUrl() {
+    public final String getUrl() {
         return url;
     }
 
     @Override
     public FFHelper helperThread() {
-        return null;
+        return tcpServer;
     }
 }

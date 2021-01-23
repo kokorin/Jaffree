@@ -1,5 +1,5 @@
 /*
- *    Copyright 2020 Denis Kokorin
+ *    Copyright 2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -15,10 +15,12 @@
  *
  */
 
-package com.github.kokorin.jaffree.process;
+package com.github.kokorin.jaffree.net;
 
-public interface Stopper {
-    void graceStop();
-    void forceStop();
-    void setProcess(Process process);
+import java.io.IOException;
+import java.net.Socket;
+
+public interface TcpNegotiator {
+    void negotiate(Socket socket) throws IOException;
 }
+
