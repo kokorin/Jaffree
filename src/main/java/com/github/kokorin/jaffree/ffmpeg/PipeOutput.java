@@ -17,17 +17,11 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-import com.github.kokorin.jaffree.net.TcpNegotiator;
-import com.github.kokorin.jaffree.util.IOUtil;
-import net.jcip.annotations.GuardedBy;
-import net.jcip.annotations.ThreadSafe;
+import com.github.kokorin.jaffree.net.PipeOutputNegotiator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.Socket;
 
 /**
  * {@link Output} implementation which passes ffmpeg output to {@link OutputStream}.
@@ -68,25 +62,4 @@ public class PipeOutput extends TcpOutput<PipeOutput> implements Output {
                 .setBufferSize(bufferSize);
     }
 
-    @ThreadSafe
-    protected static class PipeOutputNegotiator implements TcpNegotiator {
-        private final OutputStream destination;
-        @GuardedBy("this")
-        private int bufferSize = DEFAULT_BUFFER_SIZE;
-
-        public PipeOutputNegotiator(OutputStream destination) {
-            this.destination = destination;
-        }
-
-        public synchronized void setBufferSize(int bufferSize) {
-            this.bufferSize = bufferSize;
-        }
-
-        @Override
-        public synchronized void negotiate(Socket socket) throws IOException {
-            try (InputStream source = socket.getInputStream()) {
-                IOUtil.copy(source, destination, bufferSize);
-            }
-        }
-    }
 }

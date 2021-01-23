@@ -96,6 +96,8 @@ public abstract class BaseInput<T extends BaseInput<T>> extends BaseInOut<T> imp
             result.add("-re");
         }
 
+        result.addAll(getAdditionalArguments());
+
         if (input == null) {
             throw new IllegalArgumentException("Input must be specified");
         }

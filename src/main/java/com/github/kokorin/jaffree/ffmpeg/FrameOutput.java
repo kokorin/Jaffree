@@ -32,6 +32,9 @@ import java.net.Socket;
 public class FrameOutput extends TcpOutput<FrameOutput> implements Output {
     private final FrameOutputNegotiator negotiator;
 
+    private static final String PIXEL_FORMAT_ALPHA = "abgr";
+    private static final String PIXEL_FORMAT_RGB = "bgr24";
+
     /**
      * Creates {@link FrameOutput}.
      *
@@ -47,6 +50,7 @@ public class FrameOutput extends TcpOutput<FrameOutput> implements Output {
         super.setFormat("nut");
         super.setCodec(StreamType.VIDEO.code(), "rawvideo");
         super.setCodec(StreamType.AUDIO.code(), "pcm_s32be");
+        super.setPixelFormat(null, PIXEL_FORMAT_RGB);
     }
 
     /**
@@ -55,8 +59,8 @@ public class FrameOutput extends TcpOutput<FrameOutput> implements Output {
      */
     public FrameOutput setAlpha(boolean alpha) {
         negotiator.setAlpha(alpha);
-        String pixelFormat = alpha ? "abgr" : "bgr24";
-        super.setPixelFormat(pixelFormat);
+        String pixelFormat = alpha ? PIXEL_FORMAT_ALPHA : PIXEL_FORMAT_RGB;
+        super.setPixelFormat(null, pixelFormat);
         return this;
     }
 
@@ -73,6 +77,26 @@ public class FrameOutput extends TcpOutput<FrameOutput> implements Output {
     @Override
     public final FrameOutput setPixelFormat(String streamSpecifier, String pixelFormat) {
         throw new RuntimeException("Pixel Format can't be changed");
+    }
+
+    @Override
+    public FrameOutput disableStream(StreamType streamType) {
+        super.disableStream(streamType);
+
+        // We have to reset codec and pixel format if video or audio output is disabled because
+        // we set default values in constructor
+        switch (streamType) {
+            case VIDEO:
+                super.setCodec(StreamType.VIDEO.code(), null);
+                super.setPixelFormat(null, null);
+                break;
+            case AUDIO:
+                super.setCodec(StreamType.AUDIO.code(), null);
+                break;
+            default:
+        }
+
+        return this;
     }
 
     /**

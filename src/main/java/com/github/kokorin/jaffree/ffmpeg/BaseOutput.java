@@ -179,18 +179,6 @@ public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements
      */
     public T disableStream(final StreamType streamType) {
         disabledStreams.add(streamType);
-        // this foolproof is required because FrameOutput sets video & audio codecs
-        switch (streamType) {
-            case VIDEO:
-                setCodec(StreamType.VIDEO, null);
-                setPixelFormat(null);
-                break;
-            case AUDIO:
-                setCodec(StreamType.AUDIO, null);
-                break;
-            default:
-        }
-
         return thisAsT();
     }
 
@@ -297,6 +285,8 @@ public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements
         for (Mapping map : maps) {
             result.addAll(Arrays.asList("-map", map.toValue()));
         }
+
+        result.addAll(getAdditionalArguments());
 
         if (output == null) {
             throw new IllegalArgumentException("Output must be specified");

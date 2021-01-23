@@ -21,6 +21,7 @@ import com.github.kokorin.jaffree.StreamType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -407,9 +408,11 @@ public abstract class BaseInOut<T extends BaseInOut<T>> {
         result.addAll(toArguments("-c", codecs));
         result.addAll(toArguments("-pix_fmt", pixelFormats));
 
-        result.addAll(additionalArguments);
-
         return result;
+    }
+
+    protected List<String> getAdditionalArguments() {
+        return Collections.unmodifiableList(additionalArguments);
     }
 
     @SuppressWarnings("unchecked")
