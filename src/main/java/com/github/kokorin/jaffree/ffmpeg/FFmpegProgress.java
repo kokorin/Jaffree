@@ -40,10 +40,10 @@ public class FFmpegProgress {
      * @param fps     frames encoded per second
      * @param q       quality of coded frames (between 1 (good) and FF_LAMBDA_MAX (bad))
      * @param size    current size in bytes
-     * @param time    encoded duration
+     * @param time    encoded duration in milliseconds
      * @param dup     number of duplicate frames
      * @param drop    number of dropped frames
-     * @param bitrate estimated bitrate
+     * @param bitrate estimated bitrate in kbits/s
      * @param speed   encoding speed
      */
     @SuppressWarnings("checkstyle:parameternumber")
@@ -103,8 +103,12 @@ public class FFmpegProgress {
      * @return encoded time in specified {@link TimeUnit}
      */
     public Long getTime(final TimeUnit timeUnit) {
-        if (time == null) {
+        if (timeUnit == null) {
             throw new IllegalArgumentException("TimeUnit must be non null");
+        }
+
+        if (time == null) {
+            return null;
         }
 
         return timeUnit.convert(time, TimeUnit.MILLISECONDS);
@@ -125,7 +129,7 @@ public class FFmpegProgress {
     }
 
     /**
-     * @return estimated bitrate
+     * @return estimated bitrate in kbits/s
      */
     public Double getBitrate() {
         return bitrate;

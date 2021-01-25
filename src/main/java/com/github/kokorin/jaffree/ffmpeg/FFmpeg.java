@@ -19,6 +19,7 @@ package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.LogLevel;
 import com.github.kokorin.jaffree.StreamType;
+import com.github.kokorin.jaffree.net.NegotiatingTcpServer;
 import com.github.kokorin.jaffree.process.FFHelper;
 import com.github.kokorin.jaffree.process.LoggingStdReader;
 import com.github.kokorin.jaffree.process.ProcessHandler;
@@ -370,6 +371,12 @@ public class FFmpeg {
                 .setArguments(buildArguments());
     }
 
+    protected FFHelper createProgressReader() {
+        return NegotiatingTcpServer.onRandomPort(
+                new FFmpegProgressReader(progressListener)
+        );
+    }
+
     protected Stopper createStopper() {
         return new FFmpegStopper();
     }
@@ -394,6 +401,8 @@ public class FFmpeg {
      * @return this
      */
     protected StdReader<FFmpegResult> createStdOutReader() {
+        // TODO ffmpeg normally doesn't write to Std OUT, stdOutReader should throw an error
+        // if it reads any byte
         return new LoggingStdReader<>();
     }
 

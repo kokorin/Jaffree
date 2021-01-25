@@ -17,7 +17,6 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-import com.github.kokorin.jaffree.SizeUnit;
 import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.process.FFHelper;
 
