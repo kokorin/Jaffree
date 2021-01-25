@@ -17,8 +17,8 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-import com.github.kokorin.jaffree.SizeUnit;
 import com.github.kokorin.jaffree.process.StdReader;
+import com.github.kokorin.jaffree.util.ParseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,7 +75,7 @@ public class FFmpegResultReader implements StdReader<FFmpegResult> {
         try {
             while ((line = reader.readLine()) != null) {
                 LOGGER.debug(line);
-                FFmpegProgress progress = parseProgress(line);
+                FFmpegProgress progress = null;
                 if (progress != null) {
                     if (progressListener != null) {
                         progressListener.onProgress(progress);
@@ -117,39 +117,6 @@ public class FFmpegResultReader implements StdReader<FFmpegResult> {
         return result;
     }
 
-    static FFmpegProgress parseProgress(final String value) {
-        if (value == null) {
-            return null;
-        }
-
-        try {
-            // Replace "frame=  495 fps= 89" with "frame=495 fps=89"
-            String valueWithoutSpaces = value.replaceAll("= +", "=");
-            Map<String, String> map = parseKeyValues(valueWithoutSpaces, "=");
-
-            Long frame = parseLong(map.get("frame"));
-            Double fps = parseDouble(map.get("fps"));
-            Double q = parseDouble(map.get("q"));
-            Long size = parseSizeInBytes(map.get("Lsize"));
-            Long timeMillis = parseTimeInMillis(map.get("time"));
-            Long dup = parseLong(map.get("dup"));
-            Long drop = parseLong(map.get("drop"));
-            Double bitrate = parseBitrateInKBits(map.get("bitrate"));
-            Double speed = parseSpeed(map.get("speed"));
-
-            if (hasNonNull(frame, fps, q, size, timeMillis, dup, drop, bitrate, speed)) {
-                return new FFmpegProgress(
-                        frame, fps, q, size, timeMillis, dup, drop, bitrate, speed
-                );
-            }
-        } catch (Exception e) {
-            // suppress
-        }
-
-        return null;
-    }
-
-
     static FFmpegResult parsResult(final String value) {
         if (value == null || value.isEmpty()) {
             return null;
@@ -165,11 +132,11 @@ public class FFmpegResultReader implements StdReader<FFmpegResult> {
             Map<String, String> map = parseKeyValues(valueWithoutSpaces, ":");
 
 
-            Long videoSize = parseSizeInBytes(map.get("video"));
-            Long audioSize = parseSizeInBytes(map.get("audio"));
-            Long subtitleSize = parseSizeInBytes(map.get("subtitle"));
-            Long otherStreamsSize = parseSizeInBytes(map.get("other_streams"));
-            Long globalHeadersSize = parseSizeInBytes(map.get("global_headers"));
+            Long videoSize = ParseUtil.parseSizeInBytes(map.get("video"));
+            Long audioSize = ParseUtil.parseSizeInBytes(map.get("audio"));
+            Long subtitleSize = ParseUtil.parseSizeInBytes(map.get("subtitle"));
+            Long otherStreamsSize = ParseUtil.parseSizeInBytes(map.get("other_streams"));
+            Long globalHeadersSize = ParseUtil.parseSizeInBytes(map.get("global_headers"));
             Double muxOverhead = parseRatio(map.get("muxing_overhead"));
 
             if (hasNonNull(videoSize, audioSize, subtitleSize, otherStreamsSize, globalHeadersSize,
@@ -222,25 +189,6 @@ public class FFmpegResultReader implements StdReader<FFmpegResult> {
         }
 
         return null;
-    }
-
-    private static Long parseSizeInBytes(final String value) {
-        return parseSize(value, SizeUnit.B);
-    }
-
-    private static Long parseSize(final String value, final SizeUnit unit) {
-        String[] sizeAndUnit = splitValueAndUnit(value);
-        Long parsedValue = parseLong(sizeAndUnit[0]);
-        if (parsedValue == null) {
-            return null;
-        }
-
-        SizeUnit valueUnit = parseSizeUnit(sizeAndUnit[1]);
-        if (valueUnit == null) {
-            return null;
-        }
-
-        return valueUnit.convertTo(parsedValue, unit);
     }
 
     private static Double parseBitrateInKBits(final String value) {
@@ -322,16 +270,6 @@ public class FFmpegResultReader implements StdReader<FFmpegResult> {
             }
         }
         return new String[]{string, ""};
-    }
-
-    private static SizeUnit parseSizeUnit(final String value) {
-        for (SizeUnit unit : SizeUnit.values()) {
-            if (unit.name().equalsIgnoreCase(value)) {
-                return unit;
-            }
-        }
-
-        return null;
     }
 
     private static boolean hasNonNull(final Object... items) {
