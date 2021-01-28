@@ -170,15 +170,17 @@ public class NutInputStream implements AutoCloseable {
      */
     public String readCString() throws IOException {
         try (ByteArrayOutputStream buffer = new ByteArrayOutputStream(32)) {
-            boolean hasMore = true;
-            while (hasMore) {
+            while (true) {
                 int read = input.read();
                 if (read == -1) {
                     throw new EOFException("No more data");
                 }
-                buffer.write(read);
-                hasMore = read > 0;
                 position++;
+
+                if (read == 0) {
+                    break;
+                }
+                buffer.write(read);
             }
 
             return buffer.toString();
@@ -210,19 +212,18 @@ public class NutInputStream implements AutoCloseable {
     }
 
     /**
-     * Returns next byte, which will be read with any read*() method.
+     * Returns next byte (if available), which will be read with any read*() method.
+     * <p>
+     * Note: position in {@link InputStream} isn't changed.
      *
-     * @return next byte
+     * @return next byte, or -1 if the end of the stream is reached
      */
-    public byte checkNextByte() throws IOException {
+    public int checkNextByte() throws IOException {
         input.mark(1);
         int result = input.read();
-        if (result == -1) {
-            throw new EOFException("No more data");
-        }
         input.reset();
 
-        return (byte) result;
+        return result;
     }
 
     /**
@@ -269,7 +270,7 @@ public class NutInputStream implements AutoCloseable {
     public void skipBytes(final long toSkip) throws IOException {
         long leftToSkip = toSkip;
         while (leftToSkip > 0) {
-            long skipped = input.skip(toSkip);
+            long skipped = input.skip(leftToSkip);
             if (skipped == 0) {
                 // if no bytes were skipped - it possibly means that input is depleted or closed
                 // read one byte to make sure

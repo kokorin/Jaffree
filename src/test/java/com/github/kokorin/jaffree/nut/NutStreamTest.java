@@ -7,11 +7,12 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
 public class NutStreamTest {
-    private final ByteArrayOutputStream outputStream = new ByteArrayOutputStream(1024);
-    private final NutOutputStream output = new NutOutputStream(outputStream);
 
     @Test
     public void testReadWrite() throws Exception {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream(1024);
+        NutOutputStream output = new NutOutputStream(outputStream);
+
         output.writeValue(1);
         output.writeValue(356);
         output.writeValue(0x7ABCDEF012L);
@@ -23,7 +24,9 @@ public class NutStreamTest {
         output.writeByte(12);
         output.writeBytes(new byte[]{1, 2, 3});
         output.writeVariableBytes(new byte[]{5, 6, 7});
+        output.writeCString("");
         output.writeCString("Jaffree");
+        output.writeVariablesString("");
         output.writeVariablesString("Test/\\Me");
         output.writeTimestamp(2, new Timestamp(1, 1100));
         output.close();
@@ -63,7 +66,13 @@ public class NutStreamTest {
         Assert.assertArrayEquals(new byte[]{5, 6, 7}, input.readVariableBytes());
         prevPosition = assertIncreasedPosition(prevPosition, input);
 
+        Assert.assertEquals("", input.readCString());
+        prevPosition = assertIncreasedPosition(prevPosition, input);
+
         Assert.assertEquals("Jaffree", input.readCString());
+        prevPosition = assertIncreasedPosition(prevPosition, input);
+
+        Assert.assertEquals("", input.readVariableString());
         prevPosition = assertIncreasedPosition(prevPosition, input);
 
         Assert.assertEquals("Test/\\Me", input.readVariableString());
@@ -76,11 +85,19 @@ public class NutStreamTest {
 
     @Test
     public void checkNextByte() throws Exception {
-        NutInputStream input = new NutInputStream(new ByteArrayInputStream(outputStream.toByteArray()));
-        byte b = input.checkNextByte();
+        NutInputStream input = new NutInputStream(new ByteArrayInputStream(new byte[]{42}));
+
+        int nextByte = input.checkNextByte();
+        Assert.assertEquals(42, nextByte);
 
         for (int i = 0; i < 1000; i++) {
-            Assert.assertEquals("checkNextByte must not increase read position", b, input.checkNextByte());
+            Assert.assertEquals("checkNextByte must not increase read position", nextByte, input.checkNextByte());
+        }
+
+        Assert.assertEquals(42, input.readByte());
+
+        for (int i = 0; i < 1000; i++) {
+            Assert.assertEquals("checkNextByte must return -1 if no more bytes are available", -1, input.checkNextByte());
         }
     }
 

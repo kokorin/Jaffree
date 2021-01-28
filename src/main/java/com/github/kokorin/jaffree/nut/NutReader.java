@@ -62,7 +62,7 @@ public class NutReader {
             }
         }
 
-        while (input.checkNextByte() == (byte) 'N') {
+        while (input.checkNextByte() == 'N') {
             PacketHeader packetHeader = readPacketHeader();
             long nextPacketPosition = input.getPosition() + packetHeader.forwardPtr;
 

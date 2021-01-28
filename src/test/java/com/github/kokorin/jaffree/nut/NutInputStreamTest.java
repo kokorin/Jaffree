@@ -122,7 +122,7 @@ public class NutInputStreamTest {
         tooShortToReadValue.readTimestamp(42);
     }
 
-    @Test(expected = EOFException.class)
+    @Test
     public void checkNextByte() throws IOException {
         closed.checkNextByte();
     }
