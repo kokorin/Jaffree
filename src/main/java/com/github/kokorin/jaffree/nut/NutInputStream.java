@@ -271,7 +271,7 @@ public class NutInputStream implements AutoCloseable {
         while (leftToSkip > 0) {
             long skipped = input.skip(toSkip);
             if (skipped == 0) {
-                // if no bytes were skipped is may be possible because input is depleted or closed
+                // if no bytes were skipped - it possibly means that input is depleted or closed
                 // read one byte to make sure
                 int read = input.read();
                 if (read == -1) {
