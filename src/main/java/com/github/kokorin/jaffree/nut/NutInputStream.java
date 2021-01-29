@@ -1,5 +1,5 @@
 /*
- *    Copyright  2017 Denis Kokorin
+ *    Copyright  2017-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package com.github.kokorin.jaffree.nut;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -59,24 +60,24 @@ public class NutInputStream implements AutoCloseable {
     /**
      * Reads v type (variable length value, unsigned).
      *
-     * @return unsigned value
+     * @return unsigned value, or -1 if no data
      */
     public long readValue() throws IOException {
         long result = 0;
+        boolean hasMore = true;
 
-        while (input.available() > 0) {
-            int tmp = input.read();
-            position++;
-
-            boolean hasMore = (tmp & 0x80) > 0;
-            if (hasMore) {
-                result = (result << 7) + tmp - 0x80;
-            } else {
-                return (result << 7) + tmp;
+        while (hasMore) {
+            int read = input.read();
+            if (read == -1) {
+                throw new EOFException("No more data");
             }
+
+            hasMore = (read & 0x80) > 0;
+            result = (result << 7) + (read & 0x7F);
+            position++;
         }
 
-        return -1;
+        return result;
     }
 
     /**
@@ -104,7 +105,11 @@ public class NutInputStream implements AutoCloseable {
         long result = 0;
 
         for (int i = 0; i < 8; i++) {
-            result = (result << 8) + input.read();
+            int read = input.read();
+            if (read == -1) {
+                throw new EOFException("No more data");
+            }
+            result = (result << 8) + read;
             position++;
         }
 
@@ -121,7 +126,11 @@ public class NutInputStream implements AutoCloseable {
         long result = 0;
 
         for (int i = 0; i < 4; i++) {
-            result = (result << 8) + input.read();
+            int read = input.read();
+            if (read == -1) {
+                throw new EOFException("No more data");
+            }
+            result = (result << 8) + read;
             position++;
         }
 
@@ -136,6 +145,9 @@ public class NutInputStream implements AutoCloseable {
      */
     public int readByte() throws IOException {
         int result = input.read();
+        if (result == -1) {
+            throw new EOFException("No more data");
+        }
         position++;
 
         return result;
@@ -158,14 +170,20 @@ public class NutInputStream implements AutoCloseable {
      */
     public String readCString() throws IOException {
         try (ByteArrayOutputStream buffer = new ByteArrayOutputStream(32)) {
-
-            int b;
-            while ((b = input.read()) != 0) {
-                buffer.write(b);
+            while (true) {
+                int read = input.read();
+                if (read == -1) {
+                    throw new EOFException("No more data");
+                }
                 position++;
+
+                if (read == 0) {
+                    break;
+                }
+                buffer.write(read);
             }
 
-            return new String(buffer.toByteArray());
+            return buffer.toString();
         }
     }
 
@@ -194,13 +212,15 @@ public class NutInputStream implements AutoCloseable {
     }
 
     /**
-     * Returns next byte, which will be read with any read*() method.
+     * Returns next byte (if available), which will be read with any read*() method.
+     * <p>
+     * Note: position in {@link InputStream} isn't changed.
      *
-     * @return next byte
+     * @return next byte, or -1 if the end of the stream is reached
      */
-    public byte checkNextByte() throws IOException {
+    public int checkNextByte() throws IOException {
         input.mark(1);
-        byte result = (byte) input.read();
+        int result = input.read();
         input.reset();
 
         return result;
@@ -232,7 +252,7 @@ public class NutInputStream implements AutoCloseable {
         while (start < toRead) {
             long read = input.read(result, start, (int) toRead - start);
             if (read == -1) {
-                return null;
+                throw new EOFException("No more data");
             }
 
             position += read;
@@ -250,7 +270,16 @@ public class NutInputStream implements AutoCloseable {
     public void skipBytes(final long toSkip) throws IOException {
         long leftToSkip = toSkip;
         while (leftToSkip > 0) {
-            long skipped = input.skip(toSkip);
+            long skipped = input.skip(leftToSkip);
+            if (skipped == 0) {
+                // if no bytes were skipped - it possibly means that input is depleted or closed
+                // read one byte to make sure
+                int read = input.read();
+                if (read == -1) {
+                    throw new EOFException("No more data");
+                }
+                skipped = 1;
+            }
             position += skipped;
             leftToSkip -= skipped;
         }
