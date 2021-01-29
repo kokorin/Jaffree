@@ -124,21 +124,6 @@ public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements
     }
 
     /**
-     * Set the file size limit. No further chunk of bytes is written after the limit is exceeded.
-     * The size of the output file is slightly more than the requested file size.
-     *
-     * @param sizeLimit size limit
-     * @param unit      size unit
-     * @return this
-     */
-    @SuppressWarnings("checkstyle:hiddenfield")
-    public T setSizeLimit(final Number sizeLimit, final SizeUnit unit) {
-        long bytes = (long) (sizeLimit.doubleValue() * unit.toBytes(1));
-        return setSizeLimit(bytes);
-    }
-
-
-    /**
      * Sets special "copy" codec for all streams.
      *
      * @return this

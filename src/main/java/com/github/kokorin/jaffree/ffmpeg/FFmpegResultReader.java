@@ -84,7 +84,7 @@ public class FFmpegResultReader implements StdReader<FFmpegResult> {
                     continue;
                 }
 
-                FFmpegResult possibleResult = parsResult(line);
+                FFmpegResult possibleResult = parseResult(line);
 
                 if (possibleResult != null) {
                     result = possibleResult;
@@ -117,7 +117,7 @@ public class FFmpegResultReader implements StdReader<FFmpegResult> {
         return result;
     }
 
-    static FFmpegResult parsResult(final String value) {
+    static FFmpegResult parseResult(final String value) {
         if (value == null || value.isEmpty()) {
             return null;
         }
