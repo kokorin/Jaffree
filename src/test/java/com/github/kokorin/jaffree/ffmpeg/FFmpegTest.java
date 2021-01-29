@@ -376,7 +376,7 @@ public class FFmpegTest {
                 .addOutput(UrlOutput
                         .toPath(outputPath)
                         .copyAllCodecs()
-                        .setSizeLimit(1, SizeUnit.MB)
+                        .setSizeLimit(1_000_000L)
                 )
                 .execute();
 

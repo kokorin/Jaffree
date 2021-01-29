@@ -35,7 +35,7 @@ public class FFmpegProgressReader implements TcpNegotiator {
         Double quality = null;
         Double bitrate = null;
         Long totalSize = null;
-        Long outTimeMillis = null;
+        Long outTimeMicros = null;
         Long dupFrames = null;
         Long dropFrames = null;
         Double speed = null;
@@ -66,9 +66,14 @@ public class FFmpegProgressReader implements TcpNegotiator {
                     totalSize = ParseUtil.parseLong(value);
                     break;
                 case "out_time_us":
-                    // intentional fall through, both keys always have the same value
+                    // intentional fall through
                 case "out_time_ms":
-                    outTimeMillis = ParseUtil.parseLong(value);
+                    // us - is common abbreviation of microseconds, ms - for milliseconds
+                    // ffmpeg passes time with "ms" suffix in microseconds
+                    // see https://trac.ffmpeg.org/ticket/7345
+                    // out_time_us added in 2018 so we have to parse both properties to support
+                    // older versions. out_time_ms may be removed from ffmpeg.
+                    outTimeMicros = ParseUtil.parseLong(value);
                     break;
                 case "out_time":
                     // ignored, no need to parse since we have time in millis
@@ -88,12 +93,21 @@ public class FFmpegProgressReader implements TcpNegotiator {
                             fps,
                             quality,
                             totalSize,
-                            outTimeMillis,
+                            outTimeMicros,
                             dupFrames,
                             dropFrames,
                             bitrate,
                             speed
                     );
+                    frame = null;
+                    fps = null;
+                    quality = null;
+                    bitrate = null;
+                    totalSize = null;
+                    outTimeMicros = null;
+                    dupFrames = null;
+                    dropFrames = null;
+                    speed = null;
                     progressListener.onProgress(progress);
                     break;
                 default:
