@@ -30,28 +30,28 @@ package com.github.kokorin.jaffree.nut;
  * <p>
  * Types of per frame side data:
  * <uL>
- * <li>"Channels", "ChannelLayout", "SampleRate", "Width", "Height"</li>
+ * <li>"Channels", "ChannelLayout", "SampleRate", "Width", "Height" --
  * This frame changes the number of channels, the channel layout, ... to
  * the given value (ChannelLayout vb, else v)
  * If used in any frame of a stream then every keyframe of the stream
- * SHOULD carry such sidedata to allow seeking.
- * <li>"Extradata", "Palette"</li>
+ * SHOULD carry such sidedata to allow seeking.</li>
+ * <li>"Extradata", "Palette" --
  * This frame changes the codec_specific_data or palette to the given
  * value (vb)
  * If used in any frame of a stream then every keyframe of the stream
- * SHOULD carry such sidedata to allow seeking.
- * <li>"CodecSpecificSide&lt;num&gt;"</li>
+ * SHOULD carry such sidedata to allow seeking.</li>
+ * <li>"CodecSpecificSide&lt;num&gt;" --
  * Codec specific side data, equivalent to matroskas BlockAdditional (vb)
  * the "&lt;num&gt;" should be replaced by a number identifying the type of
- * side data, it is equivalent/equal to BlockAddId in matroska.
- * <li>"SkipStart", "SkipEnd"</li>
+ * side data, it is equivalent/equal to BlockAddId in matroska.</li>
+ * <li>"SkipStart", "SkipEnd" --
  * The decoder should skip/drop the specified number of samples at the
- * start/end of this frame (v)
+ * start/end of this frame (v)</li>
  *
- * <li>"UserData<identifer here>"</li>
+ * <li>"UserData&lt;identifer here&gt;" --
  * User specific side data, the "&lt;identifer here\&gt;" should be replaced
  * by a globally unique identifer of the project that
- * uses/creates/understands the side data. For example "UserDataFFmpeg"
+ * uses/creates/understands the side data. For example "UserDataFFmpeg"</li>
  * </uL>
  * <p>
  * Nut specification references to this data as <b>side/meta data</b> or <b>sm_data</b>

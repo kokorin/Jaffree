@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Base class which handles common arguments for both ffmpeg input & output.
+ * Base class which handles common arguments for both ffmpeg input &amp; output.
  *
  * @param <T> self
  */
@@ -380,7 +380,7 @@ public abstract class BaseInOut<T extends BaseInOut<T>> {
     }
 
     /**
-     * Build a list of command line arguments that are common for ffmpeg input & output.
+     * Build a list of command line arguments that are common for ffmpeg input &amp; output.
      *
      * @return list of command line arguments
      */

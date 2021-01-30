@@ -18,7 +18,7 @@
 package com.github.kokorin.jaffree;
 
 /**
- * FFmpeg & FFprobe log level.
+ * FFmpeg &amp; FFprobe log level.
  */
 public enum LogLevel {
 

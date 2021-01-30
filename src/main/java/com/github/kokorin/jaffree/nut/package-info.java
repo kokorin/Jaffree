@@ -16,6 +16,6 @@
  */
 
 /**
- * Classes partially implementing NUT container format muxer & demuxer
+ * Classes partially implementing NUT container format muxer &amp; demuxer
  */
 package com.github.kokorin.jaffree.nut;

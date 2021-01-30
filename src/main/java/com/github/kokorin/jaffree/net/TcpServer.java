@@ -32,7 +32,7 @@ import java.net.Socket;
 /**
  * Abstract TCP Server implementing {@link FFHelper}.
  * <p>
- * This class is intended to be used in different ffmpeg {@link Input} & {@link Output}
+ * This class is intended to be used in different ffmpeg {@link Input} &amp; {@link Output}
  * implementations which interact with ffmpeg via TCP sockets.
  */
 public abstract class TcpServer implements FFHelper {
