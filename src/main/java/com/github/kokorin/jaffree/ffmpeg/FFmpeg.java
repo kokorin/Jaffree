@@ -38,7 +38,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
 /**
- * {@link FFmpeg} provides an ability to start & stop ffmpeg process and keep track of
+ * {@link FFmpeg} provides an ability to start &amp; stop ffmpeg process and keep track of
  * encoding progress.
  */
 //TODO add debug statements for all methods

@@ -27,7 +27,7 @@ import java.io.InputStream;
 import java.net.Socket;
 
 /**
- * Allows to consume in Java audio & video frames produced by ffmpeg.
+ * Allows to consume in Java audio &amp; video frames produced by ffmpeg.
  */
 public class FrameOutput extends TcpOutput<FrameOutput> implements Output {
     private final FrameOutputNegotiator negotiator;
