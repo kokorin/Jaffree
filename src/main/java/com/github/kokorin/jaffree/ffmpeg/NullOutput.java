@@ -26,7 +26,7 @@ import com.github.kokorin.jaffree.OS;
  * The null muxer uses a wrapped frame so there is no muxing overhead (i.e. it can accept
  * any type of input codec, doesn't have to be rawvideo for instance).
  * <p>
- * Null output can be combined with codec copying to achieve fast & exact file length detection.
+ * Null output can be combined with codec copying to achieve fast &amp; exact file length detection.
  * <p>
  * It may be required also to set {@link FFmpeg#setOverwriteOutput(boolean)} to true.
  *

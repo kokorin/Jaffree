@@ -37,7 +37,7 @@ import java.nio.channels.SeekableByteChannel;
  * Simple FTP server intended to work <b>only</b> with ffmpeg.
  * <p>
  * This class <b>is not intended to be used as production FTP server</b>
- * since it uses knowledge of how ffmpeg operates with FTP input & output.
+ * since it uses knowledge of how ffmpeg operates with FTP input &amp; output.
  */
 public class FtpServer extends TcpServer {
     private final ServerSocket dataServerSocket;

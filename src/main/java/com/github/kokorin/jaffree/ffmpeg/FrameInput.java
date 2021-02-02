@@ -29,7 +29,7 @@ import java.net.Socket;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Allows to supply ffmpeg with audio & video frames constructed in Java.
+ * Allows to supply ffmpeg with audio &amp; video frames constructed in Java.
  *
  * <b>It's strongly recommended</b> to specify {@link #setFrameRate(Number)} for video producing.
  *

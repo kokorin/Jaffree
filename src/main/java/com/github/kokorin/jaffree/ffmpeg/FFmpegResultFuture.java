@@ -37,7 +37,7 @@ public class FFmpegResultFuture {
     /**
      * Immediately stops ffmpeg process.
      *
-     * <b>Note</b output media may be corrupted.
+     * <b>Note</b> output media may be corrupted.
      */
     public void forceStop() {
         stopper.forceStop();
