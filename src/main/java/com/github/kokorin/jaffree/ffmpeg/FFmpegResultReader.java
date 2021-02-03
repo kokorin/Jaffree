@@ -17,6 +17,7 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
+import com.github.kokorin.jaffree.LogLevel;
 import com.github.kokorin.jaffree.process.StdReader;
 import com.github.kokorin.jaffree.util.ParseUtil;
 import org.slf4j.Logger;
@@ -35,21 +36,16 @@ import java.util.concurrent.TimeUnit;
  * {@link FFmpegResult} and passes unparsed output to {@link OutputListener} (if provided).
  */
 public class FFmpegResultReader implements StdReader<FFmpegResult> {
-    private final ProgressListener progressListener;
     private final OutputListener outputListener;
 
-    private static final double PERCENTS_TO_RATIO_MULTIPLIER = 0.01;
     private static final Logger LOGGER = LoggerFactory.getLogger(FFmpegResultReader.class);
 
     /**
      * Creates {@link FFmpegResultReader}.
      *
-     * @param progressListener progress listener
-     * @param outputListener   output listener
+     * @param outputListener output listener
      */
-    public FFmpegResultReader(final ProgressListener progressListener,
-                              final OutputListener outputListener) {
-        this.progressListener = progressListener;
+    public FFmpegResultReader(final OutputListener outputListener) {
         this.outputListener = outputListener;
     }
 
@@ -74,37 +70,54 @@ public class FFmpegResultReader implements StdReader<FFmpegResult> {
 
         try {
             while ((line = reader.readLine()) != null) {
-                LOGGER.debug(line);
-                FFmpegProgress progress = null;
-                if (progress != null) {
-                    if (progressListener != null) {
-                        progressListener.onProgress(progress);
+                LogLevel logLevel = detectLogLevel(line);
+
+                if (logLevel != null) {
+                    switch (logLevel) {
+                        case TRACE:
+                            LOGGER.trace(line);
+                            break;
+                        case VERBOSE:
+                        case DEBUG:
+                            LOGGER.debug(line);
+                            break;
+                        case INFO:
+                            LOGGER.info(line);
+                            break;
+                        case WARNING:
+                            LOGGER.warn(line);
+                            break;
+                        case ERROR:
+                        case FATAL:
+                        case PANIC:
+                        case QUIET:
+                            LOGGER.error(line);
+                            break;
                     }
-                    errorMessage = null;
-                    continue;
                 }
 
-                FFmpegResult possibleResult = parseResult(line);
+                if (logLevel == LogLevel.INFO) {
+                    FFmpegResult possibleResult = parseResult(line);
 
-                if (possibleResult != null) {
-                    result = possibleResult;
-                    errorMessage = null;
-                    continue;
-                }
-
-                if (outputListener != null) {
-                    boolean errorLine = outputListener.onOutput(line);
-
-                    if (!errorLine) {
+                    if (possibleResult != null) {
+                        result = possibleResult;
+                        errorMessage = null;
                         continue;
                     }
+                }
+
+                if (logLevel == null && outputListener != null) {
+                    outputListener.onOutput(line);
+                    continue;
                 }
 
                 if (result != null) {
                     continue;
                 }
 
-                errorMessage = line;
+                if (logLevel != null && logLevel.code() <= LogLevel.ERROR.code()) {
+                    errorMessage = line;
+                }
             }
         } catch (IOException e) {
             throw new RuntimeException("Exception while reading ffmpeg output", e);
@@ -117,13 +130,73 @@ public class FFmpegResultReader implements StdReader<FFmpegResult> {
         return result;
     }
 
-    static FFmpegResult parseResult(final String value) {
-        if (value == null || value.isEmpty()) {
+    static LogLevel detectLogLevel(final String line) {
+        if (line == null || line.isEmpty()) {
+            return null;
+        }
+
+        LogLevel result = detectLogLevel(line, 0);
+
+        if (result == null) {
+            int offset = line.indexOf('[', 1);
+            if (offset != -1) {
+                result = detectLogLevel(line, offset);
+            }
+        }
+
+        return result;
+    }
+
+    private static LogLevel detectLogLevel(final String line, final int offset) {
+        if (line.regionMatches(offset, "[info]", 0, 6)) {
+            return LogLevel.INFO;
+        }
+
+        if (line.regionMatches(offset, "[verbose]", 0, 9)) {
+            return LogLevel.VERBOSE;
+        }
+
+        if (line.regionMatches(offset, "[debug]", 0, 7)) {
+            return LogLevel.DEBUG;
+        }
+
+        if (line.regionMatches(offset, "[warning]", 0, 9)) {
+            return LogLevel.WARNING;
+        }
+
+        if (line.regionMatches(offset, "[error]", 0, 7)) {
+            return LogLevel.ERROR;
+        }
+
+        if (line.regionMatches(offset, "[trace]", 0, 7)
+                // before 2019-12-16 ffmpeg output trace as []
+                // see https://github.com/FFmpeg/FFmpeg/commit/84db67894f9aec4aa0c8df67265019e0391c7572
+                || line.regionMatches(offset, "[]", 0, 2)) {
+            return LogLevel.TRACE;
+        }
+
+        if (line.regionMatches(offset, "[quiet]", 0, 7)) {
+            return LogLevel.QUIET;
+        }
+
+        if (line.regionMatches(offset, "[panic]", 0, 7)) {
+            return LogLevel.PANIC;
+        }
+
+        if (line.regionMatches(offset, "[fatal]", 0, 7)) {
+            return LogLevel.FATAL;
+        }
+
+        return null;
+    }
+
+    static FFmpegResult parseResult(final String line) {
+        if (line == null || line.isEmpty()) {
             return null;
         }
 
         try {
-            String valueWithoutSpaces = value
+            String valueWithoutSpaces = line
                     .replaceAll("other streams", "other_streams")
                     .replaceAll("global headers", "global_headers")
                     .replaceAll("muxing overhead", "muxing_overhead")
@@ -131,13 +204,12 @@ public class FFmpegResultReader implements StdReader<FFmpegResult> {
 
             Map<String, String> map = parseKeyValues(valueWithoutSpaces, ":");
 
-
             Long videoSize = ParseUtil.parseSizeInBytes(map.get("video"));
             Long audioSize = ParseUtil.parseSizeInBytes(map.get("audio"));
             Long subtitleSize = ParseUtil.parseSizeInBytes(map.get("subtitle"));
             Long otherStreamsSize = ParseUtil.parseSizeInBytes(map.get("other_streams"));
             Long globalHeadersSize = ParseUtil.parseSizeInBytes(map.get("global_headers"));
-            Double muxOverhead = parseRatio(map.get("muxing_overhead"));
+            Double muxOverhead = ParseUtil.parseRatio(map.get("muxing_overhead"));
 
             if (hasNonNull(videoSize, audioSize, subtitleSize, otherStreamsSize, globalHeadersSize,
                     muxOverhead)) {
@@ -165,111 +237,6 @@ public class FFmpegResultReader implements StdReader<FFmpegResult> {
         }
 
         return result;
-    }
-
-    private static Long parseLong(final String value) {
-        if (value != null && !value.isEmpty()) {
-            try {
-                return Long.parseLong(value);
-            } catch (NumberFormatException e) {
-                // Suppress
-            }
-        }
-
-        return null;
-    }
-
-    private static Double parseDouble(final String value) {
-        if (value != null && !value.isEmpty()) {
-            try {
-                return Double.parseDouble(value);
-            } catch (NumberFormatException e) {
-                // Suppress
-            }
-        }
-
-        return null;
-    }
-
-    private static Double parseBitrateInKBits(final String value) {
-        if (value == null || value.isEmpty()) {
-            return null;
-        }
-
-        // TODO show warning if value ends not with kbits/s
-        String numericValue = value.replace("kbits/s", "");
-
-        return parseDouble(numericValue);
-    }
-
-    private static Double parseRatio(final String value) {
-        if (value == null || value.isEmpty()) {
-            return null;
-        }
-
-        String numericValue = value;
-        double multiplier = 1;
-        if (value.endsWith("%")) {
-            numericValue = value.substring(0, value.length() - 1);
-            multiplier = PERCENTS_TO_RATIO_MULTIPLIER;
-        }
-
-        Double valueDouble = parseDouble(numericValue);
-        if (valueDouble == null) {
-            return null;
-        }
-
-        return multiplier * valueDouble;
-    }
-
-    private static Long parseTimeInMillis(final String value) {
-        if (value == null || value.isEmpty()) {
-            return null;
-        }
-
-        final int expectedParts = 3;
-        String[] timeParts = value.split(":");
-        if (timeParts.length != expectedParts) {
-            return null;
-        }
-
-        Long hours = parseLong(timeParts[0]);
-        Long minutes = parseLong(timeParts[1]);
-        Double seconds = parseDouble(timeParts[2]);
-
-        if (hours == null || minutes == null || seconds == null) {
-            return null;
-        }
-        return TimeUnit.HOURS.toMillis(hours)
-                + TimeUnit.MINUTES.toMillis(minutes)
-                + (long) (TimeUnit.SECONDS.toMillis(1) * seconds);
-    }
-
-    private static Double parseSpeed(final String value) {
-        if (value == null || value.isEmpty()) {
-            return null;
-        }
-
-        String numericValue = value;
-        if (value.endsWith("x")) {
-            numericValue = value.substring(0, value.length() - 1);
-        }
-
-        return parseDouble(numericValue);
-    }
-
-    private static String[] splitValueAndUnit(final String string) {
-        if (string == null) {
-            return new String[]{"", ""};
-        }
-
-        for (int i = 0; i < string.length(); i++) {
-            char c = string.charAt(i);
-            if ((c < '0' || c > '9') && c != '.') {
-                return new String[]{string.substring(0, i), string.substring(i)};
-            }
-        }
-        return new String[]{string, ""};
     }
 
     private static boolean hasNonNull(final Object... items) {

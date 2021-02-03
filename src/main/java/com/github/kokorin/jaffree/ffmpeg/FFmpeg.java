@@ -390,7 +390,7 @@ public class FFmpeg {
      * @return this
      */
     protected StdReader<FFmpegResult> createStdErrReader() {
-        return new FFmpegResultReader(progressListener, outputListener);
+        return new FFmpegResultReader(outputListener);
     }
 
     /**
