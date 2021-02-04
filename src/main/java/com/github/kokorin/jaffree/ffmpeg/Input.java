@@ -17,7 +17,7 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-import com.github.kokorin.jaffree.process.FFHelper;
+import com.github.kokorin.jaffree.process.ProcessHelper;
 
 import java.util.List;
 
@@ -39,11 +39,11 @@ public interface Input {
     List<String> buildArguments();
 
     /**
-     * Helper {@link FFHelper} which should be ran in dedicated thread.
+     * Helper {@link ProcessHelper} which should be ran in dedicated thread.
      * <p>
      * Return <b>null</b> if no helper thread is needed
      *
      * @return runnable
      */
-    FFHelper helperThread();
+    ProcessHelper helperThread();
 }

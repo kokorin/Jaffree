@@ -7,7 +7,7 @@ import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffprobe.FFprobe;
 import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
 import com.github.kokorin.jaffree.ffprobe.Stream;
-import com.github.kokorin.jaffree.process.FFHelper;
+import com.github.kokorin.jaffree.process.ProcessHelper;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -821,7 +821,7 @@ public class FFmpegTest {
         final AtomicBoolean inputHelperClosed = new AtomicBoolean(false);
         final AtomicBoolean outputHelperClosed = new AtomicBoolean(false);
 
-        class NotifyCloseHelper implements FFHelper {
+        class NotifyCloseHelper implements ProcessHelper {
             private final AtomicBoolean helperClosed;
 
             public NotifyCloseHelper(AtomicBoolean helperClosed) {
@@ -842,7 +842,7 @@ public class FFmpegTest {
                 .addInput(
                         new UrlInput() {
                             @Override
-                            public FFHelper helperThread() {
+                            public ProcessHelper helperThread() {
                                 return new NotifyCloseHelper(inputHelperClosed);
                             }
                         }.setInput(VIDEO_MP4.toString())
@@ -850,7 +850,7 @@ public class FFmpegTest {
                 .addOutput(
                         new NullOutput() {
                             @Override
-                            public FFHelper helperThread() {
+                            public ProcessHelper helperThread() {
                                 return new NotifyCloseHelper(outputHelperClosed);
                             }
                         }

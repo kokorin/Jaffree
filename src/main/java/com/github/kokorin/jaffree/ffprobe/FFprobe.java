@@ -21,7 +21,7 @@ import com.github.kokorin.jaffree.LogLevel;
 import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffprobe.data.FlatFormatParser;
 import com.github.kokorin.jaffree.ffprobe.data.FormatParser;
-import com.github.kokorin.jaffree.process.FFHelper;
+import com.github.kokorin.jaffree.process.ProcessHelper;
 import com.github.kokorin.jaffree.process.LoggingStdReader;
 import com.github.kokorin.jaffree.process.ProcessHandler;
 import com.github.kokorin.jaffree.process.StdReader;
@@ -566,9 +566,9 @@ public class FFprobe {
      * @return ffprobe result
      */
     public FFprobeResult execute() {
-        List<FFHelper> helpers = new ArrayList<>();
+        List<ProcessHelper> helpers = new ArrayList<>();
         if (input != null) {
-            FFHelper helper = input.helperThread();
+            ProcessHelper helper = input.helperThread();
             if (helper != null) {
                 helpers.add(helper);
             }

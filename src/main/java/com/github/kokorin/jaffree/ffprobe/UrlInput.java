@@ -17,7 +17,7 @@
 
 package com.github.kokorin.jaffree.ffprobe;
 
-import com.github.kokorin.jaffree.process.FFHelper;
+import com.github.kokorin.jaffree.process.ProcessHelper;
 
 public class UrlInput implements Input {
     private final String url;
@@ -32,7 +32,7 @@ public class UrlInput implements Input {
     }
 
     @Override
-    public FFHelper helperThread() {
+    public ProcessHelper helperThread() {
         return null;
     }
 }
