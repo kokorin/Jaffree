@@ -8,6 +8,19 @@ import com.github.kokorin.jaffree.ffprobe.FFprobe;
 import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
 import com.github.kokorin.jaffree.ffprobe.Stream;
 import com.github.kokorin.jaffree.process.ProcessHelper;
+import static java.nio.file.StandardOpenOption.CREATE;
+import static java.nio.file.StandardOpenOption.READ;
+import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
+import static java.nio.file.StandardOpenOption.WRITE;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.AbstractAppender;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.LoggerConfig;
+import org.apache.logging.log4j.core.config.Property;
+import org.apache.logging.log4j.core.filter.AbstractFilter;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -26,15 +39,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static java.nio.file.StandardOpenOption.CREATE;
-import static java.nio.file.StandardOpenOption.READ;
-import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
-import static java.nio.file.StandardOpenOption.WRITE;
 
 public class FFmpegTest {
     public static Path BIN;
@@ -142,12 +152,24 @@ public class FFmpegTest {
 
         Assert.assertNotNull(result);
         Assert.assertTrue(counter.get() > 0);
+
+        outputPath = tempDir.resolve("test.flv");
+        counter.set(0L);
+
+        result = FFmpeg.atPath(BIN)
+                .addInput(UrlInput.fromPath(SMALL_MP4))
+                .addOutput(UrlOutput.toPath(outputPath))
+                .setProgressListener(listener)
+                .execute();
+
+        Assert.assertNotNull(result);
+        Assert.assertTrue(counter.get() > 0);
     }
 
     @Test
-    public void testProgress2() throws Exception {
+    public void testProgressWithErrorLogLevel() throws Exception {
         Path tempDir = Files.createTempDirectory("jaffree");
-        Path outputPath = tempDir.resolve("test.flv");
+        Path outputPath = tempDir.resolve("test.mkv");
 
         final AtomicLong counter = new AtomicLong();
 
@@ -159,8 +181,9 @@ public class FFmpegTest {
         };
 
         FFmpegResult result = FFmpeg.atPath(BIN)
-                .addInput(UrlInput.fromPath(SMALL_MP4))
+                .addInput(UrlInput.fromPath(SMALL_FLV))
                 .addOutput(UrlOutput.toPath(outputPath))
+                .setLogLevel(LogLevel.ERROR)
                 .setProgressListener(listener)
                 .execute();
 
@@ -742,6 +765,29 @@ public class FFmpegTest {
         Assert.assertTrue(Files.size(outputPath) > 1000);
     }
 
+    @Test
+    public void testLogLevel() {
+        LoggerContext loggerContext = (LoggerContext) LogManager.getContext(false);
+
+        Configuration configuration = loggerContext.getConfiguration();
+        LoggerConfig rootLoggerConfig = configuration.getLoggerConfig("");
+        CountingByLevelAppender appender = new CountingByLevelAppender();
+        LoggerNameFilter filter = new LoggerNameFilter(FFmpegResultReader.class.getName());
+
+        rootLoggerConfig.addAppender(appender, Level.ALL, filter);
+
+        FFmpegResult result = FFmpeg.atPath(BIN)
+                .addInput(UrlInput.fromPath(VIDEO_MP4))
+                .addOutput(new NullOutput())
+                .setLogLevel(LogLevel.TRACE)
+                .setOverwriteOutput(true)
+                .execute();
+
+        Assert.assertTrue(appender.getCount(Level.DEBUG) > 0);
+        Assert.assertTrue(appender.getCount(Level.TRACE) > 0);
+
+        rootLoggerConfig.removeAppender(appender.getName());
+    }
 
     private static double getDuration(Path path) {
         FFprobeResult probe = FFprobe.atPath(BIN)
@@ -859,5 +905,45 @@ public class FFmpegTest {
 
         Assert.assertTrue(inputHelperClosed.get());
         Assert.assertTrue(outputHelperClosed.get());
+    }
+
+    private static class LoggerNameFilter extends AbstractFilter {
+        private final String loggerName;
+
+        public LoggerNameFilter(String loggerName) {
+            this.loggerName = loggerName;
+        }
+
+        @Override
+        public Result filter(LogEvent event) {
+            if (loggerName.equals(event.getLoggerName())) {
+                return Result.ACCEPT;
+            }
+            return Result.DENY;
+        }
+    }
+
+    private static class CountingByLevelAppender extends AbstractAppender {
+        private final ConcurrentMap<Level, AtomicLong> counters = new ConcurrentHashMap<>();
+
+        public CountingByLevelAppender() {
+            super("CountingByLevel", null, null, true, Property.EMPTY_ARRAY);
+
+            counters.put(Level.TRACE, new AtomicLong());
+            counters.put(Level.DEBUG, new AtomicLong());
+            counters.put(Level.INFO, new AtomicLong());
+            counters.put(Level.WARN, new AtomicLong());
+            counters.put(Level.ERROR, new AtomicLong());
+            counters.put(Level.FATAL, new AtomicLong());
+        }
+
+        @Override
+        public void append(LogEvent event) {
+            counters.get(event.getLevel()).incrementAndGet();
+        }
+
+        public long getCount(Level level) {
+            return counters.get(level).get();
+        }
     }
 }

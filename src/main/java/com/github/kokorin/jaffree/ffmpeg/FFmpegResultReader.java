@@ -127,7 +127,18 @@ public class FFmpegResultReader implements StdReader<FFmpegResult> {
             throw new RuntimeException("ffmpeg exited with message: " + errorMessage);
         }
 
-        return result;
+        if (result != null) {
+            return result;
+        }
+
+        return new FFmpegResult(
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+        );
     }
 
     static LogLevel detectLogLevel(final String line) {
