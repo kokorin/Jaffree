@@ -17,7 +17,7 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-import com.github.kokorin.jaffree.process.FFHelper;
+import com.github.kokorin.jaffree.process.ProcessHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -114,7 +114,7 @@ public abstract class BaseInput<T extends BaseInput<T>> extends BaseInOut<T> imp
      */
     //TODO: remove and keep helperThread abstract?
     @Override
-    public FFHelper helperThread() {
+    public ProcessHelper helperThread() {
         return null;
     }
 }

@@ -20,7 +20,7 @@ package com.github.kokorin.jaffree.ffmpeg;
 import com.github.kokorin.jaffree.LogLevel;
 import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.net.NegotiatingTcpServer;
-import com.github.kokorin.jaffree.process.FFHelper;
+import com.github.kokorin.jaffree.process.ProcessHelper;
 import com.github.kokorin.jaffree.process.LoggingStdReader;
 import com.github.kokorin.jaffree.process.ProcessHandler;
 import com.github.kokorin.jaffree.process.StdReader;
@@ -349,16 +349,16 @@ public class FFmpeg {
     }
 
     protected ProcessHandler<FFmpegResult> createProcessHandler() {
-        List<FFHelper> helpers = new ArrayList<>();
+        List<ProcessHelper> helpers = new ArrayList<>();
 
         for (Input input : inputs) {
-            FFHelper helper = input.helperThread();
+            ProcessHelper helper = input.helperThread();
             if (helper != null) {
                 helpers.add(helper);
             }
         }
         for (Output output : outputs) {
-            FFHelper helper = output.helperThread();
+            ProcessHelper helper = output.helperThread();
             if (helper != null) {
                 helpers.add(helper);
             }
@@ -371,7 +371,7 @@ public class FFmpeg {
                 .setArguments(buildArguments());
     }
 
-    protected FFHelper createProgressReader() {
+    protected ProcessHelper createProgressReader() {
         return NegotiatingTcpServer.onRandomPort(
                 new FFmpegProgressReader(progressListener)
         );

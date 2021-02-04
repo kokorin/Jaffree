@@ -20,7 +20,7 @@ package com.github.kokorin.jaffree.ffprobe;
 import com.github.kokorin.jaffree.net.NegotiatingTcpServer;
 import com.github.kokorin.jaffree.net.TcpNegotiator;
 import com.github.kokorin.jaffree.net.TcpServer;
-import com.github.kokorin.jaffree.process.FFHelper;
+import com.github.kokorin.jaffree.process.ProcessHelper;
 
 public abstract class TcpInput implements Input {
     private final String url;
@@ -49,7 +49,7 @@ public abstract class TcpInput implements Input {
     }
 
     @Override
-    public FFHelper helperThread() {
+    public ProcessHelper helperThread() {
         return tcpServer;
     }
 }
