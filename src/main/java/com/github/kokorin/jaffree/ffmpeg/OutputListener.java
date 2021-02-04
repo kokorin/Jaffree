@@ -30,5 +30,6 @@ public interface OutputListener {
      * @param line of ffmpeg output, which is neither progress, nor result
      * @return whether input was successfully parsed and should not be treated as error message
      */
+    // TODO return void
     boolean onOutput(String line);
 }
