@@ -34,7 +34,7 @@ public class ProcessHandler<T> {
     private final String contextName;
     private StdReader<T> stdOutReader = new GobblingStdReader<>();
     private StdReader<T> stdErrReader = new GobblingStdReader<>();
-    private List<FFHelper> helpers = null;
+    private List<ProcessHelper> helpers = null;
     private Stopper stopper = null;
     private List<String> arguments = Collections.emptyList();
 
@@ -61,7 +61,7 @@ public class ProcessHandler<T> {
      * @param helpers list
      * @return this
      */
-    public synchronized ProcessHandler<T> setHelpers(List<FFHelper> helpers) {
+    public synchronized ProcessHandler<T> setHelpers(List<ProcessHelper> helpers) {
         this.helpers = helpers;
         return this;
     }

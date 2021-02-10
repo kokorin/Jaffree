@@ -2,14 +2,25 @@ package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.Artifacts;
 import com.github.kokorin.jaffree.LogLevel;
-import com.github.kokorin.jaffree.SizeUnit;
 import com.github.kokorin.jaffree.StackTraceMatcher;
 import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffprobe.FFprobe;
 import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
 import com.github.kokorin.jaffree.ffprobe.Stream;
-import com.github.kokorin.jaffree.net.TcpServer;
-import com.github.kokorin.jaffree.process.FFHelper;
+import com.github.kokorin.jaffree.process.ProcessHelper;
+import static java.nio.file.StandardOpenOption.CREATE;
+import static java.nio.file.StandardOpenOption.READ;
+import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
+import static java.nio.file.StandardOpenOption.WRITE;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.AbstractAppender;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.LoggerConfig;
+import org.apache.logging.log4j.core.config.Property;
+import org.apache.logging.log4j.core.filter.AbstractFilter;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -19,26 +30,21 @@ import org.junit.rules.ExpectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.Socket;
 import java.net.URI;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static java.nio.file.StandardOpenOption.CREATE;
-import static java.nio.file.StandardOpenOption.READ;
-import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
-import static java.nio.file.StandardOpenOption.WRITE;
 
 public class FFmpegTest {
     public static Path BIN;
@@ -146,12 +152,24 @@ public class FFmpegTest {
 
         Assert.assertNotNull(result);
         Assert.assertTrue(counter.get() > 0);
+
+        outputPath = tempDir.resolve("test.flv");
+        counter.set(0L);
+
+        result = FFmpeg.atPath(BIN)
+                .addInput(UrlInput.fromPath(SMALL_MP4))
+                .addOutput(UrlOutput.toPath(outputPath))
+                .setProgressListener(listener)
+                .execute();
+
+        Assert.assertNotNull(result);
+        Assert.assertTrue(counter.get() > 0);
     }
 
     @Test
-    public void testProgress2() throws Exception {
+    public void testProgressWithErrorLogLevel() throws Exception {
         Path tempDir = Files.createTempDirectory("jaffree");
-        Path outputPath = tempDir.resolve("test.flv");
+        Path outputPath = tempDir.resolve("test.mkv");
 
         final AtomicLong counter = new AtomicLong();
 
@@ -163,8 +181,9 @@ public class FFmpegTest {
         };
 
         FFmpegResult result = FFmpeg.atPath(BIN)
-                .addInput(UrlInput.fromPath(SMALL_MP4))
+                .addInput(UrlInput.fromPath(SMALL_FLV))
                 .addOutput(UrlOutput.toPath(outputPath))
+                .setLogLevel(LogLevel.ERROR)
                 .setProgressListener(listener)
                 .execute();
 
@@ -380,7 +399,7 @@ public class FFmpegTest {
                 .addOutput(UrlOutput
                         .toPath(outputPath)
                         .copyAllCodecs()
-                        .setSizeLimit(1, SizeUnit.MB)
+                        .setSizeLimit(1_000_000L)
                 )
                 .execute();
 
@@ -537,7 +556,8 @@ public class FFmpegTest {
 
     @Test
     public void testCustomOutputParsing() {
-        final AtomicBoolean loudnormReportFound = new AtomicBoolean();
+        // StringBuffer - because it's thread safe
+        final StringBuffer loudnormReport = new StringBuffer();
 
         FFmpegResult result = FFmpeg.atPath(BIN)
                 .addInput(UrlInput.fromPath(VIDEO_MP4))
@@ -545,17 +565,27 @@ public class FFmpegTest {
                 .addOutput(new NullOutput(false))
                 .setOutputListener(new OutputListener() {
                     @Override
-                    public boolean onOutput(String line) {
-                        if (line.contains("loudnorm")) {
-                            loudnormReportFound.set(true);
-                        }
-                        return loudnormReportFound.get();
+                    public void onOutput(String line) {
+                        loudnormReport.append(line);
                     }
                 })
                 .execute();
 
         Assert.assertNotNull(result);
-        Assert.assertTrue(loudnormReportFound.get());
+
+        String expectedReport = "{" +
+                "\t\"input_i\" : \"-8.09\"," +
+                "\t\"input_tp\" : \"1.20\"," +
+                "\t\"input_lra\" : \"2.90\"," +
+                "\t\"input_thresh\" : \"-18.15\"," +
+                "\t\"output_i\" : \"-15.71\"," +
+                "\t\"output_tp\" : \"-4.98\"," +
+                "\t\"output_lra\" : \"2.20\"," +
+                "\t\"output_thresh\" : \"-25.77\"," +
+                "\t\"normalization_type\" : \"dynamic\"," +
+                "\t\"target_offset\" : \"-0.29\"" +
+                "}";
+        Assert.assertEquals(expectedReport, loudnormReport.toString());
     }
 
     @Test
@@ -746,7 +776,6 @@ public class FFmpegTest {
         Assert.assertTrue(Files.size(outputPath) > 1000);
     }
 
-
     private static double getDuration(Path path) {
         FFprobeResult probe = FFprobe.atPath(BIN)
                 .setShowStreams(true)
@@ -825,7 +854,7 @@ public class FFmpegTest {
         final AtomicBoolean inputHelperClosed = new AtomicBoolean(false);
         final AtomicBoolean outputHelperClosed = new AtomicBoolean(false);
 
-        class NotifyCloseHelper implements FFHelper {
+        class NotifyCloseHelper implements ProcessHelper {
             private final AtomicBoolean helperClosed;
 
             public NotifyCloseHelper(AtomicBoolean helperClosed) {
@@ -846,7 +875,7 @@ public class FFmpegTest {
                 .addInput(
                         new UrlInput() {
                             @Override
-                            public FFHelper helperThread() {
+                            public ProcessHelper helperThread() {
                                 return new NotifyCloseHelper(inputHelperClosed);
                             }
                         }.setInput(VIDEO_MP4.toString())
@@ -854,7 +883,7 @@ public class FFmpegTest {
                 .addOutput(
                         new NullOutput() {
                             @Override
-                            public FFHelper helperThread() {
+                            public ProcessHelper helperThread() {
                                 return new NotifyCloseHelper(outputHelperClosed);
                             }
                         }
@@ -863,5 +892,45 @@ public class FFmpegTest {
 
         Assert.assertTrue(inputHelperClosed.get());
         Assert.assertTrue(outputHelperClosed.get());
+    }
+
+    private static class LoggerNameFilter extends AbstractFilter {
+        private final String loggerName;
+
+        public LoggerNameFilter(String loggerName) {
+            this.loggerName = loggerName;
+        }
+
+        @Override
+        public Result filter(LogEvent event) {
+            if (loggerName.equals(event.getLoggerName())) {
+                return Result.ACCEPT;
+            }
+            return Result.DENY;
+        }
+    }
+
+    private static class CountingByLevelAppender extends AbstractAppender {
+        private final ConcurrentMap<Level, AtomicLong> counters = new ConcurrentHashMap<>();
+
+        public CountingByLevelAppender() {
+            super("CountingByLevel", null, null, true, Property.EMPTY_ARRAY);
+
+            counters.put(Level.TRACE, new AtomicLong());
+            counters.put(Level.DEBUG, new AtomicLong());
+            counters.put(Level.INFO, new AtomicLong());
+            counters.put(Level.WARN, new AtomicLong());
+            counters.put(Level.ERROR, new AtomicLong());
+            counters.put(Level.FATAL, new AtomicLong());
+        }
+
+        @Override
+        public void append(LogEvent event) {
+            counters.get(event.getLevel()).incrementAndGet();
+        }
+
+        public long getCount(Level level) {
+            return counters.get(level).get();
+        }
     }
 }

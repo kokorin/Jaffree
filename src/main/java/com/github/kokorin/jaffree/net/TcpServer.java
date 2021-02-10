@@ -19,7 +19,7 @@ package com.github.kokorin.jaffree.net;
 
 import com.github.kokorin.jaffree.ffmpeg.Input;
 import com.github.kokorin.jaffree.ffmpeg.Output;
-import com.github.kokorin.jaffree.process.FFHelper;
+import com.github.kokorin.jaffree.process.ProcessHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,12 +30,12 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 /**
- * Abstract TCP Server implementing {@link FFHelper}.
+ * Abstract TCP Server implementing {@link ProcessHelper}.
  * <p>
- * This class is intended to be used in different ffmpeg {@link Input} & {@link Output}
+ * This class is intended to be used in different ffmpeg {@link Input} &amp; {@link Output}
  * implementations which interact with ffmpeg via TCP sockets.
  */
-public abstract class TcpServer implements FFHelper {
+public abstract class TcpServer implements ProcessHelper {
     private final ServerSocket serverSocket;
     private final String addressAndPort;
 

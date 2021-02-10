@@ -36,7 +36,7 @@ public class FrameCode {
      * frame following this frame_code.
      * <p>
      * If {@link Flag#STREAM_ID} is set then this value has no meaning.
-     * MUST be <250.
+     * MUST be &lt; 250.
      */
     public final int streamId;
 
@@ -113,7 +113,7 @@ public class FrameCode {
      * @param streamId         stream id
      * @param dataSizeMul      data size multiplier
      * @param dataSizeLsb      data size least significant byte
-     * @param ptsDelta         difference between last & current PTS
+     * @param ptsDelta         difference between last &amp; current PTS
      * @param reservedCount    number of reserved bytes
      * @param matchTimeDelta   match time delta
      * @param elisionHeaderIdx index into the elision_header table
