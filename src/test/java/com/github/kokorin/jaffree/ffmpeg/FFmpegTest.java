@@ -556,7 +556,8 @@ public class FFmpegTest {
 
     @Test
     public void testCustomOutputParsing() {
-        final AtomicBoolean loudnormReportFound = new AtomicBoolean();
+        // StringBuffer - because it's thread safe
+        final StringBuffer loudnormReport = new StringBuffer();
 
         FFmpegResult result = FFmpeg.atPath(BIN)
                 .addInput(UrlInput.fromPath(VIDEO_MP4))
@@ -564,17 +565,27 @@ public class FFmpegTest {
                 .addOutput(new NullOutput(false))
                 .setOutputListener(new OutputListener() {
                     @Override
-                    public boolean onOutput(String line) {
-                        if (line.contains("loudnorm")) {
-                            loudnormReportFound.set(true);
-                        }
-                        return loudnormReportFound.get();
+                    public void onOutput(String line) {
+                        loudnormReport.append(line);
                     }
                 })
                 .execute();
 
         Assert.assertNotNull(result);
-        Assert.assertTrue(loudnormReportFound.get());
+
+        String expectedReport = "{" +
+                "\t\"input_i\" : \"-8.09\"," +
+                "\t\"input_tp\" : \"1.20\"," +
+                "\t\"input_lra\" : \"2.90\"," +
+                "\t\"input_thresh\" : \"-18.15\"," +
+                "\t\"output_i\" : \"-15.71\"," +
+                "\t\"output_tp\" : \"-4.98\"," +
+                "\t\"output_lra\" : \"2.20\"," +
+                "\t\"output_thresh\" : \"-25.77\"," +
+                "\t\"normalization_type\" : \"dynamic\"," +
+                "\t\"target_offset\" : \"-0.29\"" +
+                "}";
+        Assert.assertEquals(expectedReport, loudnormReport.toString());
     }
 
     @Test
@@ -763,30 +774,6 @@ public class FFmpegTest {
         Assert.assertNotNull(result.getVideoSize());
         Assert.assertTrue(Files.exists(outputPath));
         Assert.assertTrue(Files.size(outputPath) > 1000);
-    }
-
-    @Test
-    public void testLogLevel() {
-        LoggerContext loggerContext = (LoggerContext) LogManager.getContext(false);
-
-        Configuration configuration = loggerContext.getConfiguration();
-        LoggerConfig rootLoggerConfig = configuration.getLoggerConfig("");
-        CountingByLevelAppender appender = new CountingByLevelAppender();
-        LoggerNameFilter filter = new LoggerNameFilter(FFmpegResultReader.class.getName());
-
-        rootLoggerConfig.addAppender(appender, Level.ALL, filter);
-
-        FFmpegResult result = FFmpeg.atPath(BIN)
-                .addInput(UrlInput.fromPath(VIDEO_MP4))
-                .addOutput(new NullOutput())
-                .setLogLevel(LogLevel.TRACE)
-                .setOverwriteOutput(true)
-                .execute();
-
-        Assert.assertTrue(appender.getCount(Level.DEBUG) > 0);
-        Assert.assertTrue(appender.getCount(Level.TRACE) > 0);
-
-        rootLoggerConfig.removeAppender(appender.getName());
     }
 
     private static double getDuration(Path path) {

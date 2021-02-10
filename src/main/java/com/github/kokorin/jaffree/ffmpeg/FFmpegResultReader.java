@@ -52,12 +52,13 @@ public class FFmpegResultReader implements StdReader<FFmpegResult> {
     /**
      * Reads provided {@link InputStream} until it's depleted.
      * <p>
-     * This method parses every line to check if it is progress report, ffmpeg result report,
-     * output message or error message.
+     * This method parses every line to detect ffmpeg log level. Lines with INFO log level are
+     * additionally parsed to get ffmpeg result (which may be null because of too strict log level)
      *
      * @param stdOut input stream to read from
-     * @return FFmpegResult if found
+     * @return FFmpegResult if found or null
      * @throws RuntimeException if IOException appears or ffmpeg ends with error message.
+     * @see FFmpeg#setLogLevel(LogLevel)
      */
     @Override
     public FFmpegResult read(final InputStream stdOut) {
@@ -94,6 +95,8 @@ public class FFmpegResultReader implements StdReader<FFmpegResult> {
                             LOGGER.error(line);
                             break;
                     }
+                } else {
+                    LOGGER.info(line);
                 }
 
                 if (logLevel == LogLevel.INFO) {

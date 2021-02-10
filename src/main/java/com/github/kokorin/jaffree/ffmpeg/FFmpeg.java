@@ -463,7 +463,7 @@ public class FFmpeg {
         if (progress != null) {
             result.addAll(Arrays.asList("-progress", progress));
         } else {
-            LOGGER.warn("Progress report URL isn't set up, progress won't be reported");
+            LOGGER.warn("ProgressListener isn't set, progress won't be reported");
         }
 
         if (complexFilter != null) {
