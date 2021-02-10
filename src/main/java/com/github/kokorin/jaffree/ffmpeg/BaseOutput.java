@@ -17,9 +17,8 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-import com.github.kokorin.jaffree.SizeUnit;
 import com.github.kokorin.jaffree.StreamType;
-import com.github.kokorin.jaffree.process.FFHelper;
+import com.github.kokorin.jaffree.process.ProcessHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -123,21 +122,6 @@ public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements
         this.sizeLimit = sizeLimitBytes;
         return thisAsT();
     }
-
-    /**
-     * Set the file size limit. No further chunk of bytes is written after the limit is exceeded.
-     * The size of the output file is slightly more than the requested file size.
-     *
-     * @param sizeLimit size limit
-     * @param unit      size unit
-     * @return this
-     */
-    @SuppressWarnings("checkstyle:hiddenfield")
-    public T setSizeLimit(final Number sizeLimit, final SizeUnit unit) {
-        long bytes = (long) (sizeLimit.doubleValue() * unit.toBytes(1));
-        return setSizeLimit(bytes);
-    }
-
 
     /**
      * Sets special "copy" codec for all streams.
@@ -302,7 +286,7 @@ public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements
      */
     //TODO: remove and keep helperThread abstract?
     @Override
-    public FFHelper helperThread() {
+    public ProcessHelper helperThread() {
         return null;
     }
 

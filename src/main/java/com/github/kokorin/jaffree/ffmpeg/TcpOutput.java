@@ -20,7 +20,7 @@ package com.github.kokorin.jaffree.ffmpeg;
 import com.github.kokorin.jaffree.net.NegotiatingTcpServer;
 import com.github.kokorin.jaffree.net.TcpNegotiator;
 import com.github.kokorin.jaffree.net.TcpServer;
-import com.github.kokorin.jaffree.process.FFHelper;
+import com.github.kokorin.jaffree.process.ProcessHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,7 +54,7 @@ public abstract class TcpOutput<T extends TcpOutput<T>> extends BaseOutput<T> im
     }
 
     @Override
-    public final FFHelper helperThread() {
+    public final ProcessHelper helperThread() {
         return tcpServer;
     }
 
