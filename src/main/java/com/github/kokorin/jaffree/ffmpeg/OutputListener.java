@@ -1,5 +1,5 @@
 /*
- *    Copyright  2019 Denis Kokorin
+ *    Copyright  2019-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -22,14 +22,13 @@ package com.github.kokorin.jaffree.ffmpeg;
  */
 public interface OutputListener {
     /**
-     * Invoked on every line, which wasn't parsed by FFmpegResultReader.
+     * Invoked for every ffmpeg output line, which isn't a log (i.e. doesn't contain any log level).
      * <p>
      * Attention: this method is not thread safe and may be invoked in different thread.
      * Consider using synchronization.
      *
-     * @param line of ffmpeg output, which is neither progress, nor result
-     * @return whether input was successfully parsed and should not be treated as error message
+     * @param line ffmpeg output line, which is neither progress, nor result
      */
     // TODO return void
-    boolean onOutput(String line);
+    void onOutput(String line);
 }
