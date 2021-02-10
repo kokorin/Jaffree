@@ -19,7 +19,8 @@ package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.LogLevel;
 import com.github.kokorin.jaffree.StreamType;
-import com.github.kokorin.jaffree.process.FFHelper;
+import com.github.kokorin.jaffree.net.NegotiatingTcpServer;
+import com.github.kokorin.jaffree.process.ProcessHelper;
 import com.github.kokorin.jaffree.process.LoggingStdReader;
 import com.github.kokorin.jaffree.process.ProcessHandler;
 import com.github.kokorin.jaffree.process.StdReader;
@@ -50,7 +51,7 @@ public class FFmpeg {
     private boolean overwriteOutput;
     private ProgressListener progressListener;
     private OutputListener outputListener;
-    //-progress url (global)
+    private String progress;
     //-filter_threads nb_threads (global)
     //-debug_ts (global)
     private FilterGraph complexFilter;
@@ -60,7 +61,7 @@ public class FFmpeg {
      */
     private final Map<String, Object> filters = new HashMap<>();
 
-    private LogLevel logLevel = null;
+    private LogLevel logLevel = LogLevel.INFO;
     private String contextName = null;
 
     private final Path executable;
@@ -284,6 +285,10 @@ public class FFmpeg {
         return this;
     }
 
+    protected void setProgress(String progress) {
+        this.progress = progress;
+    }
+
     /**
      * Sets ffmpeg logging level.
      * <p>
@@ -348,23 +353,28 @@ public class FFmpeg {
     }
 
     protected ProcessHandler<FFmpegResult> createProcessHandler() {
-        List<FFHelper> helpers = new ArrayList<>();
+        List<ProcessHelper> helpers = new ArrayList<>();
 
         for (Input input : inputs) {
-            FFHelper helper = input.helperThread();
+            ProcessHelper helper = input.helperThread();
             if (helper != null) {
                 helpers.add(helper);
             }
         }
         for (Output output : outputs) {
-            FFHelper helper = output.helperThread();
+            ProcessHelper helper = output.helperThread();
             if (helper != null) {
                 helpers.add(helper);
             }
         }
 
+        ProcessHelper progressHelper = createProgressHelper(progressListener);
+        if (progressHelper != null) {
+            helpers.add(progressHelper);
+        }
+
         return new ProcessHandler<FFmpegResult>(executable, contextName)
-                .setStdErrReader(createStdErrReader())
+                .setStdErrReader(createStdErrReader(outputListener))
                 .setStdOutReader(createStdOutReader())
                 .setHelpers(helpers)
                 .setArguments(buildArguments());
@@ -382,8 +392,8 @@ public class FFmpeg {
      *
      * @return this
      */
-    protected StdReader<FFmpegResult> createStdErrReader() {
-        return new FFmpegResultReader(progressListener, outputListener);
+    protected StdReader<FFmpegResult> createStdErrReader(OutputListener outputListener) {
+        return new FFmpegResultReader(outputListener);
     }
 
     /**
@@ -394,7 +404,25 @@ public class FFmpeg {
      * @return this
      */
     protected StdReader<FFmpegResult> createStdOutReader() {
+        // TODO ffmpeg normally doesn't write to Std OUT, stdOutReader should throw an error
+        // if it reads any byte
         return new LoggingStdReader<>();
+    }
+
+    protected ProcessHelper createProgressHelper(ProgressListener progressListener) {
+        NegotiatingTcpServer result = null;
+        String progressReportUrl = null;
+
+        if (progressListener != null) {
+            result = NegotiatingTcpServer.onRandomPort(
+                    new FFmpegProgressReader(progressListener)
+            );
+            progressReportUrl = "tcp://" + result.getAddressAndPort();
+        }
+
+        setProgress(progressReportUrl);
+
+        return result;
     }
 
     /**
@@ -412,13 +440,12 @@ public class FFmpeg {
     protected List<String> buildArguments() {
         List<String> result = new ArrayList<>();
 
+        // "level" is required for ffmpeg to add [loglevel] to output lines
+        String logLevelArgument = "level";
         if (logLevel != null) {
-            if (progressListener != null && logLevel.code() < LogLevel.INFO.code()) {
-                throw new RuntimeException("Specified log level " + logLevel
-                        + " hides ffmpeg progress output");
-            }
-            result.addAll(Arrays.asList("-loglevel", Integer.toString(logLevel.code())));
+            logLevelArgument += "+" + logLevel.name().toLowerCase();
         }
+        result.addAll(Arrays.asList("-loglevel", logLevelArgument));
 
         for (Input input : inputs) {
             result.addAll(input.buildArguments());
@@ -431,6 +458,12 @@ public class FFmpeg {
             // Do not overwrite output files, and exit immediately if a specified output file
             // already exists.
             result.add("-n");
+        }
+
+        if (progress != null) {
+            result.addAll(Arrays.asList("-progress", progress));
+        } else {
+            LOGGER.warn("ProgressListener isn't set, progress won't be reported");
         }
 
         if (complexFilter != null) {

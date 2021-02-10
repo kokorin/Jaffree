@@ -27,7 +27,7 @@ public class FFmpegProgress {
     private final Double fps;
     private final Double q;
     private final Long size;
-    private final Long time;
+    private final Long timeMicros;
     private final Long dup;
     private final Long drop;
     private final Double bitrate;
@@ -36,25 +36,25 @@ public class FFmpegProgress {
     /**
      * Creates  {@link FFmpegProgress}.
      *
-     * @param frame   number of frames
-     * @param fps     frames encoded per second
-     * @param q       quality of coded frames (between 1 (good) and FF_LAMBDA_MAX (bad))
-     * @param size    current size in bytes
-     * @param time    encoded duration
-     * @param dup     number of duplicate frames
-     * @param drop    number of dropped frames
-     * @param bitrate estimated bitrate
-     * @param speed   encoding speed
+     * @param frame      number of frames
+     * @param fps        frames encoded per second
+     * @param q          quality of coded frames (between 1 (good) and FF_LAMBDA_MAX (bad))
+     * @param size       current size in bytes
+     * @param timeMicros encoded duration in microseconds
+     * @param dup        number of duplicate frames
+     * @param drop       number of dropped frames
+     * @param bitrate    estimated bitrate in kbits/s
+     * @param speed      encoding speed
      */
     @SuppressWarnings("checkstyle:parameternumber")
     public FFmpegProgress(final Long frame, final Double fps, final Double q, final Long size,
-                          final Long time, final Long dup, final Long drop, final Double bitrate,
-                          final Double speed) {
+                          final Long timeMicros, final Long dup, final Long drop,
+                          final Double bitrate, final Double speed) {
         this.frame = frame;
         this.fps = fps;
         this.q = q;
         this.size = size;
-        this.time = time;
+        this.timeMicros = timeMicros;
         this.dup = dup;
         this.drop = drop;
         this.bitrate = bitrate;
@@ -95,7 +95,11 @@ public class FFmpegProgress {
      * @return encoded time in milliseconds
      */
     public Long getTimeMillis() {
-        return time;
+        return getTime(TimeUnit.MILLISECONDS);
+    }
+
+    public Long getTimeMicros() {
+        return timeMicros;
     }
 
     /**
@@ -103,11 +107,15 @@ public class FFmpegProgress {
      * @return encoded time in specified {@link TimeUnit}
      */
     public Long getTime(final TimeUnit timeUnit) {
-        if (time == null) {
+        if (timeUnit == null) {
             throw new IllegalArgumentException("TimeUnit must be non null");
         }
 
-        return timeUnit.convert(time, TimeUnit.MILLISECONDS);
+        if (timeMicros == null) {
+            return null;
+        }
+
+        return timeUnit.convert(timeMicros, TimeUnit.MICROSECONDS);
     }
 
     /**
@@ -125,7 +133,7 @@ public class FFmpegProgress {
     }
 
     /**
-     * @return estimated bitrate
+     * @return estimated bitrate in kbits/s
      */
     public Double getBitrate() {
         return bitrate;
@@ -148,7 +156,7 @@ public class FFmpegProgress {
                 ", fps=" + fps +
                 ", q=" + q +
                 ", size=" + size +
-                ", time=" + time +
+                ", timeMicros=" + timeMicros +
                 ", dup=" + dup +
                 ", drop=" + drop +
                 ", bitrate=" + bitrate +

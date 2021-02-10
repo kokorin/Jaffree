@@ -18,12 +18,10 @@
 package com.github.kokorin.jaffree.ffprobe;
 
 import com.github.kokorin.jaffree.LogLevel;
-import com.github.kokorin.jaffree.SizeUnit;
 import com.github.kokorin.jaffree.StreamType;
-import com.github.kokorin.jaffree.ffmpeg.FFmpegResult;
 import com.github.kokorin.jaffree.ffprobe.data.FlatFormatParser;
 import com.github.kokorin.jaffree.ffprobe.data.FormatParser;
-import com.github.kokorin.jaffree.process.FFHelper;
+import com.github.kokorin.jaffree.process.ProcessHelper;
 import com.github.kokorin.jaffree.process.LoggingStdReader;
 import com.github.kokorin.jaffree.process.ProcessHandler;
 import com.github.kokorin.jaffree.process.StdReader;
@@ -435,19 +433,6 @@ public class FFprobe {
     }
 
     /**
-     * Set probing size (from 32 to I64_MAX) (default 5e+006).
-     *
-     * @param probeSizeInSizeUnit probe size
-     * @param sizeUnit            size unit of probe size
-     * @return this
-     */
-    //TODO test this method
-    public FFprobe setProbeSize(final Long probeSizeInSizeUnit, final SizeUnit sizeUnit) {
-        setProbeSize(sizeUnit.toBytes(probeSizeInSizeUnit));
-        return this;
-    }
-
-    /**
      * Specify how many microseconds are analyzed to probe the input (from 0 to I64_MAX).
      * (default 0).
      *
@@ -581,9 +566,9 @@ public class FFprobe {
      * @return ffprobe result
      */
     public FFprobeResult execute() {
-        List<FFHelper> helpers = new ArrayList<>();
+        List<ProcessHelper> helpers = new ArrayList<>();
         if (input != null) {
-            FFHelper helper = input.helperThread();
+            ProcessHelper helper = input.helperThread();
             if (helper != null) {
                 helpers.add(helper);
             }
