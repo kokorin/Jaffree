@@ -1,5 +1,5 @@
 /*
- *    Copyright 2017 Denis Kokorin
+ *    Copyright 2017-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ public interface Output {
     /**
      * Helper {@link ProcessHelper} which should be ran in dedicated thread
      *
-     * @return null if no helper thread is need, otherwise Runnable
+     * @return ProcessHelper, or null if no helper thread is needed
      */
     ProcessHelper helperThread();
 }

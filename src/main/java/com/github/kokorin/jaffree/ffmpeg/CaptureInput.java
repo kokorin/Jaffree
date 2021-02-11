@@ -1,5 +1,5 @@
 /*
- *    Copyright  2020 Vicne, Denis Kokorin
+ *    Copyright  2020-2021 Vicne, Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -36,6 +36,13 @@ public abstract class CaptureInput<T extends CaptureInput<T>> extends BaseInput<
     private static final Logger LOGGER = LoggerFactory.getLogger(CaptureInput.class);
 
     /**
+     * @param input input identifier
+     */
+    public CaptureInput(String input) {
+        super(input);
+    }
+
+    /**
      * Set capture frame rate.
      * <p>
      * Captures the desktop at the given frame rate
@@ -65,10 +72,10 @@ public abstract class CaptureInput<T extends CaptureInput<T>> extends BaseInput<
      * cpu load (if video frames are dropped) it will cause the video to fall "behind" the audio
      * [after playback of the recording is done, audio continues on--and gets highly out of sync,
      * video appears to go into "fast forward" mode during high cpu scenes].
+     *
      * @param streamSpecifier stream specifier
      * @param value           Hz value, fraction or abbreviation
      * @return this
-     *
      * @see #setCaptureFrameRate(Number)
      */
     @Override
@@ -123,6 +130,13 @@ public abstract class CaptureInput<T extends CaptureInput<T>> extends BaseInput<
     public static class WindowsDirectShow extends CaptureInput<WindowsDirectShow> {
         private static final Logger LOGGER = LoggerFactory.getLogger(WindowsDirectShow.class);
 
+        /**
+         * @param input input identifier
+         */
+        public WindowsDirectShow(String input) {
+            super(input);
+        }
+
         public static WindowsDirectShow captureVideo(String videoDevice) {
             return captureVideoAndAudio(videoDevice, null);
         }
@@ -143,8 +157,7 @@ public abstract class CaptureInput<T extends CaptureInput<T>> extends BaseInput<
                 input += "audio=" + audioDevice;
             }
 
-            return new WindowsDirectShow()
-                    .setInput(input)
+            return new WindowsDirectShow(input)
                     .setFormat("dshow");
         }
 
@@ -165,15 +178,21 @@ public abstract class CaptureInput<T extends CaptureInput<T>> extends BaseInput<
      * @see <a href="https://ffmpeg.org/ffmpeg-devices.html#gdigrab">gdigrab documentation</a>
      */
     public static class WindowsGdiGrab extends CaptureInput<WindowsGdiGrab> {
+
+        /**
+         * @param input input identifier
+         */
+        public WindowsGdiGrab(String input) {
+            super(input);
+        }
+
         public static WindowsGdiGrab captureDesktop() {
-            return new WindowsGdiGrab()
-                    .setInput("desktop")
+            return new WindowsGdiGrab("desktop")
                     .setFormat("gdigrab");
         }
 
         public static WindowsGdiGrab captureWindow(String windowTitle) {
-            return new WindowsGdiGrab()
-                    .setInput("title=" + windowTitle)
+            return new WindowsGdiGrab("title=" + windowTitle)
                     .setFormat("gdigrab");
         }
 
@@ -197,6 +216,13 @@ public abstract class CaptureInput<T extends CaptureInput<T>> extends BaseInput<
     public static class MacOsAvFoundation extends CaptureInput<MacOsAvFoundation> {
         private static final Logger LOGGER = LoggerFactory.getLogger(MacOsAvFoundation.class);
 
+        /**
+         * @param input input identifier
+         */
+        public MacOsAvFoundation(String input) {
+            super(input);
+        }
+
         public static MacOsAvFoundation captureDesktop() {
             return captureVideoAndAudio("default", null);
         }
@@ -208,8 +234,7 @@ public abstract class CaptureInput<T extends CaptureInput<T>> extends BaseInput<
             if (audioDevice == null) {
                 audioDevice = "none";
             }
-            return new MacOsAvFoundation()
-                    .setInput(videoDevice + ":" + audioDevice)
+            return new MacOsAvFoundation(videoDevice + ":" + audioDevice)
                     .setFormat("avfoundation");
         }
 
@@ -230,6 +255,14 @@ public abstract class CaptureInput<T extends CaptureInput<T>> extends BaseInput<
      * @see <a href="https://ffmpeg.org/ffmpeg-devices.html#x11grab">x11grab documentation</a>
      */
     public static class LinuxX11Grab extends CaptureInput<LinuxX11Grab> {
+
+        /**
+         * @param input input identifier
+         */
+        public LinuxX11Grab(String input) {
+            super(input);
+        }
+
         public static LinuxX11Grab captureDesktop() {
             return captureDisplayAndScreen(0, 0);
         }
@@ -239,8 +272,7 @@ public abstract class CaptureInput<T extends CaptureInput<T>> extends BaseInput<
         }
 
         public static LinuxX11Grab captureHostDisplayAndScreen(String host, int display, int screen) {
-            return new LinuxX11Grab()
-                    .setInput(host + ":" + display + "." + screen)
+            return new LinuxX11Grab(host + ":" + display + "." + screen)
                     .setFormat("x11grab");
         }
 

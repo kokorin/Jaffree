@@ -34,10 +34,8 @@ import java.util.concurrent.TimeUnit;
  *
  * @param <T> self
  */
-//TODO: make abstract?
-public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements Output {
-    // TODO: make output property final
-    private String output;
+public abstract class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements Output {
+    private final String output;
     private Long outputPosition;
     private Long sizeLimit;
 
@@ -69,15 +67,11 @@ public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements
     //-sample_fmt[:stream_specifier] sample_fmt (output,per-stream)
 
     /**
-     * Set output path to file or URI.
      *
-     * @param output path to file or URI
-     * @return this
+     * @param output output path to file or URI
      */
-    @SuppressWarnings("checkstyle:hiddenfield")
-    public T setOutput(final String output) {
+    public BaseOutput(final String output) {
         this.output = output;
-        return thisAsT();
     }
 
     /**
@@ -279,15 +273,6 @@ public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements
         result.add(output);
 
         return result;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    //TODO: remove and keep helperThread abstract?
-    @Override
-    public ProcessHelper helperThread() {
-        return null;
     }
 
     private interface Mapping {
