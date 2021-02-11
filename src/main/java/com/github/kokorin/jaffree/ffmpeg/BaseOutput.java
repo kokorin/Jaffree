@@ -275,15 +275,6 @@ public abstract class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> i
         return result;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    //TODO: remove and keep helperThread abstract?
-    @Override
-    public ProcessHelper helperThread() {
-        return null;
-    }
-
     private interface Mapping {
         String toValue();
     }

@@ -103,15 +103,5 @@ public abstract class BaseInput<T extends BaseInput<T>> extends BaseInOut<T> imp
 
         return result;
     }
-
-    /**
-     * {@inheritDoc}
-     * @return
-     */
-    //TODO: remove and keep helperThread abstract?
-    @Override
-    public ProcessHelper helperThread() {
-        return null;
-    }
 }
 
