@@ -29,6 +29,16 @@ jobs:
         with:
           java-version: ${{ matrix.java-version }}
 
+      - name: Cache Maven packages
+        uses: actions/cache@v2
+        with:
+          # be careful not to include ~/.m2/settings.xml which contains credentials
+          path: |
+            ~/.m2/repository
+            ~/.m2/wrapper
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
       - name: Install ffmpeg on Ubuntu
         run: sudo apt-get update && sudo apt-get install -y ffmpeg && ffmpeg -version
         if:  startsWith(matrix.os, 'ubuntu')
