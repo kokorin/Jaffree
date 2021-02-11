@@ -121,25 +121,20 @@ FFmpegResult result = FFmpeg.atPath(BIN)
 ## Custom parsing of ffmpeg output
 
 ```java
+// StringBuffer - because it's thread safe
+final StringBuffer loudnormReport = new StringBuffer();
+
 FFmpegResult result = FFmpeg.atPath(BIN)
-        .addInput(UrlInput.fromPath(VIDEO_MP4))
-        .addArguments("-af", "loudnorm=I=-16:TP=-1.5:LRA=11:print_format=json")
-        .addOutput(new NullOutput(false))
-        .setOutputListener(new OutputListener() {
-            private boolean loudnormReportStarted;
-            @Override
-            public boolean onOutput(String line) {
-                if (line.contains("loudnornm")) {
-                    loudnormReportStarted = true;
-                    return true;
-                }
-                if (loudnormReportStarted) {
-                    // TODO parse loudnorm JSON report
-                }
-                return loudnormReportStarted;
-            }
-        })
-        .execute();
+    .addInput(UrlInput.fromPath(VIDEO_MP4))
+    .addArguments("-af", "loudnorm=I=-16:TP=-1.5:LRA=11:print_format=json")
+    .addOutput(new NullOutput(false))
+    .setOutputListener(new OutputListener() {
+        @Override
+        public void onOutput(String line) {
+            loudnormReport.append(line);
+        }
+    })
+    .execute();
 
 ```
 
