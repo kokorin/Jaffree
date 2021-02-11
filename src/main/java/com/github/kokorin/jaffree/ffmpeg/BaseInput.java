@@ -29,7 +29,6 @@ import java.util.List;
  * @param <T> self
  */
 public abstract class BaseInput<T extends BaseInput<T>> extends BaseInOut<T> implements Input {
-    // TODO: make input property final
     private final String input;
     private Integer streamLoop;
     private boolean readAtFrameRate = false;
@@ -39,7 +38,7 @@ public abstract class BaseInput<T extends BaseInput<T>> extends BaseInOut<T> imp
     /**
      * @param input path to file or URI
      */
-    public BaseInput(String input) {
+    public BaseInput(final String input) {
         this.input = input;
     }
 
