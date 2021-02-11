@@ -1,5 +1,5 @@
 /*
- *    Copyright  2017 Denis Kokorin
+ *    Copyright  2017-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -19,14 +19,35 @@ package com.github.kokorin.jaffree.ffmpeg;
 
 import java.nio.file.Path;
 
+/**
+ * {@link Input} implementation which allows {@link String} to specify input location.
+ */
 public class UrlInput extends BaseInput<UrlInput> implements Input {
 
-    public static UrlInput fromUrl(String url) {
-        return new UrlInput().setInput(url);
+    /**
+     * Creates {@link UrlInput}.
+     * @param input input location
+     */
+    public UrlInput(String input) {
+        super(input);
     }
 
+    /**
+     * Creates {@link UrlInput}.
+     * @param input input location: path on filesystem, URL, etc
+     * @return UrlInput
+     */
+    public static UrlInput fromUrl(final String input) {
+        return new UrlInput(input);
+    }
+
+    /**
+     * Creates {@link UrlInput}.
+     * @param path input location: path on filesystem
+     * @return UrlInput
+     */
     public static UrlInput fromPath(Path path) {
-        return new UrlInput().setInput(path.toString());
+        return new UrlInput(path.toString());
     }
 }
 
