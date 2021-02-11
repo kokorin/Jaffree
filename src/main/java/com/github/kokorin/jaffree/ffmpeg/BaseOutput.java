@@ -34,8 +34,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @param <T> self
  */
-//TODO: make abstract?
-public class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements Output {
+public abstract class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> implements Output {
     // TODO: make output property final
     private String output;
     private Long outputPosition;

@@ -873,12 +873,12 @@ public class FFmpegTest {
 
         FFmpegResult result = FFmpeg.atPath(BIN)
                 .addInput(
-                        new UrlInput() {
+                        new UrlInput(VIDEO_MP4.toString()) {
                             @Override
                             public ProcessHelper helperThread() {
                                 return new NotifyCloseHelper(inputHelperClosed);
                             }
-                        }.setInput(VIDEO_MP4.toString())
+                        }
                 )
                 .addOutput(
                         new NullOutput() {

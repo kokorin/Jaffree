@@ -30,7 +30,7 @@ import java.util.List;
  */
 public abstract class BaseInput<T extends BaseInput<T>> extends BaseInOut<T> implements Input {
     // TODO: make input property final
-    private String input;
+    private final String input;
     private Integer streamLoop;
     private boolean readAtFrameRate = false;
     //-itsoffset offset (input)
@@ -38,12 +38,9 @@ public abstract class BaseInput<T extends BaseInput<T>> extends BaseInOut<T> imp
 
     /**
      * @param input path to file or URI
-     * @return this
      */
-    @SuppressWarnings("checkstyle:hiddenfield")
-    public T setInput(final String input) {
+    public BaseInput(String input) {
         this.input = input;
-        return thisAsT();
     }
 
     /**

@@ -42,17 +42,12 @@ public abstract class TcpInput<T extends TcpInput<T>> extends BaseInput<T> imple
     }
 
     public TcpInput(String protocol, String suffix, TcpServer tcpServer) {
+        super(protocol + "://" + tcpServer.getAddressAndPort() + suffix);
         this.tcpServer = tcpServer;
-        super.setInput(protocol + "://" + tcpServer.getAddressAndPort() + suffix);
     }
 
     @Override
     public final ProcessHelper helperThread() {
         return tcpServer;
-    }
-
-    @Override
-    public T setInput(String input) {
-        throw new RuntimeException("SocketInput input can't be changed");
     }
 }
