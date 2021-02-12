@@ -2,36 +2,27 @@ package examples.ffmpeg;
 
 import com.github.kokorin.jaffree.ffmpeg.FFmpeg;
 import com.github.kokorin.jaffree.ffmpeg.FFmpegProgress;
-import com.github.kokorin.jaffree.ffmpeg.FFmpegResult;
 import com.github.kokorin.jaffree.ffmpeg.NullOutput;
 import com.github.kokorin.jaffree.ffmpeg.ProgressListener;
 import com.github.kokorin.jaffree.ffmpeg.UrlInput;
 import com.github.kokorin.jaffree.ffmpeg.UrlOutput;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.Options;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class ReEncode {
-    private final Path ffmpegBin;
-    private final Path input;
-    private final Path output;
 
-    public ReEncode(Path ffmpegBin, Path input, Path output) {
-        this.ffmpegBin = ffmpegBin;
-        this.input = input;
-        this.output = output;
-    }
+    public static void main(String[] args) throws Exception {
+        if (args.length != 2) {
+            System.err.println("Exactly 2 arguments expected: path to source and destination media files");
+            System.exit(1);
+        }
 
-    public void execute() {
-        // The most reliable way to get video duration
-        // ffprobe for some formats can't detect duration
+        String pathToSrc = args[0];
+        String pathToDst = args[1];
+
         final AtomicLong duration = new AtomicLong();
-        final FFmpegResult nullResult = FFmpeg.atPath(ffmpegBin)
-                .addInput(UrlInput.fromPath(input))
+        FFmpeg.atPath()
+                .addInput(UrlInput.fromUrl(pathToSrc))
                 .addOutput(new NullOutput())
                 .setOverwriteOutput(true)
                 .setProgressListener(new ProgressListener() {
@@ -42,38 +33,18 @@ public class ReEncode {
                 })
                 .execute();
 
-        ProgressListener listener = new ProgressListener() {
-            private long lastReportTs = System.currentTimeMillis();
-
-            @Override
-            public void onProgress(FFmpegProgress progress) {
-                long now = System.currentTimeMillis();
-                if (lastReportTs + 1000 < now) {
-                    long percent = 100 * progress.getTimeMillis() / duration.get();
-                    System.out.println("Progress: " + percent + "%");
-                }
-            }
-        };
-
-        FFmpegResult result = FFmpeg.atPath(ffmpegBin)
-                .addInput(UrlInput.fromPath(input))
-                .addOutput(UrlOutput.toPath(output))
-                .setProgressListener(listener)
+        FFmpeg.atPath()
+                .addInput(UrlInput.fromUrl(pathToSrc))
+                .addOutput(UrlOutput.toUrl(pathToDst))
+                .setProgressListener(new ProgressListener() {
+                    @Override
+                    public void onProgress(FFmpegProgress progress) {
+                        double percents = 100. * progress.getTimeMillis() / duration.get();
+                        System.out.println("Progress: " + percents + "%");
+                    }
+                })
                 .setOverwriteOutput(true)
                 .execute();
-    }
 
-    public static void main(String[] args) throws Exception {
-        Options options = new Options()
-                .addOption("ffmpeg_bin", true, "FFmpeg binaries location")
-                .addOption("input", true, "Input")
-                .addOption("output", true, "Output");
-        CommandLine commandLine = new DefaultParser().parse(options, args);
-
-        new ReEncode(
-                Paths.get(commandLine.getOptionValue("ffmpeg_bin")),
-                Paths.get(commandLine.getOptionValue("input")),
-                Paths.get(commandLine.getOptionValue("output"))
-        ).execute();
     }
 }

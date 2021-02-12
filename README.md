@@ -43,50 +43,39 @@ Inspired by [ffmpeg-cli-wrapper](https://github.com/bramp/ffmpeg-cli-wrapper)
 See whole example [here](/src/test/java/examples/ffprobe/ShowStreams.java).
 
 ```java
-//path to ffmpeg directory or null (to use PATH env variable)
-Path BIN = Paths.get("/path/to/ffmpeg_directory/");
-Path VIDEO_MP4 = Paths.get("/path/to/video.mp4");
-
-
-FFprobe ffprobe;
-if (BIN != null) {
-    ffprobe = FFprobe.atPath(BIN);
-} else {
-    ffprobe = FFprobe.atPath();
-}
-
-FFprobeResult result = ffprobe
-        .setShowStreams(true)
-        .setInput(VIDEO_MP4)
-        .execute();
+FFprobeResult result = FFprobe.atPath()
+    .setShowStreams(true)
+    .setInput(pathToVideo)
+    .execute();
 
 for (Stream stream : result.getStreams()) {
-    System.out.println("Stream " + stream.getIndex() 
-            + " type " + stream.getCodecType()
-            + " duration " + stream.getDuration(TimeUnit.SECONDS));
+    System.out.println("Stream #" + stream.getIndex()
+        + " type: " + stream.getCodecType()
+        + " duration: " + stream.getDuration(TimeUnit.SECONDS) + " seconds");
 }
+```
 
-FFmpeg ffmpeg;
-if (BIN != null) {
-    ffmpeg = FFmpeg.atPath(BIN);
-} else {
-    ffmpeg = FFmpeg.atPath();
-}
+## Detecting exact media file duration
 
-//Sometimes ffprobe can't show exact duration, use ffmpeg trancoding to NULL output to get it
+Sometimes ffprobe can't show exact duration, use ffmpeg trancoding to NULL output to get it.
+
+See whole example [here](/src/test/java/examples/ffmpeg/ExactDuration.java).
+
+```java
 final AtomicLong durationMillis = new AtomicLong();
-FFmpegResult fFmpegResult = ffmpeg
-        .addInput(
-                UrlInput.fromUrl(VIDEO_MP4)
-        )
-        .addOutput(new NullOutput())
-        .setProgressListener(new ProgressListener() {
-            @Override
-            public void onProgress(FFmpegProgress progress) {
-                durationMillis.set(progress.getTimeMillis());
-            }
-        })
-        .execute();
+
+FFmpegResult ffmpegResult = FFmpeg.atPath()
+    .addInput(
+        UrlInput.fromUrl(pathToVideo)
+    )
+    .addOutput(new NullOutput())
+    .setProgressListener(new ProgressListener() {
+        @Override
+        public void onProgress(FFmpegProgress progress) {
+            durationMillis.set(progress.getTimeMillis());
+        }
+    })
+    .execute();
 
 System.out.println("Exact duration: " + durationMillis.get() + " milliseconds");
 ```
@@ -96,36 +85,65 @@ System.out.println("Exact duration: " + durationMillis.get() + " milliseconds");
 See whole example [here](/src/test/java/examples/ffmpeg/ReEncode.java).
 
 ```java
-Path BIN = Paths.get("/path/to/ffmpeg_directory/");
-Path VIDEO_MP4 = Paths.get("/path/to/video.mp4");
-Path OUTPUT_MP4 = Paths.get("/path/to/output.mp4");
+final AtomicLong duration = new AtomicLong();
+FFmpeg.atPath()
+    .addInput(UrlInput.fromUrl(pathToSrc))
+    .addOutput(new NullOutput())
+    .setOverwriteOutput(true)
+    .setProgressListener(new ProgressListener() {
+        @Override
+        public void onProgress(FFmpegProgress progress) {
+            duration.set(progress.getTimeMillis());
+        }
+    })
+    .execute();
 
-ProgressListener listener = new ProgressListener() {
-    @Override
-    public void onProgress(FFmpegProgress progress) {
-        //TODO handle progress data
-    }
-};
+FFmpeg.atPath()
+    .addInput(UrlInput.fromUrl(pathToSrc))
+    .addOutput(UrlOutput.toUrl(pathToDst))
+    .setProgressListener(new ProgressListener() {
+        @Override
+        public void onProgress(FFmpegProgress progress) {
+            double percents = 100. * progress.getTimeMillis() / duration.get();
+            System.out.println("Progress: " + percents + "%");
+        }
+    })
+    .setOverwriteOutput(true)
+    .execute();
+```
 
+## Cut and scale media file
 
-FFmpegResult result = FFmpeg.atPath(BIN)
-        .addInput(UrlInput.fromPath(VIDEO_MP4))
-        .addOutput(UrlOutput.toPath(outputPath)
-                .copyAllCodecs()
-        )
-        // This is optional
-        .setProgressListener(listener)
-        .execute();
+Pay attention that arguments related to Input must be set at Input, not at FFmpeg.
+
+See whole example [here](/src/test/java/examples/ffmpeg/CutAndScale.java).
+
+```java
+FFmpeg.atPath()
+    .addInput(
+            UrlInput.fromUrl(pathToSrc)
+                    .setPosition(10, TimeUnit.SECONDS)
+                    .setDuration(42, TimeUnit.SECONDS)
+    )
+    .addOutput(
+            UrlOutput.toUrl(pathToDst)
+                    .setPosition(10, TimeUnit.SECONDS)
+    )
+    .setFilter(StreamType.VIDEO, "scale=160:-2")
+    .setOverwriteOutput(true)
+    .execute();
 ```
 
 ## Custom parsing of ffmpeg output
+
+See whole example [here](/src/test/java/examples/ffmpeg/ParsingOutput.java).
 
 ```java
 // StringBuffer - because it's thread safe
 final StringBuffer loudnormReport = new StringBuffer();
 
-FFmpegResult result = FFmpeg.atPath(BIN)
-    .addInput(UrlInput.fromPath(VIDEO_MP4))
+FFmpeg.atPath()
+    .addInput(UrlInput.fromUrl(pathToVideo))
     .addArguments("-af", "loudnorm=I=-16:TP=-1.5:LRA=11:print_format=json")
     .addOutput(new NullOutput(false))
     .setOutputListener(new OutputListener() {
@@ -136,45 +154,28 @@ FFmpegResult result = FFmpeg.atPath(BIN)
     })
     .execute();
 
+System.out.println("Loudnorm report:\n" + loudnormReport);
 ```
 
 ## Supplying and consuming data with SeekableByteChannel
 
-Under the hood Jaffree uses tiny FTP server to interact with SeekableByteChannel
+Ability to interact with SeekableByteChannel is one of the features, which distinct Jaffree from 
+similar libraries. Under the hood Jaffree uses tiny FTP server to interact with SeekableByteChannel.
 
+See whole example [here](/src/test/java/examples/ffmpeg/UsingChannels.java).
 ```java
-FFprobeResult probe;
-FFmpegResult result;
-
-try (SeekableByteChannel channel = Files.newByteChannel(VIDEO_MP4, READ)) {
-    probe = FFprobe.atPath(BIN)
-            .setShowStreams(true)
-            .setInput(channel)
-            .execute();
+try (SeekableByteChannel inputChannel =
+         Files.newByteChannel(pathToSrc, StandardOpenOption.READ);
+     SeekableByteChannel outputChannel =
+         Files.newByteChannel(pathToDst, StandardOpenOption.CREATE,
+                 StandardOpenOption.WRITE, StandardOpenOption.READ,
+                 StandardOpenOption.TRUNCATE_EXISTING)
+) {
+    FFmpeg.atPath()
+        .addInput(ChannelInput.fromChannel(inputChannel))
+        .addOutput(ChannelOutput.toChannel(filename, outputChannel))
+        .execute();
 }
-
-try (SeekableByteChannel channel = Files.newByteChannel(VIDEO_MP4, READ)) {
-    FFmpegResult result = FFmpeg.atPath(BIN)
-            .addInput(
-                    ChannelInput.fromChannel(VIDEO_MP4.getFileName().toString(), channel)
-            )
-            .addOutput(
-                    UrlOutput.toPath(outputPath)
-            )
-            .execute();
-}
-
-try (SeekableByteChannel channel = Files.newByteChannel(outputPath, CREATE, WRITE, READ, TRUNCATE_EXISTING)) {
-    FFmpegResult result = FFmpeg.atPath(BIN)
-            .addInput(
-                    UrlInput.fromPath(VIDEO_MP4)
-            )
-            .addOutput(
-                    ChannelOutput.toChannel("channel.mp4", channel)
-            )
-            .execute();
-}
-
 ```
 
 ## Supplying and consuming data with InputStream and OutputStream
@@ -184,33 +185,23 @@ requires seekable output for many formats.
 
 Under the hood pipes are not OS pipes, but TCP Sockets. This allows much higher bandwidth.
 
+See whole example [here](/src/test/java/examples/ffmpeg/UsingStreams.java).
+
 ```java
-FFprobeResult probe;
-FFmpegResult result;
-
-try (InputStream inputStream = Files.newInputStream(VIDEO_MP4)) {
-    probe = FFprobe.atPath(BIN)
-            .setShowStreams(true)
-            .setInput(inputStream)
-            .execute();
+try (InputStream inputStream =
+         Files.newInputStream(pathToSrc);
+     OutputStream outputStream =
+         Files.newOutputStream(pathToDst, StandardOpenOption.CREATE,
+                 StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING)
+) {
+    FFmpeg.atPath()
+        .addInput(PipeInput.pumpFrom(inputStream))
+        .addOutput(
+                PipeOutput.pumpTo(outputStream)
+                        .setFormat("flv")
+        )
+        .execute();
 }
-
-
-try (InputStream inputStream = Files.newInputStream(VIDEO_MP4)) {
-    result = FFmpeg.atPath(BIN)
-            .addInput(PipeInput.pumpFrom(inputStream))
-            .addOutput(UrlOutput.toPath(outputPath))
-            .execute();
-}
-
-try (OutputStream outputStream = Files.newOutputStream(outputPath, StandardOpenOption.CREATE)) {
-    result = FFmpeg.atPath(BIN)
-            .addInput(UrlInput.fromPath(VIDEO_MP4))
-            .addOutput(PipeOutput.pumpTo(outputStream).setFormat("flv"))
-            .setOverwriteOutput(true)
-            .execute();
-}
-
 ```
 
 ## FFmpeg stop

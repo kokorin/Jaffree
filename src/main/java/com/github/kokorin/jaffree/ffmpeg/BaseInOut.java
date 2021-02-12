@@ -160,7 +160,7 @@ public abstract class BaseInOut<T extends BaseInOut<T>> {
     }
 
     /**
-     * Like the {@link #setPositionEof(long)}  (-ss) option but relative
+     * Like the {@link #setPosition(Number, TimeUnit)}  (-ss) option but relative
      * to the "end of file".
      * That is negative values are earlier in the file, 0 is at EOF.
      *
