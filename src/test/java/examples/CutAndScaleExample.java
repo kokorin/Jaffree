@@ -1,4 +1,4 @@
-package examples.ffmpeg;
+package examples;
 
 import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffmpeg.FFmpeg;
@@ -9,7 +9,7 @@ import com.github.kokorin.jaffree.ffmpeg.UrlOutput;
 
 import java.util.concurrent.TimeUnit;
 
-public class CutAndScale {
+public class CutAndScaleExample {
 
     public static void main(String[] args) throws Exception {
         if (args.length != 2) {
