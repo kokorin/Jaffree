@@ -1,4 +1,4 @@
-package examples.ffmpeg;
+package examples;
 
 import com.github.kokorin.jaffree.ffmpeg.FFmpeg;
 import com.github.kokorin.jaffree.ffmpeg.FFmpegProgress;
@@ -10,7 +10,7 @@ import com.github.kokorin.jaffree.ffmpeg.UrlOutput;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-public class ParsingOutput {
+public class ParsingOutputExample {
 
     public static void main(String[] args) throws Exception {
         if (args.length != 1) {

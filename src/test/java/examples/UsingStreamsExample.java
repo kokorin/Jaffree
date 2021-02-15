@@ -1,4 +1,4 @@
-package examples.ffmpeg;
+package examples;
 
 import com.github.kokorin.jaffree.ffmpeg.FFmpeg;
 import com.github.kokorin.jaffree.ffmpeg.PipeInput;
@@ -11,7 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
-public class UsingStreams {
+public class UsingStreamsExample {
     public static void main(String[] args) throws Exception {
         if (args.length != 2) {
             System.err.println("Exactly 2 arguments expected: path to source and destination media files");

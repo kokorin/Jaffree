@@ -1,4 +1,4 @@
-package examples.ffmpeg;
+package examples;
 
 import com.github.kokorin.jaffree.ffmpeg.FFmpeg;
 import com.github.kokorin.jaffree.ffmpeg.FFmpegProgress;
@@ -9,7 +9,7 @@ import com.github.kokorin.jaffree.ffmpeg.UrlInput;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-public class ExactDuration {
+public class ExactDurationExample {
     public static void main(String[] args) {
         if (args.length != 1) {
             System.err.println("Exactly 1 argument expected: path to media file");
