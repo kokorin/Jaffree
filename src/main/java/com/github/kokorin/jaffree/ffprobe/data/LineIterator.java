@@ -17,6 +17,8 @@
 
 package com.github.kokorin.jaffree.ffprobe.data;
 
+import com.github.kokorin.jaffree.JaffreeException;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Iterator;

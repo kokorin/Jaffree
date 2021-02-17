@@ -17,6 +17,7 @@
 
 package com.github.kokorin.jaffree.process;
 
+import com.github.kokorin.jaffree.JaffreeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
