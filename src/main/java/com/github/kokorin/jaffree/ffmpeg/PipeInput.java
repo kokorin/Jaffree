@@ -17,6 +17,7 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
+import com.github.kokorin.jaffree.JaffreeRuntimeException;
 import com.github.kokorin.jaffree.util.IOUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +72,7 @@ public class PipeInput extends TcpInput<PipeInput> implements Input {
                 // client has no way to notify server that no more data is needed
                 LOGGER.debug("Ignoring exception: " + e.getMessage());
             } catch (IOException e) {
-                throw new RuntimeException("Failed to copy data", e);
+                throw new JaffreeRuntimeException("Failed to copy data", e);
             }
         }
     }

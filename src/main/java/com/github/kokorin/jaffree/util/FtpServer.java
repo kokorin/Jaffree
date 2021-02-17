@@ -17,6 +17,7 @@
 
 package com.github.kokorin.jaffree.util;
 
+import com.github.kokorin.jaffree.JaffreeRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -124,7 +125,7 @@ public class FtpServer implements Runnable {
                 }
             }
         } catch (Exception e) {
-            throw new RuntimeException("Failed to serve FTP", e);
+            throw new JaffreeRuntimeException("Failed to serve FTP", e);
         }
     }
 

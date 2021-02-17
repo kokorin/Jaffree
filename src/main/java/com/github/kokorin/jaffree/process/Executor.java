@@ -17,6 +17,7 @@
 
 package com.github.kokorin.jaffree.process;
 
+import com.github.kokorin.jaffree.JaffreeRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +54,7 @@ public class Executor {
      */
     public void execute(final String name, final Runnable runnable) {
         if (stopped) {
-            throw new RuntimeException("Executor has been stopped already!");
+            throw new JaffreeRuntimeException("Executor has been stopped already!");
         }
 
         final Thread starter = Thread.currentThread();
@@ -92,7 +93,7 @@ public class Executor {
             return null;
         }
 
-        Exception result = new RuntimeException("Exception during execution", exceptions.get(0));
+        Exception result = new JaffreeRuntimeException("Exception during execution", exceptions.get(0));
         for (int i = 1; i < exceptions.size(); i++) {
             result.addSuppressed(exceptions.get(i));
         }

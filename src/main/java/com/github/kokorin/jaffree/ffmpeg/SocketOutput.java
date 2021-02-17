@@ -17,6 +17,8 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
+import com.github.kokorin.jaffree.JaffreeRuntimeException;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -44,7 +46,7 @@ public abstract class SocketOutput<T extends SocketOutput<T>> extends BaseOutput
                 try {
                     negotiator.negotiateAndClose(serverSocket);
                 } catch (IOException e) {
-                    throw new RuntimeException("Failed to negotiate via socket " + serverSocket, e);
+                    throw new JaffreeRuntimeException("Failed to negotiate via socket " + serverSocket, e);
                 }
             }
         };
@@ -54,13 +56,13 @@ public abstract class SocketOutput<T extends SocketOutput<T>> extends BaseOutput
         try {
             return new ServerSocket(0, 1, InetAddress.getLoopbackAddress());
         } catch (IOException e) {
-            throw new RuntimeException("Failed to allocate socket", e);
+            throw new JaffreeRuntimeException("Failed to allocate socket", e);
         }
     }
 
     @Override
     public final T setOutput(String output) {
-        throw new RuntimeException("SocketOutput output can't be changed");
+        throw new JaffreeRuntimeException("SocketOutput output can't be changed");
     }
 
     abstract Negotiator negotiator();

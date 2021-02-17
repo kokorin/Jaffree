@@ -17,6 +17,7 @@
 
 package com.github.kokorin.jaffree.nut;
 
+import com.github.kokorin.jaffree.JaffreeRuntimeException;
 import com.github.kokorin.jaffree.Rational;
 
 import java.io.IOException;
@@ -54,7 +55,7 @@ public class NutReader {
         if (input.getPosition() == 0) {
             String fileId = input.readCString();
             if (!Objects.equals(fileId, NutConst.FILE_ID)) {
-                throw new RuntimeException("Wrong file ID: " + fileId);
+                throw new JaffreeRuntimeException("Wrong file ID: " + fileId);
             }
         }
 

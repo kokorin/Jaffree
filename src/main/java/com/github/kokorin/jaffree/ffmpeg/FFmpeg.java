@@ -17,6 +17,7 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
+import com.github.kokorin.jaffree.JaffreeRuntimeException;
 import com.github.kokorin.jaffree.LogLevel;
 import com.github.kokorin.jaffree.process.LoggingStdReader;
 import com.github.kokorin.jaffree.process.ProcessHandler;
@@ -203,7 +204,7 @@ public class FFmpeg {
 
         if (logLevel != null) {
             if (progressListener != null && logLevel.code() < LogLevel.INFO.code()) {
-                throw new RuntimeException("Specified log level " + logLevel + " hides ffmpeg progress output");
+                throw new JaffreeRuntimeException("Specified log level " + logLevel + " hides ffmpeg progress output");
             }
             result.addAll(Arrays.asList("-loglevel", Integer.toString(logLevel.code())));
         }

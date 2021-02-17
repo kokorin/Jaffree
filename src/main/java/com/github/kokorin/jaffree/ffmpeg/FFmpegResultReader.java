@@ -17,6 +17,7 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
+import com.github.kokorin.jaffree.JaffreeRuntimeException;
 import com.github.kokorin.jaffree.SizeUnit;
 import com.github.kokorin.jaffree.process.StdReader;
 import org.slf4j.Logger;
@@ -84,11 +85,11 @@ public class FFmpegResultReader implements StdReader<FFmpegResult> {
                 errorMessage = line;
             }
         } catch (IOException e) {
-            throw new RuntimeException("Exception while reading ffmpeg output", e);
+            throw new JaffreeRuntimeException("Exception while reading ffmpeg output", e);
         }
 
         if (errorMessage != null) {
-            throw new RuntimeException("ffmpeg exited with message: " + errorMessage);
+            throw new JaffreeRuntimeException("ffmpeg exited with message: " + errorMessage);
         }
 
         return result;

@@ -17,6 +17,7 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
+import com.github.kokorin.jaffree.JaffreeRuntimeException;
 import com.github.kokorin.jaffree.util.IOUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,7 +73,7 @@ public class PipeOutput extends TcpOutput<PipeOutput> implements Output {
             try (Closeable toClose = source) {
                 IOUtil.copy(source, destination, bufferSize);
             } catch (IOException e) {
-                throw new RuntimeException("Failed to copy data", e);
+                throw new JaffreeRuntimeException("Failed to copy data", e);
             }
         }
     }

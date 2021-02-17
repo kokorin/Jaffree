@@ -17,6 +17,8 @@
 
 package com.github.kokorin.jaffree.process;
 
+import com.github.kokorin.jaffree.JaffreeRuntimeException;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,11 +47,11 @@ public class ThrowingStdReader<T> implements StdReader<T> {
                 message.append(line);
             }
         } catch (IOException e) {
-            throw new RuntimeException("Failed to read stdout (stderr)", e);
+            throw new JaffreeRuntimeException("Failed to read stdout (stderr)", e);
         }
 
         if (!messageIsEmpty) {
-            throw new RuntimeException("Finished with error message: " + message.toString());
+            throw new JaffreeRuntimeException("Finished with error message: " + message.toString());
         }
 
         return null;

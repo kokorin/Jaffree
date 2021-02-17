@@ -17,6 +17,7 @@
 
 package com.github.kokorin.jaffree.process;
 
+import com.github.kokorin.jaffree.JaffreeRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +39,7 @@ public class LoggingStdReader<T> implements StdReader<T> {
                 LOGGER.info(line);
             }
         } catch (IOException e) {
-            throw new RuntimeException("Failed to read stdout (stderr)", e);
+            throw new JaffreeRuntimeException("Failed to read stdout (stderr)", e);
         }
 
         return null;
