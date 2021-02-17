@@ -17,6 +17,7 @@
 
 package com.github.kokorin.jaffree.nut;
 
+import com.github.kokorin.jaffree.JaffreeException;
 import com.github.kokorin.jaffree.Rational;
 import com.github.kokorin.jaffree.nut.FrameCode.Flag;
 

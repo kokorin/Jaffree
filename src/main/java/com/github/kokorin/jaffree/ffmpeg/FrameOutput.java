@@ -17,6 +17,7 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
+import com.github.kokorin.jaffree.JaffreeException;
 import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.net.TcpNegotiator;
 import net.jcip.annotations.GuardedBy;

@@ -17,6 +17,8 @@
 
 package com.github.kokorin.jaffree.process;
 
+import com.github.kokorin.jaffree.JaffreeException;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
