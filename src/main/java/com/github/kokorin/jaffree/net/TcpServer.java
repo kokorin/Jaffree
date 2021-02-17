@@ -65,7 +65,7 @@ public abstract class TcpServer implements ProcessHelper {
             serve(socket);
             LOGGER.debug("Served successfully: {}", getAddressAndPort());
         } catch (Exception e) {
-            throw new RuntimeException("TCP negotiation failed", e);
+            throw new JaffreeException("TCP negotiation failed", e);
         }
     }
 
@@ -97,7 +97,7 @@ public abstract class TcpServer implements ProcessHelper {
         try {
             return new ServerSocket(0, 1, InetAddress.getLoopbackAddress());
         } catch (IOException e) {
-            throw new RuntimeException("Failed to allocate socket", e);
+            throw new JaffreeException("Failed to allocate socket", e);
         }
     }
 

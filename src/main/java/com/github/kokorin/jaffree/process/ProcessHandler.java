@@ -17,6 +17,7 @@
 
 package com.github.kokorin.jaffree.process;
 
+import com.github.kokorin.jaffree.JaffreeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,7 +96,7 @@ public class ProcessHandler<T> {
 
                 return interactWithProcess(process);
             } catch (IOException e) {
-                throw new RuntimeException("Failed to start process.", e);
+                throw new JaffreeException("Failed to start process.", e);
             } finally {
                 if (process != null) {
                     // TODO on Windows process sometimes doesn't stop and keeps running
@@ -140,20 +141,20 @@ public class ProcessHandler<T> {
             exception = executor.getException();
         }
         if (exception != null) {
-            throw new RuntimeException("Failed to execute, exception appeared in one of helper threads", exception);
+            throw new JaffreeException("Failed to execute, exception appeared in one of helper threads", exception);
         }
 
         if (interrupted != null) {
-            throw new RuntimeException("Failed to execute, was interrupted", interrupted);
+            throw new JaffreeException("Failed to execute, was interrupted", interrupted);
         }
 
         if (!Integer.valueOf(0).equals(status)) {
-            throw new RuntimeException("Process execution has ended with non-zero status: " + status);
+            throw new JaffreeException("Process execution has ended with non-zero status: " + status);
         }
 
         T result = resultRef.get();
         if (result == null) {
-            throw new RuntimeException("Process execution has ended with null result");
+            throw new JaffreeException("Process execution has ended with null result");
         }
 
         return result;

@@ -63,11 +63,11 @@ public class Executor {
      */
     public void execute(final String name, final Runnable runnable) {
         if (stopped) {
-            throw new RuntimeException("Executor has been stopped already!");
+            throw new JaffreeException("Executor has been stopped already!");
         }
 
         if (starter != Thread.currentThread()) {
-            throw new RuntimeException("Executors must be supplied in the same thread "
+            throw new JaffreeException("Executors must be supplied in the same thread "
                     + "that created this Executor!");
         }
 
@@ -114,7 +114,7 @@ public class Executor {
             return null;
         }
 
-        Exception result = new RuntimeException("Exception during execution", exceptions.get(0));
+        Exception result = new JaffreeException("Exception during execution", exceptions.get(0));
         for (int i = 1; i < exceptions.size(); i++) {
             result.addSuppressed(exceptions.get(i));
         }

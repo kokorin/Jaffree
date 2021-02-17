@@ -50,7 +50,7 @@ public class LoggingStdReader<T> implements StdReader<T> {
                 LOGGER.info(line);
             }
         } catch (IOException e) {
-            throw new RuntimeException("Failed to read stdout (stderr)", e);
+            throw new JaffreeException("Failed to read stdout (stderr)", e);
         }
 
         return null;

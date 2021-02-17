@@ -57,7 +57,7 @@ public class FFmpegResultReader implements StdReader<FFmpegResult> {
      *
      * @param stdOut input stream to read from
      * @return FFmpegResult if found or null
-     * @throws RuntimeException if IOException appears or ffmpeg ends with error message.
+     * @throws JaffreeException if IOException appears or ffmpeg ends with error message.
      * @see FFmpeg#setLogLevel(LogLevel)
      */
     @Override
@@ -123,11 +123,11 @@ public class FFmpegResultReader implements StdReader<FFmpegResult> {
                 }
             }
         } catch (IOException e) {
-            throw new RuntimeException("Exception while reading ffmpeg output", e);
+            throw new JaffreeException("Exception while reading ffmpeg output", e);
         }
 
         if (errorMessage != null) {
-            throw new RuntimeException("ffmpeg exited with message: " + errorMessage);
+            throw new JaffreeException("ffmpeg exited with message: " + errorMessage);
         }
 
         if (result != null) {

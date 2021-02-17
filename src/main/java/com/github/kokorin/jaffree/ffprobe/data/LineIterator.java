@@ -56,7 +56,7 @@ public class LineIterator implements Iterator<String> {
         try {
             nextLine = reader.readLine();
         } catch (IOException e) {
-            throw new RuntimeException("Read failed", e);
+            throw new JaffreeException("Read failed", e);
         }
 
         if (nextLine == null) {

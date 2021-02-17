@@ -45,11 +45,11 @@ public class ThrowingStdReader<T> implements StdReader<T> {
                 message.append(line);
             }
         } catch (IOException e) {
-            throw new RuntimeException("Failed to read stdout (stderr)", e);
+            throw new JaffreeException("Failed to read stdout (stderr)", e);
         }
 
         if (!messageIsEmpty) {
-            throw new RuntimeException("Finished with error message: " + message.toString());
+            throw new JaffreeException("Finished with error message: " + message.toString());
         }
 
         return null;

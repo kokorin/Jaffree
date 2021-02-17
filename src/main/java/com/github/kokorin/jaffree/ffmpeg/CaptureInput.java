@@ -117,7 +117,7 @@ public abstract class CaptureInput<T extends CaptureInput<T>> extends BaseInput<
         }
 
         if (result == null) {
-            throw new RuntimeException("Could not detect OS");
+            throw new JaffreeException("Could not detect OS");
         }
 
         return result;
