@@ -17,7 +17,7 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-import com.github.kokorin.jaffree.JaffreeRuntimeException;
+import com.github.kokorin.jaffree.JaffreeException;
 import com.github.kokorin.jaffree.Rational;
 import com.github.kokorin.jaffree.nut.*;
 import org.slf4j.Logger;
@@ -66,7 +66,7 @@ public class NutFrameSupplier implements TcpInput.Supplier {
             write(writer);
             writer.writeFooter();
         } catch (Exception e) {
-            throw new JaffreeRuntimeException("Write failed", e);
+            throw new JaffreeException("Write failed", e);
         }
     }
 
@@ -81,7 +81,7 @@ public class NutFrameSupplier implements TcpInput.Supplier {
         for (int i = 0; i < streamHeaders.length; i++) {
             Stream stream = tracks.get(i);
             if (stream.getId() != i) {
-                throw new JaffreeRuntimeException("Stream ids must start with 0 and increase by 1 subsequently!");
+                throw new JaffreeException("Stream ids must start with 0 and increase by 1 subsequently!");
             }
             final StreamHeader streamHeader;
 
@@ -133,7 +133,7 @@ public class NutFrameSupplier implements TcpInput.Supplier {
                     );
                     break;
                 default:
-                    throw new JaffreeRuntimeException("Unknown Track Type: " + stream.getType());
+                    throw new JaffreeException("Unknown Track Type: " + stream.getType());
             }
 
             streamHeaders[i] = streamHeader;
@@ -172,10 +172,10 @@ public class NutFrameSupplier implements TcpInput.Supplier {
                     BufferedImage image = frame.getImage();
 
                     if (alpha && BufferedImage.TYPE_4BYTE_ABGR != image.getType()) {
-                        throw new JaffreeRuntimeException("Type of BufferedImage must be TYPE_4BYTE_ABGR");
+                        throw new JaffreeException("Type of BufferedImage must be TYPE_4BYTE_ABGR");
                     }
                     if (!alpha && BufferedImage.TYPE_3BYTE_BGR != image.getType()) {
-                        throw new JaffreeRuntimeException("Type of BufferedImage must be TYPE_3BYTE_BGR");
+                        throw new JaffreeException("Type of BufferedImage must be TYPE_3BYTE_BGR");
                     }
 
                     data = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
@@ -187,7 +187,7 @@ public class NutFrameSupplier implements TcpInput.Supplier {
                     break;
 
                 default:
-                    throw new JaffreeRuntimeException("Unexpected track: " + frame.getStreamId());
+                    throw new JaffreeException("Unexpected track: " + frame.getStreamId());
             }
 
             NutFrame nutFrame = new NutFrame(

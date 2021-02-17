@@ -17,7 +17,7 @@
 
 package com.github.kokorin.jaffree.ffprobe;
 
-import com.github.kokorin.jaffree.JaffreeRuntimeException;
+import com.github.kokorin.jaffree.JaffreeException;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -47,7 +47,7 @@ public abstract class SocketInput implements Input {
                 try {
                     negotiator.negotiateAndClose(serverSocket);
                 } catch (IOException e) {
-                    throw new JaffreeRuntimeException("Failed to negotiate via socket " + serverSocket, e);
+                    throw new JaffreeException("Failed to negotiate via socket " + serverSocket, e);
                 }
             }
         };
@@ -57,7 +57,7 @@ public abstract class SocketInput implements Input {
         try {
             return new ServerSocket(0, 1, InetAddress.getLoopbackAddress());
         } catch (IOException e) {
-            throw new JaffreeRuntimeException("Failed to allocate socket", e);
+            throw new JaffreeException("Failed to allocate socket", e);
         }
     }
 

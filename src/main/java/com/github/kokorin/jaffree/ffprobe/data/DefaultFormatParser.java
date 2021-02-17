@@ -17,7 +17,7 @@
 
 package com.github.kokorin.jaffree.ffprobe.data;
 
-import com.github.kokorin.jaffree.JaffreeRuntimeException;
+import com.github.kokorin.jaffree.JaffreeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,7 +90,7 @@ public class DefaultFormatParser implements FormatParser {
                 } else {
                     String[] tagKey = key.split(":");
                     if (tagKey.length != 2) {
-                        throw new JaffreeRuntimeException("Wrong subsection property format: " + line);
+                        throw new JaffreeException("Wrong subsection property format: " + line);
                     }
 
                     String tag = tagKey[0];
@@ -113,7 +113,7 @@ public class DefaultFormatParser implements FormatParser {
         State state = stack.pollLast();
 
         if (!state.sectionName.equals(name)) {
-            throw new JaffreeRuntimeException("Expecting end of " + state.sectionName + " but found " + name);
+            throw new JaffreeException("Expecting end of " + state.sectionName + " but found " + name);
         }
 
         State parent = stack.peekLast();

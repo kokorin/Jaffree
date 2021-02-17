@@ -17,7 +17,7 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-import com.github.kokorin.jaffree.JaffreeRuntimeException;
+import com.github.kokorin.jaffree.JaffreeException;
 import com.github.kokorin.jaffree.Rational;
 import com.github.kokorin.jaffree.nut.*;
 import org.slf4j.Logger;
@@ -50,7 +50,7 @@ public class NutFrameConsumer implements TcpOutput.Consumer {
         try (Closeable toClose = input) {
             read(input);
         } catch (IOException e) {
-            throw new JaffreeRuntimeException("Failed to read stream", e);
+            throw new JaffreeException("Failed to read stream", e);
         }
     }
 
