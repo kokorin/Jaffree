@@ -87,7 +87,7 @@ public class FtpServer extends TcpServer {
 
             operate(controlReader, controlOutput, dataServerSocket);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to serve FTP", e);
+            throw new JaffreeException("Failed to serve FTP", e);
         }
     }
 

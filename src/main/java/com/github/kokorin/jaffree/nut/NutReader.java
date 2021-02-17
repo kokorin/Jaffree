@@ -58,7 +58,7 @@ public class NutReader {
         if (input.getPosition() == 0) {
             String fileId = input.readCString();
             if (!Objects.equals(fileId, NutConst.FILE_ID)) {
-                throw new RuntimeException("Wrong file ID: " + fileId);
+                throw new JaffreeException("Wrong file ID: " + fileId);
             }
         }
 

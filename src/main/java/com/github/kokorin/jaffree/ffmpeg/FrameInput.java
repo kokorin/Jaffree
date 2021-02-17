@@ -132,7 +132,7 @@ public class FrameInput extends TcpInput<FrameInput> implements Input {
 
     @Override
     public final FrameInput setFormat(String format) {
-        throw new RuntimeException("Format can't be changed");
+        throw new JaffreeException("Format can't be changed");
     }
 
     /**
