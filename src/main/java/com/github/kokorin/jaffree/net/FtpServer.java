@@ -17,6 +17,7 @@
 
 package com.github.kokorin.jaffree.net;
 
+import com.github.kokorin.jaffree.JaffreeException;
 import com.github.kokorin.jaffree.util.IOUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,7 +88,7 @@ public class FtpServer extends TcpServer {
 
             operate(controlReader, controlOutput, dataServerSocket);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to serve FTP", e);
+            throw new JaffreeException("Failed to serve FTP", e);
         }
     }
 

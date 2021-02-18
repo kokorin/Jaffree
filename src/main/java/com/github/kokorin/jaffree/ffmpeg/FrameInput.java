@@ -17,6 +17,7 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
+import com.github.kokorin.jaffree.JaffreeException;
 import com.github.kokorin.jaffree.net.TcpNegotiator;
 import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
@@ -132,7 +133,7 @@ public class FrameInput extends TcpInput<FrameInput> implements Input {
 
     @Override
     public final FrameInput setFormat(String format) {
-        throw new RuntimeException("Format can't be changed");
+        throw new JaffreeException("Format can't be changed");
     }
 
     /**
