@@ -17,6 +17,7 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
+import com.github.kokorin.jaffree.JaffreeException;
 import com.github.kokorin.jaffree.LogLevel;
 import com.github.kokorin.jaffree.process.StdReader;
 import com.github.kokorin.jaffree.util.ParseUtil;
@@ -29,7 +30,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * {@link FFmpegResultReader} reads ffmpeg stderr output, parses {@link FFmpegProgress} and
@@ -57,7 +57,7 @@ public class FFmpegResultReader implements StdReader<FFmpegResult> {
      *
      * @param stdOut input stream to read from
      * @return FFmpegResult if found or null
-     * @throws RuntimeException if IOException appears or ffmpeg ends with error message.
+     * @throws JaffreeException if IOException appears or ffmpeg ends with error message.
      * @see FFmpeg#setLogLevel(LogLevel)
      */
     @Override
@@ -123,11 +123,11 @@ public class FFmpegResultReader implements StdReader<FFmpegResult> {
                 }
             }
         } catch (IOException e) {
-            throw new RuntimeException("Exception while reading ffmpeg output", e);
+            throw new JaffreeException("Exception while reading ffmpeg output", e);
         }
 
         if (errorMessage != null) {
-            throw new RuntimeException("ffmpeg exited with message: " + errorMessage);
+            throw new JaffreeException("ffmpeg exited with message: " + errorMessage);
         }
 
         if (result != null) {

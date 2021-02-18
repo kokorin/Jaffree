@@ -17,8 +17,6 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-import com.github.kokorin.jaffree.process.ProcessHelper;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

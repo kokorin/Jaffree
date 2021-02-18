@@ -17,6 +17,7 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
+import com.github.kokorin.jaffree.JaffreeException;
 import com.github.kokorin.jaffree.OS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -117,7 +118,7 @@ public abstract class CaptureInput<T extends CaptureInput<T>> extends BaseInput<
         }
 
         if (result == null) {
-            throw new RuntimeException("Could not detect OS");
+            throw new JaffreeException("Could not detect OS");
         }
 
         return result;
