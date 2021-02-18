@@ -49,7 +49,7 @@ public class FFmpegTest {
     public static Path BIN;
     public static Path VIDEO_MP4 = Artifacts.getMp4Artifact();
     public static Path VIDEO_FLV = Artifacts.getFlvArtifact();
-    public static Path SMALL_MP4 = Artifacts.getFFmpegSample("MPEG-4/turn-on-off.mp4");
+    public static Path SMALL_MP4 = Artifacts.getSmallFlvArtifact();
     public static Path ERROR_MP4 = Paths.get("non_existent.mp4");
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FFmpegTest.class);
@@ -894,45 +894,5 @@ public class FFmpegTest {
 
         Assert.assertTrue(inputHelperClosed.get());
         Assert.assertTrue(outputHelperClosed.get());
-    }
-
-    private static class LoggerNameFilter extends AbstractFilter {
-        private final String loggerName;
-
-        public LoggerNameFilter(String loggerName) {
-            this.loggerName = loggerName;
-        }
-
-        @Override
-        public Result filter(LogEvent event) {
-            if (loggerName.equals(event.getLoggerName())) {
-                return Result.ACCEPT;
-            }
-            return Result.DENY;
-        }
-    }
-
-    private static class CountingByLevelAppender extends AbstractAppender {
-        private final ConcurrentMap<Level, AtomicLong> counters = new ConcurrentHashMap<>();
-
-        public CountingByLevelAppender() {
-            super("CountingByLevel", null, null, true, Property.EMPTY_ARRAY);
-
-            counters.put(Level.TRACE, new AtomicLong());
-            counters.put(Level.DEBUG, new AtomicLong());
-            counters.put(Level.INFO, new AtomicLong());
-            counters.put(Level.WARN, new AtomicLong());
-            counters.put(Level.ERROR, new AtomicLong());
-            counters.put(Level.FATAL, new AtomicLong());
-        }
-
-        @Override
-        public void append(LogEvent event) {
-            counters.get(event.getLevel()).incrementAndGet();
-        }
-
-        public long getCount(Level level) {
-            return counters.get(level).get();
-        }
     }
 }

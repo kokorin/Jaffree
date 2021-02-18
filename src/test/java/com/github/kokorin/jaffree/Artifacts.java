@@ -15,11 +15,68 @@ import java.util.concurrent.TimeUnit;
 public class Artifacts {
 
     public static Path getMp4Artifact() {
-        return getArtifact("640x480", 30, 44_100, "mp4", 180);
+        return getMp4Artifact(180);
+    }
+
+    public static Path getSmallMp4Artifact() {
+        return getMp4Artifact(20);
+    }
+
+    public static Path getMp4Artifact(int duration) {
+        return getArtifact("640x480", 30, 44_100, "mp4", duration);
     }
 
     public static Path getFlvArtifact() {
-        return getArtifact("640x480", 30, 44_100, "flv", 180);
+        return getFlvArtifact(180);
+    }
+
+    public static Path getSmallFlvArtifact() {
+        return getFlvArtifact(20);
+    }
+
+    public static Path getFlvArtifact(int duration) {
+        return getArtifact("640x480", 30, 44_100, "flv", duration);
+    }
+
+    public static Path getMkvArtifact() {
+        return getMkvArtifact(180);
+    }
+
+    public static Path getMkvArtifact(int duration) {
+        return getArtifact("640x480", 30, 44_100, "mkv", duration);
+    }
+
+    public static synchronized Path getTsArtifactWithPrograms() {
+        int duration = 180;
+        String filename = "3programs_" + duration + "s.ts";
+        Path result = getSamplePath(filename);
+
+        if (!Files.exists(result)) {
+            Path program1 = getArtifact("640x480", 30, 44_100, "ts", duration);
+            Path program2 = getArtifact("320x240", 30, 44_100, "ts", duration);
+            Path program3 = getArtifact("160x120", 30, 44_100, "ts", duration);
+
+            FFmpeg.atPath()
+                    .addInput(UrlInput.fromPath(program1))
+                    .addInput(UrlInput.fromPath(program2))
+                    .addInput(UrlInput.fromPath(program3))
+                    .addOutput(UrlOutput
+                            .toPath(result)
+                            .addMap(0, StreamType.VIDEO)
+                            .addMap(0, StreamType.AUDIO)
+                            .addMap(1, StreamType.VIDEO)
+                            .addMap(1, StreamType.AUDIO)
+                            .addMap(2, StreamType.VIDEO)
+                            .addMap(2, StreamType.AUDIO)
+                            .copyAllCodecs()
+                            .addProgram(1, "first_program", 0, 1)
+                            .addProgram(2, "second program", 2, 3)
+                            .addProgram(3, "3rdProgram", 4, 5)
+                    )
+                    .execute();
+        }
+
+        return result;
     }
 
     public static synchronized Path getArtifact(String resolution, int fps, int samplerate,
@@ -28,7 +85,7 @@ public class Artifacts {
         String filename = "";
         int cutDuration = 5;
         int extraDuration = duration + 2 * cutDuration;
-       // String pixelFormat = null;
+        // String pixelFormat = null;
 
         if (resolution != null) {
             filename += resolution + "_" + fps + "fps";
