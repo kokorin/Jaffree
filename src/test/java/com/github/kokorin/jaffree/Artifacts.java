@@ -36,12 +36,34 @@ public class Artifacts {
         return getFlvArtifact(20);
     }
 
+    public static Path getMkvArtifact() {
+        return getMkvArtifact(180);
+    }
+
     public static Path getFlvArtifact(int duration) {
         return getArtifact("640x480", 30, 44_100, "flv", duration);
     }
 
-    public static Path getMkvArtifact() {
-        return getMkvArtifact(180);
+    public static Path getNutArtifact() {
+        return getNutArtifact(180);
+    }
+
+    public static synchronized Path getNutArtifact(int duration) {
+        Path source = getMp4Artifact(duration);
+        String filename = source.getFileName().toString().replace(".mp4", ".nut");
+        Path result = getSamplePath(filename);
+
+        if (!Files.exists(result)) {
+            FFmpeg.atPath()
+                    .addInput(UrlInput.fromPath(source))
+                    .addOutput(UrlOutput
+                            .toPath(result)
+                            .copyAllCodecs()
+                    )
+                    .execute();
+        }
+
+        return result;
     }
 
     public static synchronized Path getMkvArtifactWithChapters() {
