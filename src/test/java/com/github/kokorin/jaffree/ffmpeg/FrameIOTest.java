@@ -43,7 +43,7 @@ public class FrameIOTest {
     public ExpectedException expectedException = ExpectedException.none();
 
     public static Path BIN;
-    public static Path VIDEO_MP4 = Artifacts.getFFmpegSample("MPEG-4/video.mp4");
+    public static Path VIDEO_MP4 = Artifacts.getMp4Artifact();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FrameIOTest.class);
 

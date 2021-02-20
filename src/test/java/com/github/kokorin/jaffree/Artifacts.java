@@ -6,6 +6,7 @@ import com.github.kokorin.jaffree.ffmpeg.UrlInput;
 import com.github.kokorin.jaffree.ffmpeg.UrlOutput;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Files;
@@ -195,27 +196,13 @@ public class Artifacts {
         return result;
     }
 
-    public static Path getFFmpegSample(String relativeUrl) {
-        URI uri = URI.create("https://samples.ffmpeg.org/").resolve(relativeUrl);
-        return getSample(uri);
-    }
-
-    public static synchronized Path getSample(URI uri) {
-        Path sample = getSamplePath(uri.getPath().substring(1));
-        if (!Files.exists(sample)) {
-            try (InputStream inputStream = uri.toURL().openStream()) {
-                Files.createDirectories(sample.getParent());
-                Files.copy(inputStream, sample, StandardCopyOption.REPLACE_EXISTING);
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to download", e);
-            }
-        }
-
-        return sample;
-    }
-
     public static synchronized Path getSamplePath(String name) {
-        Path artifacts = Paths.get(".artifacts");
-        return artifacts.resolve(name);
+        try {
+            Path artifacts = Paths.get(".artifacts");
+            Files.createDirectories(artifacts);
+            return artifacts.resolve(name);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to get sample path", e);
+        }
     }
 }

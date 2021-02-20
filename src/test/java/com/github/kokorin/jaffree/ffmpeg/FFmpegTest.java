@@ -511,39 +511,6 @@ public class FFmpegTest {
     }
 
     @Test
-    @Ignore("This test requires manual verification of result frames")
-    public void testAlpha() throws Exception {
-        // https://www.videezy.com/elements-and-effects/7213-animated-character-girl-biking-alpha-transparent
-        Path videoWithAlpha = Artifacts.getSample(URI.create("https://static.videezy.com/system/protected/files/000/007/213/Biking_Girl_Alpha.mov?md5=zJB3WS6tzcdWmKjzHnSTLA&expires=1553233302"));
-
-        FrameConsumer frameConsumer = new FrameConsumer() {
-            @Override
-            public void consumeStreams(List<com.github.kokorin.jaffree.ffmpeg.Stream> streams) {
-                LOGGER.debug(streams + "");
-            }
-
-            @Override
-            public void consume(Frame frame) {
-                LOGGER.debug(frame + "");
-            }
-        };
-
-        FFmpegResult result = FFmpeg.atPath(BIN)
-                .addInput(UrlInput
-                        .fromPath(videoWithAlpha)
-                        .setDuration(1_000)
-                )
-                .addOutput(FrameOutput
-                        .withConsumerAlpha(frameConsumer)
-                        .disableStream(StreamType.AUDIO)
-                )
-                .execute();
-
-        Assert.assertNotNull(result);
-    }
-
-
-    @Test
     public void testExceptionIsThrownIfFfmpegExitsWithError() {
         expectedException.expect(new StackTraceMatcher("No such file or directory"));
 
