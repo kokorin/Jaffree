@@ -32,6 +32,7 @@ public class FFprobeTest {
     public static Path BIN;
     public static Path VIDEO_MP4 = Artifacts.getMp4Artifact();
     public static Path VIDEO_WITH_PROGRAMS = Artifacts.getTsArtifactWithPrograms();
+    public static Path VIDEO_WITH_CHAPTERS = Artifacts.getMkvArtifactWithChapters();
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -47,6 +48,7 @@ public class FFprobeTest {
 
         Assert.assertTrue("Sample videos weren't found: " + VIDEO_MP4.toAbsolutePath(), Files.exists(VIDEO_MP4));
         Assert.assertTrue("Sample videos weren't found: " + VIDEO_WITH_PROGRAMS.toAbsolutePath(), Files.exists(VIDEO_WITH_PROGRAMS));
+        Assert.assertTrue("Sample videos weren't found: " + VIDEO_WITH_CHAPTERS.toAbsolutePath(), Files.exists(VIDEO_WITH_CHAPTERS));
     }
 
     //private boolean showData;
@@ -299,13 +301,25 @@ public class FFprobeTest {
     @Test
     public void testShowChapters() throws Exception {
         FFprobeResult result = FFprobe.atPath(BIN)
-                .setInput(VIDEO_MP4)
+                .setInput(VIDEO_WITH_CHAPTERS)
                 .setShowChapters(true)
                 .execute();
 
         Assert.assertNotNull(result);
-        //TODO: Find media file with chapters
         Assert.assertNotNull(result.getChapters());
+        Assert.assertEquals(3, result.getChapters().size());
+
+        Chapter chapter1 = result.getChapters().get(0);
+        Assert.assertEquals(1, chapter1.getId());
+        Assert.assertEquals("FirstChapter", chapter1.getTag("title"));
+
+        Chapter chapter2 = result.getChapters().get(1);
+        Assert.assertEquals(2, chapter2.getId());
+        Assert.assertEquals("Second Chapter", chapter2.getTag("title"));
+
+        Chapter chapter3 = result.getChapters().get(2);
+        Assert.assertEquals(3, chapter3.getId());
+        Assert.assertEquals("Final", chapter3.getTag("title"));
     }
 
     //private boolean countFrames;
@@ -323,6 +337,7 @@ public class FFprobeTest {
         Assert.assertNotNull(result);
         for (Stream stream : result.getStreams()) {
             Assert.assertTrue(stream.getNbFrames() > 0);
+            Assert.assertTrue(stream.getNbReadFrames() > 0);
             Assert.assertTrue(stream.getNbReadPackets() > 0);
         }
     }

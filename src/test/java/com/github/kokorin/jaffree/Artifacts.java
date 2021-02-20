@@ -1,9 +1,11 @@
 package com.github.kokorin.jaffree;
 
 import com.github.kokorin.jaffree.ffmpeg.FFmpeg;
+import com.github.kokorin.jaffree.ffmpeg.PipeInput;
 import com.github.kokorin.jaffree.ffmpeg.UrlInput;
 import com.github.kokorin.jaffree.ffmpeg.UrlOutput;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Files;
@@ -40,6 +42,45 @@ public class Artifacts {
 
     public static Path getMkvArtifact() {
         return getMkvArtifact(180);
+    }
+
+    public static synchronized Path getMkvArtifactWithChapters() {
+        int duration = 180;
+        String filename = "3chapters_" + duration + "s.mkv";
+        Path result = getSamplePath(filename);
+
+        if (!Files.exists(result)) {
+            Path source = getMkvArtifact(180);
+            String metadata = ";FFMETADATA1\n" +
+                    "[CHAPTER]\n" +
+                    "TIMEBASE=1/1\n" +
+                    "START=0\n" +
+                    "END=60\n" +
+                    "title=FirstChapter\n" +
+                    "[CHAPTER]\n" +
+                    "TIMEBASE=1/1\n" +
+                    "START=60\n" +
+                    "END=120\n" +
+                    "title=Second Chapter\n" +
+                    "[CHAPTER]\n" +
+                    "TIMEBASE=1/1\n" +
+                    "START=120\n" +
+                    "END=180\n" +
+                    "title=Final\n";
+
+            FFmpeg.atPath()
+                    .addInput(UrlInput.fromPath(source))
+                    .addInput(PipeInput.pumpFrom(new ByteArrayInputStream(metadata.getBytes())))
+                    .addOutput(UrlOutput
+                            .toPath(result)
+                            .addMap(0)
+                            .addArguments("-map_metadata", "1")
+                            .copyAllCodecs()
+                    )
+                    .execute();
+        }
+
+        return result;
     }
 
     public static Path getMkvArtifact(int duration) {
