@@ -1,5 +1,5 @@
 /*
- *    Copyright  2017 Denis Kokorin
+ *    Copyright 2017-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -19,13 +19,34 @@ package com.github.kokorin.jaffree.ffmpeg;
 
 import java.nio.file.Path;
 
+/**
+ * {@link Output} implementation which allows {@link String} to specify output location.
+ */
 public class UrlOutput extends BaseOutput<UrlOutput> implements Output {
 
-    public static UrlOutput toUrl(String url) {
-        return new UrlOutput().setOutput(url);
+    /**
+     * Creates {@link UrlOutput}.
+     * @param output output location
+     */
+    public UrlOutput(String output) {
+        super(output);
     }
 
+    /**
+     * Creates {@link UrlOutput}.
+     * @param output output location: path on filesystem, URL, etc
+     * @return UrlOutput
+     */
+    public static UrlOutput toUrl(String output) {
+        return new UrlOutput(output);
+    }
+
+    /**
+     * Creates {@link UrlOutput}.
+     * @param path output location: path on filesystem
+     * @return UrlOutput
+     */
     public static UrlOutput toPath(Path path) {
-        return new UrlOutput().setOutput(path.toString());
+        return new UrlOutput(path.toString());
     }
 }

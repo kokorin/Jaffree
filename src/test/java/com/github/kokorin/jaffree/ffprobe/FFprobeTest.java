@@ -27,12 +27,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class FFprobeTest {
     public static Path BIN;
-    public static Path VIDEO_MP4 = Artifacts.getFFmpegSample("MPEG-4/video.mp4");
-    public static Path TRANSPORT_VOB = Artifacts.getFFmpegSample("MPEG-VOB/transport-stream/capture.neimeng");
+    public static Path VIDEO_MP4 = Artifacts.getMp4Artifact();
+    public static Path VIDEO_WITH_PROGRAMS = Artifacts.getTsArtifactWithPrograms();
+    public static Path VIDEO_WITH_CHAPTERS = Artifacts.getMkvArtifactWithChapters();
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -47,7 +47,8 @@ public class FFprobeTest {
         BIN = Paths.get(ffmpegHome);
 
         Assert.assertTrue("Sample videos weren't found: " + VIDEO_MP4.toAbsolutePath(), Files.exists(VIDEO_MP4));
-        Assert.assertTrue("Sample videos weren't found: " + TRANSPORT_VOB.toAbsolutePath(), Files.exists(TRANSPORT_VOB));
+        Assert.assertTrue("Sample videos weren't found: " + VIDEO_WITH_PROGRAMS.toAbsolutePath(), Files.exists(VIDEO_WITH_PROGRAMS));
+        Assert.assertTrue("Sample videos weren't found: " + VIDEO_WITH_CHAPTERS.toAbsolutePath(), Files.exists(VIDEO_WITH_CHAPTERS));
     }
 
     //private boolean showData;
@@ -64,7 +65,7 @@ public class FFprobeTest {
 
         Stream stream = result.getStreams().get(0);
         Assert.assertNotNull(stream.getExtradata());
-        Assert.assertEquals(Rational.valueOf("30000/1001"), stream.getAvgFrameRate());
+        Assert.assertEquals(Rational.valueOf(30L), stream.getAvgFrameRate());
     }
 
     // For this test to pass ffmpeg must be added to Operation System PATH environment variable
@@ -220,26 +221,19 @@ public class FFprobeTest {
                 .execute();
 
         Assert.assertNotNull(result);
-        Assert.assertEquals(6, result.getStreams().size());
-        boolean bitsPerSampleIsPresent = false;
-        for (Stream stream : result.getStreams()) {
-            if (stream.getCodecType() == StreamType.VIDEO) {
+        Assert.assertEquals(2, result.getStreams().size());
 
-                Assert.assertNotNull(stream.getSampleAspectRatio());
-                Assert.assertNotNull(stream.getDisplayAspectRatio());
-                Assert.assertNotNull(stream.getStartTime(TimeUnit.NANOSECONDS));
-                Assert.assertEquals(Long.valueOf(167L), stream.getDuration(TimeUnit.SECONDS));
-                Assert.assertNotNull(stream.getBitRate());
-                Assert.assertNotNull(stream.getMaxBitRate());
-            }
+        Stream videoStream = result.getStreams().get(0);
 
-            // TODO: find video sample for which ffprobe reports bits_per_raw_sample
-            // Assert.assertNotNull(stream.getBitsPerRawSample());
-
-            bitsPerSampleIsPresent |= stream.getBitsPerSample() != null;
-        }
-
-        Assert.assertTrue("bits per sample hasn't been found in any stream", bitsPerSampleIsPresent);
+        Assert.assertEquals(StreamType.VIDEO, videoStream.getCodecType());
+        Assert.assertNotNull(videoStream.getSampleAspectRatio());
+        Assert.assertNotNull(videoStream.getDisplayAspectRatio());
+        Assert.assertNotNull(videoStream.getStartTime(TimeUnit.NANOSECONDS));
+        Assert.assertEquals((Long)180L, videoStream.getDuration(TimeUnit.SECONDS));
+        Assert.assertNotNull(videoStream.getBitRate());
+        Assert.assertNotNull(videoStream.getNbFrames());
+        Assert.assertNotNull(videoStream.getBitsPerRawSample());
+        Assert.assertNotNull(videoStream.getPixFmt());
     }
 
     @Test
@@ -262,11 +256,11 @@ public class FFprobeTest {
         FFprobeResult result = FFprobe.atPath(BIN)
                 .setInput(VIDEO_MP4)
                 .setShowPackets(true)
-                .setSelectStreams(StreamSpecifier.withIndex(5))
+                .setSelectStreams(StreamSpecifier.withIndex(1))
                 .execute();
 
         Assert.assertNotNull(result);
-        Assert.assertEquals(1, result.getPackets().size());
+        Assert.assertTrue(result.getPackets().size() > 7000);
         Assert.assertNotNull(result.getPackets().get(0).getCodecType());
     }
 
@@ -275,12 +269,31 @@ public class FFprobeTest {
     @Test
     public void testShowPrograms() throws Exception {
         FFprobeResult result = FFprobe.atPath(BIN)
-                .setInput(TRANSPORT_VOB)
+                .setInput(VIDEO_WITH_PROGRAMS)
                 .setShowPrograms(true)
                 .execute();
 
         Assert.assertNotNull(result);
-        Assert.assertFalse(result.getPrograms().isEmpty());
+        Assert.assertEquals(3, result.getPrograms().size());
+
+        Program program1 = result.getPrograms().get(0);
+        Assert.assertEquals("first_program", program1.getTag("service_name"));
+        Assert.assertEquals(1, program1.getProgramId());
+        Assert.assertEquals(1, program1.getProgramNum());
+        Assert.assertEquals(2, program1.getNbStreams());
+        Assert.assertEquals(2, program1.getStreams().size());
+
+        Program program2 = result.getPrograms().get(1);
+        Assert.assertEquals("second program", program2.getTag("service_name"));
+        Assert.assertEquals(2, program2.getProgramNum());
+        Assert.assertEquals(2, program2.getNbStreams());
+        Assert.assertEquals(2, program2.getStreams().size());
+
+        Program program3 = result.getPrograms().get(2);
+        Assert.assertEquals("3rdProgram", program3.getTag("service_name"));
+        Assert.assertEquals(3, program3.getProgramNum());
+        Assert.assertEquals(2, program3.getNbStreams());
+        Assert.assertEquals(2, program3.getStreams().size());
     }
 
     //private boolean showChapters;
@@ -288,13 +301,25 @@ public class FFprobeTest {
     @Test
     public void testShowChapters() throws Exception {
         FFprobeResult result = FFprobe.atPath(BIN)
-                .setInput(VIDEO_MP4)
+                .setInput(VIDEO_WITH_CHAPTERS)
                 .setShowChapters(true)
                 .execute();
 
         Assert.assertNotNull(result);
-        //TODO: Find media file with chapters
         Assert.assertNotNull(result.getChapters());
+        Assert.assertEquals(3, result.getChapters().size());
+
+        Chapter chapter1 = result.getChapters().get(0);
+        Assert.assertEquals(1, chapter1.getId());
+        Assert.assertEquals("FirstChapter", chapter1.getTag("title"));
+
+        Chapter chapter2 = result.getChapters().get(1);
+        Assert.assertEquals(2, chapter2.getId());
+        Assert.assertEquals("Second Chapter", chapter2.getTag("title"));
+
+        Chapter chapter3 = result.getChapters().get(2);
+        Assert.assertEquals(3, chapter3.getId());
+        Assert.assertEquals("Final", chapter3.getTag("title"));
     }
 
     //private boolean countFrames;
@@ -312,6 +337,7 @@ public class FFprobeTest {
         Assert.assertNotNull(result);
         for (Stream stream : result.getStreams()) {
             Assert.assertTrue(stream.getNbFrames() > 0);
+            Assert.assertTrue(stream.getNbReadFrames() > 0);
             Assert.assertTrue(stream.getNbReadPackets() > 0);
         }
     }
@@ -549,12 +575,12 @@ public class FFprobeTest {
                 .get();
 
         Assert.assertNotNull(result);
-        Assert.assertEquals(6, result.getStreams().size());
+        Assert.assertEquals(2, result.getStreams().size());
 
         Stream stream = result.getStreams().get(0);
         Assert.assertEquals(StreamType.VIDEO, stream.getCodecType());
 
-        stream = result.getStreams().get(2);
+        stream = result.getStreams().get(1);
         Assert.assertEquals(StreamType.AUDIO, stream.getCodecType());
     }
 

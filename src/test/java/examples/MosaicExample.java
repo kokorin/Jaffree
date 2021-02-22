@@ -1,4 +1,4 @@
-package examples.programmatic;
+package examples;
 
 import com.github.kokorin.jaffree.LogLevel;
 import com.github.kokorin.jaffree.StreamType;
@@ -38,15 +38,15 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * Note: for some reason ffmpeg 3.3.1 fails when using amix or amerge filters (in this example)
  * Use ffmpeg 4.0 at least, amix works (while amerge still fails)
  */
-public class Mosaic {
+public class MosaicExample {
     private final Path ffmpegBin;
     private final List<String> inputs;
     private final int sampleRate = 44100;
     private final int frameRate = 25;
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(Mosaic.class);
+    public static final Logger LOGGER = LoggerFactory.getLogger(MosaicExample.class);
 
-    public Mosaic(String ffmpegBin, List<String> inputs) {
+    public MosaicExample(String ffmpegBin, List<String> inputs) {
         this.ffmpegBin = Paths.get(ffmpegBin);
         this.inputs = inputs;
     }
@@ -349,7 +349,7 @@ public class Mosaic {
             return;
         }
 
-        new Mosaic(ffmpegBin, inputs).execute();
+        new MosaicExample(ffmpegBin, inputs).execute();
     }
 
     public static class FrameIterator implements Iterator<Frame> {

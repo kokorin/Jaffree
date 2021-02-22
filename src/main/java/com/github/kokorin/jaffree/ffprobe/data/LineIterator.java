@@ -17,6 +17,8 @@
 
 package com.github.kokorin.jaffree.ffprobe.data;
 
+import com.github.kokorin.jaffree.JaffreeException;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Iterator;
@@ -56,7 +58,7 @@ public class LineIterator implements Iterator<String> {
         try {
             nextLine = reader.readLine();
         } catch (IOException e) {
-            throw new RuntimeException("Read failed", e);
+            throw new JaffreeException("Read failed", e);
         }
 
         if (nextLine == null) {

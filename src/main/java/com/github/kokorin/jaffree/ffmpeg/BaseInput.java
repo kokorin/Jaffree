@@ -17,8 +17,6 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
-import com.github.kokorin.jaffree.process.ProcessHelper;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -29,8 +27,7 @@ import java.util.List;
  * @param <T> self
  */
 public abstract class BaseInput<T extends BaseInput<T>> extends BaseInOut<T> implements Input {
-    // TODO: make input property final
-    private String input;
+    private final String input;
     private Integer streamLoop;
     private boolean readAtFrameRate = false;
     //-itsoffset offset (input)
@@ -38,12 +35,9 @@ public abstract class BaseInput<T extends BaseInput<T>> extends BaseInOut<T> imp
 
     /**
      * @param input path to file or URI
-     * @return this
      */
-    @SuppressWarnings("checkstyle:hiddenfield")
-    public T setInput(final String input) {
+    public BaseInput(final String input) {
         this.input = input;
-        return thisAsT();
     }
 
     /**
@@ -106,16 +100,6 @@ public abstract class BaseInput<T extends BaseInput<T>> extends BaseInOut<T> imp
         result.addAll(Arrays.asList("-i", input));
 
         return result;
-    }
-
-    /**
-     * {@inheritDoc}
-     * @return
-     */
-    //TODO: remove and keep helperThread abstract?
-    @Override
-    public ProcessHelper helperThread() {
-        return null;
     }
 }
 

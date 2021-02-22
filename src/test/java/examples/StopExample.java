@@ -1,4 +1,4 @@
-package examples.ffmpeg;
+package examples;
 
 import com.github.kokorin.jaffree.ffmpeg.FFmpeg;
 import com.github.kokorin.jaffree.ffmpeg.FFmpegProgress;
@@ -11,7 +11,7 @@ import com.github.kokorin.jaffree.ffmpeg.UrlInput;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class Stop {
+public class StopExample {
     public static void stopWithException(final FFmpeg ffmpeg) throws Exception {
         final AtomicBoolean stopped = new AtomicBoolean();
         ffmpeg.setProgressListener(

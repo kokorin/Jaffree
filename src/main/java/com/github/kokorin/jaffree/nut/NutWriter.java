@@ -17,6 +17,7 @@
 
 package com.github.kokorin.jaffree.nut;
 
+import com.github.kokorin.jaffree.JaffreeException;
 import com.github.kokorin.jaffree.Rational;
 import com.github.kokorin.jaffree.nut.FrameCode.Flag;
 
@@ -58,7 +59,7 @@ public class NutWriter {
 
     public void setMainHeader(int streamCount, long maxDistance, Rational[] timebases, FrameCode[] frameCodes) {
         if (initialized) {
-            throw new RuntimeException("NutWriter is already initialized!");
+            throw new JaffreeException("NutWriter is already initialized!");
         }
         this.mainHeader = new MainHeader(
                 MAJOR_VERSION,
@@ -74,14 +75,14 @@ public class NutWriter {
 
     public void setStreamHeaders(StreamHeader[] streamHeaders) {
         if (initialized) {
-            throw new RuntimeException("NutWriter is already initialized!");
+            throw new JaffreeException("NutWriter is already initialized!");
         }
         this.streamHeaders = streamHeaders;
     }
 
     public void setInfos(Info[] infos) {
         if (initialized) {
-            throw new RuntimeException("NutWriter is already initialized!");
+            throw new JaffreeException("NutWriter is already initialized!");
         }
         this.infos = infos;
     }
@@ -106,7 +107,7 @@ public class NutWriter {
         output.writeCString(NutConst.FILE_ID);
         writeMainHeader();
         if (streamHeaders == null) {
-            throw new RuntimeException("StreamHeaders must be specified before");
+            throw new JaffreeException("StreamHeaders must be specified before");
         }
         for (StreamHeader streamHeader : streamHeaders) {
             writeStreamHeader(streamHeader);
@@ -126,7 +127,7 @@ public class NutWriter {
 
     private void writeMainHeader() throws IOException {
         if (mainHeader == null) {
-            throw new RuntimeException("MainHeader must be specified before");
+            throw new JaffreeException("MainHeader must be specified before");
         }
 
         buffer.reset();
@@ -280,7 +281,7 @@ public class NutWriter {
      */
     public void writeFrame(NutFrame frame) throws IOException {
         if (closed) {
-            throw new RuntimeException("NutWriter is ");
+            throw new JaffreeException("NutWriter is ");
         }
 
         StreamHeader stream = streamHeaders[frame.streamId];
@@ -319,7 +320,7 @@ public class NutWriter {
             StreamHeader steam = streamHeaders[frame.streamId];
             Rational framedTs = mainHeader.timeBases[steam.timeBaseId].multiply(frame.pts);
             if (framedTs.lessThan(maxTs)) {
-                throw new RuntimeException("Unordered frames! Try to increase frameOrderingBufferMillis. maxTs: " + maxTs + ", but current: " + framedTs);
+                throw new JaffreeException("Unordered frames! Try to increase frameOrderingBufferMillis. maxTs: " + maxTs + ", but current: " + framedTs);
             }
         }
 

@@ -24,8 +24,8 @@ import java.nio.file.Paths;
 public class NutTest {
 
     public static Path BIN;
-    public static Path VIDEO_MP4 = Artifacts.getFFmpegSample("MPEG-4/video.mp4");
-    public static Path VIDEO_NUT = Artifacts.getSamplePath("video.nut");
+    public static final Path VIDEO_MP4 = Artifacts.getMp4Artifact();
+    public static final Path VIDEO_NUT = Artifacts.getNutArtifact();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NutTest.class);
 
@@ -39,14 +39,6 @@ public class NutTest {
         BIN = Paths.get(ffmpegHome);
 
         Assert.assertTrue("Sample videos weren't found: " + VIDEO_MP4.toAbsolutePath(), Files.exists(VIDEO_MP4));
-
-        if (!Files.exists(VIDEO_NUT)) {
-            FFmpeg.atPath(BIN)
-                    .addInput(UrlInput.fromPath(VIDEO_MP4))
-                    .addOutput(UrlOutput.toPath(VIDEO_NUT).copyAllCodecs())
-                    .execute();
-        }
-
         Assert.assertTrue("NUT file hasn't been found: " + VIDEO_NUT.toAbsolutePath(), Files.exists(VIDEO_NUT));
     }
 
@@ -158,11 +150,11 @@ public class NutTest {
 
             StreamHeader[] streamHeaders = reader.getStreamHeaders();
             Assert.assertEquals(StreamHeader.Type.VIDEO, streamHeaders[0].streamType);
-            Assert.assertEquals(320, streamHeaders[0].video.width);
-            Assert.assertEquals(240, streamHeaders[0].video.height);
+            Assert.assertEquals(640, streamHeaders[0].video.width);
+            Assert.assertEquals(480, streamHeaders[0].video.height);
 
             Assert.assertEquals(StreamHeader.Type.AUDIO, streamHeaders[1].streamType);
-            Assert.assertEquals(2, streamHeaders[1].audio.channelCount);
+            Assert.assertEquals(1, streamHeaders[1].audio.channelCount);
             Assert.assertEquals(44100, streamHeaders[1].audio.samplerate.numerator);
             Assert.assertEquals(1, streamHeaders[1].audio.samplerate.denominator);
 
