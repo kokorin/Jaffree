@@ -359,55 +359,6 @@ public class FFprobeTest {
         }
     }
 
-    //private boolean showProgramVersion;
-    //private boolean showLibraryVersions;
-    //private boolean showVersions;
-
-    @Test
-    public void testShowVersions() throws Exception {
-        FFprobeResult result = FFprobe.atPath(BIN)
-                .setShowProgramVersion(true)
-                .execute();
-
-        Assert.assertNotNull(result);
-        Assert.assertFalse(result.getProgramVersion().getVersion().isEmpty());
-
-        result = FFprobe.atPath(BIN)
-                .setShowLibraryVersions(true)
-                .execute();
-
-        Assert.assertNotNull(result);
-        Assert.assertFalse(result.getLibraryVersions().isEmpty());
-
-        result = FFprobe.atPath(BIN)
-                .setShowVersions(true)
-                .execute();
-
-        Assert.assertNotNull(result);
-        Assert.assertFalse(result.getProgramVersion().getVersion().isEmpty());
-        Assert.assertFalse(result.getLibraryVersions().isEmpty());
-    }
-
-    //private boolean showPixelFormats;
-    @Test
-    public void testShowPixelFormats() throws Exception {
-        FFprobeResult result = FFprobe.atPath(BIN)
-                .setShowPixelFormats(true)
-                .execute();
-
-        Assert.assertNotNull(result);
-        Assert.assertFalse(result.getPixelFormats().isEmpty());
-
-        boolean hasComponents = false;
-        for (PixelFormat format : result.getPixelFormats()) {
-            if (format.getComponents().isEmpty()) {
-                hasComponents = true;
-            }
-        }
-
-        Assert.assertTrue(hasComponents);
-    }
-
     @Test
     public void testSideListAttributes() throws Exception {
         Path video = Paths.get("VID_20180811_180157.mp4");

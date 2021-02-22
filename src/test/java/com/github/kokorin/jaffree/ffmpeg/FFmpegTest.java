@@ -492,7 +492,6 @@ public class FFmpegTest {
                 .setShowStreams(true)
                 .setInput(outputPath)
                 .execute();
-        Assert.assertNull(probe.getError());
 
         List<Stream> streamTypes = probe.getStreams();
 
@@ -775,7 +774,6 @@ public class FFmpegTest {
                 .setShowStreams(true)
                 .setInput(path)
                 .execute();
-        Assert.assertNull(probe.getError());
 
         double result = 0.0;
         for (Stream stream : probe.getStreams()) {
@@ -830,7 +828,6 @@ public class FFmpegTest {
                 .setShowStreams(true)
                 .setInput(output)
                 .execute();
-        Assert.assertNull(probe.getError());
 
         List<Stream> streamTypes = probe.getStreams();
 

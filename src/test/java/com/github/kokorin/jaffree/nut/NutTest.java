@@ -82,7 +82,6 @@ public class NutTest {
                 .execute();
 
         Assert.assertNotNull(probe);
-        Assert.assertNull(probe.getError());
 
         // During this test you can see in console some warnings like the following:
         // [null @ 0000000000dca4e0] Application provided invalid, non monotonically increasing dts to muxer in stream 1: 7371776 >= 7371776

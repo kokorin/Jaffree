@@ -139,7 +139,6 @@ public class FFmpegFilterTest {
                 .execute();
 
         Assert.assertNotNull(probe);
-        Assert.assertNull(probe.getError());
 
         int width = 0;
         int height = 0;
@@ -211,7 +210,6 @@ public class FFmpegFilterTest {
         }
 
         Assert.assertNotNull(probe);
-        Assert.assertNull(probe.getError());
         Assert.assertEquals(10.0, duration, 0.1);
     }
 }
