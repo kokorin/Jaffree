@@ -41,11 +41,11 @@ public abstract class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> i
     private final Map<String, Object> frames = new HashMap<>();
     private final Set<StreamType> disabledStreams = new LinkedHashSet<>();
     private final List<Mapping> maps = new ArrayList<>();
+    private final List<Program> programs = new ArrayList<>();
 
     //-timestamp date (output)
     //-metadata[:metadata_specifier] key=value (output,per-metadata)
     //-disposition[:stream_specifier] value (output,per-stream)
-    //-program [title=title:][program_num=program_num:]st=stream[:st=stream...] (output)
     //-target type (output)
     //-dframes number (output)
     //-frames[:stream_specifier] framecount (output,per-stream)
@@ -66,7 +66,6 @@ public abstract class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> i
     //-sample_fmt[:stream_specifier] sample_fmt (output,per-stream)
 
     /**
-     *
      * @param output output path to file or URI
      */
     public BaseOutput(final String output) {
@@ -236,6 +235,38 @@ public abstract class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> i
     }
 
     /**
+     * Creates a program with the specified title, program_num and adds the specified stream(s) to
+     * it.
+     *
+     * @param number  program number
+     * @param title   program title
+     * @param streams stream to add to a program
+     * @return this
+     */
+    public T addProgram(int number, String title, int... streams) {
+        String[] streamsStr = new String[streams.length];
+        for (int i = 0; i < streams.length; i++) {
+            streamsStr[i] = String.valueOf(streams[i]);
+        }
+
+        return addProgram(number, title, streamsStr);
+    }
+
+    /**
+     * Creates a program with the specified title, program_num and adds the specified stream(s) to
+     * it.
+     *
+     * @param number  program number
+     * @param title   program title
+     * @param streams stream to add to a program
+     * @return this
+     */
+    public T addProgram(int number, String title, String... streams) {
+        this.programs.add(new Program(number, title, streams));
+        return thisAsT();
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -263,6 +294,10 @@ public abstract class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> i
             result.addAll(Arrays.asList("-map", map.toValue()));
         }
 
+        for (Program program : programs) {
+            result.addAll(Arrays.asList("-program", program.toValue()));
+        }
+
         result.addAll(getAdditionalArguments());
 
         if (output == null) {
@@ -285,7 +320,7 @@ public abstract class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> i
         private final boolean optional;
 
         DefaultMapping(final boolean negative, final int inputFileId,
-                              final String streamSpecifier, final boolean optional) {
+                       final String streamSpecifier, final boolean optional) {
             this.negative = negative;
             this.inputFileId = inputFileId;
             this.streamSpecifier = streamSpecifier;
@@ -324,6 +359,45 @@ public abstract class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> i
         @Override
         public String toValue() {
             return "[" + linkLabel + "]";
+        }
+    }
+
+    private static class Program {
+        private final Integer number;
+        private final String title;
+        private final String[] streams;
+
+        public Program(Integer number, String title, String[] streams) {
+            this.number = number;
+            this.title = title;
+            this.streams = streams;
+        }
+
+        public String toValue() {
+            StringBuilder result = new StringBuilder();
+
+            if (title != null) {
+                result.append("title=").append(title);
+            }
+
+            if (number != null) {
+                if (result.length() > 0) {
+                    result.append(':');
+                }
+                result.append("program_num=").append(number.toString());
+            }
+
+            if (result.length() > 0) {
+                result.append(':');
+            }
+            for (int i = 0; i < streams.length; i++) {
+                if (i > 0) {
+                    result.append(':');
+                }
+                result.append("st=").append(streams[i]);
+            }
+
+            return result.toString();
         }
     }
 }

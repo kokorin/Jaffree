@@ -53,14 +53,14 @@ public class FtpServer extends TcpServer {
      * Creates {@link FtpServer}.
      *
      * @param controlServerSocket server socket to establish FTP control connection
-     * @param dataServerSocket server socket to establish FTP data connection
-     * @param channel channel to read from or write to
-     * @param bufferSize size of buffer to copy data to or from Channel
+     * @param dataServerSocket    server socket to establish FTP data connection
+     * @param channel             channel to read from or write to
+     * @param bufferSize          size of buffer to copy data to or from Channel
      */
     protected FtpServer(ServerSocket controlServerSocket,
-                     ServerSocket dataServerSocket,
-                     SeekableByteChannel channel,
-                     int bufferSize) {
+                        ServerSocket dataServerSocket,
+                        SeekableByteChannel channel,
+                        int bufferSize) {
         super(controlServerSocket);
 
         if (bufferSize <= 0) {
@@ -292,21 +292,13 @@ public class FtpServer extends TcpServer {
         try (Socket dataSocket = dataServerSocket.accept();
              OutputStream dataOutput = dataSocket.getOutputStream()) {
             LOGGER.debug("Data connection established: {}", dataSocket);
-
             copied = IOUtil.copy(Channels.newInputStream(channel), dataOutput, buffer);
-        } catch (SocketException e) {
-            // ffmpeg can close connection without fully reading requested data.
-            // This is not an error.
-            // "Connection reset" is thrown on Linux (Ubuntu) & Windows
-            // "Broken pipe" is thrown on MacOS
-            String message = e.getMessage();
-            if (message.startsWith("Connection reset") || message.startsWith("Broken pipe")) {
-                LOGGER.debug("Client closed socket: {}", e.getMessage());
-            } else {
-                throw e;
-            }
-        } finally {
             LOGGER.debug("Copied {} bytes to data socket", copied);
+        } catch (SocketException e) {
+            // ffmpeg can close data connection without fully reading requested data.
+            // This is not an error and should be ignored.
+            // FTP server should serve further requests sent via Control connection
+            LOGGER.debug("Data connection error ignored (RETR): {}", e.getMessage());
         }
     }
 
@@ -326,17 +318,10 @@ public class FtpServer extends TcpServer {
         try (Socket dataSocket = dataServerSocket.accept();
              InputStream dataInput = dataSocket.getInputStream()) {
             LOGGER.debug("Data connection established: {}", dataSocket);
-
             copied = IOUtil.copy(dataInput, Channels.newOutputStream(channel), buffer);
-        } catch (SocketException e) {
-            if (e.getMessage().startsWith("Connection reset by peer")) {
-                LOGGER.debug("Client closed socket: {}", e.getMessage());
-            } else {
-                throw e;
-            }
-
-        } finally {
             LOGGER.debug("Copied {} bytes from data socket", copied);
+        } catch (SocketException e) {
+            LOGGER.info("Data connection error ignored (STOR): {}", e.getMessage());
         }
     }
 

@@ -13,14 +13,13 @@ import static java.nio.file.StandardOpenOption.READ;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.nio.file.StandardOpenOption.WRITE;
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LogEvent;
-import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
-import org.apache.logging.log4j.core.config.Configuration;
-import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.config.Property;
 import org.apache.logging.log4j.core.filter.AbstractFilter;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.core.AllOf;
+import org.hamcrest.core.StringContains;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -48,9 +47,9 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class FFmpegTest {
     public static Path BIN;
-    public static Path VIDEO_MP4 = Artifacts.getFFmpegSample("MPEG-4/video.mp4");
-    public static Path SMALL_FLV = Artifacts.getFFmpegSample("FLV/zelda.flv");
-    public static Path SMALL_MP4 = Artifacts.getFFmpegSample("MPEG-4/turn-on-off.mp4");
+    public static Path VIDEO_MP4 = Artifacts.getMp4Artifact();
+    public static Path VIDEO_FLV = Artifacts.getFlvArtifact();
+    public static Path SMALL_MP4 = Artifacts.getSmallFlvArtifact();
     public static Path ERROR_MP4 = Paths.get("non_existent.mp4");
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FFmpegTest.class);
@@ -68,7 +67,7 @@ public class FFmpegTest {
         BIN = Paths.get(ffmpegHome);
 
         Assert.assertTrue("Sample videos weren't found: " + VIDEO_MP4.toAbsolutePath(), Files.exists(VIDEO_MP4));
-        Assert.assertTrue("Sample videos weren't found: " + SMALL_FLV.toAbsolutePath(), Files.exists(SMALL_FLV));
+        Assert.assertTrue("Sample videos weren't found: " + VIDEO_FLV.toAbsolutePath(), Files.exists(VIDEO_FLV));
         Assert.assertTrue("Sample videos weren't found: " + SMALL_MP4.toAbsolutePath(), Files.exists(SMALL_MP4));
     }
 
@@ -145,7 +144,7 @@ public class FFmpegTest {
         };
 
         FFmpegResult result = FFmpeg.atPath(BIN)
-                .addInput(UrlInput.fromPath(SMALL_FLV))
+                .addInput(UrlInput.fromPath(VIDEO_FLV))
                 .addOutput(UrlOutput.toPath(outputPath))
                 .setProgressListener(listener)
                 .execute();
@@ -181,7 +180,7 @@ public class FFmpegTest {
         };
 
         FFmpegResult result = FFmpeg.atPath(BIN)
-                .addInput(UrlInput.fromPath(SMALL_FLV))
+                .addInput(UrlInput.fromPath(VIDEO_FLV))
                 .addOutput(UrlOutput.toPath(outputPath))
                 .setLogLevel(LogLevel.ERROR)
                 .setProgressListener(listener)
@@ -512,39 +511,6 @@ public class FFmpegTest {
     }
 
     @Test
-    @Ignore("This test requires manual verification of result frames")
-    public void testAlpha() throws Exception {
-        // https://www.videezy.com/elements-and-effects/7213-animated-character-girl-biking-alpha-transparent
-        Path videoWithAlpha = Artifacts.getSample(URI.create("https://static.videezy.com/system/protected/files/000/007/213/Biking_Girl_Alpha.mov?md5=zJB3WS6tzcdWmKjzHnSTLA&expires=1553233302"));
-
-        FrameConsumer frameConsumer = new FrameConsumer() {
-            @Override
-            public void consumeStreams(List<com.github.kokorin.jaffree.ffmpeg.Stream> streams) {
-                LOGGER.debug(streams + "");
-            }
-
-            @Override
-            public void consume(Frame frame) {
-                LOGGER.debug(frame + "");
-            }
-        };
-
-        FFmpegResult result = FFmpeg.atPath(BIN)
-                .addInput(UrlInput
-                        .fromPath(videoWithAlpha)
-                        .setDuration(1_000)
-                )
-                .addOutput(FrameOutput
-                        .withConsumerAlpha(frameConsumer)
-                        .disableStream(StreamType.AUDIO)
-                )
-                .execute();
-
-        Assert.assertNotNull(result);
-    }
-
-
-    @Test
     public void testExceptionIsThrownIfFfmpegExitsWithError() {
         expectedException.expect(new StackTraceMatcher("No such file or directory"));
 
@@ -573,29 +539,28 @@ public class FFmpegTest {
 
         Assert.assertNotNull(result);
 
-        String expectedReport = "{" +
-                "\t\"input_i\" : \"-8.09\"," +
-                "\t\"input_tp\" : \"1.20\"," +
-                "\t\"input_lra\" : \"2.90\"," +
-                "\t\"input_thresh\" : \"-18.15\"," +
-                "\t\"output_i\" : \"-15.71\"," +
-                "\t\"output_tp\" : \"-4.98\"," +
-                "\t\"output_lra\" : \"2.20\"," +
-                "\t\"output_thresh\" : \"-25.77\"," +
-                "\t\"normalization_type\" : \"dynamic\"," +
-                "\t\"target_offset\" : \"-0.29\"" +
-                "}";
-        Assert.assertEquals(expectedReport, loudnormReport.toString());
+        MatcherAssert.assertThat(loudnormReport.toString(), AllOf.allOf(
+                StringContains.containsString("input_i"),
+                StringContains.containsString("input_tp"),
+                StringContains.containsString("input_lra"),
+                StringContains.containsString("input_thresh"),
+                StringContains.containsString("output_i"),
+                StringContains.containsString("output_tp"),
+                StringContains.containsString("output_lra"),
+                StringContains.containsString("output_thresh"),
+                StringContains.containsString("normalization_type"),
+                StringContains.containsString("target_offset")
+        ));
     }
 
     @Test
     public void testPipeInput() throws IOException {
         Path tempDir = Files.createTempDirectory("jaffree");
-        Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
+        Path outputPath = tempDir.resolve(VIDEO_FLV.getFileName());
 
         FFmpegResult result;
 
-        try (InputStream inputStream = Files.newInputStream(VIDEO_MP4)) {
+        try (InputStream inputStream = Files.newInputStream(VIDEO_FLV)) {
             result = FFmpeg.atPath(BIN)
                     .addInput(PipeInput.pumpFrom(inputStream))
                     .addOutput(UrlOutput.toPath(outputPath))
@@ -605,23 +570,26 @@ public class FFmpegTest {
         Assert.assertNotNull(result);
         Assert.assertNotNull(result.getVideoSize());
 
-        Assert.assertTrue(getDuration(outputPath) > 10.);
+        double expectedDuration = getExactDuration(VIDEO_FLV);
+        double actualDuration = getExactDuration(outputPath);
+        Assert.assertEquals(expectedDuration, actualDuration, 1.);
     }
 
     @Test
     public void testPipeInputPartialRead() throws IOException {
         Path tempDir = Files.createTempDirectory("jaffree");
-        Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
+        Path outputPath = tempDir.resolve(VIDEO_FLV.getFileName());
 
         FFmpegResult result;
 
-        try (InputStream inputStream = Files.newInputStream(VIDEO_MP4)) {
+        try (InputStream inputStream = Files.newInputStream(VIDEO_FLV)) {
             result = FFmpeg.atPath(BIN)
                     .addInput(
                             PipeInput
                                     .pumpFrom(inputStream)
                                     .setDuration(15, TimeUnit.SECONDS)
                     )
+                    .setLogLevel(LogLevel.VERBOSE)
                     .addOutput(UrlOutput.toPath(outputPath))
                     .execute();
         }
@@ -629,7 +597,8 @@ public class FFmpegTest {
         Assert.assertNotNull(result);
         Assert.assertNotNull(result.getVideoSize());
 
-        Assert.assertTrue(getDuration(outputPath) > 10.);
+        double actualDuration = getExactDuration(outputPath);
+        Assert.assertEquals(15., actualDuration, 1.);
     }
 
     @Test
@@ -892,45 +861,5 @@ public class FFmpegTest {
 
         Assert.assertTrue(inputHelperClosed.get());
         Assert.assertTrue(outputHelperClosed.get());
-    }
-
-    private static class LoggerNameFilter extends AbstractFilter {
-        private final String loggerName;
-
-        public LoggerNameFilter(String loggerName) {
-            this.loggerName = loggerName;
-        }
-
-        @Override
-        public Result filter(LogEvent event) {
-            if (loggerName.equals(event.getLoggerName())) {
-                return Result.ACCEPT;
-            }
-            return Result.DENY;
-        }
-    }
-
-    private static class CountingByLevelAppender extends AbstractAppender {
-        private final ConcurrentMap<Level, AtomicLong> counters = new ConcurrentHashMap<>();
-
-        public CountingByLevelAppender() {
-            super("CountingByLevel", null, null, true, Property.EMPTY_ARRAY);
-
-            counters.put(Level.TRACE, new AtomicLong());
-            counters.put(Level.DEBUG, new AtomicLong());
-            counters.put(Level.INFO, new AtomicLong());
-            counters.put(Level.WARN, new AtomicLong());
-            counters.put(Level.ERROR, new AtomicLong());
-            counters.put(Level.FATAL, new AtomicLong());
-        }
-
-        @Override
-        public void append(LogEvent event) {
-            counters.get(event.getLevel()).incrementAndGet();
-        }
-
-        public long getCount(Level level) {
-            return counters.get(level).get();
-        }
     }
 }

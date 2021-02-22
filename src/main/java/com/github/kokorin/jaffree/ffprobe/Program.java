@@ -22,6 +22,7 @@ import com.github.kokorin.jaffree.ffprobe.data.DTag;
 
 import java.util.List;
 
+// TODO check what timebase are used for StartPts & EndPts
 public class Program {
     private final DSection section;
 
