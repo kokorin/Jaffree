@@ -18,6 +18,7 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.StreamType;
+import com.github.kokorin.jaffree.process.ProcessHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -159,7 +160,7 @@ public abstract class BaseInOut<T extends BaseInOut<T>> {
     }
 
     /**
-     * Like the {@link #setPositionEof(long)}  (-ss) option but relative
+     * Like the {@link #setPosition(Number, TimeUnit)}  (-ss) option but relative
      * to the "end of file".
      * That is negative values are earlier in the file, 0 is at EOF.
      *
@@ -280,8 +281,8 @@ public abstract class BaseInOut<T extends BaseInOut<T>> {
      * codec is the name of a decoder/encoder or a special value <b>copy</b>
      * (output only) to indicate that the stream is not to be re-encoded.
      *
-     * @param streamType  stream type
-     * @param codec codec name
+     * @param streamType stream type
+     * @param codec      codec name
      * @return this
      */
     public T setCodec(final StreamType streamType, final String codec) {
@@ -378,6 +379,19 @@ public abstract class BaseInOut<T extends BaseInOut<T>> {
         additionalArguments.add(argument);
         return thisAsT();
     }
+
+    /**
+     * Helper {@link ProcessHelper} which should be ran in dedicated thread. Default implementation
+     * always returns null.
+     *
+     * @return ProcessHelper, or null if no helper thread is needed
+     * @see Input#helperThread()
+     * @see Output#helperThread()
+     */
+    public ProcessHelper helperThread() {
+        return null;
+    }
+
 
     /**
      * Build a list of command line arguments that are common for ffmpeg input &amp; output.

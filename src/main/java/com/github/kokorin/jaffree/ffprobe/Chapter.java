@@ -75,7 +75,7 @@ public class Chapter {
      *
      * @return time base
      */
-    // TODO: make it integer?
+    // TODO: make it Rational
     public String getTimeBase() {
         return section.getString("time_base");
     }
@@ -86,16 +86,17 @@ public class Chapter {
      * @return start PTS
      * @see #getTimeBase()
      */
+    // TODO make it Long
     public int getStart() {
         return section.getInteger("start");
     }
 
     /**
-     * Returns Chapter start time.
+     * Returns Chapter start time in seconds.
      *
      * @return start time
      */
-    // TODO: check if the result is return in seconds or millis
+    // TODO make it Double
     public Float getStartTime() {
         return section.getFloat("start_time");
     }
@@ -106,16 +107,17 @@ public class Chapter {
      * @return end PTS
      * @see #getTimeBase()
      */
+    // TODO make it Long
     public int getEnd() {
         return section.getInteger("end");
     }
 
     /**
-     * Returns Chapter end time.
+     * Returns Chapter end time in seconds.
      *
      * @return end time
      */
-    // TODO: check if the result is return in seconds or millis
+    // TODO make it Double
     public float getEndTime() {
         return section.getFloat("end_time");
     }

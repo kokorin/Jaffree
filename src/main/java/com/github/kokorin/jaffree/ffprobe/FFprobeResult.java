@@ -105,6 +105,7 @@ public class FFprobeResult {
     /**
      * @return supported pixel formats
      */
+    @Deprecated
     // TODO: delete this?
     public List<PixelFormat> getPixelFormats() {
         return data.getSections("PIXEL_FORMAT", new DSection.SectionConverter<PixelFormat>() {

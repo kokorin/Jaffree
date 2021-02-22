@@ -17,6 +17,7 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
+import com.github.kokorin.jaffree.JaffreeException;
 import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.net.TcpNegotiator;
 import net.jcip.annotations.GuardedBy;
@@ -66,17 +67,17 @@ public class FrameOutput extends TcpOutput<FrameOutput> implements Output {
 
     @Override
     public final FrameOutput setFormat(String format) {
-        throw new RuntimeException("Format can't be changed");
+        throw new JaffreeException("Format can't be changed");
     }
 
     @Override
     public final FrameOutput setCodec(String streamSpecifier, String codec) {
-        throw new RuntimeException("Codec can't be changed");
+        throw new JaffreeException("Codec can't be changed");
     }
 
     @Override
     public final FrameOutput setPixelFormat(String streamSpecifier, String pixelFormat) {
-        throw new RuntimeException("Pixel Format can't be changed");
+        throw new JaffreeException("Pixel Format can't be changed");
     }
 
     @Override

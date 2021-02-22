@@ -49,17 +49,12 @@ public abstract class TcpOutput<T extends TcpOutput<T>> extends BaseOutput<T> im
     }
 
     public TcpOutput(String protocol, String suffix, TcpServer tcpServer) {
+        super(protocol + "://" + tcpServer.getAddressAndPort() + suffix);
         this.tcpServer = tcpServer;
-        super.setOutput(protocol + "://" + tcpServer.getAddressAndPort() + suffix);
     }
 
     @Override
     public final ProcessHelper helperThread() {
         return tcpServer;
-    }
-
-    @Override
-    public T setOutput(String output) {
-        throw new RuntimeException("TcpOutput output can't be changed");
     }
 }

@@ -1,5 +1,5 @@
 /*
- *    Copyright  2017 Denis Kokorin
+ *    Copyright 2017-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -47,11 +47,11 @@ public class NullOutput extends BaseOutput<NullOutput> implements Output {
      * @param copyCodecs true to use copy codecs
      */
     public NullOutput(final boolean copyCodecs) {
+        super(OS.IS_WINDOWS ? "NUL" : "/dev/null");
+
         if (copyCodecs) {
             copyAllCodecs();
         }
         setFormat("null");
-        String output = OS.IS_WINDOWS ? "NUL" : "/dev/null";
-        setOutput(output);
     }
 }

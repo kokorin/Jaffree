@@ -1,4 +1,4 @@
-package examples.programmatic;
+package examples;
 
 import com.github.kokorin.jaffree.ffmpeg.FFmpeg;
 import com.github.kokorin.jaffree.ffmpeg.FFmpegResult;
@@ -15,36 +15,35 @@ import java.awt.image.BufferedImage;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class BouncingBall {
-    private final Path ffmpegBin;
-    private final int width = 640;
-    private final int height = 480;
-    private final int fps = 24;
-    private final long sampleRate = 44100;
-    private final int ballRadius = (width + height) / 20;
-    private final long duration = 30_000;
-    private final int bounceFrequency = 250;
-    private final long bounceDuration = 200;
+public class BouncingBallExample {
+    private static final int WIDTH = 640;
+    private static final int HEIGHT = 480;
+    private static final int FPS = 24;
+    private static final long SAMPLE_RATE = 44100;
+    private static final int BALL_RADIUS = (WIDTH + HEIGHT) / 20;
+    private static final long DURATION = 30_000;
+    private static final int BOUNCE_FREQUENCY = 250;
+    private static final long BOUNCE_DURATION = 200;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(BouncingBall.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BouncingBallExample.class);
 
-    public BouncingBall(String ffmpegBin) {
-        this.ffmpegBin = Paths.get(ffmpegBin);
-    }
+    public static void main(String[] args) {
+        if (args.length != 1) {
+            System.err.println("Exactly 1 argument expected: path to output media file");
+            System.exit(1);
+        }
 
-    public void execute() {
-        Path output = Paths.get("bouncing_ball.mp4");
+        Path pathToVideo = Paths.get(args[0]);
 
         FrameProducer frameProducer = new FrameProducer() {
-            private int ballCenterX = width / 2;
-            private int ballCenterY = height / 2;
-            private int ballVelocityX = ballRadius * (ThreadLocalRandom.current().nextInt(10) + 1);
-            private int ballVelocityY = ballRadius * (ThreadLocalRandom.current().nextInt(10) + 1);
+            private int ballCenterX = WIDTH / 2;
+            private int ballCenterY = HEIGHT / 2;
+            private int ballVelocityX = BALL_RADIUS * (ThreadLocalRandom.current().nextInt(10) + 1);
+            private int ballVelocityY = BALL_RADIUS * (ThreadLocalRandom.current().nextInt(10) + 1);
             private long nextVideoTimecode = 0;
             private long nextAudioTimecode = 0;
             private long nextCollisionCheckTimecode = 0;
@@ -58,22 +57,22 @@ public class BouncingBall {
                         new Stream().setType(Stream.Type.VIDEO)
                                 .setId(0)
                                 .setTimebase(1000L)
-                                .setWidth(width)
-                                .setHeight(height),
+                                .setWidth(WIDTH)
+                                .setHeight(HEIGHT),
                         new Stream().setType(Stream.Type.AUDIO)
                                 .setId(1)
                                 // Better to use the same value as sampleRate,
                                 // but this was written before NUT replaced MKV
                                 // and now I'm lazy to fix it
                                 .setTimebase(1000L)
-                                .setSampleRate(sampleRate)
+                                .setSampleRate(SAMPLE_RATE)
                                 .setChannels(1)
                 );
             }
 
             @Override
             public Frame produce() {
-                if (nextVideoTimecode >= duration && nextAudioTimecode >= duration) {
+                if (nextVideoTimecode >= DURATION && nextAudioTimecode >= DURATION) {
                     LOGGER.info("Finished");
                     return null;
                 }
@@ -90,22 +89,22 @@ public class BouncingBall {
                     ballCenterX += ballVelocityX * deltaTime / 1000;
                     ballCenterY += ballVelocityY * deltaTime / 1000;
 
-                    if (ballCenterX <= ballRadius) {
-                        ballCenterX = 2 * ballRadius - ballCenterX;
+                    if (ballCenterX <= BALL_RADIUS) {
+                        ballCenterX = 2 * BALL_RADIUS - ballCenterX;
                         ballVelocityX *= -1;
                         collisionDetected = true;
-                    } else if (ballCenterX + ballRadius > width) {
-                        ballCenterX = 2 * (width - ballRadius) - ballCenterX;
+                    } else if (ballCenterX + BALL_RADIUS > WIDTH) {
+                        ballCenterX = 2 * (WIDTH - BALL_RADIUS) - ballCenterX;
                         ballVelocityX *= -1;
                         collisionDetected = true;
                     }
 
-                    if (ballCenterY <= ballRadius) {
-                        ballCenterY = 2 * ballRadius - ballCenterY;
+                    if (ballCenterY <= BALL_RADIUS) {
+                        ballCenterY = 2 * BALL_RADIUS - ballCenterY;
                         ballVelocityY *= -1;
                         collisionDetected = true;
-                    } else if (ballCenterY + ballRadius > height) {
-                        ballCenterY = 2 * (height - ballRadius) - ballCenterY;
+                    } else if (ballCenterY + BALL_RADIUS > HEIGHT) {
+                        ballCenterY = 2 * (HEIGHT - BALL_RADIUS) - ballCenterY;
                         ballVelocityY *= -1;
                         collisionDetected = true;
                     }
@@ -119,12 +118,12 @@ public class BouncingBall {
 
 
                 if (nextVideoTimecode <= nextAudioTimecode) {
-                    BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
+                    BufferedImage image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_3BYTE_BGR);
                     Graphics2D graphics = image.createGraphics();
                     graphics.setPaint(new Color(0, 0, 0));
-                    graphics.fillRect(0, 0, width, height);
+                    graphics.fillRect(0, 0, WIDTH, HEIGHT);
                     graphics.setPaint(ballColor);
-                    graphics.fillOval(ballCenterX - ballRadius, ballCenterY - ballRadius, ballRadius * 2, ballRadius * 2);
+                    graphics.fillOval(ballCenterX - BALL_RADIUS, ballCenterY - BALL_RADIUS, BALL_RADIUS * 2, BALL_RADIUS * 2);
 
                     Frame videoFrame = new Frame(0, nextVideoTimecode, image);
 
@@ -134,18 +133,18 @@ public class BouncingBall {
                         collisionVideoTimecode = Integer.MAX_VALUE;
                     }
 
-                    nextVideoTimecode += 1000 / fps;
+                    nextVideoTimecode += 1000 / FPS;
                     return videoFrame;
                 }
 
                 if (nextAudioTimecode <= nextVideoTimecode) {
-                    int nSamples = (int) (sampleRate / fps);
+                    int nSamples = (int) (SAMPLE_RATE / FPS);
                     int[] samples = new int[nSamples];
 
-                    if (nextAudioTimecode < collisionAudioTimecode + bounceDuration) {
+                    if (nextAudioTimecode < collisionAudioTimecode + BOUNCE_DURATION) {
                         for (int i = 0; i < nSamples; i++) {
-                            double tSeconds = nextAudioTimecode / 1000. + i * 1.0 / sampleRate;
-                            double amp = 2_0000_000_000L * Math.sin(bounceFrequency * 2 * Math.PI * tSeconds);
+                            double tSeconds = nextAudioTimecode / 1000. + i * 1.0 / SAMPLE_RATE;
+                            double amp = 2_0000_000_000L * Math.sin(BOUNCE_FREQUENCY * 2 * Math.PI * tSeconds);
                             samples[i] = (int) amp;
                         }
                     } else {
@@ -155,7 +154,7 @@ public class BouncingBall {
 
                     Frame audioFrame = new Frame(1, nextAudioTimecode, samples);
 
-                    nextAudioTimecode += 1000 / fps;
+                    nextAudioTimecode += 1000 / FPS;
                     return audioFrame;
                 }
 
@@ -163,46 +162,19 @@ public class BouncingBall {
             }
         };
 
-        FFmpegResult result = FFmpeg.atPath(ffmpegBin)
+        FFmpegResult result = FFmpeg.atPath()
                 .addInput(
                         FrameInput.withProducer(frameProducer)
                 )
                 .setOverwriteOutput(true)
                 .addOutput(
-                        UrlOutput.toPath(output)
+                        UrlOutput.toPath(pathToVideo)
                 )
                 .execute();
 
         if (result != null) {
             LOGGER.info("Finished successfully: " + result);
         }
-    }
-
-    public static void main(String[] args) {
-        Iterator<String> argIter = Arrays.asList(args).iterator();
-
-        String ffmpegBin = null;
-
-        while (argIter.hasNext()) {
-            String argName = argIter.next();
-
-            if (!argIter.hasNext()) {
-                return;
-            }
-
-            String argValue = argIter.next();
-
-            if ("-ffmpeg_bin".equals(argName)) {
-                ffmpegBin = argValue;
-            }
-        }
-
-        if (ffmpegBin == null) {
-            LOGGER.error("Arguments: -ffmpeg_bin </path/to/ffmpeg/bin>");
-            return;
-        }
-
-        new BouncingBall(ffmpegBin).execute();
     }
 
 }
