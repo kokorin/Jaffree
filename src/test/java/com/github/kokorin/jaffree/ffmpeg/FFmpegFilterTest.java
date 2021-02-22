@@ -18,10 +18,10 @@ import java.util.concurrent.TimeUnit;
 public class FFmpegFilterTest {
 
     public static Path BIN;
-    public static Path VIDEO_MP4 = Artifacts.getFFmpegSample("MPEG-4/video.mp4");
-    public static Path VIDEO2_MP4 = Artifacts.getFFmpegSample("MPEG-4/video2.mp4");
-    public static Path SMALL_FLV = Artifacts.getFFmpegSample("FLV/zelda.flv");
-    public static Path SMALL_MP4 = Artifacts.getFFmpegSample("MPEG-4/turn-on-off.mp4");
+    public static Path VIDEO_MP4 = Artifacts.getMp4Artifact();
+    public static Path VIDEO_MKV = Artifacts.getMkvArtifact();
+    public static Path SMALL_FLV = Artifacts.getSmallFlvArtifact();
+    public static Path SMALL_MP4 = Artifacts.getSmallMp4Artifact();
 
     @BeforeClass
     public static void setUp() throws Exception {
@@ -33,7 +33,7 @@ public class FFmpegFilterTest {
         BIN = Paths.get(ffmpegHome);
 
         Assert.assertTrue("Sample videos weren't found: " + VIDEO_MP4.toAbsolutePath(), Files.exists(VIDEO_MP4));
-        Assert.assertTrue("Sample videos weren't found: " + VIDEO2_MP4.toAbsolutePath(), Files.exists(VIDEO2_MP4));
+        Assert.assertTrue("Sample videos weren't found: " + VIDEO_MKV.toAbsolutePath(), Files.exists(VIDEO_MKV));
         Assert.assertTrue("Sample videos weren't found: " + SMALL_FLV.toAbsolutePath(), Files.exists(SMALL_FLV));
         Assert.assertTrue("Sample videos weren't found: " + SMALL_MP4.toAbsolutePath(), Files.exists(SMALL_MP4));
     }
@@ -55,7 +55,7 @@ public class FFmpegFilterTest {
                 .addInput(UrlInput.fromPath(VIDEO_MP4).setDuration(10, TimeUnit.SECONDS))
                 .addInput(UrlInput.fromPath(SMALL_FLV).setDuration(10, TimeUnit.SECONDS))
                 .addInput(UrlInput.fromPath(SMALL_MP4).setDuration(10, TimeUnit.SECONDS))
-                .addInput(UrlInput.fromPath(VIDEO2_MP4).setDuration(10, TimeUnit.SECONDS))
+                .addInput(UrlInput.fromPath(VIDEO_MKV).setDuration(10, TimeUnit.SECONDS))
 
                 .setComplexFilter(FilterGraph.of(
                         FilterChain.of(
@@ -172,7 +172,7 @@ public class FFmpegFilterTest {
 
         FFmpegResult result = FFmpeg.atPath(BIN)
                 .addInput(UrlInput.fromPath(VIDEO_MP4).setDuration(5, TimeUnit.SECONDS))
-                .addInput(UrlInput.fromPath(VIDEO2_MP4).setPositionEof(-5, TimeUnit.SECONDS))
+                .addInput(UrlInput.fromPath(VIDEO_MKV).setPositionEof(-5, TimeUnit.SECONDS))
 
                 .setComplexFilter(FilterGraph.of(
                         FilterChain.of(

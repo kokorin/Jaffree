@@ -193,56 +193,59 @@ public abstract class DBase {
         T convert(String key, String value);
     }
 
-    public static final ValueConverter<Long> LONG_CONVERTER = new ValueConverter<Long>() {
-        @Override
-        public Long convert(final String value) {
-            if (value == null || value.isEmpty() || value.equals("N/A")) {
-                return null;
-            }
+    public static final ValueConverter<Long> LONG_CONVERTER =
+            new ValueConverter<Long>() {
+                @Override
+                public Long convert(final String value) {
+                    if (value == null || value.isEmpty() || value.equals("N/A")) {
+                        return null;
+                    }
 
-            try {
-                return Long.valueOf(value);
-            } catch (Exception e) {
-                LOGGER.warn("Failed to parse long number: " + value, e);
-            }
+                    try {
+                        return Long.valueOf(value);
+                    } catch (Exception e) {
+                        LOGGER.warn("Failed to parse long number: " + value, e);
+                    }
 
-            return null;
-        }
-    };
+                    return null;
+                }
+            };
 
-    public static final ValueConverter<Integer> INTEGER_CONVERTER = new ValueConverter<Integer>() {
-        @Override
-        public Integer convert(final String value) {
-            if (value == null || value.isEmpty() || value.equals("N/A")) {
-                return null;
-            }
+    public static final ValueConverter<Integer> INTEGER_CONVERTER =
+            new ValueConverter<Integer>() {
+                @Override
+                public Integer convert(final String value) {
+                    if (value == null || value.isEmpty() || value.equals("N/A")) {
+                        return null;
+                    }
 
-            try {
-                return Integer.valueOf(value);
-            } catch (Exception e) {
-                LOGGER.warn("Failed to parse integer number: " + value, e);
-            }
+                    try {
+                        return Integer.valueOf(value);
+                    } catch (Exception e) {
+                        LOGGER.warn("Failed to parse integer number: " + value, e);
+                    }
 
-            return null;
-        }
-    };
+                    return null;
+                }
+            };
 
-    public static final ValueConverter<Float> FLOAT_CONVERTER = new ValueConverter<Float>() {
-        @Override
-        public Float convert(final String value) {
-            if (value == null || value.isEmpty() || value.equals("N/A")) {
-                return null;
-            }
+    public static final ValueConverter<Float> FLOAT_CONVERTER =
+            new ValueConverter<Float>() {
+                @Override
+                public Float convert(final String value) {
+                    if (value == null || value.isEmpty() || value.equals("N/A")) {
+                        return null;
+                    }
 
-            try {
-                return Float.valueOf(value);
-            } catch (Exception e) {
-                LOGGER.warn("Failed to parse float number: " + value, e);
-            }
+                    try {
+                        return Float.valueOf(value);
+                    } catch (Exception e) {
+                        LOGGER.warn("Failed to parse float number: " + value, e);
+                    }
 
-            return null;
-        }
-    };
+                    return null;
+                }
+            };
 
     public static final ValueConverter<StreamType> STREAM_TYPE_CONVERTER =
             new ValueConverter<StreamType>() {
