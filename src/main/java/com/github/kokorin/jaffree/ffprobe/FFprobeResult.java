@@ -1,5 +1,5 @@
 /*
- *    Copyright  2018 Denis Kokorin
+ *    Copyright 2018-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -49,19 +49,6 @@ public class FFprobeResult {
     }
 
     /**
-     * @return ffprobe version
-     */
-    // TODO: delete this?
-    public ProgramVersion getProgramVersion() {
-        DSection section = data.getSection("PROGRAM_VERSION");
-        if (section == null) {
-            return null;
-        }
-
-        return new ProgramVersion(section);
-    }
-
-    /**
      * @return format-related data
      * @see FFprobe#setShowFormat(boolean)
      */
@@ -72,48 +59,6 @@ public class FFprobeResult {
         }
 
         return new Format(section);
-    }
-
-    /**
-     * @return ffprobe errors
-     */
-    // TODO: delete this?
-    public Error getError() {
-        DSection section = data.getSection("ERROR");
-        if (section == null) {
-            return null;
-        }
-
-        return new Error(section);
-    }
-
-    /**
-     * @return FF-library versions.
-     * @deprecated not actually in use
-     */
-    @Deprecated
-    // TODO: delete this
-    public List<LibraryVersion> getLibraryVersions() {
-        return data.getSections("LIBRARY_VERSION", new DSection.SectionConverter<LibraryVersion>() {
-            @Override
-            public LibraryVersion convert(final DSection dSection) {
-                return new LibraryVersion(dSection);
-            }
-        });
-    }
-
-    /**
-     * @return supported pixel formats
-     */
-    @Deprecated
-    // TODO: delete this?
-    public List<PixelFormat> getPixelFormats() {
-        return data.getSections("PIXEL_FORMAT", new DSection.SectionConverter<PixelFormat>() {
-            @Override
-            public PixelFormat convert(final DSection dSection) {
-                return new PixelFormat(dSection);
-            }
-        });
     }
 
     /**

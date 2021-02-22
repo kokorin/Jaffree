@@ -65,10 +65,6 @@ public class FFprobe {
     private boolean countFrames;
     private boolean countPackets;
     private String readIntervals;
-    private boolean showProgramVersion;
-    private boolean showLibraryVersions;
-    private boolean showVersions;
-    private boolean showPixelFormats;
 
     private Long probeSize;
     private Long analyzeDuration;
@@ -370,58 +366,6 @@ public class FFprobe {
     }
 
     /**
-     * Show information related to program version.
-     *
-     * @param showProgramVersion true to show program version
-     * @return this
-     */
-    //TODO remove
-    public FFprobe setShowProgramVersion(final boolean showProgramVersion) {
-        this.showProgramVersion = showProgramVersion;
-        return this;
-    }
-
-    /**
-     * Show information related to library versions.
-     *
-     * @param showLibraryVersions true to show library version
-     * @return this
-     * @deprecated not actually in use
-     */
-    @Deprecated
-    //TODO remove this method
-    public FFprobe setShowLibraryVersions(final boolean showLibraryVersions) {
-        this.showLibraryVersions = showLibraryVersions;
-        return this;
-    }
-
-    /**
-     * Show information related to program and library versions.
-     * <p>
-     * This is the equivalent of setting both -show_program_version and -show_library_versions
-     *
-     * @param showVersions true to show version
-     * @return this
-     */
-    //TODO remove
-    public FFprobe setShowVersions(final boolean showVersions) {
-        this.showVersions = showVersions;
-        return this;
-    }
-
-    /**
-     * Show information about all pixel formats supported by FFmpeg.
-     *
-     * @param showPixelFormats true to show pixel formats
-     * @return this
-     */
-    //TODO remove
-    public FFprobe setShowPixelFormats(final boolean showPixelFormats) {
-        this.showPixelFormats = showPixelFormats;
-        return this;
-    }
-
-    /**
      * Set probing size (from 32 to I64_MAX) (default 5e+006).
      *
      * @param probeSize prpobe size in bytes
@@ -643,18 +587,6 @@ public class FFprobe {
             result.add("-show_private_data");
         } else {
             result.add("-noprivate");
-        }
-        if (showProgramVersion) {
-            result.add("-show_program_version");
-        }
-        if (showLibraryVersions) {
-            result.add("-show_library_versions");
-        }
-        if (showVersions) {
-            result.add("-show_versions");
-        }
-        if (showPixelFormats) {
-            result.add("-show_pixel_formats");
         }
 
         if (probeSize != null) {
