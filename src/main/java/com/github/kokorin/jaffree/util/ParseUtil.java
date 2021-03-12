@@ -17,6 +17,12 @@
 
 package com.github.kokorin.jaffree.util;
 
+import com.github.kokorin.jaffree.LogLevel;
+import com.github.kokorin.jaffree.ffmpeg.FFmpegResult;
+
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Parses ffmpeg progress and result values.
  */
@@ -32,6 +38,7 @@ public class ParseUtil {
 
     /**
      * Parses long without exception
+     *
      * @param value string to parse
      * @return parsed long or null if value can't be parsed
      */
@@ -49,6 +56,7 @@ public class ParseUtil {
 
     /**
      * Parses double without exception
+     *
      * @param value string to parse
      * @return parsed double or null if value can't be parsed
      */
@@ -66,6 +74,7 @@ public class ParseUtil {
 
     /**
      * Parses size in kilobytes without exception
+     *
      * @param value string to parse
      * @return parsed long or null if value can't be parsed
      */
@@ -81,6 +90,7 @@ public class ParseUtil {
 
     /**
      * Parses size in kilobytes without exception
+     *
      * @param value string to parse
      * @return parsed long or null if value can't be parsed
      */
@@ -94,6 +104,7 @@ public class ParseUtil {
 
     /**
      * Parses encoding bitrate in kbits/s without exception
+     *
      * @param value string to parse
      * @return parsed double or null if value can't be parsed
      */
@@ -107,6 +118,7 @@ public class ParseUtil {
 
     /**
      * Parses encoding speed without exception
+     *
      * @param value string to parse
      * @return parsed double or null if value can't be parsed
      */
@@ -147,5 +159,128 @@ public class ParseUtil {
         }
 
         return value.substring(0, value.length() - suffix.length());
+    }
+
+    /**
+     * Parses log level in ffmpeg output.
+     * <p>
+     * Notice: printing loglevel in ffmpeg output should be enabled.
+     *
+     * @param line line of ffmpeg output
+     * @return parsed log level or null
+     * @see com.github.kokorin.jaffree.ffmpeg.FFmpeg#setLogLevel(LogLevel)
+     */
+    public static LogLevel parseLogLevel(final String line) {
+        if (line == null || line.isEmpty()) {
+            return null;
+        }
+
+        LogLevel result = parseLogLevel(line, 0);
+
+        if (result == null) {
+            int offset = line.indexOf('[', 1);
+            if (offset != -1) {
+                result = parseLogLevel(line, offset);
+                if (result == null) {
+                    offset = line.indexOf('[', offset + 1);
+                    result = parseLogLevel(line, offset);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private static LogLevel parseLogLevel(final String line, final int offset) {
+        if (line.regionMatches(offset, "[info]", 0, 6)) {
+            return LogLevel.INFO;
+        }
+
+        if (line.regionMatches(offset, "[verbose]", 0, 9)) {
+            return LogLevel.VERBOSE;
+        }
+
+        if (line.regionMatches(offset, "[debug]", 0, 7)) {
+            return LogLevel.DEBUG;
+        }
+
+        if (line.regionMatches(offset, "[warning]", 0, 9)) {
+            return LogLevel.WARNING;
+        }
+
+        if (line.regionMatches(offset, "[error]", 0, 7)) {
+            return LogLevel.ERROR;
+        }
+
+        if (line.regionMatches(offset, "[trace]", 0, 7)
+                // before 2019-12-16 ffmpeg output trace as []
+                // see https://github.com/FFmpeg/FFmpeg/commit/84db67894f9aec4aa0c8df67265019e0391c7572
+                || line.regionMatches(offset, "[]", 0, 2)) {
+            return LogLevel.TRACE;
+        }
+
+        if (line.regionMatches(offset, "[quiet]", 0, 7)) {
+            return LogLevel.QUIET;
+        }
+
+        if (line.regionMatches(offset, "[panic]", 0, 7)) {
+            return LogLevel.PANIC;
+        }
+
+        if (line.regionMatches(offset, "[fatal]", 0, 7)) {
+            return LogLevel.FATAL;
+        }
+
+        return null;
+    }
+
+    public static FFmpegResult parseResult(final String line) {
+        if (line == null || line.isEmpty()) {
+            return null;
+        }
+
+        try {
+            String valueWithoutSpaces = line
+                    .replaceAll("other streams", "other_streams")
+                    .replaceAll("global headers", "global_headers")
+                    .replaceAll("muxing overhead", "muxing_overhead")
+                    .replaceAll(":\\s+", ":");
+
+            Map<String, String> map = parseKeyValues(valueWithoutSpaces, ":");
+
+            Long videoSize = ParseUtil.parseSizeInBytes(map.get("video"));
+            Long audioSize = ParseUtil.parseSizeInBytes(map.get("audio"));
+            Long subtitleSize = ParseUtil.parseSizeInBytes(map.get("subtitle"));
+            Long otherStreamsSize = ParseUtil.parseSizeInBytes(map.get("other_streams"));
+            Long globalHeadersSize = ParseUtil.parseSizeInBytes(map.get("global_headers"));
+            Double muxOverhead = ParseUtil.parseRatio(map.get("muxing_overhead"));
+
+            if (videoSize != null || audioSize != null || subtitleSize != null
+                    || otherStreamsSize != null || globalHeadersSize != null
+                    || muxOverhead != null) {
+                return new FFmpegResult(videoSize, audioSize, subtitleSize, otherStreamsSize,
+                        globalHeadersSize, muxOverhead);
+            }
+        } catch (Exception e) {
+            // suppress
+        }
+
+        return null;
+    }
+
+    private static Map<String, String> parseKeyValues(final String value, final String separator) {
+        Map<String, String> result = new HashMap<>();
+
+        for (String pair : value.split("\\s+")) {
+            String[] nameAndValue = pair.split(separator);
+
+            if (nameAndValue.length != 2) {
+                continue;
+            }
+
+            result.put(nameAndValue[0], nameAndValue[1]);
+        }
+
+        return result;
     }
 }
