@@ -22,13 +22,12 @@ package com.github.kokorin.jaffree.ffmpeg;
  */
 public interface OutputListener {
     /**
-     * Invoked for every ffmpeg output line, which isn't a log (i.e. doesn't contain any log level).
+     * Invoked for every ffmpeg log message with level INFO and higher.
      * <p>
      * Attention: this method is not thread safe and may be invoked in different thread.
      * Consider using synchronization.
      *
-     * @param line ffmpeg output line, which is neither progress, nor result
+     * @param message ffmpeg log message
      */
-    // TODO return void
-    void onOutput(String line);
+    void onOutput(String message);
 }

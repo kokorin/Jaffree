@@ -148,6 +148,7 @@ public class FrameIOTest {
     }
 
     @Test
+    // TODO unstable test
     public void testStreamId() throws Exception {
         expectedException.expect(new StackTraceMatcher("Stream ids must start with 0 and increase by 1 subsequently"));
 
