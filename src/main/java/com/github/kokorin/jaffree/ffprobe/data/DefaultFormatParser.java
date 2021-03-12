@@ -18,6 +18,7 @@
 package com.github.kokorin.jaffree.ffprobe.data;
 
 import com.github.kokorin.jaffree.JaffreeException;
+import com.github.kokorin.jaffree.util.LineIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
