@@ -15,7 +15,7 @@
  *
  */
 
-package com.github.kokorin.jaffree.ffprobe.data;
+package com.github.kokorin.jaffree.util;
 
 import com.github.kokorin.jaffree.JaffreeException;
 

@@ -12,11 +12,6 @@ import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.READ;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.nio.file.StandardOpenOption.WRITE;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.core.LogEvent;
-import org.apache.logging.log4j.core.appender.AbstractAppender;
-import org.apache.logging.log4j.core.config.Property;
-import org.apache.logging.log4j.core.filter.AbstractFilter;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.core.AllOf;
 import org.hamcrest.core.StringContains;
@@ -32,14 +27,11 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URI;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -523,7 +515,7 @@ public class FFmpegTest {
     @Test
     public void testCustomOutputParsing() {
         // StringBuffer - because it's thread safe
-        final StringBuffer loudnormReport = new StringBuffer();
+        final AtomicReference<String> loudnormReport = new AtomicReference<>();
 
         FFmpegResult result = FFmpeg.atPath(BIN)
                 .addInput(UrlInput.fromPath(VIDEO_MP4))
@@ -531,15 +523,17 @@ public class FFmpegTest {
                 .addOutput(new NullOutput(false))
                 .setOutputListener(new OutputListener() {
                     @Override
-                    public void onOutput(String line) {
-                        loudnormReport.append(line);
+                    public void onOutput(String message) {
+                        if (message.contains("loudnorm")) {
+                            loudnormReport.set(message);
+                        }
                     }
                 })
                 .execute();
 
         Assert.assertNotNull(result);
 
-        MatcherAssert.assertThat(loudnormReport.toString(), AllOf.allOf(
+        MatcherAssert.assertThat(loudnormReport.get(), AllOf.allOf(
                 StringContains.containsString("input_i"),
                 StringContains.containsString("input_tp"),
                 StringContains.containsString("input_lra"),
@@ -550,6 +544,37 @@ public class FFmpegTest {
                 StringContains.containsString("output_thresh"),
                 StringContains.containsString("normalization_type"),
                 StringContains.containsString("target_offset")
+        ));
+    }
+
+    @Test
+    public void testCustomOutputParsing2() {
+        // StringBuffer - because it's thread safe
+        final StringBuffer idetReport = new StringBuffer();
+
+        FFmpegResult result = FFmpeg.atPath(BIN)
+                .addInput(UrlInput.fromPath(VIDEO_MP4))
+                .setFilter(StreamType.VIDEO, "idet")
+                .addOutput(
+                        new NullOutput(false)
+                                .setFrameCount(StreamType.VIDEO, 100L)
+                )
+                .setOutputListener(new OutputListener() {
+                    @Override
+                    public void onOutput(String line) {
+                        if (line.startsWith("[Parsed_idet")) {
+                            idetReport.append(line);
+                        }
+                    }
+                })
+                .execute();
+
+        Assert.assertNotNull(result);
+
+        MatcherAssert.assertThat(idetReport.toString(), AllOf.allOf(
+                StringContains.containsString("Repeated Fields"),
+                StringContains.containsString("Single frame detection"),
+                StringContains.containsString("Multi frame detection")
         ));
     }
 
