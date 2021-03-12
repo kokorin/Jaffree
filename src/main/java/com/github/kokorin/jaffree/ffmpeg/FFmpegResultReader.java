@@ -20,16 +20,16 @@ package com.github.kokorin.jaffree.ffmpeg;
 import com.github.kokorin.jaffree.JaffreeException;
 import com.github.kokorin.jaffree.LogLevel;
 import com.github.kokorin.jaffree.process.StdReader;
+import com.github.kokorin.jaffree.util.LineIterator;
+import com.github.kokorin.jaffree.util.LogMessage;
+import com.github.kokorin.jaffree.util.LogMessageIterator;
 import com.github.kokorin.jaffree.util.ParseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * {@link FFmpegResultReader} reads ffmpeg stderr output, parses {@link FFmpegProgress} and
@@ -62,76 +62,76 @@ public class FFmpegResultReader implements StdReader<FFmpegResult> {
      */
     @Override
     public FFmpegResult read(final InputStream stdOut) {
-        //just read stdOut fully
-        BufferedReader reader = new BufferedReader(new InputStreamReader(stdOut));
+        LogMessageIterator logMessageIterator = new LogMessageIterator(
+                new LineIterator(
+                        new BufferedReader(new InputStreamReader(stdOut))
+                )
+        );
+
+        FFmpegResult result = null;
         String errorMessage = null;
 
-        String line;
-        FFmpegResult result = null;
+        while (logMessageIterator.hasNext()) {
+            LogMessage logMessage = logMessageIterator.next();
 
-        try {
-            while ((line = reader.readLine()) != null) {
-                LogLevel logLevel = detectLogLevel(line);
-
-                if (logLevel != null) {
-                    switch (logLevel) {
-                        case TRACE:
-                            LOGGER.trace(line);
-                            break;
-                        case VERBOSE:
-                        case DEBUG:
-                            LOGGER.debug(line);
-                            break;
-                        case INFO:
-                            LOGGER.info(line);
-                            break;
-                        case WARNING:
-                            LOGGER.warn(line);
-                            break;
-                        case ERROR:
-                        case FATAL:
-                        case PANIC:
-                        case QUIET:
-                            LOGGER.error(line);
-                            break;
-                    }
-                } else {
-                    LOGGER.info(line);
+            if (logMessage.logLevel != null) {
+                switch (logMessage.logLevel) {
+                    case TRACE:
+                        LOGGER.trace(logMessage.message);
+                        break;
+                    case VERBOSE:
+                    case DEBUG:
+                        LOGGER.debug(logMessage.message);
+                        break;
+                    case INFO:
+                        LOGGER.info(logMessage.message);
+                        break;
+                    case WARNING:
+                        LOGGER.warn(logMessage.message);
+                        break;
+                    case ERROR:
+                    case FATAL:
+                    case PANIC:
+                    case QUIET:
+                        LOGGER.error(logMessage.message);
+                        break;
                 }
+            } else {
+                LOGGER.info(logMessage.message);
+            }
 
-                if (logLevel == LogLevel.INFO) {
-                    FFmpegResult possibleResult = parseResult(line);
+            if (logMessage.logLevel == LogLevel.INFO) {
+                FFmpegResult possibleResult = ParseUtil.parseResult(logMessage.message);
 
-                    if (possibleResult != null) {
-                        result = possibleResult;
-                        errorMessage = null;
-                        continue;
-                    }
-                }
-
-                if (logLevel == null && outputListener != null) {
-                    outputListener.onOutput(line);
-                    continue;
-                }
-
-                if (result != null) {
-                    continue;
-                }
-
-                if (logLevel != null && logLevel.code() <= LogLevel.ERROR.code()) {
-                    errorMessage = line;
+                if (possibleResult != null) {
+                    result = possibleResult;
                 }
             }
-        } catch (IOException e) {
-            throw new JaffreeException("Exception while reading ffmpeg output", e);
+
+            if (outputListener != null && logMessage.logLevel != null
+                    && logMessage.logLevel.code() <= LogLevel.INFO.code()) {
+                outputListener.onOutput(logMessage.message);
+            }
+
+            if (logMessage.logLevel != null && logMessage.logLevel.code() <= LogLevel.ERROR.code()) {
+                if (errorMessage == null) {
+                    errorMessage = logMessage.message;
+                } else {
+                    errorMessage += "\n" + logMessage.message;
+                }
+            }
+        }
+
+        if (result != null) {
+            if (errorMessage != null) {
+                LOGGER.warn("One or more errors appeared during ffmpeg execution, "
+                        + "ignoring since result is available");
+            }
+            return result;
         }
 
         if (errorMessage != null) {
             throw new JaffreeException("ffmpeg exited with message: " + errorMessage);
-        }
-
-        if (result != null) {
-            return result;
         }
 
         return new FFmpegResult(
@@ -142,124 +142,5 @@ public class FFmpegResultReader implements StdReader<FFmpegResult> {
                 null,
                 null
         );
-    }
-
-    static LogLevel detectLogLevel(final String line) {
-        if (line == null || line.isEmpty()) {
-            return null;
-        }
-
-        LogLevel result = detectLogLevel(line, 0);
-
-        if (result == null) {
-            int offset = line.indexOf('[', 1);
-            if (offset != -1) {
-                result = detectLogLevel(line, offset);
-            }
-        }
-
-        return result;
-    }
-
-    private static LogLevel detectLogLevel(final String line, final int offset) {
-        if (line.regionMatches(offset, "[info]", 0, 6)) {
-            return LogLevel.INFO;
-        }
-
-        if (line.regionMatches(offset, "[verbose]", 0, 9)) {
-            return LogLevel.VERBOSE;
-        }
-
-        if (line.regionMatches(offset, "[debug]", 0, 7)) {
-            return LogLevel.DEBUG;
-        }
-
-        if (line.regionMatches(offset, "[warning]", 0, 9)) {
-            return LogLevel.WARNING;
-        }
-
-        if (line.regionMatches(offset, "[error]", 0, 7)) {
-            return LogLevel.ERROR;
-        }
-
-        if (line.regionMatches(offset, "[trace]", 0, 7)
-                // before 2019-12-16 ffmpeg output trace as []
-                // see https://github.com/FFmpeg/FFmpeg/commit/84db67894f9aec4aa0c8df67265019e0391c7572
-                || line.regionMatches(offset, "[]", 0, 2)) {
-            return LogLevel.TRACE;
-        }
-
-        if (line.regionMatches(offset, "[quiet]", 0, 7)) {
-            return LogLevel.QUIET;
-        }
-
-        if (line.regionMatches(offset, "[panic]", 0, 7)) {
-            return LogLevel.PANIC;
-        }
-
-        if (line.regionMatches(offset, "[fatal]", 0, 7)) {
-            return LogLevel.FATAL;
-        }
-
-        return null;
-    }
-
-    static FFmpegResult parseResult(final String line) {
-        if (line == null || line.isEmpty()) {
-            return null;
-        }
-
-        try {
-            String valueWithoutSpaces = line
-                    .replaceAll("other streams", "other_streams")
-                    .replaceAll("global headers", "global_headers")
-                    .replaceAll("muxing overhead", "muxing_overhead")
-                    .replaceAll(":\\s+", ":");
-
-            Map<String, String> map = parseKeyValues(valueWithoutSpaces, ":");
-
-            Long videoSize = ParseUtil.parseSizeInBytes(map.get("video"));
-            Long audioSize = ParseUtil.parseSizeInBytes(map.get("audio"));
-            Long subtitleSize = ParseUtil.parseSizeInBytes(map.get("subtitle"));
-            Long otherStreamsSize = ParseUtil.parseSizeInBytes(map.get("other_streams"));
-            Long globalHeadersSize = ParseUtil.parseSizeInBytes(map.get("global_headers"));
-            Double muxOverhead = ParseUtil.parseRatio(map.get("muxing_overhead"));
-
-            if (hasNonNull(videoSize, audioSize, subtitleSize, otherStreamsSize, globalHeadersSize,
-                    muxOverhead)) {
-                return new FFmpegResult(videoSize, audioSize, subtitleSize, otherStreamsSize,
-                        globalHeadersSize, muxOverhead);
-            }
-        } catch (Exception e) {
-            // supress
-        }
-
-        return null;
-    }
-
-    private static Map<String, String> parseKeyValues(final String value, final String separator) {
-        Map<String, String> result = new HashMap<>();
-
-        for (String pair : value.split("\\s+")) {
-            String[] nameAndValue = pair.split(separator);
-
-            if (nameAndValue.length != 2) {
-                continue;
-            }
-
-            result.put(nameAndValue[0], nameAndValue[1]);
-        }
-
-        return result;
-    }
-
-    private static boolean hasNonNull(final Object... items) {
-        for (Object item : items) {
-            if (item != null) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }
