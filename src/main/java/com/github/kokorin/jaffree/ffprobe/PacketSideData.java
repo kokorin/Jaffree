@@ -1,5 +1,5 @@
 /*
- *    Copyright  2018 Denis Kokorin
+ *    Copyright 2018-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,32 +17,32 @@
 
 package com.github.kokorin.jaffree.ffprobe;
 
-import com.github.kokorin.jaffree.ffprobe.data.DSection;
+import com.github.kokorin.jaffree.ffprobe.data.ProbeData;
 
 public class PacketSideData {
-    private final DSection section;
+    private final ProbeData probeData;
 
-    public PacketSideData(DSection section) {
-        this.section = section;
+    public PacketSideData(ProbeData probeData) {
+        this.probeData = probeData;
     }
 
-    public DSection getSection() {
-        return section;
+    public ProbeData getProbeData() {
+        return probeData;
     }
 
     public String getSideDataType() {
-        return section.getString("side_data_type");
+        return probeData.getString("side_data_type");
     }
 
     public Integer getSideDataSize() {
-        return section.getInteger("side_data_size");
+        return probeData.getInteger("side_data_size");
     }
 
     public String getDisplayMatrix() {
-        return section.getString("displaymatrix");
+        return probeData.getString("displaymatrix");
     }
 
     public Integer getRotation() {
-        return section.getInteger("rotation");
+        return probeData.getInteger("rotation");
     }
 }

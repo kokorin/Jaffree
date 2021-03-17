@@ -1,5 +1,5 @@
 /*
- *    Copyright  2018 Denis Kokorin
+ *    Copyright 2018-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,65 +17,66 @@
 
 package com.github.kokorin.jaffree.ffprobe;
 
-import com.github.kokorin.jaffree.ffprobe.data.DTag;
+import com.github.kokorin.jaffree.ffprobe.data.ProbeData;
 
 public class StreamDisposition {
-    private final DTag tag;
+    private final ProbeData probeData;
 
-    public StreamDisposition(DTag tag) {
-        this.tag = tag;
+    public StreamDisposition(ProbeData probeData) {
+        this.probeData = probeData;
     }
 
-    public DTag getTag() {
-        return tag;
+    public ProbeData getProbeData() {
+        return probeData;
     }
 
-    public int getDefault() {
-        return tag.getInteger("default");
+    // TODO make boolean?
+    public Integer getDefault() {
+        return probeData.getInteger("default");
     }
 
-    public int getDub() {
-        return tag.getInteger("dub");
+    public Integer getDub() {
+        return probeData.getInteger("dub");
     }
 
-    public int getOriginal() {
-        return tag.getInteger("original");
+    public Integer getOriginal() {
+        return probeData.getInteger("original");
     }
 
-    public int getComment() {
-        return tag.getInteger("comment");
+    public Integer getComment() {
+        return probeData.getInteger("comment");
     }
 
-    public int getLyrics() {
-        return tag.getInteger("lyrics");
+    public Integer getLyrics() {
+        return probeData.getInteger("lyrics");
     }
 
-    public int getKaraoke() {
-        return tag.getInteger("karaoke");
+    public Integer getKaraoke() {
+        return probeData.getInteger("karaoke");
     }
 
-    public int getForced() {
-        return tag.getInteger("forced");
+    public Integer getForced() {
+        return probeData.getInteger("forced");
     }
 
-    public int getHearingImpaired() {
-        return tag.getInteger("hearing_impaired");
+    public Integer getHearingImpaired() {
+        return probeData.getInteger("hearing_impaired");
     }
 
-    public int getVisualImpaired() {
-        return tag.getInteger("visual_impaired");
+    public Integer getVisualImpaired() {
+        return probeData.getInteger("visual_impaired");
     }
 
-    public int getCleanEffects() {
-        return tag.getInteger("clean_effects");
+    public Integer getCleanEffects() {
+        return probeData.getInteger("clean_effects");
     }
 
-    public int getAttachedPic() {
-        return tag.getInteger("attached_pic");
+    public Integer getAttachedPic() {
+        return probeData.getInteger("attached_pic");
     }
 
-    public int getTimedThumbnails() {
-        return tag.getInteger("timed_thumbnails");
+    public Integer getTimedThumbnails() {
+        return probeData.getInteger("timed_thumbnails");
     }
 
 

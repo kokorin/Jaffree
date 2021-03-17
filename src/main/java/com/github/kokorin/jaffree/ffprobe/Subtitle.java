@@ -1,5 +1,5 @@
 /*
- *    Copyright  2018 Denis Kokorin
+ *    Copyright 2018-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -18,44 +18,44 @@
 package com.github.kokorin.jaffree.ffprobe;
 
 import com.github.kokorin.jaffree.StreamType;
-import com.github.kokorin.jaffree.ffprobe.data.DSection;
+import com.github.kokorin.jaffree.ffprobe.data.ProbeData;
 
 public class Subtitle {
-    private final DSection section;
+    private final ProbeData probeData;
 
-    public Subtitle(DSection section) {
-        this.section = section;
+    public Subtitle(ProbeData probeData) {
+        this.probeData = probeData;
     }
 
-    public DSection getSection() {
-        return section;
+    public ProbeData getProbeData() {
+        return probeData;
     }
 
     public StreamType getMediaType() {
-        return section.getStreamType("media_type");
+        return probeData.getStreamType("media_type");
     }
 
     public Long getPts() {
-        return section.getLong("pts");
+        return probeData.getLong("pts");
     }
 
     public Float getPtsTime() {
-        return section.getFloat("pts_time");
+        return probeData.getFloat("pts_time");
     }
 
     public Integer getFormat() {
-        return section.getInteger("format");
+        return probeData.getInteger("format");
     }
 
     public Integer getStartDisplayTime() {
-        return section.getInteger("start_display_time");
+        return probeData.getInteger("start_display_time");
     }
 
     public Integer getEndDisplayTime() {
-        return section.getInteger("end_display_time");
+        return probeData.getInteger("end_display_time");
     }
 
     public Integer getNumRects() {
-        return section.getInteger("num_rects");
+        return probeData.getInteger("num_rects");
     }
 }
