@@ -1,5 +1,5 @@
 /*
- *    Copyright  2018 Denis Kokorin
+ *    Copyright 2018-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 
 package com.github.kokorin.jaffree.ffprobe;
 
-import com.github.kokorin.jaffree.ffprobe.data.DSection;
+import com.github.kokorin.jaffree.ffprobe.data.ProbeData;
 
 /**
  * Frame Side Data description.
@@ -28,15 +28,15 @@ import com.github.kokorin.jaffree.ffprobe.data.DSection;
  * TODO different side data types.
  */
 public class FrameSideData {
-    private final DSection section;
+    private final ProbeData probeData;
 
     /**
      * Creates {@link FrameSideData}.
      *
-     * @param section data section
+     * @param probeData data section
      */
-    public FrameSideData(final DSection section) {
-        this.section = section;
+    public FrameSideData(final ProbeData probeData) {
+        this.probeData = probeData;
     }
 
     /**
@@ -48,8 +48,8 @@ public class FrameSideData {
      *
      * @return data section
      */
-    public DSection getSection() {
-        return section;
+    public ProbeData getProbeData() {
+        return probeData;
     }
 
     /**
@@ -78,14 +78,14 @@ public class FrameSideData {
      */
     //TODO introduce enum
     public String getSideDataType() {
-        return section.getString("side_data_type");
+        return probeData.getString("side_data_type");
     }
 
     /**
      * @return side data size
      */
     public Integer getSideDataSize() {
-        return section.getInteger("side_data_size");
+        return probeData.getInteger("side_data_size");
     }
 
     /**
@@ -94,6 +94,6 @@ public class FrameSideData {
      * TODO check timecode type: integer or rational?
      */
     public String getTimecode() {
-        return section.getString("timecode");
+        return probeData.getString("timecode");
     }
 }

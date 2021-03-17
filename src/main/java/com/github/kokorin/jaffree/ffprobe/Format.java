@@ -1,5 +1,5 @@
 /*
- *    Copyright  2018 Denis Kokorin
+ *    Copyright 2018-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,24 +17,21 @@
 
 package com.github.kokorin.jaffree.ffprobe;
 
-import com.github.kokorin.jaffree.ffprobe.data.DSection;
-import com.github.kokorin.jaffree.ffprobe.data.DTag;
-
-import java.util.List;
+import com.github.kokorin.jaffree.ffprobe.data.ProbeData;
 
 /**
  * Format description.
  */
 public class Format {
-    private final DSection section;
+    private final ProbeData probeData;
 
     /**
      * Creates {@link Format} description based on provided data sections.
      *
-     * @param section data section
+     * @param probeData data section
      */
-    public Format(final DSection section) {
-        this.section = section;
+    public Format(final ProbeData probeData) {
+        this.probeData = probeData;
     }
 
     /**
@@ -45,58 +42,54 @@ public class Format {
      *
      * @return data section
      */
-    public DSection getSection() {
-        return section;
+    public ProbeData getProbeData() {
+        return probeData;
     }
-
 
     /**
-     * Returns tags for this Format.
-     *
-     * @return tags
+     * Return tag value by name
+     * @param name tag name
+     * @return tag value
      */
     // TODO Does Format contain any tags?
-    public List<Tag> getTags() {
-        return section.getTag("TAG", "TAGS").getValues(DTag.TAG_CONVERTER);
-    }
-    // TODO Does Format contain any tags?
+    // TODO Type-specific getters: Integer, Long, etc
     public String getTag(String name) {
-        return section.getTag("TAG", "TAGS").getString(name);
+        return probeData.getSubData("tags").getString(name);
     }
 
     /**
      * @return file name
      */
     public String getFilename() {
-        return section.getString("filename");
+        return probeData.getString("filename");
     }
 
     /**
      * @return number of streams
      */
-    public int getNbStreams() {
-        return section.getInteger("nb_streams");
+    public Integer getNbStreams() {
+        return probeData.getInteger("nb_streams");
     }
 
     /**
      * @return number of programs
      */
-    public int getNbPrograms() {
-        return section.getInteger("nb_programs");
+    public Integer getNbPrograms() {
+        return probeData.getInteger("nb_programs");
     }
 
     /**
      * @return format name
      */
     public String getFormatName() {
-        return section.getString("format_name");
+        return probeData.getString("format_name");
     }
 
     /**
      * @return format long name
      */
     public String getFormatLongName() {
-        return section.getString("format_long_name");
+        return probeData.getString("format_long_name");
     }
 
     /**
@@ -104,7 +97,7 @@ public class Format {
      */
     // TODO: getter with TimeUnit?
     public Float getStartTime() {
-        return section.getFloat("start_time");
+        return probeData.getFloat("start_time");
     }
 
     /**
@@ -112,21 +105,21 @@ public class Format {
      */
     // TODO: getter with TimeUnit?
     public Float getDuration() {
-        return section.getFloat("duration");
+        return probeData.getFloat("duration");
     }
 
     /**
      * @return media size in bytes
      */
     public Long getSize() {
-        return section.getLong("size");
+        return probeData.getLong("size");
     }
 
     /**
      * @return media bitrate in bits per second
      */
     public Long getBitRate() {
-        return section.getLong("bit_rate");
+        return probeData.getLong("bit_rate");
     }
 
     /**
@@ -140,6 +133,6 @@ public class Format {
      * @return format probe score
      */
     public Integer getProbeScore() {
-        return section.getInteger("probe_score");
+        return probeData.getInteger("probe_score");
     }
 }

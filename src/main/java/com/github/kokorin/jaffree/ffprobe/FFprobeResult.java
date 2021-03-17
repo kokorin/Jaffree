@@ -17,8 +17,8 @@
 
 package com.github.kokorin.jaffree.ffprobe;
 
-import com.github.kokorin.jaffree.ffprobe.data.DSection;
-import com.github.kokorin.jaffree.ffprobe.data.Data;
+import com.github.kokorin.jaffree.ffprobe.data.ProbeData;
+import com.github.kokorin.jaffree.ffprobe.data.ProbeDataConverter;
 
 import java.util.List;
 
@@ -26,15 +26,15 @@ import java.util.List;
  * {@link FFprobeResult} contains information about ffprobe execution result.
  */
 public class FFprobeResult {
-    private final Data data;
+    private final ProbeData probeData;
 
     /**
-     * Constructs {@link FFprobeResult} from parsed {@link Data}.
+     * Constructs {@link FFprobeResult} from parsed {@link ProbeData}.
      *
-     * @param data parsed ffprobe output
+     * @param probeData parsed ffprobe output
      */
-    public FFprobeResult(final Data data) {
-        this.data = data;
+    public FFprobeResult(final ProbeData probeData) {
+        this.probeData = probeData;
     }
 
     /**
@@ -44,8 +44,8 @@ public class FFprobeResult {
      *
      * @return parsed ffprobe output
      */
-    public Data getData() {
-        return data;
+    public ProbeData getData() {
+        return probeData;
     }
 
     /**
@@ -53,12 +53,12 @@ public class FFprobeResult {
      * @see FFprobe#setShowFormat(boolean)
      */
     public Format getFormat() {
-        DSection section = data.getSection("FORMAT");
-        if (section == null) {
-            return null;
-        }
-
-        return new Format(section);
+        return probeData.getSubData("format", new ProbeDataConverter<Format>() {
+            @Override
+            public Format convert(ProbeData probeData) {
+                return new Format(probeData);
+            }
+        });
     }
 
     /**
@@ -66,10 +66,10 @@ public class FFprobeResult {
      * @see FFprobe#setShowPackets(boolean)
      */
     public List<Packet> getPackets() {
-        return data.getSections("PACKET", new DSection.SectionConverter<Packet>() {
+        return probeData.getSubDataList("packets", new ProbeDataConverter<Packet>() {
             @Override
-            public Packet convert(final DSection dSection) {
-                return new Packet(dSection);
+            public Packet convert(final ProbeData probeData) {
+                return new Packet(probeData);
             }
         });
     }
@@ -79,10 +79,10 @@ public class FFprobeResult {
      * @see FFprobe#setShowFrames(boolean)
      */
     public List<Frame> getFrames() {
-        return data.getSections("FRAME", new DSection.SectionConverter<Frame>() {
+        return probeData.getSubDataList("frames", new ProbeDataConverter<Frame>() {
             @Override
-            public Frame convert(final DSection dSection) {
-                return new Frame(dSection);
+            public Frame convert(final ProbeData probeData) {
+                return new Frame(probeData);
             }
         });
     }
@@ -91,10 +91,10 @@ public class FFprobeResult {
      * @return parsed subtitles
      */
     public List<Subtitle> getSubtitles() {
-        return data.getSections("SUBTITLE", new DSection.SectionConverter<Subtitle>() {
+        return probeData.getSubDataList("subtitle", new ProbeDataConverter<Subtitle>() {
             @Override
-            public Subtitle convert(final DSection dSection) {
-                return new Subtitle(dSection);
+            public Subtitle convert(final ProbeData probeData) {
+                return new Subtitle(probeData);
             }
         });
     }
@@ -104,9 +104,9 @@ public class FFprobeResult {
      * @see FFprobe#setShowPrograms(boolean)
      */
     public List<Program> getPrograms() {
-        return data.getSections("PROGRAM", new DSection.SectionConverter<Program>() {
+        return probeData.getSubDataList("programs", new ProbeDataConverter<Program>() {
             @Override
-            public Program convert(final DSection dSection) {
+            public Program convert(final ProbeData dSection) {
                 return new Program(dSection);
             }
         });
@@ -115,8 +115,14 @@ public class FFprobeResult {
     /**
      * @return parsed streams
      * @see FFprobe#setShowStreams(boolean)
-     */    public List<Stream> getStreams() {
-        return data.getSections("STREAM", DSection.STREAM_CONVERTER);
+     */
+    public List<Stream> getStreams() {
+        return probeData.getSubDataList("streams", new ProbeDataConverter<Stream>() {
+            @Override
+            public Stream convert(final ProbeData probeData) {
+                return new Stream(probeData);
+            }
+        });
     }
 
     /**
@@ -124,10 +130,10 @@ public class FFprobeResult {
      * @see FFprobe#setShowChapters(boolean)
      */
     public List<Chapter> getChapters() {
-        return data.getSections("CHAPTER", new DSection.SectionConverter<Chapter>() {
+        return probeData.getSubDataList("chapters", new ProbeDataConverter<Chapter>() {
             @Override
-            public Chapter convert(final DSection dSection) {
-                return new Chapter(dSection);
+            public Chapter convert(final ProbeData probeData) {
+                return new Chapter(probeData);
             }
         });
     }

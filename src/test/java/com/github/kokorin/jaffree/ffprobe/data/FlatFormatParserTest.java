@@ -14,10 +14,10 @@ public class FlatFormatParserTest {
     @Test
     public void parse() throws Exception {
         try (InputStream input = getClass().getResourceAsStream("ffprobe_out.flat")) {
-            Data data = new FlatFormatParser().parse(input);
+            ProbeData data = new FlatFormatParser().parse(input);
             Assert.assertNotNull(data);
 
-            List<DSection> streams = data.getSections("STREAM");
+            List<ProbeData> streams = data.getSubDataList("stream");
             Assert.assertEquals(2, streams.size());
         }
 
@@ -26,13 +26,13 @@ public class FlatFormatParserTest {
     @Test
     public void parseMultiline() throws Exception {
         try (InputStream input = getClass().getResourceAsStream("ffprobe_multiline_out.flat")) {
-            Data data = new FlatFormatParser().parse(input);
+            ProbeData data = new FlatFormatParser().parse(input);
             Assert.assertNotNull(data);
 
-            List<DSection> streams = data.getSections("STREAM");
+            List<ProbeData> streams = data.getSubDataList("stream");
             Assert.assertEquals(2, streams.size());
 
-            String description = data.getSection("format").getTag("tags").getString("description");
+            String description = data.getSubData("format").getSubData("tags").getString("description");
 
             int actualLines = description.split("\\n").length;
             Assert.assertTrue(actualLines > 10);
@@ -43,13 +43,13 @@ public class FlatFormatParserTest {
     @Test
     public void parseHttp() throws Exception {
         try (InputStream input = getClass().getResourceAsStream("ffprobe_http_out.flat")) {
-            Data data = new FlatFormatParser().parse(input);
+            ProbeData data = new FlatFormatParser().parse(input);
             Assert.assertNotNull(data);
 
-            List<DSection> streams = data.getSections("STREAM");
+            List<ProbeData> streams = data.getSubDataList("stream");
             Assert.assertEquals(2, streams.size());
 
-            String actual = data.getSection("format").getString("filename");
+            String actual = data.getSubData("format").getString("filename");
             String expected = "https://sample-videos.com/video123/mp4/240/big_buck_bunny_240p_30mb.mp4?q1=v1&q2=v2";
 
             Assert.assertEquals(expected, actual);
@@ -60,16 +60,16 @@ public class FlatFormatParserTest {
     @Test
     public void parseWithRotate() throws IOException {
         try (InputStream input = getClass().getResourceAsStream("ffprobe_with_rotate.flat")) {
-            Data data = new FlatFormatParser().parse(input);
+            ProbeData data = new FlatFormatParser().parse(input);
             Assert.assertNotNull(data);
 
-            List<DSection> streams = data.getSections("STREAM");
+            List<ProbeData> streams = data.getSubDataList("stream");
             Assert.assertEquals(2, streams.size());
 
-            DSection section = streams.get(0);
+            ProbeData section = streams.get(0);
             Assert.assertNotNull(section);
 
-            DTag dTag = section.getTag("TAGS");
+            ProbeData dTag = section.getSubData("TAGS");
             Assert.assertNotNull(dTag);
 
             String rotate = dTag.getString("rotate");

@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2021 Denis Kokorin
+ *    Copyright 2018-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,24 +17,17 @@
 
 package com.github.kokorin.jaffree.ffprobe.data;
 
-import java.io.InputStream;
-
 /**
- * Represents ffprobe output format parser.
+ * Represents a converter which is used to convert requested value to T type.
+ *
+ * @param <T> type to convert to
  */
-public interface FormatParser {
+public interface ValueConverter<T> {
     /**
-     * Returns format name which is passed to ffprobe via <b>-print_format</b> argument.
+     * Converts passed in {@link String} value to T type.
      *
-     * @return format name
+     * @param value value
+     * @return converted value
      */
-    String getFormatName();
-
-    /**
-     * Parses input stream.
-     *
-     * @param inputStream input stream
-     * @return parsed Data
-     */
-    ProbeData parse(InputStream inputStream);
+    T convert(Object value);
 }

@@ -1,5 +1,5 @@
 /*
- *    Copyright  2018 Denis Kokorin
+ *    Copyright 2018-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,23 +17,22 @@
 
 package com.github.kokorin.jaffree.ffprobe;
 
-import com.github.kokorin.jaffree.ffprobe.data.DSection;
-import com.github.kokorin.jaffree.ffprobe.data.DTag;
-
-import java.util.List;
+import com.github.kokorin.jaffree.Rational;
+import com.github.kokorin.jaffree.ffprobe.data.ProbeData;
 
 /**
  * Chapter description.
  */
 public class Chapter {
-    private final DSection section;
+    private final ProbeData probeData;
 
     /**
      * Creates {@link Chapter} description based on provided data sections.
-     * @param section data section
+     *
+     * @param probeData data section
      */
-    public Chapter(final DSection section) {
-        this.section = section;
+    public Chapter(final ProbeData probeData) {
+        this.probeData = probeData;
     }
 
     /**
@@ -44,21 +43,12 @@ public class Chapter {
      *
      * @return data section
      */
-    public DSection getSection() {
-        return section;
-    }
-
-    /**
-     * Returns tags for this Chapter.
-     *
-     * @return tags
-     */
-    public List<Tag> getTags() {
-        return section.getTag("TAG", "TAGS").getValues(DTag.TAG_CONVERTER);
+    public ProbeData getProbeData() {
+        return probeData;
     }
 
     public String getTag(String name) {
-        return section.getTag("TAG", "TAGS").getString(name);
+        return probeData.getSubData("tags").getString(name);
     }
 
     /**
@@ -67,7 +57,7 @@ public class Chapter {
      * @return id
      */
     public int getId() {
-        return section.getInteger("id");
+        return probeData.getInteger("id");
     }
 
     /**
@@ -75,9 +65,8 @@ public class Chapter {
      *
      * @return time base
      */
-    // TODO: make it Rational
-    public String getTimeBase() {
-        return section.getString("time_base");
+    public Rational getTimeBase() {
+        return probeData.getRational("time_base");
     }
 
     /**
@@ -86,9 +75,8 @@ public class Chapter {
      * @return start PTS
      * @see #getTimeBase()
      */
-    // TODO make it Long
-    public int getStart() {
-        return section.getInteger("start");
+    public Long getStart() {
+        return probeData.getLong("start");
     }
 
     /**
@@ -96,9 +84,8 @@ public class Chapter {
      *
      * @return start time
      */
-    // TODO make it Double
-    public Float getStartTime() {
-        return section.getFloat("start_time");
+    public Double getStartTime() {
+        return probeData.getDouble("start_time");
     }
 
     /**
@@ -107,9 +94,8 @@ public class Chapter {
      * @return end PTS
      * @see #getTimeBase()
      */
-    // TODO make it Long
-    public int getEnd() {
-        return section.getInteger("end");
+    public Long getEnd() {
+        return probeData.getLong("end");
     }
 
     /**
@@ -117,8 +103,7 @@ public class Chapter {
      *
      * @return end time
      */
-    // TODO make it Double
-    public float getEndTime() {
-        return section.getFloat("end_time");
+    public Double getEndTime() {
+        return probeData.getDouble("end_time");
     }
 }

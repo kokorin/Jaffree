@@ -6,29 +6,30 @@ import com.github.kokorin.jaffree.Rational;
 import com.github.kokorin.jaffree.StackTraceMatcher;
 import com.github.kokorin.jaffree.StreamSpecifier;
 import com.github.kokorin.jaffree.StreamType;
-import com.github.kokorin.jaffree.ffprobe.data.DefaultFormatParser;
 import com.github.kokorin.jaffree.ffprobe.data.FlatFormatParser;
-import junit.framework.AssertionFailedError;
+import com.github.kokorin.jaffree.ffprobe.data.FormatParser;
+import com.github.kokorin.jaffree.ffprobe.data.JsonFormatParser;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.io.InputStream;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+@RunWith(Parameterized.class)
 public class FFprobeTest {
+    private final FormatParser formatParser;
+
     public static Path BIN;
     public static Path VIDEO_MP4 = Artifacts.getMp4Artifact();
     public static Path VIDEO_WITH_PROGRAMS = Artifacts.getTsArtifactWithPrograms();
@@ -36,6 +37,15 @@ public class FFprobeTest {
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
+
+    @Parameterized.Parameters(name = "{0}")
+    public static Iterable<? extends Object> data() {
+        return Arrays.asList(new FlatFormatParser(), new JsonFormatParser());
+    }
+
+    public FFprobeTest(FormatParser formatParser) {
+        this.formatParser = formatParser;
+    }
 
     @BeforeClass
     public static void setUp() throws Exception {
@@ -59,9 +69,12 @@ public class FFprobeTest {
                 .setInput(VIDEO_MP4)
                 .setShowData(true)
                 .setShowStreams(true)
+                .setFormatParser(formatParser)
                 .execute();
 
         Assert.assertNotNull(result);
+        Assert.assertNotNull(result.getStreams());
+        Assert.assertFalse(result.getStreams().isEmpty());
 
         Stream stream = result.getStreams().get(0);
         Assert.assertNotNull(stream.getExtradata());
@@ -73,6 +86,7 @@ public class FFprobeTest {
     public void testEnvPath() throws Exception {
         FFprobeResult result = FFprobe.atPath()
                 .setInput(VIDEO_MP4)
+                .setFormatParser(formatParser)
                 .execute();
 
         Assert.assertNotNull(result);
@@ -84,9 +98,12 @@ public class FFprobeTest {
                 .setInput(VIDEO_MP4)
                 .setShowData(true)
                 .setShowPackets(true)
+                .setFormatParser(formatParser)
                 .execute();
 
         Assert.assertNotNull(result);
+        Assert.assertNotNull(result.getPackets());
+        Assert.assertFalse(result.getPackets().isEmpty());
         Assert.assertNotNull(result.getPackets().get(0).getData());
         for (Packet packet : result.getPackets()) {
             Assert.assertNotNull(packet.getCodecType());
@@ -102,9 +119,12 @@ public class FFprobeTest {
                 .setInput(VIDEO_MP4)
                 .setShowDataHash("MD5")
                 .setShowStreams(true)
+                .setFormatParser(formatParser)
                 .execute();
 
         Assert.assertNotNull(result);
+        Assert.assertNotNull(result.getStreams());
+        Assert.assertFalse(result.getStreams().isEmpty());
         Assert.assertNotNull(result.getStreams().get(0).getExtradataHash());
     }
 
@@ -114,12 +134,15 @@ public class FFprobeTest {
                 .setInput(VIDEO_MP4)
                 .setShowDataHash("MD5")
                 .setShowPackets(true)
+                .setFormatParser(formatParser)
                 .execute();
 
         Assert.assertNotNull(result);
-        Assert.assertNotNull(result.getPackets().get(0).getDataHash());
+        Assert.assertNotNull(result.getPackets());
+        Assert.assertFalse(result.getPackets().isEmpty());
         for (Packet packet : result.getPackets()) {
             Assert.assertNotNull(packet.getCodecType());
+            Assert.assertNotNull(packet.getDataHash());
         }
     }
 
@@ -130,10 +153,13 @@ public class FFprobeTest {
         FFprobeResult result = FFprobe.atPath(BIN)
                 .setInput(VIDEO_MP4)
                 .setShowFormat(true)
+                .setFormatParser(formatParser)
                 .execute();
 
         Assert.assertNotNull(result);
         Assert.assertNotNull(result.getFormat());
+        Assert.assertNotNull(result.getFormat().getFormatName());
+        Assert.assertNotNull(result.getFormat().getFormatLongName());
     }
 
     //private String showFormatEntry;
@@ -145,6 +171,7 @@ public class FFprobeTest {
         FFprobeResult result = FFprobe.atPath(BIN)
                 .setInput(VIDEO_MP4)
                 .setShowEntries("packet=pts_time,duration_time,stream_index : stream=index,codec_type")
+                .setFormatParser(formatParser)
                 .execute();
 
         Assert.assertNotNull(result);
@@ -169,6 +196,7 @@ public class FFprobeTest {
         FFprobeResult result = FFprobe.atPath(BIN)
                 .setInput(VIDEO_MP4)
                 .setShowFrames(true)
+                .setFormatParser(formatParser)
                 .execute();
 
         Assert.assertNotNull(result);
@@ -197,18 +225,18 @@ public class FFprobeTest {
                 .setInput(VIDEO_MP4)
                 .setShowFrames(true)
                 .setShowLog(LogLevel.TRACE)
+                .setFormatParser(formatParser)
                 .execute();
 
         Assert.assertNotNull(result);
-        for (Object frameOrSubtitle : result.getFrames()) {
-            if (frameOrSubtitle instanceof Frame) {
-                Frame frame = (Frame) frameOrSubtitle;
-                Assert.assertNotNull(frame.getLogs());
-            } else {
-                Assert.assertEquals(Subtitle.class, frameOrSubtitle.getClass());
+        Assert.assertNotNull(result.getFrames());
+        int framesWithLogs = 0;
+        for (Frame frame : result.getFrames()) {
+            if (frame.getLogs() != null && !frame.getLogs().isEmpty()) {
+                framesWithLogs++;
             }
         }
-
+        Assert.assertTrue(framesWithLogs > 1000);
     }
 
     //private boolean showStreams;
@@ -218,9 +246,11 @@ public class FFprobeTest {
         FFprobeResult result = FFprobe.atPath(BIN)
                 .setInput(VIDEO_MP4)
                 .setShowStreams(true)
+                .setFormatParser(formatParser)
                 .execute();
 
         Assert.assertNotNull(result);
+        Assert.assertNotNull(result.getStreams());
         Assert.assertEquals(2, result.getStreams().size());
 
         Stream videoStream = result.getStreams().get(0);
@@ -229,7 +259,7 @@ public class FFprobeTest {
         Assert.assertNotNull(videoStream.getSampleAspectRatio());
         Assert.assertNotNull(videoStream.getDisplayAspectRatio());
         Assert.assertNotNull(videoStream.getStartTime(TimeUnit.NANOSECONDS));
-        Assert.assertEquals((Long)180L, videoStream.getDuration(TimeUnit.SECONDS));
+        Assert.assertEquals((Long) 180L, videoStream.getDuration(TimeUnit.SECONDS));
         Assert.assertNotNull(videoStream.getBitRate());
         Assert.assertNotNull(videoStream.getNbFrames());
         Assert.assertNotNull(videoStream.getBitsPerRawSample());
@@ -242,9 +272,11 @@ public class FFprobeTest {
                 .setInput(VIDEO_MP4)
                 .setShowStreams(true)
                 .setSelectStreams(StreamType.VIDEO)
+                .setFormatParser(formatParser)
                 .execute();
 
         Assert.assertNotNull(result);
+        Assert.assertNotNull(result.getStreams());
         Assert.assertEquals(1, result.getStreams().size());
 
         Stream stream = result.getStreams().get(0);
@@ -257,9 +289,11 @@ public class FFprobeTest {
                 .setInput(VIDEO_MP4)
                 .setShowPackets(true)
                 .setSelectStreams(StreamSpecifier.withIndex(1))
+                .setFormatParser(formatParser)
                 .execute();
 
         Assert.assertNotNull(result);
+        Assert.assertNotNull(result.getPackets());
         Assert.assertTrue(result.getPackets().size() > 7000);
         Assert.assertNotNull(result.getPackets().get(0).getCodecType());
     }
@@ -271,28 +305,33 @@ public class FFprobeTest {
         FFprobeResult result = FFprobe.atPath(BIN)
                 .setInput(VIDEO_WITH_PROGRAMS)
                 .setShowPrograms(true)
+                .setFormatParser(formatParser)
                 .execute();
 
         Assert.assertNotNull(result);
+        Assert.assertNotNull(result.getPrograms());
         Assert.assertEquals(3, result.getPrograms().size());
 
         Program program1 = result.getPrograms().get(0);
         Assert.assertEquals("first_program", program1.getTag("service_name"));
-        Assert.assertEquals(1, program1.getProgramId());
-        Assert.assertEquals(1, program1.getProgramNum());
-        Assert.assertEquals(2, program1.getNbStreams());
+        Assert.assertEquals((Integer) 1, program1.getProgramId());
+        Assert.assertEquals((Integer) 1, program1.getProgramNum());
+        Assert.assertEquals((Integer) 2, program1.getNbStreams());
+        Assert.assertNotNull(program1.getStreams());
         Assert.assertEquals(2, program1.getStreams().size());
 
         Program program2 = result.getPrograms().get(1);
         Assert.assertEquals("second program", program2.getTag("service_name"));
-        Assert.assertEquals(2, program2.getProgramNum());
-        Assert.assertEquals(2, program2.getNbStreams());
+        Assert.assertEquals((Integer) 2, program2.getProgramNum());
+        Assert.assertEquals((Integer) 2, program2.getNbStreams());
+        Assert.assertNotNull(program2.getStreams());
         Assert.assertEquals(2, program2.getStreams().size());
 
         Program program3 = result.getPrograms().get(2);
         Assert.assertEquals("3rdProgram", program3.getTag("service_name"));
-        Assert.assertEquals(3, program3.getProgramNum());
-        Assert.assertEquals(2, program3.getNbStreams());
+        Assert.assertEquals((Integer) 3, program3.getProgramNum());
+        Assert.assertEquals((Integer) 2, program3.getNbStreams());
+        Assert.assertNotNull(program3.getStreams());
         Assert.assertEquals(2, program3.getStreams().size());
     }
 
@@ -303,6 +342,7 @@ public class FFprobeTest {
         FFprobeResult result = FFprobe.atPath(BIN)
                 .setInput(VIDEO_WITH_CHAPTERS)
                 .setShowChapters(true)
+                .setFormatParser(formatParser)
                 .execute();
 
         Assert.assertNotNull(result);
@@ -312,10 +352,17 @@ public class FFprobeTest {
         Chapter chapter1 = result.getChapters().get(0);
         Assert.assertEquals(1, chapter1.getId());
         Assert.assertEquals("FirstChapter", chapter1.getTag("title"));
+        Assert.assertEquals(new Rational(1L, 1_000_000_000L), chapter1.getTimeBase());
+        Assert.assertEquals((Long) 0L, chapter1.getStart());
+        Assert.assertEquals((Double) 0., chapter1.getStartTime(), 0.01);
+        Assert.assertEquals((Long)60_000_000_000L, chapter1.getEnd());
+        Assert.assertEquals((Double) 60., chapter1.getEndTime(), 0.01);
 
         Chapter chapter2 = result.getChapters().get(1);
         Assert.assertEquals(2, chapter2.getId());
         Assert.assertEquals("Second Chapter", chapter2.getTag("title"));
+        Assert.assertEquals((Long) 60_000_000_000L, chapter2.getStart());
+        Assert.assertEquals((Double) 60., chapter2.getStartTime(), 0.01);
 
         Chapter chapter3 = result.getChapters().get(2);
         Assert.assertEquals(3, chapter3.getId());
@@ -332,9 +379,11 @@ public class FFprobeTest {
                 .setShowStreams(true)
                 .setCountFrames(true)
                 .setCountPackets(true)
+                .setFormatParser(formatParser)
                 .execute();
 
         Assert.assertNotNull(result);
+        Assert.assertNotNull(result.getStreams());
         for (Stream stream : result.getStreams()) {
             Assert.assertTrue(stream.getNbFrames() > 0);
             Assert.assertTrue(stream.getNbReadFrames() > 0);
@@ -350,31 +399,52 @@ public class FFprobeTest {
                 .setInput(VIDEO_MP4)
                 .setShowPackets(true)
                 .setReadIntervals("30%+#42")
+                .setFormatParser(formatParser)
                 .execute();
 
         Assert.assertNotNull(result);
-        Assert.assertTrue(result.getPackets().size() == 42);
+        Assert.assertNotNull(result.getPackets());
+        Assert.assertEquals(42, result.getPackets().size());
         for (Packet packet : result.getPackets()) {
             Assert.assertNotNull(packet.getCodecType());
         }
     }
 
     @Test
-    public void testSideListAttributes() throws Exception {
-        Path video = Paths.get("VID_20180811_180157.mp4");
-        // Test uses local file
-        if (!Files.exists(video)) {
-            return;
-        }
+    public void testShowSubtitles() {
+        Assert.fail("No artifact with subtitles to check!");
 
         FFprobeResult result = FFprobe.atPath(BIN)
-                .setInput(video)
+                .setInput(VIDEO_MP4)
                 .setShowStreams(true)
                 .setShowData(true)
                 .setSelectStreams(StreamType.VIDEO)
+                .setFormatParser(formatParser)
                 .execute();
 
         Assert.assertNotNull(result);
+        Assert.assertNotNull(result.getSubtitles());
+        Assert.assertFalse(result.getSubtitles().isEmpty());
+        for (Subtitle subtitle : result.getSubtitles()) {
+            Assert.assertNotNull(subtitle.getStartDisplayTime());
+            Assert.assertNotNull(subtitle.getFormat());
+        }
+    }
+
+    @Test
+    public void testSideListAttributes() throws Exception {
+        Assert.fail("No artifact with side data to check!");
+
+        FFprobeResult result = FFprobe.atPath(BIN)
+                .setInput(VIDEO_MP4)
+                .setShowStreams(true)
+                .setShowData(true)
+                .setSelectStreams(StreamType.VIDEO)
+                .setFormatParser(formatParser)
+                .execute();
+
+        Assert.assertNotNull(result);
+        Assert.assertNotNull(result.getStreams());
 
         Stream stream = result.getStreams().get(0);
         Assert.assertNotNull(stream);
@@ -392,6 +462,7 @@ public class FFprobeTest {
 
         FFprobeResult result = FFprobe.atPath(BIN)
                 .setInput(Paths.get("nonexistent.mp4"))
+                .setFormatParser(formatParser)
                 .execute();
     }
 
@@ -402,6 +473,7 @@ public class FFprobeTest {
                 .setShowStreams(true)
                 .setProbeSize(10_000_000L)
                 .setInput(VIDEO_MP4)
+                .setFormatParser(formatParser)
                 .execute();
 
         Assert.assertNotNull(result);
@@ -415,6 +487,7 @@ public class FFprobeTest {
                 .setShowStreams(true)
                 .setAnalyzeDuration(10_000_000L)
                 .setInput(VIDEO_MP4)
+                .setFormatParser(formatParser)
                 .execute();
 
         Assert.assertNotNull(result);
@@ -428,6 +501,7 @@ public class FFprobeTest {
                 .setShowStreams(true)
                 .setAnalyzeDuration(10, TimeUnit.SECONDS)
                 .setInput(VIDEO_MP4)
+                .setFormatParser(formatParser)
                 .execute();
 
         Assert.assertNotNull(result);
@@ -441,6 +515,7 @@ public class FFprobeTest {
                 .setShowStreams(true)
                 .setFpsProbeSize(100L)
                 .setInput(VIDEO_MP4)
+                .setFormatParser(formatParser)
                 .execute();
 
         Assert.assertNotNull(result);
@@ -455,32 +530,16 @@ public class FFprobeTest {
                 .addArgument("-show_streams")
                 .addArguments("-select_streams", "v")
                 .setInput(VIDEO_MP4)
+                .setFormatParser(formatParser)
                 .execute();
 
 
         Assert.assertNotNull(result);
+        Assert.assertNotNull(result.getStreams());
         Assert.assertEquals(1, result.getStreams().size());
 
         Stream stream = result.getStreams().get(0);
         Assert.assertEquals(StreamType.VIDEO, stream.getCodecType());
-    }
-
-    @Test
-    public void testDataFormat() throws Exception {
-        FFprobeResult defaultResult = FFprobe.atPath(BIN)
-                .setShowStreams(true)
-                .setInput(VIDEO_MP4)
-                .setFormatParser(new DefaultFormatParser())
-                .execute();
-
-
-        FFprobeResult flatResult = FFprobe.atPath(BIN)
-                .setShowStreams(true)
-                .setInput(VIDEO_MP4)
-                .setFormatParser(new FlatFormatParser())
-                .execute();
-
-        compareByGetters("", defaultResult, flatResult);
     }
 
     @Test
@@ -491,7 +550,7 @@ public class FFprobeTest {
             result = FFprobe.atPath(BIN)
                     .setShowStreams(true)
                     .setInput(inputStream)
-                    .setFormatParser(new DefaultFormatParser())
+                    .setFormatParser(formatParser)
                     .execute();
         }
 
@@ -508,7 +567,7 @@ public class FFprobeTest {
             result = FFprobe.atPath(BIN)
                     .setShowStreams(true)
                     .setInput(channel)
-                    .setFormatParser(new DefaultFormatParser())
+                    .setFormatParser(formatParser)
                     .execute();
         }
 
@@ -522,10 +581,12 @@ public class FFprobeTest {
         FFprobeResult result = FFprobe.atPath(BIN)
                 .setShowStreams(true)
                 .setInput(VIDEO_MP4)
+                .setFormatParser(formatParser)
                 .executeAsync()
                 .get();
 
         Assert.assertNotNull(result);
+        Assert.assertNotNull(result.getStreams());
         Assert.assertEquals(2, result.getStreams().size());
 
         Stream stream = result.getStreams().get(0);
@@ -543,89 +604,8 @@ public class FFprobeTest {
         FFprobeResult result = FFprobe.atPath(BIN)
                 .setShowStreams(true)
                 .setInput("non_existent.mp4")
+                .setFormatParser(formatParser)
                 .executeAsync()
                 .get();
-
-        Assert.assertNotNull(result);
-        Assert.assertEquals(6, result.getStreams().size());
-
-        Stream stream = result.getStreams().get(0);
-        Assert.assertEquals(StreamType.VIDEO, stream.getCodecType());
-
-        stream = result.getStreams().get(2);
-        Assert.assertEquals(StreamType.AUDIO, stream.getCodecType());
-    }
-
-    private static List<? extends Class> noDeepCompare = Arrays.asList(
-            int.class, short.class, long.class, float.class, double.class, boolean.class,
-            Integer.class, Short.class, Long.class, Float.class, Double.class, Boolean.class,
-            String.class
-    );
-
-    private static void compareByGetters(String context, Object o1, Object o2) throws Exception {
-        if (Objects.equals(o1, o2)) {
-            return;
-        }
-
-        if (o1 == null || o2 == null) {
-            throw new AssertionFailedError(context + " null: " + o1 + " " + o2);
-        }
-
-        if (o1.getClass() != o2.getClass()) {
-            throw new AssertionFailedError(context + " class: " + o1 + " " + o2);
-        }
-
-        Class clazz = o1.getClass();
-
-        if (noDeepCompare.contains(clazz)) {
-            throw new AssertionFailedError(context + " not equal: " + o1 + " " + o2);
-        }
-
-        if (o1 instanceof List) {
-            List l1 = (List) o1;
-            List l2 = (List) o2;
-
-            if (l1.size() != l2.size()) {
-                throw new AssertionFailedError(context + " size: " + o1 + " " + o2);
-            }
-
-            for (int i = 0; i < l1.size(); i++) {
-                String subContext = context + "[" + i + "]";
-                compareByGetters(subContext, l1.get(i), l2.get(i));
-            }
-
-            return;
-        }
-
-        if (clazz.getPackage().getName().startsWith("com.github.kokorin.jaffree")) {
-            for (Method method : clazz.getMethods()) {
-                if (!Modifier.isPublic(method.getModifiers())) {
-                    continue;
-                }
-
-                if (!method.getName().startsWith("get")) {
-                    continue;
-                }
-
-                if (method.getParameterTypes().length > 0) {
-                    continue;
-                }
-
-                String subContext = method.getName() + "()";
-                if (!context.isEmpty()) {
-                    subContext = context + "." + subContext;
-                }
-
-                Object s1 = method.invoke(o1);
-                Object s2 = method.invoke(o2);
-
-                compareByGetters(subContext, s1, s2);
-            }
-
-
-            return;
-        }
-
-        throw new AssertionFailedError("Don't know how to compare " + clazz);
     }
 }

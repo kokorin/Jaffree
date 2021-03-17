@@ -1,5 +1,5 @@
 /*
- *    Copyright  2018 Denis Kokorin
+ *    Copyright 2018-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 package com.github.kokorin.jaffree.ffprobe;
 
 import com.github.kokorin.jaffree.LogLevel;
-import com.github.kokorin.jaffree.ffprobe.data.DSection;
+import com.github.kokorin.jaffree.ffprobe.data.ProbeData;
 
 /**
  * Logging information from the decoder about each frame.
@@ -26,15 +26,15 @@ import com.github.kokorin.jaffree.ffprobe.data.DSection;
  * @see FFprobe#setShowLog(LogLevel)
  */
 public class Log {
-    private final DSection section;
+    private final ProbeData probeData;
 
     /**
      * Creates {@link Log}.
      *
-     * @param section data section
+     * @param probeData data section
      */
-    public Log(final DSection section) {
-        this.section = section;
+    public Log(final ProbeData probeData) {
+        this.probeData = probeData;
     }
 
     /**
@@ -46,15 +46,15 @@ public class Log {
      *
      * @return data section
      */
-    public DSection getSection() {
-        return section;
+    public ProbeData getProbeData() {
+        return probeData;
     }
 
     /**
      * @return context
      */
     public String getContext() {
-        return section.getString("context");
+        return probeData.getString("context");
     }
 
     /**
@@ -62,34 +62,34 @@ public class Log {
      */
     // TODO parse enum?
     public Integer getLevel() {
-        return section.getInteger("level");
+        return probeData.getInteger("level");
     }
 
     /**
      * @return category
      */
     public Integer getCategory() {
-        return section.getInteger("category");
+        return probeData.getInteger("category");
     }
 
     /**
      * @return parent context
      */
     public String getParentContext() {
-        return section.getString("parent_context");
+        return probeData.getString("parent_context");
     }
 
     /**
      * @return parent category
      */
     public Integer getParentCategory() {
-        return section.getInteger("parent_category");
+        return probeData.getInteger("parent_category");
     }
 
     /**
      * @return message
      */
     public String getMessage() {
-        return section.getString("message");
+        return probeData.getString("message");
     }
 }
