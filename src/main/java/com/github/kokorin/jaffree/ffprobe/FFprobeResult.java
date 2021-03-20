@@ -17,8 +17,11 @@
 
 package com.github.kokorin.jaffree.ffprobe;
 
+import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffprobe.data.ProbeData;
 import com.github.kokorin.jaffree.ffprobe.data.ProbeDataConverter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -27,6 +30,8 @@ import java.util.List;
  */
 public class FFprobeResult {
     private final ProbeData probeData;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(FFprobeResult.class);
 
     /**
      * Constructs {@link FFprobeResult} from parsed {@link ProbeData}.
@@ -75,26 +80,53 @@ public class FFprobeResult {
     }
 
     /**
-     * @return parsed frames
+     * @return parsed frames and subtitles
      * @see FFprobe#setShowFrames(boolean)
+     * @see Frame
+     * @see Subtitle
      */
-    public List<Frame> getFrames() {
-        return probeData.getSubDataList("frames", new ProbeDataConverter<Frame>() {
+    public List<FrameSubtitle> getFrames() {
+        return probeData.getSubDataList("frames", new ProbeDataConverter<FrameSubtitle>() {
             @Override
-            public Frame convert(final ProbeData probeData) {
+            public FrameSubtitle convert(final ProbeData probeData) {
+                StreamType streamType = probeData.getStreamType("media_type");
+                if (streamType == StreamType.SUBTITLE) {
+                    return new Subtitle(probeData);
+                }
                 return new Frame(probeData);
             }
         });
     }
 
     /**
-     * @return parsed subtitles
+     * @return parsed packets, frames and subtitles
+     * @see FFprobe#setShowPackets(boolean)
+     * @see FFprobe#setShowFrames(boolean)
+     * @see Packet
+     * @see Frame
+     * @see Subtitle
      */
-    public List<Subtitle> getSubtitles() {
-        return probeData.getSubDataList("subtitle", new ProbeDataConverter<Subtitle>() {
+    public List<PacketFrameSubtitle> getPacketsAndFrames() {
+        return probeData.getSubDataList("packets_and_frames", new ProbeDataConverter<PacketFrameSubtitle>() {
             @Override
-            public Subtitle convert(final ProbeData probeData) {
-                return new Subtitle(probeData);
+            public PacketFrameSubtitle convert(final ProbeData probeData) {
+                String type = probeData.getString("type");
+                if (type == null) {
+                    LOGGER.error("No type property found");
+                    return null;
+                }
+
+                switch (type) {
+                    case "packet":
+                        return new Packet(probeData);
+                    case "frame":
+                        return new Frame(probeData);
+                    case "subtitle":
+                        return new Subtitle(probeData);
+                    default:
+                        LOGGER.error("Unknown type: " + type);
+                        return null;
+                }
             }
         });
     }

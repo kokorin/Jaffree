@@ -23,7 +23,7 @@ import com.github.kokorin.jaffree.ffprobe.data.ProbeDataConverter;
 
 import java.util.List;
 
-public class Packet {
+public class Packet implements PacketFrameSubtitle {
 
     private final ProbeData probeData;
 
@@ -33,6 +33,14 @@ public class Packet {
 
     public ProbeData getProbeData() {
         return probeData;
+    }
+
+    public Long getPts() {
+        return probeData.getLong("pts");
+    }
+
+    public Float getPtsTime() {
+        return probeData.getFloat("pts_time");
     }
 
     // TODO Does Packet contain any tags?
@@ -55,14 +63,6 @@ public class Packet {
 
     public Integer getStreamIndex() {
         return probeData.getInteger("stream_index");
-    }
-
-    public Long getPts() {
-        return probeData.getLong("pts");
-    }
-
-    public Float getPtsTime() {
-        return probeData.getFloat("pts_time");
     }
 
     public Long getDts() {

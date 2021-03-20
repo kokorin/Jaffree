@@ -19,6 +19,7 @@ package com.github.kokorin.jaffree.ffprobe;
 
 import com.github.kokorin.jaffree.ffprobe.data.ProbeData;
 
+// TODO test properties
 public class PacketSideData {
     private final ProbeData probeData;
 

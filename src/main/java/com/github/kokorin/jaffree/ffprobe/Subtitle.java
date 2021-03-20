@@ -20,7 +20,7 @@ package com.github.kokorin.jaffree.ffprobe;
 import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffprobe.data.ProbeData;
 
-public class Subtitle {
+public class Subtitle implements FrameSubtitle, PacketFrameSubtitle {
     private final ProbeData probeData;
 
     public Subtitle(ProbeData probeData) {
@@ -31,16 +31,20 @@ public class Subtitle {
         return probeData;
     }
 
-    public StreamType getMediaType() {
-        return probeData.getStreamType("media_type");
-    }
-
     public Long getPts() {
         return probeData.getLong("pts");
     }
 
     public Float getPtsTime() {
         return probeData.getFloat("pts_time");
+    }
+
+    /**
+     * Always returns {@link StreamType#SUBTITLE}
+     * @return subtitle StreamType
+     */
+    public StreamType getMediaType() {
+        return probeData.getStreamType("media_type");
     }
 
     public Integer getFormat() {
