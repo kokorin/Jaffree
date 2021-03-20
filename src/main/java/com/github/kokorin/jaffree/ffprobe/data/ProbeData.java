@@ -17,6 +17,8 @@
 
 package com.github.kokorin.jaffree.ffprobe.data;
 
+import com.github.kokorin.jaffree.LogCategory;
+import com.github.kokorin.jaffree.LogLevel;
 import com.github.kokorin.jaffree.Rational;
 import com.github.kokorin.jaffree.StreamType;
 
@@ -42,6 +44,10 @@ public interface ProbeData {
 
     // TODO: check if it should be here
     StreamType getStreamType(String key);
+
+    LogLevel getLogLevel(String key);
+
+    LogCategory getLogCategory(String key);
 
     Rational getRational(String key);
 

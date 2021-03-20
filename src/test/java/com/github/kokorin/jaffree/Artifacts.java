@@ -105,6 +105,27 @@ public class Artifacts {
         return result;
     }
 
+    public static synchronized Path getMkvArtifactRotated() {
+        int duration = 180;
+        String filename = "rotated_" + duration + "s.mp4";
+        Path result = getSamplePath(filename);
+
+        if (!Files.exists(result)) {
+            Path source = getMkvArtifact(duration);
+
+            FFmpeg.atPath()
+                    .addInput(UrlInput.fromPath(source))
+                    .addOutput(UrlOutput
+                            .toPath(result)
+                            .addArguments("-metadata:s:v", "rotate=\"270\"")
+                            .copyAllCodecs()
+                    )
+                    .execute();
+        }
+
+        return result;
+    }
+
     public static synchronized Path getMkvArtifactWithChapters() {
         int duration = 180;
         String filename = "3chapters_" + duration + "s.mkv";
