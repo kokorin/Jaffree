@@ -17,6 +17,7 @@
 
 package com.github.kokorin.jaffree.ffprobe;
 
+import com.github.kokorin.jaffree.LogCategory;
 import com.github.kokorin.jaffree.LogLevel;
 import com.github.kokorin.jaffree.ffprobe.data.ProbeData;
 
@@ -59,18 +60,21 @@ public class Log {
     }
 
     /**
-     * @return log level
+     * Return parsed {@link LogLevel}.
+     *
+     * @return LogLevel
      */
-    // TODO parse enum?
-    public Integer getLevel() {
-        return probeData.getInteger("level");
+    public LogLevel getLevel() {
+        return probeData.getLogLevel("level");
     }
 
     /**
-     * @return category
+     * Return parsed {@link LogCategory}.
+     *
+     * @return LogCategory
      */
-    public Integer getCategory() {
-        return probeData.getInteger("category");
+    public LogCategory getCategory() {
+        return probeData.getLogCategory("category");
     }
 
     /**
@@ -81,10 +85,12 @@ public class Log {
     }
 
     /**
-     * @return parent category
+     * Returns parsed parent {@link LogCategory}.
+     *
+     * @return parent {@link LogCategory}
      */
-    public Integer getParentCategory() {
-        return probeData.getInteger("parent_category");
+    public LogCategory getParentCategory() {
+        return probeData.getLogCategory("parent_category");
     }
 
     /**

@@ -46,6 +46,7 @@ public class FFprobeTest {
     public static Path VIDEO_WITH_PROGRAMS = Artifacts.getTsArtifactWithPrograms();
     public static Path VIDEO_WITH_CHAPTERS = Artifacts.getMkvArtifactWithChapters();
     public static Path VIDEO_WITH_SUBTITLES = Artifacts.getMkvArtifactWithSubtitles();
+    public static Path VIDEO_ROTATED = Artifacts.getMkvArtifactRotated();
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -269,10 +270,16 @@ public class FFprobeTest {
         for (FrameSubtitle frameSubtitle : result.getFrames()) {
             Assert.assertTrue(frameSubtitle instanceof Frame);
             Frame frame = (Frame) frameSubtitle;
-            assertNotNull(frame.getLogs());
 
             if (frame.getLogs() != null && !frame.getLogs().isEmpty()) {
                 framesWithLogs++;
+
+                for (Log log : frame.getLogs()) {
+                    assertNotNull(log.getLevel());
+                    assertNotNull(log.getCategory());
+                    assertNotNull(log.getContext());
+                    assertNotNull(log.getMessage());
+                }
             }
         }
         assertTrue(framesWithLogs > 1000);
@@ -571,7 +578,7 @@ public class FFprobeTest {
         Assert.fail("No artifact with side data to check!");
 
         FFprobeResult result = FFprobe.atPath(BIN)
-                .setInput(VIDEO_MP4)
+                .setInput(VIDEO_ROTATED)
                 .setShowStreams(true)
                 .setShowFrames(true)
                 .setShowData(true)
@@ -583,7 +590,11 @@ public class FFprobeTest {
         assertNotNull(result.getFrames());
         assertFalse(result.getFrames().isEmpty());
 
-        for (FrameSubtitle frame : result.getFrames()) {
+        for (FrameSubtitle frameSubtitle : result.getFrames()) {
+            if (frameSubtitle instanceof Frame) {
+                Frame frame = (Frame) frameSubtitle;
+                assertNotNull(frame.getSideDataList());
+            }
             // TODO side data properties
         }
     }

@@ -17,6 +17,8 @@
 
 package com.github.kokorin.jaffree.ffprobe.data;
 
+import com.github.kokorin.jaffree.LogCategory;
+import com.github.kokorin.jaffree.LogLevel;
 import com.github.kokorin.jaffree.Rational;
 import com.github.kokorin.jaffree.StreamType;
 import org.slf4j.Logger;
@@ -83,15 +85,37 @@ public abstract class AbstractProbeData implements ProbeData {
     }
 
     /**
-     * Returns StreamType value for specified key (using default converter).
+     * Returns {@link StreamType} value for specified key (using default converter).
      *
      * @param key key
-     * @return value
+     * @return StreamType
      */
     // TODO: check if it should be here
     @Override
     public StreamType getStreamType(final String key) {
         return getValue(key, STREAM_TYPE_CONVERTER);
+    }
+
+    /**
+     * Returns {@link LogLevel} value for specified key (using default converter).
+     *
+     * @param key key
+     * @return LogLevel
+     */
+    @Override
+    public LogLevel getLogLevel(final String key) {
+        return getValue(key, LOG_LEVEL_CONVERTER);
+    }
+
+    /**
+     * Returns {@link LogCategory} value for specified key (using default converter).
+     *
+     * @param key key
+     * @return LogCategory
+     */
+    @Override
+    public LogCategory getLogCategory(final String key) {
+        return getValue(key, LOG_CATEGORY_CONVERTER);
     }
 
     /**
@@ -256,6 +280,54 @@ public abstract class AbstractProbeData implements ProbeData {
                         return StreamType.valueOf(value.toString().toUpperCase());
                     } catch (Exception e) {
                         LOGGER.warn("Failed to parse StreamType: " + value, e);
+                    }
+
+                    return null;
+                }
+            };
+
+    private static final ValueConverter<LogLevel> LOG_LEVEL_CONVERTER =
+            new ValueConverter<LogLevel>() {
+                @Override
+                public LogLevel convert(final Object value) {
+                    if (value == null || value.equals("") || value.equals("N/A")) {
+                        return null;
+                    }
+
+                    if (value instanceof String) {
+                        try {
+                            return LogLevel.fromCode(Integer.parseInt((String) value));
+                        } catch (NumberFormatException e) {
+                            // ignored
+                        }
+                    }
+
+                    if (value instanceof Number) {
+                        return LogLevel.fromCode(((Number) value).intValue());
+                    }
+
+                    return null;
+                }
+            };
+
+    private static final ValueConverter<LogCategory> LOG_CATEGORY_CONVERTER =
+            new ValueConverter<LogCategory>() {
+                @Override
+                public LogCategory convert(final Object value) {
+                    if (value == null || value.equals("") || value.equals("N/A")) {
+                        return null;
+                    }
+
+                    if (value instanceof String) {
+                        try {
+                            return LogCategory.fromCode(Integer.parseInt((String) value));
+                        } catch (NumberFormatException e) {
+                            // ignored
+                        }
+                    }
+
+                    if (value instanceof Number) {
+                        return LogCategory.fromCode(((Number) value).intValue());
                     }
 
                     return null;
