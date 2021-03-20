@@ -24,7 +24,18 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsCollectionContaining.hasItems;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 @RunWith(Parameterized.class)
 public class FFprobeTest {
@@ -34,6 +45,7 @@ public class FFprobeTest {
     public static Path VIDEO_MP4 = Artifacts.getMp4Artifact();
     public static Path VIDEO_WITH_PROGRAMS = Artifacts.getTsArtifactWithPrograms();
     public static Path VIDEO_WITH_CHAPTERS = Artifacts.getMkvArtifactWithChapters();
+    public static Path VIDEO_WITH_SUBTITLES = Artifacts.getMkvArtifactWithSubtitles();
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -53,12 +65,12 @@ public class FFprobeTest {
         if (ffmpegHome == null) {
             ffmpegHome = System.getenv("FFMPEG_BIN");
         }
-        Assert.assertNotNull("Nor command line property, neither system variable FFMPEG_BIN is set up", ffmpegHome);
+        assertNotNull("Nor command line property, neither system variable FFMPEG_BIN is set up", ffmpegHome);
         BIN = Paths.get(ffmpegHome);
 
-        Assert.assertTrue("Sample videos weren't found: " + VIDEO_MP4.toAbsolutePath(), Files.exists(VIDEO_MP4));
-        Assert.assertTrue("Sample videos weren't found: " + VIDEO_WITH_PROGRAMS.toAbsolutePath(), Files.exists(VIDEO_WITH_PROGRAMS));
-        Assert.assertTrue("Sample videos weren't found: " + VIDEO_WITH_CHAPTERS.toAbsolutePath(), Files.exists(VIDEO_WITH_CHAPTERS));
+        assertTrue("Sample videos weren't found: " + VIDEO_MP4.toAbsolutePath(), Files.exists(VIDEO_MP4));
+        assertTrue("Sample videos weren't found: " + VIDEO_WITH_PROGRAMS.toAbsolutePath(), Files.exists(VIDEO_WITH_PROGRAMS));
+        assertTrue("Sample videos weren't found: " + VIDEO_WITH_CHAPTERS.toAbsolutePath(), Files.exists(VIDEO_WITH_CHAPTERS));
     }
 
     //private boolean showData;
@@ -72,12 +84,12 @@ public class FFprobeTest {
                 .setFormatParser(formatParser)
                 .execute();
 
-        Assert.assertNotNull(result);
-        Assert.assertNotNull(result.getStreams());
-        Assert.assertFalse(result.getStreams().isEmpty());
+        assertNotNull(result);
+        assertNotNull(result.getStreams());
+        assertFalse(result.getStreams().isEmpty());
 
         Stream stream = result.getStreams().get(0);
-        Assert.assertNotNull(stream.getExtradata());
+        assertNotNull(stream.getExtradata());
         Assert.assertEquals(Rational.valueOf(30L), stream.getAvgFrameRate());
     }
 
@@ -89,7 +101,7 @@ public class FFprobeTest {
                 .setFormatParser(formatParser)
                 .execute();
 
-        Assert.assertNotNull(result);
+        assertNotNull(result);
     }
 
     @Test
@@ -101,12 +113,12 @@ public class FFprobeTest {
                 .setFormatParser(formatParser)
                 .execute();
 
-        Assert.assertNotNull(result);
-        Assert.assertNotNull(result.getPackets());
-        Assert.assertFalse(result.getPackets().isEmpty());
-        Assert.assertNotNull(result.getPackets().get(0).getData());
+        assertNotNull(result);
+        assertNotNull(result.getPackets());
+        assertFalse(result.getPackets().isEmpty());
+        assertNotNull(result.getPackets().get(0).getData());
         for (Packet packet : result.getPackets()) {
-            Assert.assertNotNull(packet.getCodecType());
+            assertNotNull(packet.getCodecType());
         }
     }
 
@@ -122,10 +134,10 @@ public class FFprobeTest {
                 .setFormatParser(formatParser)
                 .execute();
 
-        Assert.assertNotNull(result);
-        Assert.assertNotNull(result.getStreams());
-        Assert.assertFalse(result.getStreams().isEmpty());
-        Assert.assertNotNull(result.getStreams().get(0).getExtradataHash());
+        assertNotNull(result);
+        assertNotNull(result.getStreams());
+        assertFalse(result.getStreams().isEmpty());
+        assertNotNull(result.getStreams().get(0).getExtradataHash());
     }
 
     @Test
@@ -137,12 +149,12 @@ public class FFprobeTest {
                 .setFormatParser(formatParser)
                 .execute();
 
-        Assert.assertNotNull(result);
-        Assert.assertNotNull(result.getPackets());
-        Assert.assertFalse(result.getPackets().isEmpty());
+        assertNotNull(result);
+        assertNotNull(result.getPackets());
+        assertFalse(result.getPackets().isEmpty());
         for (Packet packet : result.getPackets()) {
-            Assert.assertNotNull(packet.getCodecType());
-            Assert.assertNotNull(packet.getDataHash());
+            assertNotNull(packet.getCodecType());
+            assertNotNull(packet.getDataHash());
         }
     }
 
@@ -156,10 +168,10 @@ public class FFprobeTest {
                 .setFormatParser(formatParser)
                 .execute();
 
-        Assert.assertNotNull(result);
-        Assert.assertNotNull(result.getFormat());
-        Assert.assertNotNull(result.getFormat().getFormatName());
-        Assert.assertNotNull(result.getFormat().getFormatLongName());
+        assertNotNull(result);
+        assertNotNull(result.getFormat());
+        assertNotNull(result.getFormat().getFormatName());
+        assertNotNull(result.getFormat().getFormatLongName());
     }
 
     //private String showFormatEntry;
@@ -174,18 +186,18 @@ public class FFprobeTest {
                 .setFormatParser(formatParser)
                 .execute();
 
-        Assert.assertNotNull(result);
+        assertNotNull(result);
 
-        Assert.assertNotNull(result.getPackets());
-        Assert.assertTrue(result.getPackets().size() > 0);
-        Assert.assertNotNull(result.getPackets().get(0).getPtsTime());
-        Assert.assertNotNull(result.getPackets().get(0).getDurationTime());
-        Assert.assertNotNull(result.getPackets().get(0).getStreamIndex());
+        assertNotNull(result.getPackets());
+        assertTrue(result.getPackets().size() > 0);
+        assertNotNull(result.getPackets().get(0).getPtsTime());
+        assertNotNull(result.getPackets().get(0).getDurationTime());
+        assertNotNull(result.getPackets().get(0).getStreamIndex());
 
-        Assert.assertNotNull(result.getStreams());
-        Assert.assertTrue(result.getStreams().size() > 0);
-        Assert.assertNotNull(result.getStreams().get(0).getIndex());
-        Assert.assertNotNull(result.getStreams().get(0).getCodecType());
+        assertNotNull(result.getStreams());
+        assertTrue(result.getStreams().size() > 0);
+        assertNotNull(result.getStreams().get(0).getIndex());
+        assertNotNull(result.getStreams().get(0).getCodecType());
 
     }
 
@@ -194,27 +206,48 @@ public class FFprobeTest {
     @Test
     public void testShowFrames() throws Exception {
         FFprobeResult result = FFprobe.atPath(BIN)
-                .setInput(VIDEO_MP4)
+                .setInput(VIDEO_WITH_SUBTITLES)
                 .setShowFrames(true)
                 .setFormatParser(formatParser)
                 .execute();
 
-        Assert.assertNotNull(result);
-        Assert.assertNotNull(result.getFrames());
-        Assert.assertTrue(result.getFrames().size() > 0);
+        assertNotNull(result);
+        assertNotNull(result.getFrames());
+        assertFalse(result.getFrames().isEmpty());
 
-        for (Object frameOrSubtitle : result.getFrames()) {
-            if (!(frameOrSubtitle instanceof Frame)) {
+        Set<StreamType> streamTypes = EnumSet.noneOf(StreamType.class);
+
+        for (FrameSubtitle frameSubtitle : result.getFrames()) {
+
+            if (frameSubtitle instanceof Subtitle) {
+                Subtitle subtitle = (Subtitle) frameSubtitle;
+                streamTypes.add(subtitle.getMediaType());
+                assertNotNull(subtitle.getPts());
+                assertNotNull(subtitle.getPtsTime());
+                assertNotNull(subtitle.getFormat());
+                assertNotNull(subtitle.getStartDisplayTime());
+                assertNotNull(subtitle.getEndDisplayTime());
+                assertNotNull(subtitle.getNumRects());
                 continue;
             }
 
-            Frame frame = (Frame) frameOrSubtitle;
-            Assert.assertNotNull(frame.getMediaType());
-
+            assertTrue(frameSubtitle instanceof Frame);
+            Frame frame = (Frame) frameSubtitle;
+            streamTypes.add(frame.getMediaType());
             if (frame.getMediaType() == StreamType.VIDEO) {
-                Assert.assertNotNull(frame.getSampleAspectRatio());
+                assertNotNull(frame.getWidth());
+                assertNotNull(frame.getHeight());
+                assertNotNull(frame.getSampleAspectRatio());
+                assertNotNull(frame.getPixFmt());
+            }
+            if (frame.getMediaType() == StreamType.AUDIO) {
+                assertNotNull(frame.getChannels());
+                assertNotNull(frame.getChannelLayout());
+                assertNotNull(frame.getNbSamples());
             }
         }
+
+        assertThat(streamTypes, hasItems(StreamType.VIDEO, StreamType.AUDIO, StreamType.SUBTITLE));
     }
 
     //private LogLevel showLog;
@@ -228,15 +261,21 @@ public class FFprobeTest {
                 .setFormatParser(formatParser)
                 .execute();
 
-        Assert.assertNotNull(result);
-        Assert.assertNotNull(result.getFrames());
+        assertNotNull(result);
+        assertNotNull(result.getFrames());
+        assertFalse(result.getFrames().isEmpty());
+
         int framesWithLogs = 0;
-        for (Frame frame : result.getFrames()) {
+        for (FrameSubtitle frameSubtitle : result.getFrames()) {
+            Assert.assertTrue(frameSubtitle instanceof Frame);
+            Frame frame = (Frame) frameSubtitle;
+            assertNotNull(frame.getLogs());
+
             if (frame.getLogs() != null && !frame.getLogs().isEmpty()) {
                 framesWithLogs++;
             }
         }
-        Assert.assertTrue(framesWithLogs > 1000);
+        assertTrue(framesWithLogs > 1000);
     }
 
     //private boolean showStreams;
@@ -249,21 +288,21 @@ public class FFprobeTest {
                 .setFormatParser(formatParser)
                 .execute();
 
-        Assert.assertNotNull(result);
-        Assert.assertNotNull(result.getStreams());
+        assertNotNull(result);
+        assertNotNull(result.getStreams());
         Assert.assertEquals(2, result.getStreams().size());
 
         Stream videoStream = result.getStreams().get(0);
 
         Assert.assertEquals(StreamType.VIDEO, videoStream.getCodecType());
-        Assert.assertNotNull(videoStream.getSampleAspectRatio());
-        Assert.assertNotNull(videoStream.getDisplayAspectRatio());
-        Assert.assertNotNull(videoStream.getStartTime(TimeUnit.NANOSECONDS));
+        assertNotNull(videoStream.getSampleAspectRatio());
+        assertNotNull(videoStream.getDisplayAspectRatio());
+        assertNotNull(videoStream.getStartTime(TimeUnit.NANOSECONDS));
         Assert.assertEquals((Long) 180L, videoStream.getDuration(TimeUnit.SECONDS));
-        Assert.assertNotNull(videoStream.getBitRate());
-        Assert.assertNotNull(videoStream.getNbFrames());
-        Assert.assertNotNull(videoStream.getBitsPerRawSample());
-        Assert.assertNotNull(videoStream.getPixFmt());
+        assertNotNull(videoStream.getBitRate());
+        assertNotNull(videoStream.getNbFrames());
+        assertNotNull(videoStream.getBitsPerRawSample());
+        assertNotNull(videoStream.getPixFmt());
     }
 
     @Test
@@ -275,8 +314,8 @@ public class FFprobeTest {
                 .setFormatParser(formatParser)
                 .execute();
 
-        Assert.assertNotNull(result);
-        Assert.assertNotNull(result.getStreams());
+        assertNotNull(result);
+        assertNotNull(result.getStreams());
         Assert.assertEquals(1, result.getStreams().size());
 
         Stream stream = result.getStreams().get(0);
@@ -292,10 +331,10 @@ public class FFprobeTest {
                 .setFormatParser(formatParser)
                 .execute();
 
-        Assert.assertNotNull(result);
-        Assert.assertNotNull(result.getPackets());
-        Assert.assertTrue(result.getPackets().size() > 7000);
-        Assert.assertNotNull(result.getPackets().get(0).getCodecType());
+        assertNotNull(result);
+        assertNotNull(result.getPackets());
+        assertTrue(result.getPackets().size() > 7000);
+        assertNotNull(result.getPackets().get(0).getCodecType());
     }
 
     //private boolean showPrograms;
@@ -308,8 +347,8 @@ public class FFprobeTest {
                 .setFormatParser(formatParser)
                 .execute();
 
-        Assert.assertNotNull(result);
-        Assert.assertNotNull(result.getPrograms());
+        assertNotNull(result);
+        assertNotNull(result.getPrograms());
         Assert.assertEquals(3, result.getPrograms().size());
 
         Program program1 = result.getPrograms().get(0);
@@ -317,21 +356,21 @@ public class FFprobeTest {
         Assert.assertEquals((Integer) 1, program1.getProgramId());
         Assert.assertEquals((Integer) 1, program1.getProgramNum());
         Assert.assertEquals((Integer) 2, program1.getNbStreams());
-        Assert.assertNotNull(program1.getStreams());
+        assertNotNull(program1.getStreams());
         Assert.assertEquals(2, program1.getStreams().size());
 
         Program program2 = result.getPrograms().get(1);
         Assert.assertEquals("second program", program2.getTag("service_name"));
         Assert.assertEquals((Integer) 2, program2.getProgramNum());
         Assert.assertEquals((Integer) 2, program2.getNbStreams());
-        Assert.assertNotNull(program2.getStreams());
+        assertNotNull(program2.getStreams());
         Assert.assertEquals(2, program2.getStreams().size());
 
         Program program3 = result.getPrograms().get(2);
         Assert.assertEquals("3rdProgram", program3.getTag("service_name"));
         Assert.assertEquals((Integer) 3, program3.getProgramNum());
         Assert.assertEquals((Integer) 2, program3.getNbStreams());
-        Assert.assertNotNull(program3.getStreams());
+        assertNotNull(program3.getStreams());
         Assert.assertEquals(2, program3.getStreams().size());
     }
 
@@ -345,8 +384,8 @@ public class FFprobeTest {
                 .setFormatParser(formatParser)
                 .execute();
 
-        Assert.assertNotNull(result);
-        Assert.assertNotNull(result.getChapters());
+        assertNotNull(result);
+        assertNotNull(result.getChapters());
         Assert.assertEquals(3, result.getChapters().size());
 
         Chapter chapter1 = result.getChapters().get(0);
@@ -355,7 +394,7 @@ public class FFprobeTest {
         Assert.assertEquals(new Rational(1L, 1_000_000_000L), chapter1.getTimeBase());
         Assert.assertEquals((Long) 0L, chapter1.getStart());
         Assert.assertEquals((Double) 0., chapter1.getStartTime(), 0.01);
-        Assert.assertEquals((Long)60_000_000_000L, chapter1.getEnd());
+        Assert.assertEquals((Long) 60_000_000_000L, chapter1.getEnd());
         Assert.assertEquals((Double) 60., chapter1.getEndTime(), 0.01);
 
         Chapter chapter2 = result.getChapters().get(1);
@@ -382,12 +421,12 @@ public class FFprobeTest {
                 .setFormatParser(formatParser)
                 .execute();
 
-        Assert.assertNotNull(result);
-        Assert.assertNotNull(result.getStreams());
+        assertNotNull(result);
+        assertNotNull(result.getStreams());
         for (Stream stream : result.getStreams()) {
-            Assert.assertTrue(stream.getNbFrames() > 0);
-            Assert.assertTrue(stream.getNbReadFrames() > 0);
-            Assert.assertTrue(stream.getNbReadPackets() > 0);
+            assertTrue(stream.getNbFrames() > 0);
+            assertTrue(stream.getNbReadFrames() > 0);
+            assertTrue(stream.getNbReadPackets() > 0);
         }
     }
 
@@ -402,37 +441,108 @@ public class FFprobeTest {
                 .setFormatParser(formatParser)
                 .execute();
 
-        Assert.assertNotNull(result);
-        Assert.assertNotNull(result.getPackets());
+        assertNotNull(result);
+        assertNotNull(result.getPackets());
         Assert.assertEquals(42, result.getPackets().size());
         for (Packet packet : result.getPackets()) {
-            Assert.assertNotNull(packet.getCodecType());
+            assertNotNull(packet.getCodecType());
         }
     }
 
     @Test
-    public void testShowSubtitles() {
-        Assert.fail("No artifact with subtitles to check!");
-
+    public void testShowPacketsAndFrames() {
         FFprobeResult result = FFprobe.atPath(BIN)
-                .setInput(VIDEO_MP4)
-                .setShowStreams(true)
-                .setShowData(true)
-                .setSelectStreams(StreamType.VIDEO)
+                .setInput(VIDEO_WITH_SUBTITLES)
+                .setShowPackets(true)
+                .setShowFrames(true)
                 .setFormatParser(formatParser)
                 .execute();
 
-        Assert.assertNotNull(result);
-        Assert.assertNotNull(result.getSubtitles());
-        Assert.assertFalse(result.getSubtitles().isEmpty());
-        for (Subtitle subtitle : result.getSubtitles()) {
-            Assert.assertNotNull(subtitle.getStartDisplayTime());
-            Assert.assertNotNull(subtitle.getFormat());
+        assertNotNull(result);
+        assertNotNull(result.getPacketsAndFrames());
+        assertTrue(result.getPacketsAndFrames().size() > 20_000);
+
+        Set<Class<? extends PacketFrameSubtitle>> resultClasses = new HashSet<>();
+        for (PacketFrameSubtitle pfs : result.getPacketsAndFrames()) {
+            resultClasses.add(pfs.getClass());
+
+            if (pfs instanceof Packet) {
+                Packet packet = (Packet) pfs;
+
+                assertNotNull(packet.getPts());
+                assertNotNull(packet.getPtsTime());
+                assertNotNull(packet.getCodecType());
+                assertNotNull(packet.getDts());
+                assertNotNull(packet.getDtsTime());
+                assertNotNull(packet.getDuration());
+                assertNotNull(packet.getDurationTime());
+                assertNotNull(packet.getSize());
+                assertNotNull(packet.getPos());
+                assertNotNull(packet.getFlags());
+                continue;
+            }
+            if (pfs instanceof Frame) {
+                Frame frame = (Frame) pfs;
+
+                assertNotNull(frame.getMediaType());
+                assertNotNull(frame.getStreamIndex());
+                assertNotNull(frame.getKeyFrame());
+                assertNotNull(frame.getPktPts());
+                assertNotNull(frame.getPktPtsTime());
+                assertNotNull(frame.getPktDts());
+                assertNotNull(frame.getPktDtsTime());
+                assertNotNull(frame.getBestEffortTimestamp());
+                assertNotNull(frame.getBestEffortTimestampTime());
+                assertNotNull(frame.getPktDuration());
+                assertNotNull(frame.getPktDurationTime());
+                assertNotNull(frame.getPktPos());
+                assertNotNull(frame.getPktSize());
+
+                switch (frame.getMediaType()) {
+                    case VIDEO:
+                        assertNotNull(frame.getWidth());
+                        assertNotNull(frame.getHeight());
+                        assertNotNull(frame.getPixFmt());
+                        assertNotNull(frame.getSampleAspectRatio());
+                        assertNotNull(frame.getPictType());
+                        assertNotNull(frame.getCodedPictureNumber());
+                        assertNotNull(frame.getDisplayPictureNumber());
+                        assertNotNull(frame.getInterlacedFrame());
+                        assertNotNull(frame.getTopFieldFirst());
+                        assertNotNull(frame.getRepeatPict());
+                        break;
+                    case AUDIO:
+                        assertNotNull(frame.getSampleFmt());
+                        assertNotNull(frame.getNbSamples());
+                        assertNotNull(frame.getChannels());
+                        assertNotNull(frame.getChannelLayout());
+                        break;
+                    default:
+                        fail("Unexpected media type: " + frame.getMediaType());
+                }
+                continue;
+            }
+            if (pfs instanceof Subtitle) {
+                Subtitle subtitle = (Subtitle) pfs;
+
+                assertEquals(StreamType.SUBTITLE, subtitle.getMediaType());
+                assertNotNull(subtitle.getPts());
+                assertNotNull(subtitle.getPtsTime());
+                assertNotNull(subtitle.getFormat());
+                assertNotNull(subtitle.getStartDisplayTime());
+                assertNotNull(subtitle.getEndDisplayTime());
+                assertNotNull(subtitle.getNumRects());
+                continue;
+            }
+
+            fail("Unexpected type: " + pfs);
         }
+
+        assertThat(resultClasses, hasItems(Packet.class, Frame.class, Subtitle.class));
     }
 
     @Test
-    public void testSideListAttributes() throws Exception {
+    public void testStreamSideDataListAttributes() throws Exception {
         Assert.fail("No artifact with side data to check!");
 
         FFprobeResult result = FFprobe.atPath(BIN)
@@ -443,17 +553,61 @@ public class FFprobeTest {
                 .setFormatParser(formatParser)
                 .execute();
 
-        Assert.assertNotNull(result);
-        Assert.assertNotNull(result.getStreams());
+        assertNotNull(result);
+        assertNotNull(result.getStreams());
 
         Stream stream = result.getStreams().get(0);
-        Assert.assertNotNull(stream);
+        assertNotNull(stream);
 
         PacketSideData sideData = stream.getSideDataList().get(0);
-        Assert.assertNotNull(sideData);
-        Assert.assertNotNull(sideData.getDisplayMatrix());
+        assertNotNull(sideData);
+        assertNotNull(sideData.getDisplayMatrix());
         Assert.assertNotEquals("New lines must be kept by parser", -1, sideData.getDisplayMatrix().indexOf('\n'));
-        Assert.assertNotNull(sideData.getRotation());
+        assertNotNull(sideData.getRotation());
+    }
+
+    @Test
+    public void testFrameSideDataListAttributes() throws Exception {
+        Assert.fail("No artifact with side data to check!");
+
+        FFprobeResult result = FFprobe.atPath(BIN)
+                .setInput(VIDEO_MP4)
+                .setShowStreams(true)
+                .setShowFrames(true)
+                .setShowData(true)
+                .setSelectStreams(StreamType.VIDEO)
+                .setFormatParser(formatParser)
+                .execute();
+
+        assertNotNull(result);
+        assertNotNull(result.getFrames());
+        assertFalse(result.getFrames().isEmpty());
+
+        for (FrameSubtitle frame : result.getFrames()) {
+            // TODO side data properties
+        }
+    }
+
+    @Test
+    public void testPacketSideDataListAttributes() throws Exception {
+        Assert.fail("No artifact with side data to check!");
+
+        FFprobeResult result = FFprobe.atPath(BIN)
+                .setInput(VIDEO_MP4)
+                .setShowStreams(true)
+                .setShowPackets(true)
+                .setShowData(true)
+                .setSelectStreams(StreamType.VIDEO)
+                .setFormatParser(formatParser)
+                .execute();
+
+        assertNotNull(result);
+        assertNotNull(result.getPackets());
+        assertFalse(result.getPackets().isEmpty());
+
+        for (Packet packet : result.getPackets()) {
+            // TODO side data properties
+        }
     }
 
     @Test
@@ -476,9 +630,9 @@ public class FFprobeTest {
                 .setFormatParser(formatParser)
                 .execute();
 
-        Assert.assertNotNull(result);
-        Assert.assertNotNull(result.getStreams());
-        Assert.assertFalse(result.getStreams().isEmpty());
+        assertNotNull(result);
+        assertNotNull(result.getStreams());
+        assertFalse(result.getStreams().isEmpty());
     }
 
     @Test
@@ -490,9 +644,9 @@ public class FFprobeTest {
                 .setFormatParser(formatParser)
                 .execute();
 
-        Assert.assertNotNull(result);
-        Assert.assertNotNull(result.getStreams());
-        Assert.assertFalse(result.getStreams().isEmpty());
+        assertNotNull(result);
+        assertNotNull(result.getStreams());
+        assertFalse(result.getStreams().isEmpty());
     }
 
     @Test
@@ -504,9 +658,9 @@ public class FFprobeTest {
                 .setFormatParser(formatParser)
                 .execute();
 
-        Assert.assertNotNull(result);
-        Assert.assertNotNull(result.getStreams());
-        Assert.assertFalse(result.getStreams().isEmpty());
+        assertNotNull(result);
+        assertNotNull(result.getStreams());
+        assertFalse(result.getStreams().isEmpty());
     }
 
     @Test
@@ -518,9 +672,9 @@ public class FFprobeTest {
                 .setFormatParser(formatParser)
                 .execute();
 
-        Assert.assertNotNull(result);
-        Assert.assertNotNull(result.getStreams());
-        Assert.assertFalse(result.getStreams().isEmpty());
+        assertNotNull(result);
+        assertNotNull(result.getStreams());
+        assertFalse(result.getStreams().isEmpty());
     }
 
     @Test
@@ -534,8 +688,8 @@ public class FFprobeTest {
                 .execute();
 
 
-        Assert.assertNotNull(result);
-        Assert.assertNotNull(result.getStreams());
+        assertNotNull(result);
+        assertNotNull(result.getStreams());
         Assert.assertEquals(1, result.getStreams().size());
 
         Stream stream = result.getStreams().get(0);
@@ -554,9 +708,9 @@ public class FFprobeTest {
                     .execute();
         }
 
-        Assert.assertNotNull(result);
-        Assert.assertNotNull(result.getStreams());
-        Assert.assertFalse(result.getStreams().isEmpty());
+        assertNotNull(result);
+        assertNotNull(result.getStreams());
+        assertFalse(result.getStreams().isEmpty());
     }
 
     @Test
@@ -571,9 +725,9 @@ public class FFprobeTest {
                     .execute();
         }
 
-        Assert.assertNotNull(result);
-        Assert.assertNotNull(result.getStreams());
-        Assert.assertFalse(result.getStreams().isEmpty());
+        assertNotNull(result);
+        assertNotNull(result.getStreams());
+        assertFalse(result.getStreams().isEmpty());
     }
 
     @Test
@@ -585,8 +739,8 @@ public class FFprobeTest {
                 .executeAsync()
                 .get();
 
-        Assert.assertNotNull(result);
-        Assert.assertNotNull(result.getStreams());
+        assertNotNull(result);
+        assertNotNull(result.getStreams());
         Assert.assertEquals(2, result.getStreams().size());
 
         Stream stream = result.getStreams().get(0);

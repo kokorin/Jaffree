@@ -27,6 +27,7 @@ import com.github.kokorin.jaffree.ffprobe.data.ProbeData;
  * TODO see ffprobe.c line 2154 - FrameSideData section contains different properties for
  * TODO different side data types.
  */
+// TODO test properties
 public class FrameSideData {
     private final ProbeData probeData;
 

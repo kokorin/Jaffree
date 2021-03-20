@@ -22,6 +22,7 @@ import com.github.kokorin.jaffree.ffprobe.data.ProbeData;
 /**
  * Format description.
  */
+// TODO test properties
 public class Format {
     private final ProbeData probeData;
 

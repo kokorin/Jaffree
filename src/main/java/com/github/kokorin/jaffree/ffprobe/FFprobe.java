@@ -21,6 +21,7 @@ import com.github.kokorin.jaffree.LogLevel;
 import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffprobe.data.FlatFormatParser;
 import com.github.kokorin.jaffree.ffprobe.data.FormatParser;
+import com.github.kokorin.jaffree.ffprobe.data.JsonFormatParser;
 import com.github.kokorin.jaffree.process.LoggingStdReader;
 import com.github.kokorin.jaffree.process.ProcessHandler;
 import com.github.kokorin.jaffree.process.ProcessHelper;
@@ -75,7 +76,7 @@ public class FFprobe {
     // TODO: make it final?
     private Input input;
 
-    private FormatParser formatParser = new FlatFormatParser();
+    private FormatParser formatParser = new JsonFormatParser();
 
     private final Path executable;
 

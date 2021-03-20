@@ -168,31 +168,37 @@ public class FlatFormatParser implements FormatParser {
     }
 
     private static class SectionPath implements Path {
-        private final String name;
+        private final String section;
+        private final String element;
         private final Integer index;
 
-        SectionPath(final String name, final Integer index) {
-            this.name = name;
+        SectionPath(final String section, final String element, final Integer index) {
+            this.section = section;
+            this.element = element;
             this.index = index;
         }
 
         @Override
         public TreeMap<String, Object> next(final TreeMap<String, Object> prev) {
             @SuppressWarnings("unchecked")
-            List<TreeMap<String, Object>> valueList = (List<TreeMap<String, Object>>) prev.get(name);
+            List<TreeMap<String, Object>> valueList = (List<TreeMap<String, Object>>) prev.get(section);
             if (valueList == null) {
                 valueList = new ArrayList<>();
-                prev.put(name, valueList);
+                prev.put(section, valueList);
             }
 
-            while (valueList.size() <= index) {
-                valueList.add(null);
-            }
+            Object lastElement = prev.get("_last_element");
+            Object lastIndex = prev.get("_last_index");
 
-            TreeMap<String, Object> result = valueList.get(index);
-            if (result == null) {
+            TreeMap<String, Object> result;
+            if (element.equals(lastElement) && index.equals(lastIndex)) {
+                result = valueList.get(valueList.size() - 1);
+            } else {
                 result = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-                valueList.set(index, result);
+                result.put("type", element);
+                valueList.add(result);
+                prev.put("_last_element", element);
+                prev.put("_last_index", index);
             }
 
             return result;
@@ -208,7 +214,7 @@ public class FlatFormatParser implements FormatParser {
                 return null;
             }
 
-            return new SectionPath(group, Integer.valueOf(index));
+            return new SectionPath(group, name, Integer.valueOf(index));
         }
     }
 

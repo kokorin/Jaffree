@@ -23,6 +23,7 @@ import com.github.kokorin.jaffree.ffprobe.data.ProbeDataConverter;
 import java.util.List;
 
 // TODO check what timebase are used for StartPts & EndPts
+// TODO test properties
 public class Program {
     private final ProbeData probeData;
 

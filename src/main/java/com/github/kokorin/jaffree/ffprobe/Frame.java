@@ -29,7 +29,7 @@ import java.util.List;
  *
  * @see FFprobe#setShowFrames(boolean)
  */
-public class Frame {
+public class Frame implements FrameSubtitle, PacketFrameSubtitle {
     private final ProbeData probeData;
 
     /**
@@ -54,7 +54,6 @@ public class Frame {
         return probeData;
     }
 
-    // TODO Does Frame contain any tags?
     public String getTag(String name) {
         return probeData.getSubData("tags").getString(name);
     }
@@ -88,6 +87,32 @@ public class Frame {
     }
 
     /**
+     * Presentation timestamp in time_base units (time when frame should be shown to user).
+     * <p>
+     * <b>Note</b>: despite declared in <a href="https://github.com/FFmpeg/FFmpeg/blob/master/doc/ffprobe.xsd">ffprobe.xsd</a>
+     * for ffprobe:frameType this property has never been reported by ffprobe.
+     *
+     * @return pts
+     * @see #getPktPts()
+     */
+    public Long getPts() {
+        return probeData.getLong("pts");
+    }
+
+    /**
+     * Presentation timestamp in seconds (time when frame should be shown to user).
+     * <p>
+     * <b>Note</b>: despite declared in <a href="https://github.com/FFmpeg/FFmpeg/blob/master/doc/ffprobe.xsd">ffprobe.xsd</a>
+     * for ffprobe:frameType this property has never been reported by ffprobe.
+     *
+     * @return pts in seconds
+     * @see #getPktPtsTime()
+     */
+    public Float getPtsTime() {
+        return probeData.getFloat("pts_time");
+    }
+
+    /**
      * @return media type
      */
     public StreamType getMediaType() {
@@ -110,28 +135,9 @@ public class Frame {
     }
 
     /**
-     * Presentation timestamp in time_base units (time when frame should be shown to user).
-     *
-     * @return pts
-     */
-    public Long getPts() {
-        return probeData.getLong("pts");
-    }
-
-    /**
-     * Presentation timestamp in seconds (time when frame should be shown to user).
-     *
-     * @return pts in seconds
-     */
-    public Float getPtsTime() {
-        return probeData.getFloat("pts_time");
-    }
-
-    /**
      * PTS in time_base units copied from the AVPacket that was decoded to produce this frame.
      *
      * @return packet pts
-     * @deprecated use {@link #getPts()} instead (deprecated in ffmpeg)
      */
     public Long getPktPts() {
         return probeData.getLong("pkt_pts");
@@ -141,7 +147,6 @@ public class Frame {
      * PTS in seconds copied from the AVPacket that was decoded to produce this frame.
      *
      * @return packet pts
-     * @deprecated use the {@link #getPtsTime()} instead (deprecated in ffmpeg)
      */
     public Float getPktPtsTime() {
         return probeData.getFloat("pkt_pts_time");
@@ -197,10 +202,6 @@ public class Frame {
 
     /**
      * Duration of the corresponding packet in stream time_base units, 0 if unknown.
-     * <ul>
-     * <li>encoding: unused</li>
-     * <li>decoding: read by user</li>
-     * </ul>
      *
      * @return packet duration
      */
@@ -210,10 +211,6 @@ public class Frame {
 
     /**
      * Duration of the corresponding packet in seconds, 0 if unknown.
-     * <ul>
-     * <li>encoding: unused</li>
-     * <li>decoding: read by user</li>
-     * </ul>
      *
      * @return packet duration
      */
@@ -223,10 +220,6 @@ public class Frame {
 
     /**
      * Reordered pos from the last AVPacket that has been input into the decoder.
-     * <ul>
-     * <li>encoding: unused</li>
-     * <li>decoding: read by user</li>
-     * </ul>
      *
      * @return packet position
      */
@@ -238,10 +231,6 @@ public class Frame {
      * Size of the corresponding packet containing the compressed frame.
      * <p>
      * It is set to a negative value if unknown.
-     * <ul>
-     * <li>encoding: unused</li>
-     * <li>decoding: set by libavcodec, read by user</li>
-     * </ul>
      *
      * @return packet size
      */

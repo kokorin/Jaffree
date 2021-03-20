@@ -7,12 +7,11 @@ import com.github.kokorin.jaffree.ffmpeg.UrlOutput;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 public class Artifacts {
@@ -67,13 +66,52 @@ public class Artifacts {
         return result;
     }
 
+    public static synchronized Path getMkvArtifactWithSubtitles() {
+        int duration = 180;
+        String filename = "subtitles_" + duration + "s.mkv";
+        Path result = getSamplePath(filename);
+
+        if (!Files.exists(result)) {
+            Path source = getMkvArtifact(duration);
+
+            StringBuilder subtitles = new StringBuilder();
+            SimpleDateFormat format = new SimpleDateFormat("hh:mm:ss,SSS");
+            for (int i = 1; i < duration; i++) {
+                subtitles
+                        .append(i).append('\n')
+                        .append(format.format(new Date(i * 1000L))).append(" --> ")
+                        .append(format.format(new Date(i * 1000L - 100L))).append('\n')
+                        .append(i).append('\n')
+                        .append('\n');
+            }
+
+            FFmpeg.atPath()
+                    .addInput(UrlInput.fromPath(source))
+                    .addInput(PipeInput
+                            .pumpFrom(new ByteArrayInputStream(subtitles.toString().getBytes()))
+                            .setFormat("srt")
+                    )
+                    .addOutput(UrlOutput
+                            .toPath(result)
+                            .addMap(0, StreamType.VIDEO)
+                            .addMap(0, StreamType.AUDIO)
+                            .addMap(1, StreamType.SUBTITLE)
+                            .copyCodec(StreamType.VIDEO)
+                            .copyCodec(StreamType.AUDIO)
+                    )
+                    .execute();
+        }
+
+        return result;
+    }
+
     public static synchronized Path getMkvArtifactWithChapters() {
         int duration = 180;
         String filename = "3chapters_" + duration + "s.mkv";
         Path result = getSamplePath(filename);
 
         if (!Files.exists(result)) {
-            Path source = getMkvArtifact(180);
+            Path source = getMkvArtifact(duration);
             String metadata = ";FFMETADATA1\n" +
                     "[CHAPTER]\n" +
                     "TIMEBASE=1/1\n" +
