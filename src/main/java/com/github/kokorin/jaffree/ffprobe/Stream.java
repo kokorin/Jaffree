@@ -46,7 +46,7 @@ public class Stream {
     }
 
     public List<PacketSideData> getSideDataList() {
-        return probeData.getSubDataList("SIDE_DATA", new ProbeDataConverter<PacketSideData>() {
+        return probeData.getSubDataList("side_data_list", new ProbeDataConverter<PacketSideData>() {
             @Override
             public PacketSideData convert(ProbeData dSection) {
                 return new PacketSideData(dSection);
