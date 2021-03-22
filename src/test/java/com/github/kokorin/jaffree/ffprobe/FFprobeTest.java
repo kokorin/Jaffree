@@ -46,7 +46,6 @@ public class FFprobeTest {
     public static Path VIDEO_WITH_PROGRAMS = Artifacts.getTsArtifactWithPrograms();
     public static Path VIDEO_WITH_CHAPTERS = Artifacts.getMkvArtifactWithChapters();
     public static Path VIDEO_WITH_SUBTITLES = Artifacts.getMkvArtifactWithSubtitles();
-    public static Path VIDEO_ROTATED = Artifacts.getMkvArtifactRotated();
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -550,26 +549,30 @@ public class FFprobeTest {
 
     @Test
     public void testStreamSideDataListAttributes() throws Exception {
-        Assert.fail("No artifact with side data to check!");
-
-        FFprobeResult result = FFprobe.atPath(BIN)
-                .setInput(VIDEO_MP4)
-                .setShowStreams(true)
-                .setShowData(true)
-                .setSelectStreams(StreamType.VIDEO)
-                .setFormatParser(formatParser)
-                .execute();
+        FFprobeResult result;
+        try (InputStream rotatedInput = FFprobeTest.class.getResourceAsStream("rotated.mp4")) {
+            result = FFprobe.atPath(BIN)
+                    .setInput(rotatedInput)
+                    .setShowStreams(true)
+                    .setShowData(true)
+                    .setFormatParser(formatParser)
+                    .execute();
+        }
 
         assertNotNull(result);
         assertNotNull(result.getStreams());
+        assertEquals(1, result.getStreams().size());
 
         Stream stream = result.getStreams().get(0);
         assertNotNull(stream);
 
+        assertNotNull(stream.getSideDataList());
+        assertEquals(1, stream.getSideDataList().size());
+
         PacketSideData sideData = stream.getSideDataList().get(0);
         assertNotNull(sideData);
         assertNotNull(sideData.getDisplayMatrix());
-        Assert.assertNotEquals("New lines must be kept by parser", -1, sideData.getDisplayMatrix().indexOf('\n'));
+        assertEquals(3, sideData.getDisplayMatrix().trim().split("\n").length);
         assertNotNull(sideData.getRotation());
     }
 
@@ -578,7 +581,7 @@ public class FFprobeTest {
         Assert.fail("No artifact with side data to check!");
 
         FFprobeResult result = FFprobe.atPath(BIN)
-                .setInput(VIDEO_ROTATED)
+                .setInput(VIDEO_MP4)
                 .setShowStreams(true)
                 .setShowFrames(true)
                 .setShowData(true)
