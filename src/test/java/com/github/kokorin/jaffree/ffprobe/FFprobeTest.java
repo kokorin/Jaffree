@@ -47,6 +47,7 @@ public class FFprobeTest {
     public static Path VIDEO_WITH_CHAPTERS = Artifacts.getMkvArtifactWithChapters();
     public static Path VIDEO_WITH_SUBTITLES = Artifacts.getMkvArtifactWithSubtitles();
     public static Path AUDIO_OPUS = Artifacts.getOpusArtifact();
+    public static Path VIDEO_MJPEG = Artifacts.getMjpegArtifact();
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -578,14 +579,9 @@ public class FFprobeTest {
 
     @Test
     public void testFrameSideDataListAttributes() throws Exception {
-        Assert.fail("No artifact with side data to check!");
-
         FFprobeResult result = FFprobe.atPath(BIN)
-                .setInput(VIDEO_MP4)
-                .setShowStreams(true)
+                .setInput(VIDEO_MJPEG)
                 .setShowFrames(true)
-                .setShowData(true)
-                .setSelectStreams(StreamType.VIDEO)
                 .setFormatParser(formatParser)
                 .execute();
 
@@ -593,13 +589,21 @@ public class FFprobeTest {
         assertNotNull(result.getFrames());
         assertFalse(result.getFrames().isEmpty());
 
+        int sideDataCount = 0;
         for (FrameSubtitle frameSubtitle : result.getFrames()) {
             if (frameSubtitle instanceof Frame) {
                 Frame frame = (Frame) frameSubtitle;
                 assertNotNull(frame.getSideDataList());
+                assertEquals(2, frame.getSideDataList().size());
+
+                for (SideData sideData : frame.getSideDataList()) {
+                    assertNotNull(sideData.getSideDataType());
+                    sideDataCount++;
+                }
             }
-            // TODO side data properties
         }
+
+        assertTrue(sideDataCount > 0);
     }
 
     @Test
