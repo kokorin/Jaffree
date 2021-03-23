@@ -45,11 +45,11 @@ public class Stream {
         return probeData.getSubData("tags").getString(name);
     }
 
-    public List<PacketSideData> getSideDataList() {
-        return probeData.getSubDataList("side_data_list", new ProbeDataConverter<PacketSideData>() {
+    public List<SideData> getSideDataList() {
+        return probeData.getSubDataList("side_data_list", new ProbeDataConverter<SideData>() {
             @Override
-            public PacketSideData convert(ProbeData dSection) {
-                return new PacketSideData(dSection);
+            public SideData convert(ProbeData dSection) {
+                return new SideData(dSection);
             }
         });
     }

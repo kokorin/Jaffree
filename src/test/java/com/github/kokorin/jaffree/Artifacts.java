@@ -202,6 +202,14 @@ public class Artifacts {
         return result;
     }
 
+    public static synchronized Path getOpusArtifact() {
+        return getOpusArtifact(44_100, 180);
+    }
+
+    public static synchronized Path getOpusArtifact(int samplerate, int duration) {
+        return getArtifact(null, 0, samplerate, "opus", duration);
+    }
+
     public static synchronized Path getArtifact(String resolution, int fps, int samplerate,
                                                 String format, int duration) {
         FFmpeg ffmpeg = FFmpeg.atPath();

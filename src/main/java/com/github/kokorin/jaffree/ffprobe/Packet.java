@@ -48,11 +48,11 @@ public class Packet implements PacketFrameSubtitle {
         return probeData.getSubData("tags").getString(name);
     }
 
-    public List<PacketSideData> getSideDataList() {
-        return probeData.getSubDataList("SIDE_DATA", new ProbeDataConverter<PacketSideData>() {
+    public List<SideData> getSideDataList() {
+        return probeData.getSubDataList("side_data_list", new ProbeDataConverter<SideData>() {
             @Override
-            public PacketSideData convert(ProbeData probeData) {
-                return new PacketSideData(probeData);
+            public SideData convert(ProbeData probeData) {
+                return new SideData(probeData);
             }
         });
     }

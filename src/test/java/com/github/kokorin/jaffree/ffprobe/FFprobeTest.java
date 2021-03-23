@@ -46,6 +46,7 @@ public class FFprobeTest {
     public static Path VIDEO_WITH_PROGRAMS = Artifacts.getTsArtifactWithPrograms();
     public static Path VIDEO_WITH_CHAPTERS = Artifacts.getMkvArtifactWithChapters();
     public static Path VIDEO_WITH_SUBTITLES = Artifacts.getMkvArtifactWithSubtitles();
+    public static Path AUDIO_OPUS = Artifacts.getOpusArtifact();
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -554,7 +555,6 @@ public class FFprobeTest {
             result = FFprobe.atPath(BIN)
                     .setInput(rotatedInput)
                     .setShowStreams(true)
-                    .setShowData(true)
                     .setFormatParser(formatParser)
                     .execute();
         }
@@ -569,7 +569,7 @@ public class FFprobeTest {
         assertNotNull(stream.getSideDataList());
         assertEquals(1, stream.getSideDataList().size());
 
-        PacketSideData sideData = stream.getSideDataList().get(0);
+        SideData sideData = stream.getSideDataList().get(0);
         assertNotNull(sideData);
         assertNotNull(sideData.getDisplayMatrix());
         assertEquals(3, sideData.getDisplayMatrix().trim().split("\n").length);
@@ -604,14 +604,9 @@ public class FFprobeTest {
 
     @Test
     public void testPacketSideDataListAttributes() throws Exception {
-        Assert.fail("No artifact with side data to check!");
-
         FFprobeResult result = FFprobe.atPath(BIN)
-                .setInput(VIDEO_MP4)
-                .setShowStreams(true)
+                .setInput(AUDIO_OPUS)
                 .setShowPackets(true)
-                .setShowData(true)
-                .setSelectStreams(StreamType.VIDEO)
                 .setFormatParser(formatParser)
                 .execute();
 
@@ -619,9 +614,22 @@ public class FFprobeTest {
         assertNotNull(result.getPackets());
         assertFalse(result.getPackets().isEmpty());
 
+        int sideDataCount = 0;
         for (Packet packet : result.getPackets()) {
-            // TODO side data properties
+            if (packet.getSideDataList() == null) {
+                continue;
+            }
+            sideDataCount++;
+            for (SideData sideData : packet.getSideDataList()) {
+                assertNotNull(sideData.getSideDataType());
+                assertNotNull(sideData.getLong("skip_samples"));
+                assertNotNull(sideData.getLong("discard_padding"));
+                assertNotNull(sideData.getLong("skip_reason"));
+                assertNotNull(sideData.getLong("discard_reason"));
+            }
         }
+
+        assertEquals(1, sideDataCount);
     }
 
     @Test
