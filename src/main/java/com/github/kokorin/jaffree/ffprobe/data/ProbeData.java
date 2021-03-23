@@ -42,7 +42,6 @@ public interface ProbeData {
 
     Double getDouble(String key);
 
-    // TODO: check if it should be here
     StreamType getStreamType(String key);
 
     LogLevel getLogLevel(String key);

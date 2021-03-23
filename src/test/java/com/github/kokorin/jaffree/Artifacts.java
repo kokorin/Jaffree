@@ -105,27 +105,6 @@ public class Artifacts {
         return result;
     }
 
-    public static synchronized Path getMkvArtifactRotated() {
-        int duration = 180;
-        String filename = "rotated_" + duration + "s.mp4";
-        Path result = getSamplePath(filename);
-
-        if (!Files.exists(result)) {
-            Path source = getMkvArtifact(duration);
-
-            FFmpeg.atPath()
-                    .addInput(UrlInput.fromPath(source))
-                    .addOutput(UrlOutput
-                            .toPath(result)
-                            .addArguments("-metadata:s:v", "rotate=\"270\"")
-                            .copyAllCodecs()
-                    )
-                    .execute();
-        }
-
-        return result;
-    }
-
     public static synchronized Path getMkvArtifactWithChapters() {
         int duration = 180;
         String filename = "3chapters_" + duration + "s.mkv";
@@ -210,13 +189,20 @@ public class Artifacts {
         return getArtifact(null, 0, samplerate, "opus", duration);
     }
 
-    public static synchronized Path getArtifact(String resolution, int fps, int samplerate,
+    public static synchronized Path getMjpegArtifact() {
+        return getMjpegArtifact("160x120", 1, 10);
+    }
+
+    public static synchronized Path getMjpegArtifact(String resolution, int fps, int duration) {
+        return getArtifact(resolution, fps, 0, "mjpeg", duration);
+    }
+
+    public static synchronized Path getArtifact(String resolution, Integer fps, int samplerate,
                                                 String format, int duration) {
         FFmpeg ffmpeg = FFmpeg.atPath();
         String filename = "";
         int cutDuration = 5;
         int extraDuration = duration + 2 * cutDuration;
-        // String pixelFormat = null;
 
         if (resolution != null) {
             filename += resolution + "_" + fps + "fps";
@@ -225,17 +211,16 @@ public class Artifacts {
                     .addInput(
                             UrlInput
                                     .fromUrl(
-                                            "testsrc=s=" + resolution + ":r=" + fps
-                                                    + ":d=" + extraDuration
+                                            "testsrc=s=" + resolution + ":r=30:d=" + extraDuration
                                     )
                                     .setFormat("lavfi")
                     )
                     .addArguments("-preset", "ultrafast");
 
-            //pixelFormat = "yuv420";
+
         }
 
-        if (samplerate >= 0) {
+        if (samplerate > 0) {
             if (!filename.isEmpty()) {
                 filename += "_";
             }
@@ -256,6 +241,7 @@ public class Artifacts {
                             UrlOutput.toPath(result)
                                     .setPosition(cutDuration, TimeUnit.SECONDS)
                                     .setDuration(duration, TimeUnit.SECONDS)
+                                    .setFrameRate(fps)
                     )
                     .execute();
         }
