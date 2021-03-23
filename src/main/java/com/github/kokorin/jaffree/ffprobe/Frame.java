@@ -77,11 +77,11 @@ public class Frame implements FrameSubtitle, PacketFrameSubtitle {
     /**
      * @return side data for the frame
      */
-    public List<FrameSideData> getSideDataList() {
-        return probeData.getSubDataList("SIDE_DATA", new ProbeDataConverter<FrameSideData>() {
+    public List<SideData> getSideDataList() {
+        return probeData.getSubDataList("SIDE_DATA", new ProbeDataConverter<SideData>() {
             @Override
-            public FrameSideData convert(final ProbeData probeData) {
-                return new FrameSideData(probeData);
+            public SideData convert(final ProbeData probeData) {
+                return new SideData(probeData);
             }
         });
     }
