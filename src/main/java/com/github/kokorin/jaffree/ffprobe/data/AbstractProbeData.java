@@ -173,6 +173,24 @@ public abstract class AbstractProbeData implements ProbeData {
         return result;
     }
 
+    @Override
+    public Object getSubDataValue(String subDataName, String property) {
+        ProbeData subData = getSubData(subDataName);
+        if (subData == null) {
+            return null;
+        }
+        return subData.getValue(property);
+    }
+
+    @Override
+    public String getSubDataString(String subDataName, String property) {
+        ProbeData subData = getSubData(subDataName);
+        if (subData == null) {
+            return null;
+        }
+        return subData.getString(property);
+    }
+
     private static final ValueConverter<String> STRING_CONVERTER =
             new ValueConverter<String>() {
                 @Override

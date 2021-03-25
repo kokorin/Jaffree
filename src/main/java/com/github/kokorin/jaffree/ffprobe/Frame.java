@@ -55,7 +55,7 @@ public class Frame implements FrameSubtitle, PacketFrameSubtitle {
     }
 
     public String getTag(String name) {
-        return probeData.getSubData("tags").getString(name);
+        return probeData.getSubDataString("tags", name);
     }
 
     /**

@@ -113,12 +113,12 @@ public class FlatFormatParser implements FormatParser {
                 }
             }
 
-            if (step == null && i == pathStr.length - 2) {
-                step = new TagPath(pathStr[i]);
-            }
-
             if (step == null && i == pathStr.length - 1) {
                 step = new PropertyPath(pathStr[i]);
+            }
+
+            if (step == null && i <= pathStr.length - 2) {
+                step = new TagPath(pathStr[i]);
             }
 
             if (step == null) {

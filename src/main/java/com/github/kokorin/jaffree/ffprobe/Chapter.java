@@ -48,7 +48,7 @@ public class Chapter {
     }
 
     public String getTag(String name) {
-        return probeData.getSubData("tags").getString(name);
+        return probeData.getSubDataString("tags", name);
     }
 
     /**

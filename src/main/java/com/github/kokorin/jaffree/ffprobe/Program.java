@@ -36,7 +36,7 @@ public class Program {
     }
 
     public String getTag(String name) {
-        return probeData.getSubData("tags").getString(name);
+        return probeData.getSubDataString("tags", name);
     }
 
     public List<Stream> getStreams() {

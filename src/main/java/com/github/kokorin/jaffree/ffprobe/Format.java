@@ -22,7 +22,6 @@ import com.github.kokorin.jaffree.ffprobe.data.ProbeData;
 /**
  * Format description.
  */
-// TODO test properties
 public class Format {
     private final ProbeData probeData;
 
@@ -52,10 +51,9 @@ public class Format {
      * @param name tag name
      * @return tag value
      */
-    // TODO Does Format contain any tags?
     // TODO Type-specific getters: Integer, Long, etc
     public String getTag(String name) {
-        return probeData.getSubData("tags").getString(name);
+        return probeData.getSubDataString("tags", name);
     }
 
     /**
