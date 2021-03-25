@@ -45,7 +45,7 @@ public class Packet implements PacketFrameSubtitle {
 
     // TODO Does Packet contain any tags?
     public String getTag(String name) {
-        return probeData.getSubData("tags").getString(name);
+        return probeData.getSubDataString("tags", name);
     }
 
     public List<SideData> getSideDataList() {

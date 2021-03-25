@@ -171,9 +171,20 @@ public class FFprobeTest {
                 .execute();
 
         assertNotNull(result);
-        assertNotNull(result.getFormat());
-        assertNotNull(result.getFormat().getFormatName());
-        assertNotNull(result.getFormat().getFormatLongName());
+        Format format = result.getFormat();
+
+        assertNotNull(format);
+        assertNotNull(format.getFilename());
+        assertNotNull(format.getNbStreams());
+        assertNotNull(format.getNbPrograms());
+        assertNotNull(format.getFormatName());
+        assertNotNull(format.getFormatLongName());
+        assertNotNull(format.getStartTime());
+        assertNotNull(format.getDuration());
+        assertNotNull(format.getSize());
+        assertNotNull(format.getBitRate());
+        assertNotNull(format.getProbeScore());
+        assertEquals("isom", format.getTag("major_brand"));
     }
 
     //private String showFormatEntry;

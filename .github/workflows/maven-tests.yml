@@ -40,8 +40,7 @@ jobs:
           path: |
             ~/.m2/repository
             ~/.m2/wrapper
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2
+          key: ${{ runner.os }}-m2
 
       - name: Install ffmpeg on Ubuntu
         run: sudo apt-get update && sudo apt-get install -y ffmpeg && ffmpeg -version

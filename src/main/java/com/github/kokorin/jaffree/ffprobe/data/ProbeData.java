@@ -83,4 +83,19 @@ public interface ProbeData {
      * @return converted sections
      */
     <T> T getSubData(String name, ProbeDataConverter<T> converter);
+
+    /**
+     * @param subDataName sub-data name
+     * @param property property name
+     * @return sub-data property value
+     */
+    Object getSubDataValue(String subDataName, String property);
+
+    /**
+     * @param subDataName sub-data name
+     * @param property property name
+     * @return sub-data property value
+     */
+    String getSubDataString(String subDataName, String property);
+
 }
