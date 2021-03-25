@@ -25,7 +25,6 @@ import com.github.kokorin.jaffree.ffprobe.data.ProbeDataConverter;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-// TODO test properties
 public class Stream {
     private final ProbeData probeData;
 

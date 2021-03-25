@@ -19,7 +19,6 @@ package com.github.kokorin.jaffree.ffprobe;
 
 import com.github.kokorin.jaffree.ffprobe.data.ProbeData;
 
-// TODO test properties
 public class StreamDisposition {
     private final ProbeData probeData;
 

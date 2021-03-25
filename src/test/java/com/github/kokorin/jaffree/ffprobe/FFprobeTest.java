@@ -92,7 +92,7 @@ public class FFprobeTest {
 
         Stream stream = result.getStreams().get(0);
         assertNotNull(stream.getExtradata());
-        Assert.assertEquals(Rational.valueOf(30L), stream.getAvgFrameRate());
+        assertEquals(Rational.valueOf(30L), stream.getAvgFrameRate());
     }
 
     // For this test to pass ffmpeg must be added to Operation System PATH environment variable
@@ -309,19 +309,55 @@ public class FFprobeTest {
 
         assertNotNull(result);
         assertNotNull(result.getStreams());
-        Assert.assertEquals(2, result.getStreams().size());
+        assertEquals(2, result.getStreams().size());
 
         Stream videoStream = result.getStreams().get(0);
 
-        Assert.assertEquals(StreamType.VIDEO, videoStream.getCodecType());
+        assertEquals(StreamType.VIDEO, videoStream.getCodecType());
+        assertEquals("h264", videoStream.getCodecName());
+        assertNotNull(videoStream.getIndex());
+        assertEquals((Integer) 640, videoStream.getWidth());
+        assertEquals((Integer) 480, videoStream.getHeight());
         assertNotNull(videoStream.getSampleAspectRatio());
         assertNotNull(videoStream.getDisplayAspectRatio());
+        assertNotNull(videoStream.getStartPts());
+        assertNotNull(videoStream.getTimeBase());
         assertNotNull(videoStream.getStartTime(TimeUnit.NANOSECONDS));
-        Assert.assertEquals((Long) 180L, videoStream.getDuration(TimeUnit.SECONDS));
+        assertEquals((Long) 180L, videoStream.getDuration(TimeUnit.SECONDS));
+        assertEquals((Float) 180.f, videoStream.getDuration(), 0.01f);
         assertNotNull(videoStream.getBitRate());
         assertNotNull(videoStream.getNbFrames());
         assertNotNull(videoStream.getBitsPerRawSample());
         assertNotNull(videoStream.getPixFmt());
+        assertNotNull(videoStream.getRFrameRate());
+        assertNotNull(videoStream.getAvgFrameRate());
+        assertNotNull(videoStream.getDisposition());
+        assertEquals("VideoHandler", videoStream.getTag("handler_name"));
+
+        Stream audioStream = result.getStreams().get(1);
+
+        assertEquals(StreamType.AUDIO, audioStream.getCodecType());
+        assertEquals((Integer) 1, audioStream.getIndex());
+        assertEquals("aac", audioStream.getCodecName());
+        assertNotNull(audioStream.getChannels());
+        assertNotNull(audioStream.getChannelLayout());
+        assertNotNull(audioStream.getSampleRate());
+        assertNotNull(audioStream.getSampleFmt());
+
+        StreamDisposition disposition = audioStream.getDisposition();
+        assertNotNull(disposition);
+        assertEquals((Integer) 1, disposition.getDefault());
+        assertEquals((Integer) 0, disposition.getDub());
+        assertEquals((Integer) 0, disposition.getOriginal());
+        assertEquals((Integer) 0, disposition.getComment());
+        assertEquals((Integer) 0, disposition.getLyrics());
+        assertEquals((Integer) 0, disposition.getKaraoke());
+        assertEquals((Integer) 0, disposition.getForced());
+        assertEquals((Integer) 0, disposition.getHearingImpaired());
+        assertEquals((Integer) 0, disposition.getVisualImpaired());
+        assertEquals((Integer) 0, disposition.getCleanEffects());
+        assertEquals((Integer) 0, disposition.getAttachedPic());
+        assertEquals((Integer) 0, disposition.getTimedThumbnails());
     }
 
     @Test
@@ -335,10 +371,10 @@ public class FFprobeTest {
 
         assertNotNull(result);
         assertNotNull(result.getStreams());
-        Assert.assertEquals(1, result.getStreams().size());
+        assertEquals(1, result.getStreams().size());
 
         Stream stream = result.getStreams().get(0);
-        Assert.assertEquals(StreamType.VIDEO, stream.getCodecType());
+        assertEquals(StreamType.VIDEO, stream.getCodecType());
     }
 
     @Test
@@ -368,29 +404,35 @@ public class FFprobeTest {
 
         assertNotNull(result);
         assertNotNull(result.getPrograms());
-        Assert.assertEquals(3, result.getPrograms().size());
+        assertEquals(3, result.getPrograms().size());
 
         Program program1 = result.getPrograms().get(0);
-        Assert.assertEquals("first_program", program1.getTag("service_name"));
-        Assert.assertEquals((Integer) 1, program1.getProgramId());
-        Assert.assertEquals((Integer) 1, program1.getProgramNum());
-        Assert.assertEquals((Integer) 2, program1.getNbStreams());
+        assertEquals("first_program", program1.getTag("service_name"));
+        assertEquals((Integer) 1, program1.getProgramId());
+        assertEquals((Integer) 1, program1.getProgramNum());
+        assertEquals((Integer) 2, program1.getNbStreams());
+        assertNotNull(program1.getPmtPid());
+        assertNotNull(program1.getPcrPid());
+        assertNotNull(program1.getStartPts());
+        assertNotNull(program1.getStartTime());
+        assertNotNull(program1.getEndPts());
+        assertNotNull(program1.getEndTime());
         assertNotNull(program1.getStreams());
-        Assert.assertEquals(2, program1.getStreams().size());
+        assertEquals(2, program1.getStreams().size());
 
         Program program2 = result.getPrograms().get(1);
-        Assert.assertEquals("second program", program2.getTag("service_name"));
-        Assert.assertEquals((Integer) 2, program2.getProgramNum());
-        Assert.assertEquals((Integer) 2, program2.getNbStreams());
+        assertEquals("second program", program2.getTag("service_name"));
+        assertEquals((Integer) 2, program2.getProgramNum());
+        assertEquals((Integer) 2, program2.getNbStreams());
         assertNotNull(program2.getStreams());
-        Assert.assertEquals(2, program2.getStreams().size());
+        assertEquals(2, program2.getStreams().size());
 
         Program program3 = result.getPrograms().get(2);
-        Assert.assertEquals("3rdProgram", program3.getTag("service_name"));
-        Assert.assertEquals((Integer) 3, program3.getProgramNum());
-        Assert.assertEquals((Integer) 2, program3.getNbStreams());
+        assertEquals("3rdProgram", program3.getTag("service_name"));
+        assertEquals((Integer) 3, program3.getProgramNum());
+        assertEquals((Integer) 2, program3.getNbStreams());
         assertNotNull(program3.getStreams());
-        Assert.assertEquals(2, program3.getStreams().size());
+        assertEquals(2, program3.getStreams().size());
     }
 
     //private boolean showChapters;
@@ -405,26 +447,26 @@ public class FFprobeTest {
 
         assertNotNull(result);
         assertNotNull(result.getChapters());
-        Assert.assertEquals(3, result.getChapters().size());
+        assertEquals(3, result.getChapters().size());
 
         Chapter chapter1 = result.getChapters().get(0);
-        Assert.assertEquals(1, chapter1.getId());
-        Assert.assertEquals("FirstChapter", chapter1.getTag("title"));
-        Assert.assertEquals(new Rational(1L, 1_000_000_000L), chapter1.getTimeBase());
-        Assert.assertEquals((Long) 0L, chapter1.getStart());
-        Assert.assertEquals((Double) 0., chapter1.getStartTime(), 0.01);
-        Assert.assertEquals((Long) 60_000_000_000L, chapter1.getEnd());
-        Assert.assertEquals((Double) 60., chapter1.getEndTime(), 0.01);
+        assertEquals(1, chapter1.getId());
+        assertEquals("FirstChapter", chapter1.getTag("title"));
+        assertEquals(new Rational(1L, 1_000_000_000L), chapter1.getTimeBase());
+        assertEquals((Long) 0L, chapter1.getStart());
+        assertEquals((Double) 0., chapter1.getStartTime(), 0.01);
+        assertEquals((Long) 60_000_000_000L, chapter1.getEnd());
+        assertEquals((Double) 60., chapter1.getEndTime(), 0.01);
 
         Chapter chapter2 = result.getChapters().get(1);
-        Assert.assertEquals(2, chapter2.getId());
-        Assert.assertEquals("Second Chapter", chapter2.getTag("title"));
-        Assert.assertEquals((Long) 60_000_000_000L, chapter2.getStart());
-        Assert.assertEquals((Double) 60., chapter2.getStartTime(), 0.01);
+        assertEquals(2, chapter2.getId());
+        assertEquals("Second Chapter", chapter2.getTag("title"));
+        assertEquals((Long) 60_000_000_000L, chapter2.getStart());
+        assertEquals((Double) 60., chapter2.getStartTime(), 0.01);
 
         Chapter chapter3 = result.getChapters().get(2);
-        Assert.assertEquals(3, chapter3.getId());
-        Assert.assertEquals("Final", chapter3.getTag("title"));
+        assertEquals(3, chapter3.getId());
+        assertEquals("Final", chapter3.getTag("title"));
     }
 
     //private boolean countFrames;
@@ -462,7 +504,7 @@ public class FFprobeTest {
 
         assertNotNull(result);
         assertNotNull(result.getPackets());
-        Assert.assertEquals(42, result.getPackets().size());
+        assertEquals(42, result.getPackets().size());
         for (Packet packet : result.getPackets()) {
             assertNotNull(packet.getCodecType());
         }
@@ -727,10 +769,10 @@ public class FFprobeTest {
 
         assertNotNull(result);
         assertNotNull(result.getStreams());
-        Assert.assertEquals(1, result.getStreams().size());
+        assertEquals(1, result.getStreams().size());
 
         Stream stream = result.getStreams().get(0);
-        Assert.assertEquals(StreamType.VIDEO, stream.getCodecType());
+        assertEquals(StreamType.VIDEO, stream.getCodecType());
     }
 
     @Test
@@ -778,13 +820,13 @@ public class FFprobeTest {
 
         assertNotNull(result);
         assertNotNull(result.getStreams());
-        Assert.assertEquals(2, result.getStreams().size());
+        assertEquals(2, result.getStreams().size());
 
         Stream stream = result.getStreams().get(0);
-        Assert.assertEquals(StreamType.VIDEO, stream.getCodecType());
+        assertEquals(StreamType.VIDEO, stream.getCodecType());
 
         stream = result.getStreams().get(1);
-        Assert.assertEquals(StreamType.AUDIO, stream.getCodecType());
+        assertEquals(StreamType.AUDIO, stream.getCodecType());
     }
 
 

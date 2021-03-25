@@ -26,7 +26,6 @@ import com.github.kokorin.jaffree.ffprobe.data.ProbeData;
  *
  * @see FFprobe#setShowLog(LogLevel)
  */
-// TODO test properties
 public class Log {
     private final ProbeData probeData;
 
