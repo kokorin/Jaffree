@@ -67,8 +67,8 @@
         <dependency>
             <groupId>com.grack</groupId>
             <artifactId>nanojson</artifactId>
-            <version>1.7</version>
-            <scope>provided</scope>
+            <!--TODO upgrade to 1.7 when switched to Java8-->
+            <version>1.6</version>
         </dependency>
 
         <dependency>
@@ -215,6 +215,7 @@
                                     <include>com.grack:nanojson</include>
                                 </includes>
                             </artifactSet>
+                            <createDependencyReducedPom>true</createDependencyReducedPom>
                             <createSourcesJar>${createSourcesJar}</createSourcesJar>
                             <shadeSourcesContent>${shadeSourcesContent}</shadeSourcesContent>
                             <relocations>
@@ -223,6 +224,30 @@
                                     <shadedPattern>com.github.kokorin.jaffree.shaded.com.grack.nanojson</shadedPattern>
                                 </relocation>
                             </relocations>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.8</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <move file="dependency-reduced-pom.xml"
+                                      tofile="${build.directory}/META-INF/maven/${project.groupId}/${project.artifactId}/pom.xml"/>
+                                <zip destfile="${build.directory}/${project.artifactId}-${project.version}.jar"
+                                     basedir="${build.directory}"
+                                     includes="META-INF/**/*"
+                                     update="true"/>
+                            </target>
                         </configuration>
                     </execution>
                 </executions>

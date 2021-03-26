@@ -17,7 +17,7 @@ public class FlatFormatParserTest {
             ProbeData data = new FlatFormatParser().parse(input);
             Assert.assertNotNull(data);
 
-            List<ProbeData> streams = data.getSubDataList("stream");
+            List<ProbeData> streams = data.getSubDataList("streams");
             Assert.assertEquals(2, streams.size());
         }
 
@@ -29,7 +29,7 @@ public class FlatFormatParserTest {
             ProbeData data = new FlatFormatParser().parse(input);
             Assert.assertNotNull(data);
 
-            List<ProbeData> streams = data.getSubDataList("stream");
+            List<ProbeData> streams = data.getSubDataList("streams");
             Assert.assertEquals(2, streams.size());
 
             String description = data.getSubData("format").getSubData("tags").getString("description");
@@ -46,7 +46,7 @@ public class FlatFormatParserTest {
             ProbeData data = new FlatFormatParser().parse(input);
             Assert.assertNotNull(data);
 
-            List<ProbeData> streams = data.getSubDataList("stream");
+            List<ProbeData> streams = data.getSubDataList("streams");
             Assert.assertEquals(2, streams.size());
 
             String actual = data.getSubData("format").getString("filename");
@@ -63,13 +63,13 @@ public class FlatFormatParserTest {
             ProbeData data = new FlatFormatParser().parse(input);
             Assert.assertNotNull(data);
 
-            List<ProbeData> streams = data.getSubDataList("stream");
+            List<ProbeData> streams = data.getSubDataList("streams");
             Assert.assertEquals(2, streams.size());
 
             ProbeData section = streams.get(0);
             Assert.assertNotNull(section);
 
-            ProbeData dTag = section.getSubData("TAGS");
+            ProbeData dTag = section.getSubData("tags");
             Assert.assertNotNull(dTag);
 
             String rotate = dTag.getString("rotate");
