@@ -19,6 +19,7 @@ package com.github.kokorin.jaffree.ffprobe;
 
 import com.github.kokorin.jaffree.LogLevel;
 import com.github.kokorin.jaffree.StreamType;
+import com.github.kokorin.jaffree.ffmpeg.FFmpeg;
 import com.github.kokorin.jaffree.ffprobe.data.FlatFormatParser;
 import com.github.kokorin.jaffree.ffprobe.data.FormatParser;
 import com.github.kokorin.jaffree.ffprobe.data.JsonFormatParser;
@@ -47,8 +48,7 @@ import java.util.concurrent.TimeUnit;
  */
 //TODO add debug statements for all methods
 public class FFprobe {
-    // TODO why final?
-    private final LogLevel logLevel = LogLevel.ERROR;
+    private LogLevel logLevel = LogLevel.INFO;
 
     private String selectStreams;
     private boolean showData;
@@ -277,12 +277,12 @@ public class FFprobe {
      * <p>
      * This option requires -show_frames.
      *
-     * @param showLogLevel decoder log level
+     * @param showLog decoder log level
      * @return this
      * @see #setShowFrames(boolean)
      */
-    public FFprobe setShowLog(final LogLevel showLogLevel) {
-        this.showLog = showLogLevel;
+    public FFprobe setShowLog(final LogLevel showLog) {
+        this.showLog = showLog;
         return this;
     }
 
@@ -503,6 +503,21 @@ public class FFprobe {
         return resultFuture;
     }
 
+
+    /**
+     * Sets ffprobe logging level.
+     * <p>
+     * Note: for message to appear in SLF4J logging it's required to configure appropriate
+     * log level for SLF4J.
+     *
+     * @param logLevel log level
+     * @return this
+     */
+    public FFprobe setLogLevel(final LogLevel logLevel) {
+        this.logLevel = logLevel;
+        return this;
+    }
+
     /**
      * Starts synchronous ffprobe execution.
      * <p>
@@ -535,9 +550,13 @@ public class FFprobe {
     protected List<String> buildArguments() {
         List<String> result = new ArrayList<>();
 
+        // "level" is required for ffmpeg to add [loglevel] to output lines
+        String logLevelArgument = "level";
         if (logLevel != null) {
-            result.addAll(Arrays.asList("-loglevel", Integer.toString(logLevel.code())));
+            logLevelArgument += "+" + logLevel.name().toLowerCase();
         }
+        result.addAll(Arrays.asList("-loglevel", logLevelArgument));
+
 
         if (selectStreams != null) {
             result.addAll(Arrays.asList("-select_streams", selectStreams));
