@@ -43,6 +43,7 @@ public class FFprobeTest {
 
     public static Path BIN;
     public static Path VIDEO_MP4 = Artifacts.getMp4Artifact();
+    public static Path VIDEO_FLV = Artifacts.getFlvArtifact();
     public static Path VIDEO_WITH_PROGRAMS = Artifacts.getTsArtifactWithPrograms();
     public static Path VIDEO_WITH_CHAPTERS = Artifacts.getMkvArtifactWithChapters();
     public static Path VIDEO_WITH_SUBTITLES = Artifacts.getMkvArtifactWithSubtitles();
@@ -780,7 +781,7 @@ public class FFprobeTest {
     public void testInputStream() throws Exception {
         FFprobeResult result;
 
-        try (InputStream inputStream = Files.newInputStream(VIDEO_MP4, StandardOpenOption.READ)) {
+        try (InputStream inputStream = Files.newInputStream(VIDEO_FLV, StandardOpenOption.READ)) {
             result = FFprobe.atPath(BIN)
                     .setShowStreams(true)
                     .setInput(inputStream)

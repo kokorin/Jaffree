@@ -19,7 +19,6 @@ package com.github.kokorin.jaffree.ffprobe;
 
 import com.github.kokorin.jaffree.LogLevel;
 import com.github.kokorin.jaffree.StreamType;
-import com.github.kokorin.jaffree.ffmpeg.FFmpeg;
 import com.github.kokorin.jaffree.ffprobe.data.FlatFormatParser;
 import com.github.kokorin.jaffree.ffprobe.data.FormatParser;
 import com.github.kokorin.jaffree.ffprobe.data.JsonFormatParser;
@@ -46,7 +45,6 @@ import java.util.concurrent.TimeUnit;
 /**
  * {@link FFprobe} provides an ability to execute ffprobe process.
  */
-//TODO add debug statements for all methods
 public class FFprobe {
     private LogLevel logLevel = LogLevel.INFO;
 
@@ -486,6 +484,25 @@ public class FFprobe {
         return this;
     }
 
+    /**
+     * Sets ffprobe logging level.
+     * <p>
+     * Note: for message to appear in SLF4J logging it's required to configure appropriate
+     * log level for SLF4J.
+     *
+     * @param logLevel log level
+     * @return this
+     */
+    public FFprobe setLogLevel(final LogLevel logLevel) {
+        this.logLevel = logLevel;
+        return this;
+    }
+
+    /**
+     * Starts asynchronous ffprobe execution.
+     *
+     * @return ffprobe result future
+     */
     public Future<FFprobeResult> executeAsync() {
         FutureTask<FFprobeResult> resultFuture = new FutureTask<>(
                 new Callable<FFprobeResult>() {
@@ -501,21 +518,6 @@ public class FFprobe {
         runner.start();
 
         return resultFuture;
-    }
-
-
-    /**
-     * Sets ffprobe logging level.
-     * <p>
-     * Note: for message to appear in SLF4J logging it's required to configure appropriate
-     * log level for SLF4J.
-     *
-     * @param logLevel log level
-     * @return this
-     */
-    public FFprobe setLogLevel(final LogLevel logLevel) {
-        this.logLevel = logLevel;
-        return this;
     }
 
     /**
@@ -535,7 +537,7 @@ public class FFprobe {
         }
 
         return new ProcessHandler<FFprobeResult>(executable, null)
-                .setStdOutReader(createStdOutReader())
+                .setStdOutReader(createStdOutReader(formatParser))
                 .setStdErrReader(createStdErrReader())
                 .setHelpers(helpers)
                 .setArguments(buildArguments())
@@ -637,7 +639,7 @@ public class FFprobe {
      *
      * @return this
      */
-    protected StdReader<FFprobeResult> createStdOutReader() {
+    protected StdReader<FFprobeResult> createStdOutReader(FormatParser formatParser) {
         return new FFprobeResultReader(formatParser);
     }
 
@@ -649,12 +651,7 @@ public class FFprobe {
      * @return this
      */
     protected StdReader<FFprobeResult> createStdErrReader() {
-        // TODO check if we need below clause
-        if (logLevel.code() > LogLevel.WARNING.code()) {
-            return new LoggingStdReader<>();
-        }
-
-        return new ThrowingStdReader<>();
+        return new FFprobeLogReader();
     }
 
     /**
