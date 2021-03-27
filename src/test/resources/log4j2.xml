@@ -9,9 +9,6 @@
         <Logger name="com.github" level="info" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
-        <Logger name="com.github.kokorin.jaffree.ffprobe" level="debug" additivity="false">
-            <AppenderRef ref="Console"/>
-        </Logger>
         <Root level="info">
             <AppenderRef ref="Console"/>
         </Root>
