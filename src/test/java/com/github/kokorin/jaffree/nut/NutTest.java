@@ -1,14 +1,11 @@
 package com.github.kokorin.jaffree.nut;
 
 import com.github.kokorin.jaffree.Artifacts;
-import com.github.kokorin.jaffree.LogLevel;
 import com.github.kokorin.jaffree.ffmpeg.FFmpeg;
 import com.github.kokorin.jaffree.ffmpeg.FFmpegResult;
 import com.github.kokorin.jaffree.ffmpeg.NullOutput;
 import com.github.kokorin.jaffree.ffmpeg.UrlInput;
 import com.github.kokorin.jaffree.ffmpeg.UrlOutput;
-import com.github.kokorin.jaffree.ffprobe.FFprobe;
-import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -74,14 +71,6 @@ public class NutTest {
         Assert.assertTrue(Files.size(outputPath) > 1000);
 
         assertNutStructure(outputPath);
-
-        FFprobeResult probe = FFprobe.atPath(BIN)
-                .setInput(outputPath)
-                .setCountFrames(true)
-                .setShowLog(LogLevel.DEBUG)
-                .execute();
-
-        Assert.assertNotNull(probe);
 
         // During this test you can see in console some warnings like the following:
         // [null @ 0000000000dca4e0] Application provided invalid, non monotonically increasing dts to muxer in stream 1: 7371776 >= 7371776
