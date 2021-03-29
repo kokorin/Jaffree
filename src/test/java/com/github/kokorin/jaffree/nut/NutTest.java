@@ -21,8 +21,6 @@ import java.nio.file.Paths;
 public class NutTest {
 
     public static Path BIN;
-    public static final Path VIDEO_MP4 = Artifacts.getMp4Artifact();
-    public static final Path VIDEO_NUT = Artifacts.getNutArtifact();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NutTest.class);
 
@@ -34,21 +32,18 @@ public class NutTest {
         }
         Assert.assertNotNull("Nor command line property, neither system variable FFMPEG_BIN is set up", ffmpegHome);
         BIN = Paths.get(ffmpegHome);
-
-        Assert.assertTrue("Sample videos weren't found: " + VIDEO_MP4.toAbsolutePath(), Files.exists(VIDEO_MP4));
-        Assert.assertTrue("NUT file hasn't been found: " + VIDEO_NUT.toAbsolutePath(), Files.exists(VIDEO_NUT));
     }
 
     @Test
     public void read() throws Exception {
-        assertNutStructure(VIDEO_NUT);
+        assertNutStructure(Artifacts.VIDEO_NUT);
     }
 
     @Test
     public void readAndWrite() throws Exception {
         Path outputPath = Files.createTempFile("output", ".nut");
 
-        try (NutInputStream inputStream = new NutInputStream(new FileInputStream(VIDEO_NUT.toFile()));
+        try (NutInputStream inputStream = new NutInputStream(new FileInputStream(Artifacts.VIDEO_NUT.toFile()));
              NutOutputStream outputStream = new NutOutputStream(new FileOutputStream(outputPath.toFile()))) {
             NutReader reader = new NutReader(inputStream);
             NutWriter writer = new NutWriter(outputStream);
@@ -92,7 +87,7 @@ public class NutTest {
 
         FFmpeg.atPath(BIN)
                 .addInput(
-                        UrlInput.fromPath(VIDEO_MP4)
+                        UrlInput.fromPath(Artifacts.VIDEO_MP4)
                                 .setDuration(1000)
                 )
                 .setOverwriteOutput(true)

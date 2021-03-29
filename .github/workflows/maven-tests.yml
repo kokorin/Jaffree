@@ -33,15 +33,22 @@ jobs:
         with:
           java-version: ${{ matrix.java-version }}
 
-      - name: Cache Maven packages
+      - name: Cache Maven Packages
         uses: actions/cache@v2
         with:
           # be careful not to include ~/.m2/settings.xml which contains credentials
           path: |
             ~/.m2/repository
             ~/.m2/wrapper
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Cache Test Artifacts
+        uses: actions/cache@v2
+        with:
+          path: |
             .artifacts
-          key: ${{ runner.os }}-m2
+          key: ${{ runner.os }}-artifacts-${{ hashFiles('**/Artifacts.java') }}
 
       - name: Install ffmpeg on Ubuntu
         run: sudo apt-get update && sudo apt-get install -y ffmpeg && ffmpeg -version

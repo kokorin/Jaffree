@@ -43,7 +43,6 @@ public class FrameIOTest {
     public ExpectedException expectedException = ExpectedException.none();
 
     public static Path BIN;
-    public static Path VIDEO_MP4 = Artifacts.getMp4Artifact();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FrameIOTest.class);
 
@@ -55,8 +54,6 @@ public class FrameIOTest {
         }
         Assert.assertNotNull("Nor command line property, neither system variable FFMPEG_BIN is set up", ffmpegHome);
         BIN = Paths.get(ffmpegHome);
-
-        Assert.assertTrue("Sample videos weren't found: " + VIDEO_MP4.toAbsolutePath(), Files.exists(VIDEO_MP4));
     }
 
     @Test
@@ -93,7 +90,7 @@ public class FrameIOTest {
 
         FFmpegResult result = FFmpeg.atPath(BIN)
                 .addInput(
-                        UrlInput.fromPath(VIDEO_MP4)
+                        UrlInput.fromPath(Artifacts.VIDEO_MP4)
                                 .setDuration(1, TimeUnit.SECONDS)
                 )
                 .addOutput(
@@ -130,7 +127,7 @@ public class FrameIOTest {
 
         FFmpegResult result = FFmpeg.atPath(BIN)
                 .addInput(
-                        UrlInput.fromPath(VIDEO_MP4)
+                        UrlInput.fromPath(Artifacts.VIDEO_MP4)
                 )
                 .addOutput(
                         FrameOutput.withConsumer(consumer)
@@ -382,7 +379,7 @@ public class FrameIOTest {
 
         FFmpegResult result = FFmpeg.atPath(BIN)
                 .addInput(
-                        UrlInput.fromPath(VIDEO_MP4)
+                        UrlInput.fromPath(Artifacts.VIDEO_MP4)
                                 .setDuration(3, TimeUnit.SECONDS)
                 )
                 .addOutput(
