@@ -22,11 +22,9 @@ import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffprobe.data.FlatFormatParser;
 import com.github.kokorin.jaffree.ffprobe.data.FormatParser;
 import com.github.kokorin.jaffree.ffprobe.data.JsonFormatParser;
-import com.github.kokorin.jaffree.process.LoggingStdReader;
 import com.github.kokorin.jaffree.process.ProcessHandler;
 import com.github.kokorin.jaffree.process.ProcessHelper;
 import com.github.kokorin.jaffree.process.StdReader;
-import com.github.kokorin.jaffree.process.ThrowingStdReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
