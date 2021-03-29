@@ -15,40 +15,27 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 public class Artifacts {
+    public static final Path VIDEO_MP4 = getMp4Artifact(180);
+    public static final Path VIDEO_MKV = getMkvArtifact(180);
+    public static final Path VIDEO_FLV = getFlvArtifact(180);
+    public static final Path SMALL_FLV = getFlvArtifact(20);
+    public static final Path SMALL_MP4 = getMp4Artifact(20);
+    public static final Path VIDEO_WITH_PROGRAMS = getTsArtifactWithPrograms();
+    public static final Path VIDEO_WITH_CHAPTERS = getMkvArtifactWithChapters();
+    public static final Path VIDEO_WITH_SUBTITLES = getMkvArtifactWithSubtitles();
+    public static final Path AUDIO_OPUS = getOpusArtifact(180);
+    public static final Path VIDEO_MJPEG = getMjpegArtifact(20);
+    public static final Path VIDEO_NUT = getNutArtifact(180);
 
-    public static Path getMp4Artifact() {
-        return getMp4Artifact(180);
-    }
-
-    public static Path getSmallMp4Artifact() {
-        return getMp4Artifact(20);
-    }
-
-    public static Path getMp4Artifact(int duration) {
+    private static Path getMp4Artifact(int duration) {
         return getArtifact("640x480", 30, 44_100, "mp4", duration);
     }
 
-    public static Path getFlvArtifact() {
-        return getFlvArtifact(180);
-    }
-
-    public static Path getSmallFlvArtifact() {
-        return getFlvArtifact(20);
-    }
-
-    public static Path getMkvArtifact() {
-        return getMkvArtifact(180);
-    }
-
-    public static Path getFlvArtifact(int duration) {
+    private static Path getFlvArtifact(int duration) {
         return getArtifact("640x480", 30, 44_100, "flv", duration);
     }
 
-    public static Path getNutArtifact() {
-        return getNutArtifact(180);
-    }
-
-    public static synchronized Path getNutArtifact(int duration) {
+    private static synchronized Path getNutArtifact(int duration) {
         Path source = getMp4Artifact(duration);
         String filename = source.getFileName().toString().replace(".mp4", ".nut");
         Path result = getSamplePath(filename);
@@ -66,7 +53,7 @@ public class Artifacts {
         return result;
     }
 
-    public static synchronized Path getMkvArtifactWithSubtitles() {
+    private static synchronized Path getMkvArtifactWithSubtitles() {
         int duration = 180;
         String filename = "subtitles_" + duration + "s.mkv";
         Path result = getSamplePath(filename);
@@ -105,7 +92,7 @@ public class Artifacts {
         return result;
     }
 
-    public static synchronized Path getMkvArtifactWithChapters() {
+    private static synchronized Path getMkvArtifactWithChapters() {
         int duration = 180;
         String filename = "3chapters_" + duration + "s.mkv";
         Path result = getSamplePath(filename);
@@ -144,11 +131,11 @@ public class Artifacts {
         return result;
     }
 
-    public static Path getMkvArtifact(int duration) {
+    private static Path getMkvArtifact(int duration) {
         return getArtifact("640x480", 30, 44_100, "mkv", duration);
     }
 
-    public static synchronized Path getTsArtifactWithPrograms() {
+    private static synchronized Path getTsArtifactWithPrograms() {
         int duration = 180;
         String filename = "3programs_" + duration + "s.ts";
         Path result = getSamplePath(filename);
@@ -181,24 +168,24 @@ public class Artifacts {
         return result;
     }
 
-    public static synchronized Path getOpusArtifact() {
-        return getOpusArtifact(44_100, 180);
+    private static synchronized Path getOpusArtifact(int duration) {
+        return getOpusArtifact(44_100, duration);
     }
 
-    public static synchronized Path getOpusArtifact(int samplerate, int duration) {
+    private static synchronized Path getOpusArtifact(int samplerate, int duration) {
         return getArtifact(null, 0, samplerate, "opus", duration);
     }
 
-    public static synchronized Path getMjpegArtifact() {
-        return getMjpegArtifact("160x120", 1, 10);
+    private static synchronized Path getMjpegArtifact(int duration) {
+        return getMjpegArtifact("160x120", 1, duration);
     }
 
-    public static synchronized Path getMjpegArtifact(String resolution, int fps, int duration) {
+    private static synchronized Path getMjpegArtifact(String resolution, int fps, int duration) {
         return getArtifact(resolution, fps, 0, "mjpeg", duration);
     }
 
-    public static synchronized Path getArtifact(String resolution, Integer fps, int samplerate,
-                                                String format, int duration) {
+    private static synchronized Path getArtifact(String resolution, Integer fps, int samplerate,
+                                                 String format, int duration) {
         FFmpeg ffmpeg = FFmpeg.atPath();
         String filename = "";
         int cutDuration = 5;
@@ -249,7 +236,7 @@ public class Artifacts {
         return result;
     }
 
-    public static synchronized Path getSamplePath(String name) {
+    private static synchronized Path getSamplePath(String name) {
         try {
             Path artifacts = Paths.get(".artifacts");
             Files.createDirectories(artifacts);
