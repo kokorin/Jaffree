@@ -51,7 +51,6 @@ public class FFprobe {
     private boolean showPrivateData = true;
     private String showDataHash;
     private boolean showFormat;
-    private String showFormatEntry;
     private String showEntries;
     private boolean showPackets;
     private boolean showFrames;
@@ -195,23 +194,6 @@ public class FFprobe {
     }
 
     /**
-     * Like -show_format, but only prints the specified entry of the container format information,
-     * rather than all.
-     * <p>
-     * This option may be given more than once, then all specified entries will be shown.
-     *
-     * @param showFormatEntry
-     * @return this
-     * @see #setShowEntries(String)
-     * @deprecated This option is deprecated, use show_entries instead.
-     */
-    // TODO remove since with programmatic approach it's possible to get specific entries
-    public FFprobe setShowFormatEntry(final String showFormatEntry) {
-        this.showFormatEntry = showFormatEntry;
-        return this;
-    }
-
-    /**
      * Set list of entries to show.
      * <p>
      * Entries are specified according to the following syntax. section_entries contains a list of
@@ -230,13 +212,14 @@ public class FFprobe {
      * <p>
      * SECTION_ENTRIES       ::= SECTION_ENTRY[:SECTION_ENTRIES]
      * <p>
-     * {@link Packet#getStreamIndex} can be absent in XML
-     * {@link Stream#getIndex} also can be absent in XML
+     * <b>Note:</b> this option overwrites any &quot;show...&quot; set before, so this method should not be used
+     * together with any of {@link #setShowFormat(boolean)}, {@link #setShowFrames(boolean)},
+     * {@link #setShowPackets(boolean)}, {@link #setShowStreams(boolean)}, {@link #setShowChapters(boolean)} or
+     * {@link #setShowPrograms(boolean)}
      *
      * @param showEntries list entries syntax
      * @return this
      */
-    // TODO remove since with programmatic approach it's possible to get specific entries
     public FFprobe setShowEntries(final String showEntries) {
         this.showEntries = showEntries;
         return this;
@@ -569,9 +552,6 @@ public class FFprobe {
         }
         if (showFormat) {
             result.add("-show_format");
-        }
-        if (showFormatEntry != null) {
-            result.addAll(Arrays.asList("-show_format_entry", showFormatEntry));
         }
         if (showEntries != null) {
             result.addAll(Arrays.asList("-show_entries", showEntries));
