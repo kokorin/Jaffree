@@ -93,4 +93,13 @@ public enum LogLevel {
     public int code() {
         return code;
     }
+
+    public static LogLevel fromCode(int code) {
+        for (LogLevel level : values()) {
+            if (level.code == code) {
+                return level;
+            }
+        }
+        return null;
+    }
 }

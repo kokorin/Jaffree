@@ -8,7 +8,7 @@ url: 'https://github.com/kokorin/Jaffree'
 # TODO update
 releaseDate: '2021-02-22'
 developmentStatus: stable
-softwareVersion: 0.10.1
+softwareVersion: 0.11.0
 platforms:
   - web
   - windows

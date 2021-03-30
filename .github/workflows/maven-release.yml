@@ -6,6 +6,9 @@ on:
     types:
       - released
 
+env:
+  MAVEN_OPTS: -Dhttp.keepAlive=false -Dmaven.wagon.http.pool=false -Dmaven.wagon.http.retryHandler.class=standard -Dmaven.wagon.http.retryHandler.count=3
+
 jobs:
   release:
 
@@ -26,8 +29,10 @@ jobs:
           path: |
             ~/.m2/repository
             ~/.m2/wrapper
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2
+          key: release-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            release-m2
+            ${{ runner.os }}-m2
 
       - name: Set up Maven settings.xml to access Sonatype Nexus
         run: |

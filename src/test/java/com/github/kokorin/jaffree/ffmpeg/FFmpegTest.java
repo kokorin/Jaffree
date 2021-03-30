@@ -39,9 +39,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class FFmpegTest {
     public static Path BIN;
-    public static Path VIDEO_MP4 = Artifacts.getMp4Artifact();
-    public static Path VIDEO_FLV = Artifacts.getFlvArtifact();
-    public static Path SMALL_MP4 = Artifacts.getSmallFlvArtifact();
     public static Path ERROR_MP4 = Paths.get("non_existent.mp4");
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FFmpegTest.class);
@@ -57,19 +54,15 @@ public class FFmpegTest {
         }
         Assert.assertNotNull("Nor command line property, neither system variable FFMPEG_BIN is set up", ffmpegHome);
         BIN = Paths.get(ffmpegHome);
-
-        Assert.assertTrue("Sample videos weren't found: " + VIDEO_MP4.toAbsolutePath(), Files.exists(VIDEO_MP4));
-        Assert.assertTrue("Sample videos weren't found: " + VIDEO_FLV.toAbsolutePath(), Files.exists(VIDEO_FLV));
-        Assert.assertTrue("Sample videos weren't found: " + SMALL_MP4.toAbsolutePath(), Files.exists(SMALL_MP4));
     }
 
     @Test
     public void testSimpleCopy() throws Exception {
         Path tempDir = Files.createTempDirectory("jaffree");
-        Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
+        Path outputPath = tempDir.resolve(Artifacts.VIDEO_MP4.getFileName());
 
         FFmpegResult result = FFmpeg.atPath(BIN)
-                .addInput(UrlInput.fromPath(VIDEO_MP4))
+                .addInput(UrlInput.fromPath(Artifacts.VIDEO_MP4))
                 .addOutput(UrlOutput
                         .toPath(outputPath)
                         .copyAllCodecs())
@@ -82,10 +75,10 @@ public class FFmpegTest {
     @Test
     public void testEnvPath() throws Exception {
         Path tempDir = Files.createTempDirectory("jaffree");
-        Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
+        Path outputPath = tempDir.resolve(Artifacts.VIDEO_MP4.getFileName());
 
         FFmpegResult result = FFmpeg.atPath()
-                .addInput(UrlInput.fromPath(VIDEO_MP4))
+                .addInput(UrlInput.fromPath(Artifacts.VIDEO_MP4))
                 .addOutput(UrlOutput
                         .toPath(outputPath)
                         .copyAllCodecs())
@@ -100,7 +93,7 @@ public class FFmpegTest {
         Path outputPath = tempDir.resolve("test.mp3");
 
         FFmpegResult result = FFmpeg.atPath(BIN)
-                .addInput(UrlInput.fromPath(VIDEO_MP4))
+                .addInput(UrlInput.fromPath(Artifacts.VIDEO_MP4))
                 .addOutput(UrlOutput
                         .toPath(outputPath)
                         .setCodec(StreamType.AUDIO, "mp3")
@@ -136,7 +129,7 @@ public class FFmpegTest {
         };
 
         FFmpegResult result = FFmpeg.atPath(BIN)
-                .addInput(UrlInput.fromPath(VIDEO_FLV))
+                .addInput(UrlInput.fromPath(Artifacts.VIDEO_FLV))
                 .addOutput(UrlOutput.toPath(outputPath))
                 .setProgressListener(listener)
                 .execute();
@@ -148,7 +141,7 @@ public class FFmpegTest {
         counter.set(0L);
 
         result = FFmpeg.atPath(BIN)
-                .addInput(UrlInput.fromPath(SMALL_MP4))
+                .addInput(UrlInput.fromPath(Artifacts.SMALL_MP4))
                 .addOutput(UrlOutput.toPath(outputPath))
                 .setProgressListener(listener)
                 .execute();
@@ -172,7 +165,7 @@ public class FFmpegTest {
         };
 
         FFmpegResult result = FFmpeg.atPath(BIN)
-                .addInput(UrlInput.fromPath(VIDEO_FLV))
+                .addInput(UrlInput.fromPath(Artifacts.VIDEO_FLV))
                 .addOutput(UrlOutput.toPath(outputPath))
                 .setLogLevel(LogLevel.ERROR)
                 .setProgressListener(listener)
@@ -185,11 +178,11 @@ public class FFmpegTest {
     @Test
     public void testDuration() throws Exception {
         Path tempDir = Files.createTempDirectory("jaffree");
-        Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
+        Path outputPath = tempDir.resolve(Artifacts.VIDEO_MP4.getFileName());
 
         FFmpegResult result = FFmpeg.atPath(BIN)
                 .addInput(UrlInput
-                        .fromPath(VIDEO_MP4)
+                        .fromPath(Artifacts.VIDEO_MP4)
                         .setDuration(10, TimeUnit.SECONDS)
                 )
                 .addOutput(UrlOutput
@@ -204,7 +197,7 @@ public class FFmpegTest {
 
         result = FFmpeg.atPath(BIN)
                 .addInput(UrlInput
-                        .fromPath(VIDEO_MP4)
+                        .fromPath(Artifacts.VIDEO_MP4)
                         .setDuration(1. / 6., TimeUnit.MINUTES)
                 )
                 .setOverwriteOutput(true)
@@ -224,7 +217,7 @@ public class FFmpegTest {
         expectedException.expect(new StackTraceMatcher("Stop ffmpeg with ProgressListener Exception"));
 
         Path tempDir = Files.createTempDirectory("jaffree");
-        Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
+        Path outputPath = tempDir.resolve(Artifacts.VIDEO_MP4.getFileName());
 
         final long startedAtMillis = System.currentTimeMillis();
         final ProgressListener progressListener = new ProgressListener() {
@@ -239,7 +232,7 @@ public class FFmpegTest {
 
         final FFmpegResult result = FFmpeg.atPath(BIN)
                 .addInput(UrlInput
-                        .fromPath(VIDEO_MP4)
+                        .fromPath(Artifacts.VIDEO_MP4)
                         .setReadAtFrameRate(true)
                 )
                 .setProgressListener(progressListener)
@@ -250,12 +243,12 @@ public class FFmpegTest {
     @Test
     public void testForceStopWithThreadInterruption() throws Exception {
         Path tempDir = Files.createTempDirectory("jaffree");
-        Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
+        Path outputPath = tempDir.resolve(Artifacts.VIDEO_MP4.getFileName());
 
         final AtomicReference<FFmpegResult> result = new AtomicReference<>();
         final FFmpeg ffmpeg = FFmpeg.atPath(BIN)
                 .addInput(UrlInput
-                        .fromPath(VIDEO_MP4)
+                        .fromPath(Artifacts.VIDEO_MP4)
                         .setReadAtFrameRate(true)
                 )
                 .addOutput(UrlOutput.toPath(outputPath));
@@ -287,11 +280,11 @@ public class FFmpegTest {
     @Test
     public void testForceAsyncStop() throws Exception {
         Path tempDir = Files.createTempDirectory("jaffree");
-        Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
+        Path outputPath = tempDir.resolve(Artifacts.VIDEO_MP4.getFileName());
 
         FFmpeg ffmpeg = FFmpeg.atPath(BIN)
                 .addInput(UrlInput
-                        .fromPath(VIDEO_MP4)
+                        .fromPath(Artifacts.VIDEO_MP4)
                         .setReadAtFrameRate(true)
                 )
                 .addOutput(UrlOutput.toPath(outputPath));
@@ -310,7 +303,7 @@ public class FFmpegTest {
     @Test
     public void testGraceAsyncStop() throws Exception {
         Path tempDir = Files.createTempDirectory("jaffree");
-        Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
+        Path outputPath = tempDir.resolve(Artifacts.VIDEO_MP4.getFileName());
 
         final AtomicReference<FFmpegResultFuture> futureRef = new AtomicReference<>();
         final ProgressListener progressListener = new ProgressListener() {
@@ -324,7 +317,7 @@ public class FFmpegTest {
         };
 
         FFmpeg ffmpeg = FFmpeg.atPath(BIN)
-                .addInput(UrlInput.fromPath(VIDEO_MP4))
+                .addInput(UrlInput.fromPath(Artifacts.VIDEO_MP4))
                 .setProgressListener(progressListener)
                 .addOutput(UrlOutput.toPath(outputPath));
 
@@ -363,10 +356,10 @@ public class FFmpegTest {
     @Test
     public void testOutputPosition() throws Exception {
         Path tempDir = Files.createTempDirectory("jaffree");
-        Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
+        Path outputPath = tempDir.resolve(Artifacts.VIDEO_MP4.getFileName());
 
         FFmpegResult result = FFmpeg.atPath(BIN)
-                .addInput(UrlInput.fromPath(VIDEO_MP4))
+                .addInput(UrlInput.fromPath(Artifacts.VIDEO_MP4))
                 .addOutput(UrlOutput
                         .toPath(outputPath)
                         .copyAllCodecs()
@@ -383,10 +376,10 @@ public class FFmpegTest {
     @Test
     public void testSizeLimit() throws Exception {
         Path tempDir = Files.createTempDirectory("jaffree");
-        Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
+        Path outputPath = tempDir.resolve(Artifacts.VIDEO_MP4.getFileName());
 
         FFmpegResult result = FFmpeg.atPath(BIN)
-                .addInput(UrlInput.fromPath(VIDEO_MP4))
+                .addInput(UrlInput.fromPath(Artifacts.VIDEO_MP4))
                 .addOutput(UrlOutput
                         .toPath(outputPath)
                         .copyAllCodecs()
@@ -404,11 +397,11 @@ public class FFmpegTest {
     @Test
     public void testPosition() throws Exception {
         Path tempDir = Files.createTempDirectory("jaffree");
-        Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
+        Path outputPath = tempDir.resolve(Artifacts.VIDEO_MP4.getFileName());
 
         FFmpegResult result = FFmpeg.atPath(BIN)
                 .addInput(UrlInput
-                        .fromPath(VIDEO_MP4)
+                        .fromPath(Artifacts.VIDEO_MP4)
                         .setPosition(10, TimeUnit.SECONDS)
                 )
                 .addOutput(UrlOutput
@@ -418,7 +411,7 @@ public class FFmpegTest {
 
         Assert.assertNotNull(result);
 
-        double inputDuration = getDuration(VIDEO_MP4);
+        double inputDuration = getDuration(Artifacts.VIDEO_MP4);
         double outputDuration = getDuration(outputPath);
 
         Assert.assertEquals(inputDuration - 10, outputDuration, 0.5);
@@ -427,11 +420,11 @@ public class FFmpegTest {
     @Test
     public void testPositionNegative() throws Exception {
         Path tempDir = Files.createTempDirectory("jaffree");
-        Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
+        Path outputPath = tempDir.resolve(Artifacts.VIDEO_MP4.getFileName());
 
         FFmpegResult result = FFmpeg.atPath(BIN)
                 .addInput(UrlInput
-                        .fromPath(VIDEO_MP4)
+                        .fromPath(Artifacts.VIDEO_MP4)
                         .setPositionEof(-7, TimeUnit.SECONDS)
                 )
                 .addOutput(UrlOutput
@@ -452,7 +445,7 @@ public class FFmpegTest {
 
         FFmpegResult result = FFmpeg.atPath(BIN)
                 .addInput(UrlInput
-                        .fromPath(VIDEO_MP4)
+                        .fromPath(Artifacts.VIDEO_MP4)
                 )
                 .addOutput(
                         new NullOutput()
@@ -473,10 +466,10 @@ public class FFmpegTest {
     @Test
     public void testMap() throws Exception {
         Path tempDir = Files.createTempDirectory("jaffree");
-        Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
+        Path outputPath = tempDir.resolve(Artifacts.VIDEO_MP4.getFileName());
 
         FFmpegResult result = FFmpeg.atPath(BIN)
-                .addInput(UrlInput.fromPath(VIDEO_MP4))
+                .addInput(UrlInput.fromPath(Artifacts.VIDEO_MP4))
                 .addOutput(UrlOutput
                         .toPath(outputPath)
                         .copyAllCodecs()
@@ -492,7 +485,6 @@ public class FFmpegTest {
                 .setShowStreams(true)
                 .setInput(outputPath)
                 .execute();
-        Assert.assertNull(probe.getError());
 
         List<Stream> streamTypes = probe.getStreams();
 
@@ -518,7 +510,7 @@ public class FFmpegTest {
         final AtomicReference<String> loudnormReport = new AtomicReference<>();
 
         FFmpegResult result = FFmpeg.atPath(BIN)
-                .addInput(UrlInput.fromPath(VIDEO_MP4))
+                .addInput(UrlInput.fromPath(Artifacts.VIDEO_MP4))
                 .addArguments("-af", "loudnorm=I=-16:TP=-1.5:LRA=11:print_format=json")
                 .addOutput(new NullOutput(false))
                 .setOutputListener(new OutputListener() {
@@ -553,7 +545,7 @@ public class FFmpegTest {
         final StringBuffer idetReport = new StringBuffer();
 
         FFmpegResult result = FFmpeg.atPath(BIN)
-                .addInput(UrlInput.fromPath(VIDEO_MP4))
+                .addInput(UrlInput.fromPath(Artifacts.VIDEO_MP4))
                 .setFilter(StreamType.VIDEO, "idet")
                 .addOutput(
                         new NullOutput(false)
@@ -581,11 +573,11 @@ public class FFmpegTest {
     @Test
     public void testPipeInput() throws IOException {
         Path tempDir = Files.createTempDirectory("jaffree");
-        Path outputPath = tempDir.resolve(VIDEO_FLV.getFileName());
+        Path outputPath = tempDir.resolve(Artifacts.VIDEO_FLV.getFileName());
 
         FFmpegResult result;
 
-        try (InputStream inputStream = Files.newInputStream(VIDEO_FLV)) {
+        try (InputStream inputStream = Files.newInputStream(Artifacts.VIDEO_FLV)) {
             result = FFmpeg.atPath(BIN)
                     .addInput(PipeInput.pumpFrom(inputStream))
                     .addOutput(UrlOutput.toPath(outputPath))
@@ -595,7 +587,7 @@ public class FFmpegTest {
         Assert.assertNotNull(result);
         Assert.assertNotNull(result.getVideoSize());
 
-        double expectedDuration = getExactDuration(VIDEO_FLV);
+        double expectedDuration = getExactDuration(Artifacts.VIDEO_FLV);
         double actualDuration = getExactDuration(outputPath);
         Assert.assertEquals(expectedDuration, actualDuration, 1.);
     }
@@ -603,11 +595,11 @@ public class FFmpegTest {
     @Test
     public void testPipeInputPartialRead() throws IOException {
         Path tempDir = Files.createTempDirectory("jaffree");
-        Path outputPath = tempDir.resolve(VIDEO_FLV.getFileName());
+        Path outputPath = tempDir.resolve(Artifacts.VIDEO_FLV.getFileName());
 
         FFmpegResult result;
 
-        try (InputStream inputStream = Files.newInputStream(VIDEO_FLV)) {
+        try (InputStream inputStream = Files.newInputStream(Artifacts.VIDEO_FLV)) {
             result = FFmpeg.atPath(BIN)
                     .addInput(
                             PipeInput
@@ -629,12 +621,12 @@ public class FFmpegTest {
     @Test
     public void testPipeOutput() throws IOException {
         Path tempDir = Files.createTempDirectory("jaffree");
-        Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
+        Path outputPath = tempDir.resolve(Artifacts.VIDEO_MP4.getFileName());
 
         FFmpegResult result;
         try (OutputStream outputStream = Files.newOutputStream(outputPath, CREATE)) {
             result = FFmpeg.atPath(BIN)
-                    .addInput(UrlInput.fromPath(VIDEO_MP4))
+                    .addInput(UrlInput.fromPath(Artifacts.VIDEO_MP4))
                     .addOutput(PipeOutput.pumpTo(outputStream).setFormat("flv"))
                     .setOverwriteOutput(true)
                     .execute();
@@ -651,7 +643,7 @@ public class FFmpegTest {
         Path tempDir = Files.createTempDirectory("jaffree");
         Path outputPath = tempDir.resolve("channel.mp4");
 
-        try (SeekableByteChannel channel = Files.newByteChannel(VIDEO_MP4, READ)) {
+        try (SeekableByteChannel channel = Files.newByteChannel(Artifacts.VIDEO_MP4, READ)) {
             FFmpegResult result = FFmpeg.atPath(BIN)
                     .addInput(
                             new ChannelInput("testChannelInput.mp4", channel)
@@ -675,7 +667,7 @@ public class FFmpegTest {
         Path tempDir = Files.createTempDirectory("jaffree");
         Path outputPath = tempDir.resolve("channel.mp4");
 
-        try (SeekableByteChannel channel = Files.newByteChannel(VIDEO_MP4, READ)) {
+        try (SeekableByteChannel channel = Files.newByteChannel(Artifacts.VIDEO_MP4, READ)) {
             FFmpegResult result = FFmpeg.atPath(BIN)
                     .addInput(
                             new ChannelInput("testChannelInputPartialRead.mp4", channel)
@@ -700,7 +692,7 @@ public class FFmpegTest {
         Path tempDir = Files.createTempDirectory("jaffree");
         Path outputPath = tempDir.resolve("frame.jpg");
 
-        try (SeekableByteChannel channel = Files.newByteChannel(VIDEO_MP4, READ)) {
+        try (SeekableByteChannel channel = Files.newByteChannel(Artifacts.VIDEO_MP4, READ)) {
             FFmpegResult result = FFmpeg.atPath(BIN)
                     .addInput(
                             new ChannelInput("testChannelInputSeek.mp4", channel)
@@ -731,7 +723,7 @@ public class FFmpegTest {
         try (SeekableByteChannel channel = Files.newByteChannel(outputPath, CREATE, WRITE, READ, TRUNCATE_EXISTING)) {
             FFmpegResult result = FFmpeg.atPath(BIN)
                     .addInput(
-                            UrlInput.fromPath(VIDEO_MP4)
+                            UrlInput.fromPath(Artifacts.VIDEO_MP4)
                     )
                     .addOutput(
                             new ChannelOutput("channel.mp4", channel)
@@ -751,12 +743,12 @@ public class FFmpegTest {
     @Test
     public void testStreamFilters() throws IOException {
         Path tempDir = Files.createTempDirectory("jaffree");
-        Path outputPath = tempDir.resolve(VIDEO_MP4.getFileName());
+        Path outputPath = tempDir.resolve(Artifacts.VIDEO_MP4.getFileName());
 
         LOGGER.debug("Will write to " + outputPath);
 
         FFmpegResult result = FFmpeg.atPath(BIN)
-                .addInput(UrlInput.fromPath(VIDEO_MP4))
+                .addInput(UrlInput.fromPath(Artifacts.VIDEO_MP4))
                 .setFilter(StreamType.VIDEO, "crop=64:48:32:32")
                 .setFilter(StreamType.AUDIO, "aecho=0.8:0.88:6:0.4")
                 .addOutput(UrlOutput
@@ -775,7 +767,6 @@ public class FFmpegTest {
                 .setShowStreams(true)
                 .setInput(path)
                 .execute();
-        Assert.assertNull(probe.getError());
 
         double result = 0.0;
         for (Stream stream : probe.getStreams()) {
@@ -830,7 +821,6 @@ public class FFmpegTest {
                 .setShowStreams(true)
                 .setInput(output)
                 .execute();
-        Assert.assertNull(probe.getError());
 
         List<Stream> streamTypes = probe.getStreams();
 
@@ -867,7 +857,7 @@ public class FFmpegTest {
 
         FFmpegResult result = FFmpeg.atPath(BIN)
                 .addInput(
-                        new UrlInput(VIDEO_MP4.toString()) {
+                        new UrlInput(Artifacts.VIDEO_MP4.toString()) {
                             @Override
                             public ProcessHelper helperThread() {
                                 return new NotifyCloseHelper(inputHelperClosed);

@@ -6,7 +6,7 @@
 
     <groupId>com.github.kokorin.jaffree</groupId>
     <artifactId>jaffree</artifactId>
-    <version>0.10.1</version>
+    <version>0.11.0</version>
     <packaging>jar</packaging>
 
     <name>Jaffree</name>
@@ -46,6 +46,8 @@
     <properties>
         <sl4j.version>1.7.25</sl4j.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <createSourcesJar>false</createSourcesJar>
+        <shadeSourcesContent>false</shadeSourcesContent>
     </properties>
 
     <dependencies>
@@ -63,12 +65,18 @@
         </dependency>
 
         <dependency>
+            <groupId>com.grack</groupId>
+            <artifactId>nanojson</artifactId>
+            <!--TODO upgrade to 1.7 when switched to Java8-->
+            <version>1.6</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-slf4j-impl</artifactId>
             <version>2.12.1</version>
             <scope>test</scope>
         </dependency>
-
 
         <dependency>
             <groupId>commons-io</groupId>
@@ -88,6 +96,10 @@
     <profiles>
         <profile>
             <id>release</id>
+            <properties>
+                <createSourcesJar>true</createSourcesJar>
+                <shadeSourcesContent>true</shadeSourcesContent>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -97,6 +109,7 @@
                         <executions>
                             <execution>
                                 <id>attach-sources</id>
+                                <phase>prepare-package</phase>
                                 <goals>
                                     <goal>jar-no-fork</goal>
                                 </goals>
@@ -184,6 +197,60 @@
                     <target>1.7</target>
                     <compilerArgs>-Xlint:unchecked</compilerArgs>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.2.4</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <artifactSet>
+                                <includes>
+                                    <include>com.grack:nanojson</include>
+                                </includes>
+                            </artifactSet>
+                            <createDependencyReducedPom>true</createDependencyReducedPom>
+                            <createSourcesJar>${createSourcesJar}</createSourcesJar>
+                            <shadeSourcesContent>${shadeSourcesContent}</shadeSourcesContent>
+                            <relocations>
+                                <relocation>
+                                    <pattern>com.grack.nanojson</pattern>
+                                    <shadedPattern>com.github.kokorin.jaffree.shaded.com.grack.nanojson</shadedPattern>
+                                </relocation>
+                            </relocations>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.8</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <copy file="dependency-reduced-pom.xml"
+                                      tofile="${project.build.directory}/META-INF/maven/${project.groupId}/${project.artifactId}/pom.xml"/>
+                                <zip destfile="${project.build.directory}/${project.artifactId}-${project.version}.jar"
+                                     basedir="${project.build.directory}"
+                                     includes="META-INF/**/*"
+                                     update="true"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

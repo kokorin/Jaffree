@@ -1,5 +1,5 @@
 /*
- *    Copyright  2018 Denis Kokorin
+ *    Copyright 2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -15,27 +15,20 @@
  *
  */
 
-package com.github.kokorin.jaffree.ffprobe;
+package com.github.kokorin.jaffree.ffprobe.data;
 
-import com.github.kokorin.jaffree.ffprobe.data.DSection;
+/**
+ * Represents a converter which is used to convert {@link ProbeData} to T type.
+ *
+ * @param <T> type to convert to
+ */
+public interface ProbeDataConverter<T> {
 
-@Deprecated
-public class PixelFormatComponent {
-    private final DSection section;
-
-    public PixelFormatComponent(DSection section) {
-        this.section = section;
-    }
-
-    public DSection getSection() {
-        return section;
-    }
-
-    public int getIndex() {
-        return section.getInteger("index");
-    }
-
-    public int getBitDepth() {
-        return section.getInteger("bit_depth");
-    }
+    /**
+     * Converts {@link ProbeData} to T type.
+     *
+     * @param data probe data to convert
+     * @return converted probe data
+     */
+    T convert(ProbeData data);
 }
