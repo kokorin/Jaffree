@@ -1,5 +1,5 @@
 /*
- *    Copyright  2018 Denis Kokorin
+ *    Copyright 2018-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -15,22 +15,19 @@
  *
  */
 
-package com.github.kokorin.jaffree.ffprobe;
+package com.github.kokorin.jaffree.ffprobe.data;
 
-public class Tag {
-    private final String key;
-    private final String value;
-
-    public Tag(String key, String value) {
-        this.key = key;
-        this.value = value;
-    }
-
-    public String getKey() {
-        return key;
-    }
-
-    public String getValue() {
-        return value;
-    }
+/**
+ * Represents a converter which is used to convert requested value to T type.
+ *
+ * @param <T> type to convert to
+ */
+public interface ValueConverter<T> {
+    /**
+     * Converts passed in {@link String} value to T type.
+     *
+     * @param value value
+     * @return converted value
+     */
+    T convert(Object value);
 }

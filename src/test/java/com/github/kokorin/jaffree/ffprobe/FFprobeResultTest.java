@@ -1,25 +1,14 @@
 package com.github.kokorin.jaffree.ffprobe;
 
 import com.github.kokorin.jaffree.StreamType;
-import com.github.kokorin.jaffree.ffprobe.data.DefaultFormatParser;
 import com.github.kokorin.jaffree.ffprobe.data.FlatFormatParser;
-import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 import java.io.InputStream;
 import java.util.List;
 
 public class FFprobeResultTest {
-
-    @Test
-    public void testChaptersWithDefaultFormat() throws Exception {
-        FFprobeResult result;
-        try (InputStream input = this.getClass().getResourceAsStream("./data/ffprobe_streams_and_chapters.out")) {
-            result = new FFprobeResult(new DefaultFormatParser().parse(input));
-        }
-        verifyChaptersFFprobeResult(result);
-
-    }
 
     @Test
     public void testChaptersWithFlatFormat() throws Exception {
@@ -32,34 +21,22 @@ public class FFprobeResultTest {
 
     public void verifyChaptersFFprobeResult(FFprobeResult result) {
         List<Stream> streams = result.getStreams();
-        Assert.assertEquals(8, streams.size());
+        assertEquals(8, streams.size());
 
         Stream videoStream = streams.get(0);
 
-        Assert.assertEquals(StreamType.VIDEO, videoStream.getCodecType());
-        Assert.assertEquals("hevc", videoStream.getCodecName());
-        Assert.assertEquals(1, videoStream.getDisposition().getDefault());
-        List<Tag> videoTags = videoStream.getTagList();
+        assertEquals(StreamType.VIDEO, videoStream.getCodecType());
+        assertEquals("hevc", videoStream.getCodecName());
+        assertEquals((Integer) 1, videoStream.getDisposition().getDefault());
 
         Stream audioStream = streams.get(1);
-        Assert.assertEquals(StreamType.AUDIO, audioStream.getCodecType());
-        Assert.assertEquals("aac", audioStream.getCodecName());
+        assertEquals(StreamType.AUDIO, audioStream.getCodecType());
+        assertEquals("aac", audioStream.getCodecName());
 
         List<Chapter> chapters = result.getChapters();
-        Assert.assertEquals(5, chapters.size());
+        assertEquals(5, chapters.size());
         Chapter chapter = chapters.get(0);
-        Assert.assertEquals(1, chapter.getTags().size());
-        Assert.assertEquals("Chapter 01", chapter.getTag("title"));
-    }
-
-    @Test
-    public void testProgramsWithDefaultFormat() throws Exception {
-        FFprobeResult result;
-        try (InputStream input = this.getClass().getResourceAsStream("./data/ffprobe_programs.out")) {
-            result = new FFprobeResult(new DefaultFormatParser().parse(input));
-        }
-        verifyProgramsFFprobeResult(result);
-
+        assertEquals("Chapter 01", chapter.getTag("title"));
     }
 
     @Test
@@ -73,22 +50,22 @@ public class FFprobeResultTest {
 
     public void verifyProgramsFFprobeResult(FFprobeResult result) {
         List<Program> programs = result.getPrograms();
-        Assert.assertEquals(3, programs.size());
+        assertEquals(3, programs.size());
 
         for (int i = 0; i < 3; i++) {
             Program program = programs.get(i);
-            Assert.assertEquals("program " + i, i+1, program.getProgramId());
-            Assert.assertEquals("program " + i, i+1, program.getProgramNum());
-            Assert.assertEquals("program " + i, 2, program.getNbStreams());
-            Assert.assertEquals("program " + i, "FFmpeg", program.getTag("service_provider"));
+            assertEquals("program " + i, (Integer) (i + 1), program.getProgramId());
+            assertEquals("program " + i, (Integer) (i + 1), program.getProgramNum());
+            assertEquals("program " + i, (Integer) 2, program.getNbStreams());
+            assertEquals("program " + i, "FFmpeg", program.getTag("service_provider"));
             List<Stream> streams = program.getStreams();
-            Assert.assertEquals(2, streams.size());
+            assertEquals(2, streams.size());
             Stream video = streams.get(0);
-            Assert.assertEquals(StreamType.VIDEO, video.getCodecType());
-            Assert.assertEquals("mpeg2video", video.getCodecName());
+            assertEquals(StreamType.VIDEO, video.getCodecType());
+            assertEquals("mpeg2video", video.getCodecName());
             Stream audio = streams.get(1);
-            Assert.assertEquals(StreamType.AUDIO, audio.getCodecType());
-            Assert.assertEquals("mp2", audio.getCodecName());
+            assertEquals(StreamType.AUDIO, audio.getCodecType());
+            assertEquals("mp2", audio.getCodecName());
         }
     }
 }
