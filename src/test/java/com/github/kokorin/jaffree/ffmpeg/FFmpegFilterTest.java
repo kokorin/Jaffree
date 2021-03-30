@@ -18,10 +18,7 @@ import java.util.concurrent.TimeUnit;
 public class FFmpegFilterTest {
 
     public static Path BIN;
-    public static Path VIDEO_MP4 = Artifacts.getMp4Artifact();
-    public static Path VIDEO_MKV = Artifacts.getMkvArtifact();
-    public static Path SMALL_FLV = Artifacts.getSmallFlvArtifact();
-    public static Path SMALL_MP4 = Artifacts.getSmallMp4Artifact();
+
 
     @BeforeClass
     public static void setUp() throws Exception {
@@ -31,11 +28,6 @@ public class FFmpegFilterTest {
         }
         Assert.assertNotNull("Nor command line property, neither system variable FFMPEG_BIN is set up", ffmpegHome);
         BIN = Paths.get(ffmpegHome);
-
-        Assert.assertTrue("Sample videos weren't found: " + VIDEO_MP4.toAbsolutePath(), Files.exists(VIDEO_MP4));
-        Assert.assertTrue("Sample videos weren't found: " + VIDEO_MKV.toAbsolutePath(), Files.exists(VIDEO_MKV));
-        Assert.assertTrue("Sample videos weren't found: " + SMALL_FLV.toAbsolutePath(), Files.exists(SMALL_FLV));
-        Assert.assertTrue("Sample videos weren't found: " + SMALL_MP4.toAbsolutePath(), Files.exists(SMALL_MP4));
     }
 
     /**
@@ -52,10 +44,10 @@ public class FFmpegFilterTest {
         Path outputPath = tempDir.resolve("mosaic.mkv");
 
         FFmpegResult result = FFmpeg.atPath(BIN)
-                .addInput(UrlInput.fromPath(VIDEO_MP4).setDuration(10, TimeUnit.SECONDS))
-                .addInput(UrlInput.fromPath(SMALL_FLV).setDuration(10, TimeUnit.SECONDS))
-                .addInput(UrlInput.fromPath(SMALL_MP4).setDuration(10, TimeUnit.SECONDS))
-                .addInput(UrlInput.fromPath(VIDEO_MKV).setDuration(10, TimeUnit.SECONDS))
+                .addInput(UrlInput.fromPath(Artifacts.VIDEO_MP4).setDuration(10, TimeUnit.SECONDS))
+                .addInput(UrlInput.fromPath(Artifacts.SMALL_FLV).setDuration(10, TimeUnit.SECONDS))
+                .addInput(UrlInput.fromPath(Artifacts.SMALL_MP4).setDuration(10, TimeUnit.SECONDS))
+                .addInput(UrlInput.fromPath(Artifacts.VIDEO_MKV).setDuration(10, TimeUnit.SECONDS))
 
                 .setComplexFilter(FilterGraph.of(
                         FilterChain.of(
@@ -139,7 +131,6 @@ public class FFmpegFilterTest {
                 .execute();
 
         Assert.assertNotNull(probe);
-        Assert.assertNull(probe.getError());
 
         int width = 0;
         int height = 0;
@@ -171,8 +162,8 @@ public class FFmpegFilterTest {
         Path outputPath = tempDir.resolve("concat.mp4");
 
         FFmpegResult result = FFmpeg.atPath(BIN)
-                .addInput(UrlInput.fromPath(VIDEO_MP4).setDuration(5, TimeUnit.SECONDS))
-                .addInput(UrlInput.fromPath(VIDEO_MKV).setPositionEof(-5, TimeUnit.SECONDS))
+                .addInput(UrlInput.fromPath(Artifacts.VIDEO_MP4).setDuration(5, TimeUnit.SECONDS))
+                .addInput(UrlInput.fromPath(Artifacts.VIDEO_MKV).setPositionEof(-5, TimeUnit.SECONDS))
 
                 .setComplexFilter(FilterGraph.of(
                         FilterChain.of(
@@ -211,7 +202,6 @@ public class FFmpegFilterTest {
         }
 
         Assert.assertNotNull(probe);
-        Assert.assertNull(probe.getError());
         Assert.assertEquals(10.0, duration, 0.1);
     }
 }

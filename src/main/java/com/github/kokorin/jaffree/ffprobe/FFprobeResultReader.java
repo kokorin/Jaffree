@@ -1,5 +1,5 @@
 /*
- *    Copyright  2018 Denis Kokorin
+ *    Copyright 2018-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
 
 package com.github.kokorin.jaffree.ffprobe;
 
-import com.github.kokorin.jaffree.ffprobe.data.Data;
 import com.github.kokorin.jaffree.ffprobe.data.FormatParser;
+import com.github.kokorin.jaffree.ffprobe.data.ProbeData;
 import com.github.kokorin.jaffree.process.StdReader;
 
 import java.io.InputStream;
@@ -44,8 +44,8 @@ public class FFprobeResultReader implements StdReader<FFprobeResult> {
      */
     @Override
     public FFprobeResult read(final InputStream stdOut) {
-        Data data = parser.parse(stdOut);
+        ProbeData probeData = parser.parse(stdOut);
 
-        return new FFprobeResult(data);
+        return new FFprobeResult(probeData);
     }
 }

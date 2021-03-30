@@ -1,14 +1,11 @@
 package com.github.kokorin.jaffree.nut;
 
 import com.github.kokorin.jaffree.Artifacts;
-import com.github.kokorin.jaffree.LogLevel;
 import com.github.kokorin.jaffree.ffmpeg.FFmpeg;
 import com.github.kokorin.jaffree.ffmpeg.FFmpegResult;
 import com.github.kokorin.jaffree.ffmpeg.NullOutput;
 import com.github.kokorin.jaffree.ffmpeg.UrlInput;
 import com.github.kokorin.jaffree.ffmpeg.UrlOutput;
-import com.github.kokorin.jaffree.ffprobe.FFprobe;
-import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -24,8 +21,6 @@ import java.nio.file.Paths;
 public class NutTest {
 
     public static Path BIN;
-    public static final Path VIDEO_MP4 = Artifacts.getMp4Artifact();
-    public static final Path VIDEO_NUT = Artifacts.getNutArtifact();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NutTest.class);
 
@@ -37,21 +32,18 @@ public class NutTest {
         }
         Assert.assertNotNull("Nor command line property, neither system variable FFMPEG_BIN is set up", ffmpegHome);
         BIN = Paths.get(ffmpegHome);
-
-        Assert.assertTrue("Sample videos weren't found: " + VIDEO_MP4.toAbsolutePath(), Files.exists(VIDEO_MP4));
-        Assert.assertTrue("NUT file hasn't been found: " + VIDEO_NUT.toAbsolutePath(), Files.exists(VIDEO_NUT));
     }
 
     @Test
     public void read() throws Exception {
-        assertNutStructure(VIDEO_NUT);
+        assertNutStructure(Artifacts.VIDEO_NUT);
     }
 
     @Test
     public void readAndWrite() throws Exception {
         Path outputPath = Files.createTempFile("output", ".nut");
 
-        try (NutInputStream inputStream = new NutInputStream(new FileInputStream(VIDEO_NUT.toFile()));
+        try (NutInputStream inputStream = new NutInputStream(new FileInputStream(Artifacts.VIDEO_NUT.toFile()));
              NutOutputStream outputStream = new NutOutputStream(new FileOutputStream(outputPath.toFile()))) {
             NutReader reader = new NutReader(inputStream);
             NutWriter writer = new NutWriter(outputStream);
@@ -75,15 +67,6 @@ public class NutTest {
 
         assertNutStructure(outputPath);
 
-        FFprobeResult probe = FFprobe.atPath(BIN)
-                .setInput(outputPath)
-                .setCountFrames(true)
-                .setShowLog(LogLevel.DEBUG)
-                .execute();
-
-        Assert.assertNotNull(probe);
-        Assert.assertNull(probe.getError());
-
         // During this test you can see in console some warnings like the following:
         // [null @ 0000000000dca4e0] Application provided invalid, non monotonically increasing dts to muxer in stream 1: 7371776 >= 7371776
         // [null @ 0000000000dca4e0] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 15050833 >= 15048033
@@ -104,7 +87,7 @@ public class NutTest {
 
         FFmpeg.atPath(BIN)
                 .addInput(
-                        UrlInput.fromPath(VIDEO_MP4)
+                        UrlInput.fromPath(Artifacts.VIDEO_MP4)
                                 .setDuration(1000)
                 )
                 .setOverwriteOutput(true)

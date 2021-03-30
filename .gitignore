@@ -2,3 +2,4 @@
 *.iml
 target
 .artifacts
+dependency-reduced-pom.xml
