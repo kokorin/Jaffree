@@ -241,7 +241,7 @@
                         </goals>
                         <configuration>
                             <target>
-                                <move file="dependency-reduced-pom.xml"
+                                <copy file="dependency-reduced-pom.xml"
                                       tofile="${project.build.directory}/META-INF/maven/${project.groupId}/${project.artifactId}/pom.xml"/>
                                 <zip destfile="${project.build.directory}/${project.artifactId}-${project.version}.jar"
                                      basedir="${project.build.directory}"
