@@ -1,5 +1,5 @@
 /*
- *    Copyright  2018 Denis Kokorin
+ *    Copyright 2018-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,8 +17,11 @@
 
 package com.github.kokorin.jaffree.ffprobe;
 
-import com.github.kokorin.jaffree.ffprobe.data.DSection;
-import com.github.kokorin.jaffree.ffprobe.data.Data;
+import com.github.kokorin.jaffree.StreamType;
+import com.github.kokorin.jaffree.ffprobe.data.ProbeData;
+import com.github.kokorin.jaffree.ffprobe.data.ProbeDataConverter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -26,15 +29,17 @@ import java.util.List;
  * {@link FFprobeResult} contains information about ffprobe execution result.
  */
 public class FFprobeResult {
-    private final Data data;
+    private final ProbeData probeData;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(FFprobeResult.class);
 
     /**
-     * Constructs {@link FFprobeResult} from parsed {@link Data}.
+     * Constructs {@link FFprobeResult} from parsed {@link ProbeData}.
      *
-     * @param data parsed ffprobe output
+     * @param probeData parsed ffprobe output
      */
-    public FFprobeResult(final Data data) {
-        this.data = data;
+    public FFprobeResult(final ProbeData probeData) {
+        this.probeData = probeData;
     }
 
     /**
@@ -44,21 +49,8 @@ public class FFprobeResult {
      *
      * @return parsed ffprobe output
      */
-    public Data getData() {
-        return data;
-    }
-
-    /**
-     * @return ffprobe version
-     */
-    // TODO: delete this?
-    public ProgramVersion getProgramVersion() {
-        DSection section = data.getSection("PROGRAM_VERSION");
-        if (section == null) {
-            return null;
-        }
-
-        return new ProgramVersion(section);
+    public ProbeData getData() {
+        return probeData;
     }
 
     /**
@@ -66,52 +58,10 @@ public class FFprobeResult {
      * @see FFprobe#setShowFormat(boolean)
      */
     public Format getFormat() {
-        DSection section = data.getSection("FORMAT");
-        if (section == null) {
-            return null;
-        }
-
-        return new Format(section);
-    }
-
-    /**
-     * @return ffprobe errors
-     */
-    // TODO: delete this?
-    public Error getError() {
-        DSection section = data.getSection("ERROR");
-        if (section == null) {
-            return null;
-        }
-
-        return new Error(section);
-    }
-
-    /**
-     * @return FF-library versions.
-     * @deprecated not actually in use
-     */
-    @Deprecated
-    // TODO: delete this
-    public List<LibraryVersion> getLibraryVersions() {
-        return data.getSections("LIBRARY_VERSION", new DSection.SectionConverter<LibraryVersion>() {
+        return probeData.getSubData("format", new ProbeDataConverter<Format>() {
             @Override
-            public LibraryVersion convert(final DSection dSection) {
-                return new LibraryVersion(dSection);
-            }
-        });
-    }
-
-    /**
-     * @return supported pixel formats
-     */
-    @Deprecated
-    // TODO: delete this?
-    public List<PixelFormat> getPixelFormats() {
-        return data.getSections("PIXEL_FORMAT", new DSection.SectionConverter<PixelFormat>() {
-            @Override
-            public PixelFormat convert(final DSection dSection) {
-                return new PixelFormat(dSection);
+            public Format convert(ProbeData probeData) {
+                return new Format(probeData);
             }
         });
     }
@@ -121,35 +71,62 @@ public class FFprobeResult {
      * @see FFprobe#setShowPackets(boolean)
      */
     public List<Packet> getPackets() {
-        return data.getSections("PACKET", new DSection.SectionConverter<Packet>() {
+        return probeData.getSubDataList("packets", new ProbeDataConverter<Packet>() {
             @Override
-            public Packet convert(final DSection dSection) {
-                return new Packet(dSection);
+            public Packet convert(final ProbeData probeData) {
+                return new Packet(probeData);
             }
         });
     }
 
     /**
-     * @return parsed frames
+     * @return parsed frames and subtitles
      * @see FFprobe#setShowFrames(boolean)
+     * @see Frame
+     * @see Subtitle
      */
-    public List<Frame> getFrames() {
-        return data.getSections("FRAME", new DSection.SectionConverter<Frame>() {
+    public List<FrameSubtitle> getFrames() {
+        return probeData.getSubDataList("frames", new ProbeDataConverter<FrameSubtitle>() {
             @Override
-            public Frame convert(final DSection dSection) {
-                return new Frame(dSection);
+            public FrameSubtitle convert(final ProbeData probeData) {
+                StreamType streamType = probeData.getStreamType("media_type");
+                if (streamType == StreamType.SUBTITLE) {
+                    return new Subtitle(probeData);
+                }
+                return new Frame(probeData);
             }
         });
     }
 
     /**
-     * @return parsed subtitles
+     * @return parsed packets, frames and subtitles
+     * @see FFprobe#setShowPackets(boolean)
+     * @see FFprobe#setShowFrames(boolean)
+     * @see Packet
+     * @see Frame
+     * @see Subtitle
      */
-    public List<Subtitle> getSubtitles() {
-        return data.getSections("SUBTITLE", new DSection.SectionConverter<Subtitle>() {
+    public List<PacketFrameSubtitle> getPacketsAndFrames() {
+        return probeData.getSubDataList("packets_and_frames", new ProbeDataConverter<PacketFrameSubtitle>() {
             @Override
-            public Subtitle convert(final DSection dSection) {
-                return new Subtitle(dSection);
+            public PacketFrameSubtitle convert(final ProbeData probeData) {
+                String type = probeData.getString("type");
+                if (type == null) {
+                    LOGGER.error("No type property found");
+                    return null;
+                }
+
+                switch (type) {
+                    case "packet":
+                        return new Packet(probeData);
+                    case "frame":
+                        return new Frame(probeData);
+                    case "subtitle":
+                        return new Subtitle(probeData);
+                    default:
+                        LOGGER.error("Unknown type: " + type);
+                        return null;
+                }
             }
         });
     }
@@ -159,9 +136,9 @@ public class FFprobeResult {
      * @see FFprobe#setShowPrograms(boolean)
      */
     public List<Program> getPrograms() {
-        return data.getSections("PROGRAM", new DSection.SectionConverter<Program>() {
+        return probeData.getSubDataList("programs", new ProbeDataConverter<Program>() {
             @Override
-            public Program convert(final DSection dSection) {
+            public Program convert(final ProbeData dSection) {
                 return new Program(dSection);
             }
         });
@@ -170,8 +147,14 @@ public class FFprobeResult {
     /**
      * @return parsed streams
      * @see FFprobe#setShowStreams(boolean)
-     */    public List<Stream> getStreams() {
-        return data.getSections("STREAM", DSection.STREAM_CONVERTER);
+     */
+    public List<Stream> getStreams() {
+        return probeData.getSubDataList("streams", new ProbeDataConverter<Stream>() {
+            @Override
+            public Stream convert(final ProbeData probeData) {
+                return new Stream(probeData);
+            }
+        });
     }
 
     /**
@@ -179,10 +162,10 @@ public class FFprobeResult {
      * @see FFprobe#setShowChapters(boolean)
      */
     public List<Chapter> getChapters() {
-        return data.getSections("CHAPTER", new DSection.SectionConverter<Chapter>() {
+        return probeData.getSubDataList("chapters", new ProbeDataConverter<Chapter>() {
             @Override
-            public Chapter convert(final DSection dSection) {
-                return new Chapter(dSection);
+            public Chapter convert(final ProbeData probeData) {
+                return new Chapter(probeData);
             }
         });
     }

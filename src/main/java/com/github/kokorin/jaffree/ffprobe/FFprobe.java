@@ -21,11 +21,10 @@ import com.github.kokorin.jaffree.LogLevel;
 import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffprobe.data.FlatFormatParser;
 import com.github.kokorin.jaffree.ffprobe.data.FormatParser;
-import com.github.kokorin.jaffree.process.LoggingStdReader;
+import com.github.kokorin.jaffree.ffprobe.data.JsonFormatParser;
 import com.github.kokorin.jaffree.process.ProcessHandler;
 import com.github.kokorin.jaffree.process.ProcessHelper;
 import com.github.kokorin.jaffree.process.StdReader;
-import com.github.kokorin.jaffree.process.ThrowingStdReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,17 +43,14 @@ import java.util.concurrent.TimeUnit;
 /**
  * {@link FFprobe} provides an ability to execute ffprobe process.
  */
-//TODO add debug statements for all methods
 public class FFprobe {
-    // TODO why final?
-    private final LogLevel logLevel = LogLevel.ERROR;
+    private LogLevel logLevel = LogLevel.INFO;
 
     private String selectStreams;
     private boolean showData;
     private boolean showPrivateData = true;
     private String showDataHash;
     private boolean showFormat;
-    private String showFormatEntry;
     private String showEntries;
     private boolean showPackets;
     private boolean showFrames;
@@ -65,10 +61,6 @@ public class FFprobe {
     private boolean countFrames;
     private boolean countPackets;
     private String readIntervals;
-    private boolean showProgramVersion;
-    private boolean showLibraryVersions;
-    private boolean showVersions;
-    private boolean showPixelFormats;
 
     private Long probeSize;
     private Long analyzeDuration;
@@ -79,7 +71,7 @@ public class FFprobe {
     // TODO: make it final?
     private Input input;
 
-    private FormatParser formatParser = new FlatFormatParser();
+    private FormatParser formatParser = new JsonFormatParser();
 
     private final Path executable;
 
@@ -202,23 +194,6 @@ public class FFprobe {
     }
 
     /**
-     * Like -show_format, but only prints the specified entry of the container format information,
-     * rather than all.
-     * <p>
-     * This option may be given more than once, then all specified entries will be shown.
-     *
-     * @param showFormatEntry
-     * @return this
-     * @see #setShowEntries(String)
-     * @deprecated This option is deprecated, use show_entries instead.
-     */
-    // TODO remove since with programmatic approach it's possible to get specific entries
-    public FFprobe setShowFormatEntry(final String showFormatEntry) {
-        this.showFormatEntry = showFormatEntry;
-        return this;
-    }
-
-    /**
      * Set list of entries to show.
      * <p>
      * Entries are specified according to the following syntax. section_entries contains a list of
@@ -237,13 +212,14 @@ public class FFprobe {
      * <p>
      * SECTION_ENTRIES       ::= SECTION_ENTRY[:SECTION_ENTRIES]
      * <p>
-     * {@link Packet#getStreamIndex} can be absent in XML
-     * {@link Stream#getIndex} also can be absent in XML
+     * <b>Note:</b> this option overwrites any &quot;show...&quot; set before, so this method should not be used
+     * together with any of {@link #setShowFormat(boolean)}, {@link #setShowFrames(boolean)},
+     * {@link #setShowPackets(boolean)}, {@link #setShowStreams(boolean)}, {@link #setShowChapters(boolean)} or
+     * {@link #setShowPrograms(boolean)}
      *
      * @param showEntries list entries syntax
      * @return this
      */
-    // TODO remove since with programmatic approach it's possible to get specific entries
     public FFprobe setShowEntries(final String showEntries) {
         this.showEntries = showEntries;
         return this;
@@ -280,12 +256,12 @@ public class FFprobe {
      * <p>
      * This option requires -show_frames.
      *
-     * @param showLogLevel decoder log level
+     * @param showLog decoder log level
      * @return this
      * @see #setShowFrames(boolean)
      */
-    public FFprobe setShowLog(final LogLevel showLogLevel) {
-        this.showLog = showLogLevel;
+    public FFprobe setShowLog(final LogLevel showLog) {
+        this.showLog = showLog;
         return this;
     }
 
@@ -366,58 +342,6 @@ public class FFprobe {
      */
     public FFprobe setReadIntervals(final String intervals) {
         this.readIntervals = intervals;
-        return this;
-    }
-
-    /**
-     * Show information related to program version.
-     *
-     * @param showProgramVersion true to show program version
-     * @return this
-     */
-    //TODO remove
-    public FFprobe setShowProgramVersion(final boolean showProgramVersion) {
-        this.showProgramVersion = showProgramVersion;
-        return this;
-    }
-
-    /**
-     * Show information related to library versions.
-     *
-     * @param showLibraryVersions true to show library version
-     * @return this
-     * @deprecated not actually in use
-     */
-    @Deprecated
-    //TODO remove this method
-    public FFprobe setShowLibraryVersions(final boolean showLibraryVersions) {
-        this.showLibraryVersions = showLibraryVersions;
-        return this;
-    }
-
-    /**
-     * Show information related to program and library versions.
-     * <p>
-     * This is the equivalent of setting both -show_program_version and -show_library_versions
-     *
-     * @param showVersions true to show version
-     * @return this
-     */
-    //TODO remove
-    public FFprobe setShowVersions(final boolean showVersions) {
-        this.showVersions = showVersions;
-        return this;
-    }
-
-    /**
-     * Show information about all pixel formats supported by FFmpeg.
-     *
-     * @param showPixelFormats true to show pixel formats
-     * @return this
-     */
-    //TODO remove
-    public FFprobe setShowPixelFormats(final boolean showPixelFormats) {
-        this.showPixelFormats = showPixelFormats;
         return this;
     }
 
@@ -541,6 +465,25 @@ public class FFprobe {
         return this;
     }
 
+    /**
+     * Sets ffprobe logging level.
+     * <p>
+     * Note: for message to appear in SLF4J logging it's required to configure appropriate
+     * log level for SLF4J.
+     *
+     * @param logLevel log level
+     * @return this
+     */
+    public FFprobe setLogLevel(final LogLevel logLevel) {
+        this.logLevel = logLevel;
+        return this;
+    }
+
+    /**
+     * Starts asynchronous ffprobe execution.
+     *
+     * @return ffprobe result future
+     */
     public Future<FFprobeResult> executeAsync() {
         FutureTask<FFprobeResult> resultFuture = new FutureTask<>(
                 new Callable<FFprobeResult>() {
@@ -575,7 +518,7 @@ public class FFprobe {
         }
 
         return new ProcessHandler<FFprobeResult>(executable, null)
-                .setStdOutReader(createStdOutReader())
+                .setStdOutReader(createStdOutReader(formatParser))
                 .setStdErrReader(createStdErrReader())
                 .setHelpers(helpers)
                 .setArguments(buildArguments())
@@ -590,9 +533,13 @@ public class FFprobe {
     protected List<String> buildArguments() {
         List<String> result = new ArrayList<>();
 
+        // "level" is required for ffmpeg to add [loglevel] to output lines
+        String logLevelArgument = "level";
         if (logLevel != null) {
-            result.addAll(Arrays.asList("-loglevel", Integer.toString(logLevel.code())));
+            logLevelArgument += "+" + logLevel.name().toLowerCase();
         }
+        result.addAll(Arrays.asList("-loglevel", logLevelArgument));
+
 
         if (selectStreams != null) {
             result.addAll(Arrays.asList("-select_streams", selectStreams));
@@ -605,9 +552,6 @@ public class FFprobe {
         }
         if (showFormat) {
             result.add("-show_format");
-        }
-        if (showFormatEntry != null) {
-            result.addAll(Arrays.asList("-show_format_entry", showFormatEntry));
         }
         if (showEntries != null) {
             result.addAll(Arrays.asList("-show_entries", showEntries));
@@ -644,18 +588,6 @@ public class FFprobe {
         } else {
             result.add("-noprivate");
         }
-        if (showProgramVersion) {
-            result.add("-show_program_version");
-        }
-        if (showLibraryVersions) {
-            result.add("-show_library_versions");
-        }
-        if (showVersions) {
-            result.add("-show_versions");
-        }
-        if (showPixelFormats) {
-            result.add("-show_pixel_formats");
-        }
 
         if (probeSize != null) {
             result.addAll(Arrays.asList("-probesize", probeSize.toString()));
@@ -685,7 +617,7 @@ public class FFprobe {
      *
      * @return this
      */
-    protected StdReader<FFprobeResult> createStdOutReader() {
+    protected StdReader<FFprobeResult> createStdOutReader(FormatParser formatParser) {
         return new FFprobeResultReader(formatParser);
     }
 
@@ -697,12 +629,7 @@ public class FFprobe {
      * @return this
      */
     protected StdReader<FFprobeResult> createStdErrReader() {
-        // TODO check if we need below clause
-        if (logLevel.code() > LogLevel.WARNING.code()) {
-            return new LoggingStdReader<>();
-        }
-
-        return new ThrowingStdReader<>();
+        return new FFprobeLogReader();
     }
 
     /**

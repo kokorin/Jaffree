@@ -1,5 +1,5 @@
 /*
- *    Copyright  2018 Denis Kokorin
+ *    Copyright 2018-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -18,99 +18,94 @@
 package com.github.kokorin.jaffree.ffprobe;
 
 import com.github.kokorin.jaffree.StreamType;
-import com.github.kokorin.jaffree.ffprobe.data.DSection;
-import com.github.kokorin.jaffree.ffprobe.data.DTag;
+import com.github.kokorin.jaffree.ffprobe.data.ProbeData;
+import com.github.kokorin.jaffree.ffprobe.data.ProbeDataConverter;
 
 import java.util.List;
 
-public class Packet {
+public class Packet implements PacketFrameSubtitle {
 
-    private final DSection section;
+    private final ProbeData probeData;
 
-    public Packet(DSection section) {
-        this.section = section;
+    public Packet(ProbeData probeData) {
+        this.probeData = probeData;
     }
 
-    public DSection getSection() {
-        return section;
+    public ProbeData getProbeData() {
+        return probeData;
     }
 
-    // TODO Does Packet contain any tags?
-    public List<Tag> getTags() {
-        return section.getTag("TAG", "TAGS").getValues(DTag.TAG_CONVERTER);
+    public Long getPts() {
+        return probeData.getLong("pts");
+    }
+
+    public Float getPtsTime() {
+        return probeData.getFloat("pts_time");
     }
 
     // TODO Does Packet contain any tags?
     public String getTag(String name) {
-        return section.getTag("TAG", "TAGS").getString(name);
+        return probeData.getSubDataString("tags", name);
     }
 
-    public List<PacketSideData> getSideDataList() {
-        return section.getSections("SIDE_DATA", new DSection.SectionConverter<PacketSideData>() {
+    public List<SideData> getSideDataList() {
+        return probeData.getSubDataList("side_data_list", new ProbeDataConverter<SideData>() {
             @Override
-            public PacketSideData convert(DSection dSection) {
-                return new PacketSideData(dSection);
+            public SideData convert(ProbeData probeData) {
+                return new SideData(probeData);
             }
         });
     }
 
     public StreamType getCodecType() {
-        return section.getStreamType("codec_type");
+        return probeData.getStreamType("codec_type");
     }
 
-    public int getStreamIndex() {
-        return section.getInteger("stream_index");
-    }
-
-    public Long getPts() {
-        return section.getLong("pts");
-    }
-
-    public Float getPtsTime() {
-        return section.getFloat("pts_time");
+    public Integer getStreamIndex() {
+        return probeData.getInteger("stream_index");
     }
 
     public Long getDts() {
-        return section.getLong("dts");
+        return probeData.getLong("dts");
     }
 
     public Float getDtsTime() {
-        return section.getFloat("dts_time");
+        return probeData.getFloat("dts_time");
     }
 
     public Long getDuration() {
-        return section.getLong("duration");
+        return probeData.getLong("duration");
     }
 
     public Float getDurationTime() {
-        return section.getFloat("duration_time");
+        return probeData.getFloat("duration_time");
     }
 
     public Long getConvergenceDuration() {
-        return section.getLong("convergence_duration");
+        return probeData.getLong("convergence_duration");
     }
 
     public Float getConvergenceDurationTime() {
-        return section.getFloat("convergence_duration_time");
+        return probeData.getFloat("convergence_duration_time");
     }
 
-    public long getSize() {
-        return section.getLong("size");
+    public Long getSize() {
+        return probeData.getLong("size");
     }
 
     public Long getPos() {
-        return section.getLong("pos");
+        return probeData.getLong("pos");
     }
 
     public String getFlags() {
-        return section.getString("flags");
+        return probeData.getString("flags");
     }
 
     public String getData() {
-        return section.getString("data");
+        return probeData.getString("data");
     }
 
     public String getDataHash() {
-        return section.getString("data_hash");
+        return probeData.getString("data_hash");
     }
 }

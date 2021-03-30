@@ -1,5 +1,5 @@
 /*
- *    Copyright  2018 Denis Kokorin
+ *    Copyright 2018-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,68 +17,69 @@
 
 package com.github.kokorin.jaffree.ffprobe;
 
-import com.github.kokorin.jaffree.ffprobe.data.DSection;
-import com.github.kokorin.jaffree.ffprobe.data.DTag;
+import com.github.kokorin.jaffree.ffprobe.data.ProbeData;
+import com.github.kokorin.jaffree.ffprobe.data.ProbeDataConverter;
 
 import java.util.List;
 
 // TODO check what timebase are used for StartPts & EndPts
 public class Program {
-    private final DSection section;
+    private final ProbeData probeData;
 
-    public Program(DSection section) {
-        this.section = section;
+    public Program(ProbeData probeData) {
+        this.probeData = probeData;
     }
 
-    public DSection getSection() {
-        return section;
-    }
-
-    public List<Tag> getTags() {
-        return section.getTag("TAG", "TAGS").getValues(DTag.TAG_CONVERTER);
+    public ProbeData getProbeData() {
+        return probeData;
     }
 
     public String getTag(String name) {
-        return section.getTag("TAG", "TAGS").getString(name);
+        return probeData.getSubDataString("tags", name);
     }
 
     public List<Stream> getStreams() {
-        return section.getSections("STREAM", DSection.STREAM_CONVERTER);
+        return probeData.getSubDataList("streams", new ProbeDataConverter<Stream>() {
+            @Override
+            public Stream convert(ProbeData probeData) {
+                return new Stream(probeData);
+            }
+        });
     }
 
-    public int getProgramId() {
-        return section.getInteger("program_id");
+    public Integer getProgramId() {
+        return probeData.getInteger("program_id");
     }
 
-    public int getProgramNum() {
-        return section.getInteger("program_num");
+    public Integer getProgramNum() {
+        return probeData.getInteger("program_num");
     }
 
-    public int getNbStreams() {
-        return section.getInteger("nb_streams");
+    public Integer getNbStreams() {
+        return probeData.getInteger("nb_streams");
     }
 
     public Float getStartTime() {
-        return section.getFloat("start_time");
+        return probeData.getFloat("start_time");
     }
 
     public Long getStartPts() {
-        return section.getLong("start_pts");
+        return probeData.getLong("start_pts");
     }
 
     public Float getEndTime() {
-        return section.getFloat("end_time");
+        return probeData.getFloat("end_time");
     }
 
     public Long getEndPts() {
-        return section.getLong("end_pts");
+        return probeData.getLong("end_pts");
     }
 
-    public int getPmtPid() {
-        return section.getInteger("pmt_pid");
+    public Integer getPmtPid() {
+        return probeData.getInteger("pmt_pid");
     }
 
-    public int getPcrPid() {
-        return section.getInteger("pcr_pid");
+    public Integer getPcrPid() {
+        return probeData.getInteger("pcr_pid");
     }
 }

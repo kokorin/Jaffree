@@ -1,5 +1,5 @@
 /*
- *    Copyright  2018 Denis Kokorin
+ *    Copyright 2018-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ package com.github.kokorin.jaffree.ffprobe;
 
 import com.github.kokorin.jaffree.Rational;
 import com.github.kokorin.jaffree.StreamType;
-import com.github.kokorin.jaffree.ffprobe.data.DSection;
-import com.github.kokorin.jaffree.ffprobe.data.DTag;
+import com.github.kokorin.jaffree.ffprobe.data.ProbeData;
+import com.github.kokorin.jaffree.ffprobe.data.ProbeDataConverter;
 
 import java.util.List;
 
@@ -29,16 +29,16 @@ import java.util.List;
  *
  * @see FFprobe#setShowFrames(boolean)
  */
-public class Frame {
-    private final DSection section;
+public class Frame implements FrameSubtitle, PacketFrameSubtitle {
+    private final ProbeData probeData;
 
     /**
      * Creates {@link Frame} description based on provided data sections.
      *
-     * @param section data section
+     * @param probeData data section
      */
-    public Frame(final DSection section) {
-        this.section = section;
+    public Frame(final ProbeData probeData) {
+        this.probeData = probeData;
     }
 
     /**
@@ -50,23 +50,12 @@ public class Frame {
      *
      * @return data section
      */
-    public DSection getSection() {
-        return section;
+    public ProbeData getProbeData() {
+        return probeData;
     }
 
-    /**
-     * Returns tags for this Frame.
-     *
-     * @return tags
-     */
-    // TODO Does Frame contain any tags?
-    public List<Tag> getTags() {
-        return section.getTag("TAG", "TAGS").getValues(DTag.TAG_CONVERTER);
-    }
-
-    // TODO Does Frame contain any tags?
     public String getTag(String name) {
-        return section.getTag("TAG", "TAGS").getString(name);
+        return probeData.getSubDataString("tags", name);
     }
 
     /**
@@ -77,10 +66,10 @@ public class Frame {
      * @see FFprobe#setShowLog(com.github.kokorin.jaffree.LogLevel)
      */
     public List<Log> getLogs() {
-        return section.getSections("LOG", new DSection.SectionConverter<Log>() {
+        return probeData.getSubDataList("logs", new ProbeDataConverter<Log>() {
             @Override
-            public Log convert(final DSection dSection) {
-                return new Log(dSection);
+            public Log convert(final ProbeData probeData) {
+                return new Log(probeData);
             }
         });
     }
@@ -88,73 +77,79 @@ public class Frame {
     /**
      * @return side data for the frame
      */
-    public List<FrameSideData> getSideDataList() {
-        return section.getSections("SIDE_DATA", new DSection.SectionConverter<FrameSideData>() {
+    public List<SideData> getSideDataList() {
+        return probeData.getSubDataList("side_data_list", new ProbeDataConverter<SideData>() {
             @Override
-            public FrameSideData convert(final DSection dSection) {
-                return new FrameSideData(dSection);
+            public SideData convert(final ProbeData probeData) {
+                return new SideData(probeData);
             }
         });
+    }
+
+    /**
+     * Presentation timestamp in time_base units (time when frame should be shown to user).
+     * <p>
+     * <b>Note</b>: despite declared in <a href="https://github.com/FFmpeg/FFmpeg/blob/master/doc/ffprobe.xsd">ffprobe.xsd</a>
+     * for ffprobe:frameType this property has never been reported by ffprobe.
+     *
+     * @return pts
+     * @see #getPktPts()
+     */
+    public Long getPts() {
+        return probeData.getLong("pts");
+    }
+
+    /**
+     * Presentation timestamp in seconds (time when frame should be shown to user).
+     * <p>
+     * <b>Note</b>: despite declared in <a href="https://github.com/FFmpeg/FFmpeg/blob/master/doc/ffprobe.xsd">ffprobe.xsd</a>
+     * for ffprobe:frameType this property has never been reported by ffprobe.
+     *
+     * @return pts in seconds
+     * @see #getPktPtsTime()
+     */
+    public Float getPtsTime() {
+        return probeData.getFloat("pts_time");
     }
 
     /**
      * @return media type
      */
     public StreamType getMediaType() {
-        return section.getStreamType("media_type");
+        return probeData.getStreamType("media_type");
     }
 
     /**
      * @return corresponding stream id
      */
     public Integer getStreamIndex() {
-        return section.getInteger("stream_index");
+        return probeData.getInteger("stream_index");
     }
 
     /**
      * @return 1 -> keyframe, 0-> not
      */
     // TODO make boolean
-    public int getKeyFrame() {
-        return section.getInteger("key_frame");
-    }
-
-    /**
-     * Presentation timestamp in time_base units (time when frame should be shown to user).
-     *
-     * @return pts
-     */
-    public Long getPts() {
-        return section.getLong("pts");
-    }
-
-    /**
-     * Presentation timestamp in seconds (time when frame should be shown to user).
-     *
-     * @return pts in seconds
-     */
-    public Float getPtsTime() {
-        return section.getFloat("pts_time");
+    public Integer getKeyFrame() {
+        return probeData.getInteger("key_frame");
     }
 
     /**
      * PTS in time_base units copied from the AVPacket that was decoded to produce this frame.
      *
      * @return packet pts
-     * @deprecated use {@link #getPts()} instead (deprecated in ffmpeg)
      */
     public Long getPktPts() {
-        return section.getLong("pkt_pts");
+        return probeData.getLong("pkt_pts");
     }
 
     /**
      * PTS in seconds copied from the AVPacket that was decoded to produce this frame.
      *
      * @return packet pts
-     * @deprecated use the {@link #getPtsTime()} instead (deprecated in ffmpeg)
      */
     public Float getPktPtsTime() {
-        return section.getFloat("pkt_pts_time");
+        return probeData.getFloat("pkt_pts_time");
     }
 
     /**
@@ -165,7 +160,7 @@ public class Frame {
      * @return packet DTS
      */
     public Long getPktDts() {
-        return section.getLong("pkt_dts");
+        return probeData.getLong("pkt_dts");
     }
 
     /**
@@ -176,7 +171,7 @@ public class Frame {
      * @return packet DTS time
      */
     public Float getPktDtsTime() {
-        return section.getFloat("pkt_dts_time");
+        return probeData.getFloat("pkt_dts_time");
     }
 
     /**
@@ -189,7 +184,7 @@ public class Frame {
      * @return best effort PTS
      */
     public Long getBestEffortTimestamp() {
-        return section.getLong("best_effort_timestamp");
+        return probeData.getLong("best_effort_timestamp");
     }
 
     /**
@@ -202,110 +197,94 @@ public class Frame {
      * @return best effort time
      */
     public Float getBestEffortTimestampTime() {
-        return section.getFloat("best_effort_timestamp_time");
+        return probeData.getFloat("best_effort_timestamp_time");
     }
 
     /**
      * Duration of the corresponding packet in stream time_base units, 0 if unknown.
-     * <ul>
-     * <li>encoding: unused</li>
-     * <li>decoding: read by user</li>
-     * </ul>
      *
      * @return packet duration
      */
     public Long getPktDuration() {
-        return section.getLong("pkt_duration");
+        return probeData.getLong("pkt_duration");
     }
 
     /**
      * Duration of the corresponding packet in seconds, 0 if unknown.
-     * <ul>
-     * <li>encoding: unused</li>
-     * <li>decoding: read by user</li>
-     * </ul>
      *
      * @return packet duration
      */
     public Float getPktDurationTime() {
-        return section.getFloat("pkt_duration_time");
+        return probeData.getFloat("pkt_duration_time");
     }
 
     /**
      * Reordered pos from the last AVPacket that has been input into the decoder.
-     * <ul>
-     * <li>encoding: unused</li>
-     * <li>decoding: read by user</li>
-     * </ul>
      *
      * @return packet position
      */
     public Long getPktPos() {
-        return section.getLong("pkt_pos");
+        return probeData.getLong("pkt_pos");
     }
 
     /**
      * Size of the corresponding packet containing the compressed frame.
      * <p>
      * It is set to a negative value if unknown.
-     * <ul>
-     * <li>encoding: unused</li>
-     * <li>decoding: set by libavcodec, read by user</li>
-     * </ul>
      *
      * @return packet size
      */
     public Integer getPktSize() {
-        return section.getInteger("pkt_size");
+        return probeData.getInteger("pkt_size");
     }
 
     /**
      * @return audio samples format
      */
     public String getSampleFmt() {
-        return section.getString("sample_fmt");
+        return probeData.getString("sample_fmt");
     }
 
     /**
      * @return number of audio sample in a single channel
      */
     public Long getNbSamples() {
-        return section.getLong("nb_samples");
+        return probeData.getLong("nb_samples");
     }
 
     /**
      * @return number of channels
      */
     public Integer getChannels() {
-        return section.getInteger("channels");
+        return probeData.getInteger("channels");
     }
 
     /**
      * @return channels layout
      */
     public String getChannelLayout() {
-        return section.getString("channel_layout");
+        return probeData.getString("channel_layout");
     }
 
     /**
      * @return video frame width
      */
     public Long getWidth() {
-        return section.getLong("width");
+        return probeData.getLong("width");
     }
 
     /**
      * @return video frame height
      */
     public Long getHeight() {
-        return section.getLong("height");
+        return probeData.getLong("height");
     }
 
     /**
      * @return video frame pixel format
      */
     public String getPixFmt() {
-        return section.getString("pix_fmt");
+        return probeData.getString("pix_fmt");
     }
 
     /**
@@ -314,7 +293,7 @@ public class Frame {
      * @return aspect ration
      */
     public Rational getSampleAspectRatio() {
-        return section.getRatio("sample_aspect_ratio");
+        return probeData.getRatio("sample_aspect_ratio");
     }
 
     /**
@@ -333,21 +312,21 @@ public class Frame {
      * @return picture type of the frame
      */
     public String getPictType() {
-        return section.getString("pict_type");
+        return probeData.getString("pict_type");
     }
 
     /**
      * @return picture number in bitstream order
      */
     public Long getCodedPictureNumber() {
-        return section.getLong("coded_picture_number");
+        return probeData.getLong("coded_picture_number");
     }
 
     /**
      * @return picture number in display order
      */
     public Long getDisplayPictureNumber() {
-        return section.getLong("display_picture_number");
+        return probeData.getLong("display_picture_number");
     }
 
     /**
@@ -357,7 +336,7 @@ public class Frame {
      */
     // TODO make boolean
     public Integer getInterlacedFrame() {
-        return section.getInteger("interlaced_frame");
+        return probeData.getInteger("interlaced_frame");
     }
 
     /**
@@ -367,7 +346,7 @@ public class Frame {
      */
     // TODO make boolean
     public Integer getTopFieldFirst() {
-        return section.getInteger("top_field_first");
+        return probeData.getInteger("top_field_first");
     }
 
     /**
@@ -378,6 +357,6 @@ public class Frame {
      * @return picture extra delay
      */
     public Integer getRepeatPict() {
-        return section.getInteger("repeat_pict");
+        return probeData.getInteger("repeat_pict");
     }
 }
