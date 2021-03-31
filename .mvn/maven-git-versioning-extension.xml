@@ -1,0 +1,13 @@
+<configuration xmlns="https://github.com/qoomon/maven-git-versioning-extension" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<!--           xsi:schemaLocation="http://maven.apache.org/EXTENSIONS/1.0.0 https://maven.apache.org/xsd/core-extensions-1.0.0.xsd">-->
+
+    <updatePom>false</updatePom>
+    <branch>
+        <pattern>master</pattern>
+        <versionFormat>${commit.timestamp.year}-${commit.timestamp.month}-${commit.timestamp.day}</versionFormat>
+    </branch>
+    <branch>
+        <pattern>.*</pattern>
+        <versionFormat>${branch.slug}-SNAPSHOT</versionFormat>
+    </branch>
+</configuration>
