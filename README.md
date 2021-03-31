@@ -12,7 +12,7 @@ Inspired by [ffmpeg-cli-wrapper](https://github.com/bramp/ffmpeg-cli-wrapper)
 
 **OS**: Ubuntu, MacOS, Windows
 
-**JDK**: 7, 8, 11, 14
+**JDK**: 8, 11, 14
 
 # Usage 
 
@@ -22,7 +22,7 @@ Inspired by [ffmpeg-cli-wrapper](https://github.com/bramp/ffmpeg-cli-wrapper)
 <dependency>
     <groupId>com.github.kokorin.jaffree</groupId>
     <artifactId>jaffree</artifactId>
-    <version>0.11.0</version>
+    <version>${jaffree.version}</version>
 </dependency>
 
 <!--

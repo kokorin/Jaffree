@@ -5,10 +5,9 @@
 publiccodeYmlVersion: '0.2'
 name: Jaffree
 url: 'https://github.com/kokorin/Jaffree'
-# TODO update
-releaseDate: '2021-02-22'
+releaseDate: '${RELEASE_DATE}'
 developmentStatus: stable
-softwareVersion: 0.11.0
+softwareVersion: ${RELEASE_VERSION}
 platforms:
   - web
   - windows
@@ -43,7 +42,7 @@ description:
       ### Jaffree
 
 
-      Jaffree stands for **Ja**va **ff**mpeg and **ff**probe **free** command
+      Jaffree stands for Java ffmpeg and ffprobe free command
       line wrapper.
 
 
@@ -65,7 +64,7 @@ description:
 
       - Forceful & graceful stopping of ffmpeg
 
-      - Reads/writes  video from/to Java SeekableByteChannel/InputStream/OutputStream
+      - Reads/writes video from/to Java SeekableByteChannel/InputStream/OutputStream
     features:
       - video
       - ffmpeg

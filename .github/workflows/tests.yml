@@ -3,10 +3,14 @@ name: Tests
 
 on:
   push:
+    paths-ignore:
+      - publiccode.yml
     branches:
       - master
       - develop
   pull_request:
+    paths-ignore:
+      - publiccode.yml
     types:
       - opened
       - reopened
@@ -43,7 +47,7 @@ jobs:
           path: |
             ~/.m2/repository
             ~/.m2/wrapper
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml', '.mvn/*.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
       - name: Cache Test Artifacts
