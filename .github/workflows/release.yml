@@ -2,28 +2,25 @@
 name: Release
 
 on:
-  release:
-    types:
-      - released
+  push:
+    branches:
+      - master
 
 env:
   MAVEN_OPTS: -Dhttp.keepAlive=false -Dmaven.wagon.http.pool=false -Dmaven.wagon.http.retryHandler.class=standard -Dmaven.wagon.http.retryHandler.count=3
 
 jobs:
   release:
-
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up JDK
-        uses: actions/setup-java@v1
+      - uses: actions/setup-java@v1
         with:
-          java-version: 7
+          java-version: 8
 
-      - name: Cache Maven packages
-        uses: actions/cache@v2
+      - uses: actions/cache@v2
         with:
           # be careful not to include ~/.m2/settings.xml which contains credentials
           path: |
@@ -57,5 +54,21 @@ jobs:
 
       - name: Release
         run: bash mvnw -B clean deploy -DskipTests -Prelease
+
+      - name: Detect release version
+        id: get-version
+        run: |
+          version=$(bash mvnw initialize help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "::set-output name=version::$version"
+
+      - uses: release-drafter/release-drafter@v5
+        with:
+          config-name: release-drafter-conf.yml
+          name: ${{ steps.get-version.outputs.version }}
+          tag: R${{ steps.get-version.outputs.version }}
+          version: ${{ steps.get-version.outputs.version }}
+          publish: ${{ github.ref == 'refs/heads/master' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
         # TODO update public code and commit changes

@@ -68,8 +68,7 @@
         <dependency>
             <groupId>com.grack</groupId>
             <artifactId>nanojson</artifactId>
-            <!--TODO upgrade to 1.7 when switched to Java8-->
-            <version>1.6</version>
+            <version>1.7</version>
         </dependency>
 
         <dependency>
@@ -194,8 +193,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.5.1</version>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>8</source>
+                    <target>8</target>
                     <compilerArgs>-Xlint:unchecked</compilerArgs>
                 </configuration>
             </plugin>
