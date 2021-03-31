@@ -1,6 +1,4 @@
-<configuration xmlns="https://github.com/qoomon/maven-git-versioning-extension" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-<!--           xsi:schemaLocation="http://maven.apache.org/EXTENSIONS/1.0.0 https://maven.apache.org/xsd/core-extensions-1.0.0.xsd">-->
-
+<configuration xmlns="https://github.com/qoomon/maven-git-versioning-extension">
     <updatePom>false</updatePom>
     <branch>
         <pattern>master</pattern>
