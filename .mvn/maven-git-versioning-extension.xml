@@ -1,0 +1,11 @@
+<configuration xmlns="https://github.com/qoomon/maven-git-versioning-extension">
+    <updatePom>false</updatePom>
+    <branch>
+        <pattern>master</pattern>
+        <versionFormat>${commit.timestamp.year}-${commit.timestamp.month}-${commit.timestamp.day}</versionFormat>
+    </branch>
+    <branch>
+        <pattern>.*</pattern>
+        <versionFormat>${branch.slug}-SNAPSHOT</versionFormat>
+    </branch>
+</configuration>

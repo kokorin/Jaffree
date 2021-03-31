@@ -1,0 +1,94 @@
+
+name: Release
+
+on:
+  push:
+    paths-ignore:
+      - publiccode.yml
+    branches:
+      - master
+
+env:
+  VERSIONING_GIT_BRANCH: master
+  MAVEN_OPTS: -Dhttp.keepAlive=false -Dmaven.wagon.http.pool=false -Dmaven.wagon.http.retryHandler.class=standard -Dmaven.wagon.http.retryHandler.count=3
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 8
+
+      - uses: actions/cache@v2
+        with:
+          # be careful not to include ~/.m2/settings.xml which contains credentials
+          path: |
+            ~/.m2/repository
+            ~/.m2/wrapper
+          key: release-m2-${{ hashFiles('**/pom.xml', '.mvn/*.xml') }}
+          restore-keys: |
+            release-m2
+            ${{ runner.os }}-m2
+
+      - name: Set up Maven settings.xml to access Sonatype Nexus
+        run: |
+          echo '
+            <settings xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+              <servers>
+                <server>
+                  <id>ossrh</id>
+                  <username>${{ secrets.SONATYPE_USER }}</username>
+                  <password>${{ secrets.SONATYPE_PASSWORD }}</password>
+                </server>
+              </servers>
+            </settings>
+          ' > ~/.m2/settings.xml
+
+      - name: Set up GPG keys
+        run: |
+          mkdir .gpg
+          echo '${{ secrets.GPG_PRIVATE_KEY }}' > .gpg/private_key.gpg
+          gpg --import .gpg/private_key.gpg
+          rm -rf .gpg
+
+      - name: Release
+        run: bash mvnw -B clean deploy -DskipTests -Prelease
+
+      - name: Detect release version
+        id: get-version
+        run: |
+          release_version=$(bash mvnw initialize help:evaluate -Dexpression=project.version -q -DforceStdout)
+          release_date=$(bash mvnw initialize help:evaluate -Dexpression=git.commit.timestamp.datetime -q -DforceStdout | cut -dT -f1)
+          echo "::set-output name=release_version::$release_version"
+          echo "::set-output name=release_date::$release_date"
+
+      - uses: release-drafter/release-drafter@v5
+        with:
+          config-name: release-drafter-conf.yml
+          name: ${{ steps.get-version.outputs.release_version }}
+          tag: R${{ steps.get-version.outputs.release_version }}
+          version: ${{ steps.get-version.outputs.release_version }}
+          publish: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update publiccode.yml
+        env:
+          RELEASE_DATE: ${{ steps.get-version.outputs.release_date }}
+          RELEASE_VERSION: ${{ steps.get-version.outputs.release_version }}
+        run: |
+          cat .github/publiccode.yml.template | envsubst > publiccode.yml
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add publiccode.yml
+          git commit -m "Update publiccode.yml"
+
+      - name: Push publiccode.yml
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
