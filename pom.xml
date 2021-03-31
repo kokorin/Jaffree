@@ -6,7 +6,8 @@
 
     <groupId>com.github.kokorin.jaffree</groupId>
     <artifactId>jaffree</artifactId>
-    <version>0.11.0</version>
+    <!--Version is controlled by maven-git-versioning-extension -->
+    <version>0</version>
     <packaging>jar</packaging>
 
     <name>Jaffree</name>
@@ -67,8 +68,7 @@
         <dependency>
             <groupId>com.grack</groupId>
             <artifactId>nanojson</artifactId>
-            <!--TODO upgrade to 1.7 when switched to Java8-->
-            <version>1.6</version>
+            <version>1.7</version>
         </dependency>
 
         <dependency>
@@ -193,8 +193,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.5.1</version>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>8</source>
+                    <target>8</target>
                     <compilerArgs>-Xlint:unchecked</compilerArgs>
                 </configuration>
             </plugin>
@@ -224,30 +224,6 @@
                                     <shadedPattern>com.github.kokorin.jaffree.shaded.com.grack.nanojson</shadedPattern>
                                 </relocation>
                             </relocations>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>1.8</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                                <copy file="dependency-reduced-pom.xml"
-                                      tofile="${project.build.directory}/META-INF/maven/${project.groupId}/${project.artifactId}/pom.xml"/>
-                                <zip destfile="${project.build.directory}/${project.artifactId}-${project.version}.jar"
-                                     basedir="${project.build.directory}"
-                                     includes="META-INF/**/*"
-                                     update="true"/>
-                            </target>
                         </configuration>
                     </execution>
                 </executions>
