@@ -57,3 +57,5 @@ jobs:
 
       - name: Release
         run: bash mvnw -B clean deploy -DskipTests -Prelease
+
+        # TODO update public code and commit changes
