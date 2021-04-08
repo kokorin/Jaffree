@@ -349,7 +349,8 @@ public class FrameIOTest {
         // total number of frames can differ from expected
         int expectedFrames = fps * duration;
         int actualFrames = videoCounter.get();
-        assertTrue(expectedFrames == actualFrames || expectedFrames == actualFrames + 1);
+        assertTrue("expected: " + expectedFrames + ", actual: " + actualFrames,
+                expectedFrames == actualFrames || expectedFrames + 1 == actualFrames);
         // total number of samples can differ in output file, assert the difference is less then 1%
         assertEquals(1., 1. * (sampleRate * duration) / sampleCounter.get(), 0.01);
     }
@@ -484,7 +485,8 @@ public class FrameIOTest {
         // total number of frames can differ from expected
         int expectedFrames = fps * duration;
         int actualFrames = videoCounter.get();
-        assertTrue(expectedFrames == actualFrames || expectedFrames == actualFrames + 1);
+        assertTrue("expected: " + expectedFrames + ", actual: " + actualFrames,
+                expectedFrames == actualFrames || expectedFrames + 1 == actualFrames);
         // total number of samples can differ in output file, assert the difference is less then 1%
         assertEquals(1., 1. * (sampleRate * duration) / sampleCounter.get(), 0.01);
     }
