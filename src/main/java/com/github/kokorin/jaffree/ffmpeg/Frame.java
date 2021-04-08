@@ -40,7 +40,7 @@ public class Frame {
      * @param image    video frame image
      * @see Stream#getTimebase()
      */
-    // TODO make static mathod
+    // TODO make static method
     public Frame(final int streamId, final long pts, final BufferedImage image) {
         this(streamId, pts, image, null);
     }
