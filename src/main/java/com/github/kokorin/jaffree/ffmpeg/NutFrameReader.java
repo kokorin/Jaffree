@@ -26,15 +26,7 @@ import com.github.kokorin.jaffree.nut.StreamHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.*;
-import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
-import java.awt.image.ComponentColorModel;
-import java.awt.image.DataBuffer;
-import java.awt.image.DataBufferByte;
-import java.awt.image.Raster;
-import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -46,23 +38,21 @@ import java.util.List;
  * {@link NutFrameReader} reads InputStream in Nut format and passes parsed frames
  * to {@link FrameConsumer}.
  */
-public class NutFrameReader {
+public class NutFrameReader implements FrameOutput.FrameReader {
     private final FrameConsumer frameConsumer;
-    private final boolean alphaChannel;
+    private final ImageFormat imageFormat;
 
-    private static final int RGB_BYTES_PER_PIXEL = 3;
-    private static final int ALPHA_BYTES_PER_PIXEL = 3;
     private static final Logger LOGGER = LoggerFactory.getLogger(NutFrameReader.class);
 
     /**
      * Creates {@link NutFrameReader}.
      *
      * @param frameConsumer frame consumer
-     * @param alphaChannel  video stream alpha channel
+     * @param imageFormat image format
      */
-    public NutFrameReader(final FrameConsumer frameConsumer, final boolean alphaChannel) {
+    public NutFrameReader(FrameConsumer frameConsumer, ImageFormat imageFormat) {
         this.frameConsumer = frameConsumer;
-        this.alphaChannel = alphaChannel;
+        this.imageFormat = imageFormat;
     }
 
     /**
@@ -70,6 +60,7 @@ public class NutFrameReader {
      *
      * @param input input to read
      */
+    @Override
     public void read(final InputStream input) throws IOException {
         NutInputStream stream = new NutInputStream(input);
         NutReader nutReader = new NutReader(stream);
@@ -133,7 +124,6 @@ public class NutFrameReader {
         return result;
     }
 
-    @SuppressWarnings("checkstyle:magicnumber")
     private Frame parseFrame(final StreamHeader track, final NutFrame frame) {
         if (frame == null || frame.data == null || frame.data.length == 0 || frame.eor) {
             return null;
@@ -145,45 +135,11 @@ public class NutFrameReader {
         if (track.streamType == StreamHeader.Type.VIDEO) {
             int width = track.video.width;
             int height = track.video.height;
-
-            // Sometimes if duration limit is specified, ffmpeg creates
-            // NutFrame with insufficient data
-            int pixelCount = width * height;
-            if (!alphaChannel && pixelCount * RGB_BYTES_PER_PIXEL != frame.data.length
-                    || alphaChannel && pixelCount * ALPHA_BYTES_PER_PIXEL != frame.data.length) {
-                return null;
+            // sometimes ffmpeg can send too short byte array as frame raw data for the last frame
+            // ignoring such frame, anyway there will be no more frames after it
+            if (frame.data.length == width * height * imageFormat.getBytesPerPixel()) {
+                image = imageFormat.toImage(frame.data, width, height);
             }
-
-            DataBuffer buffer = new DataBufferByte(frame.data, frame.data.length);
-            ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_sRGB);
-
-            final ColorModel colorModel;
-            final WritableRaster raster;
-
-            // TODO extract to BufferedImageUtil
-            if (!alphaChannel) {
-                int[] nBits = {8, 8, 8};
-                int[] bOffs = {2, 1, 0};
-                colorModel = new ComponentColorModel(cs, nBits, false, false,
-                        Transparency.OPAQUE,
-                        DataBuffer.TYPE_BYTE);
-                raster = Raster.createInterleavedRaster(buffer,
-                        width, height,
-                        width * 3, 3,
-                        bOffs, null);
-            } else {
-                int[] nBits = {8, 8, 8, 8};
-                int[] bOffs = {3, 2, 1, 0};
-                colorModel = new ComponentColorModel(cs, nBits, true, false,
-                        Transparency.TRANSLUCENT,
-                        DataBuffer.TYPE_BYTE);
-                raster = Raster.createInterleavedRaster(buffer,
-                        width, height,
-                        width * 4, 4,
-                        bOffs, null);
-            }
-
-            image = new BufferedImage(colorModel, raster, false, null);
         } else if (track.streamType == StreamHeader.Type.AUDIO) {
             ByteBuffer data = ByteBuffer.wrap(frame.data);
 

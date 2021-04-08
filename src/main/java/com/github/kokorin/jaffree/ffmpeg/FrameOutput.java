@@ -20,7 +20,6 @@ package com.github.kokorin.jaffree.ffmpeg;
 import com.github.kokorin.jaffree.JaffreeException;
 import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.net.TcpNegotiator;
-import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
 
 import java.io.IOException;
@@ -31,38 +30,24 @@ import java.net.Socket;
  * Allows to consume in Java audio &amp; video frames produced by ffmpeg.
  */
 public class FrameOutput extends TcpOutput<FrameOutput> implements Output {
-    private final FrameOutputNegotiator negotiator;
-
-    private static final String PIXEL_FORMAT_ALPHA = "abgr";
-    private static final String PIXEL_FORMAT_RGB = "bgr24";
 
     /**
-     * Creates {@link FrameOutput}.
+     * Create {@link FrameOutput} for {@link FFmpeg}
      *
-     * @param consumer frame consumer
+     * @param frameReader frame reader
+     * @param format      media format
+     * @param videoCodec  video codec
+     * @param pixelFormat pixel format
+     * @param audioCodec  audio codec
+     * @see NutFrameReader
      */
-    public FrameOutput(final FrameConsumer consumer) {
-        this(new FrameOutputNegotiator(consumer));
-    }
-
-    protected FrameOutput(FrameOutputNegotiator negotiator) {
-        super(negotiator);
-        this.negotiator = negotiator;
-        super.setFormat("nut");
-        super.setCodec(StreamType.VIDEO.code(), "rawvideo");
-        super.setCodec(StreamType.AUDIO.code(), "pcm_s32be");
-        super.setPixelFormat(null, PIXEL_FORMAT_RGB);
-    }
-
-    /**
-     * @param alpha true if video contains alpha channel and it should be extracted
-     * @return this
-     */
-    public FrameOutput setAlpha(boolean alpha) {
-        negotiator.setAlpha(alpha);
-        String pixelFormat = alpha ? PIXEL_FORMAT_ALPHA : PIXEL_FORMAT_RGB;
+    protected FrameOutput(FrameReader frameReader, String format,
+                          String videoCodec, String pixelFormat, String audioCodec) {
+        super(new FrameOutputNegotiator(frameReader));
+        super.setFormat(format);
+        super.setCodec(StreamType.VIDEO.code(), videoCodec);
         super.setPixelFormat(null, pixelFormat);
-        return this;
+        super.setCodec(StreamType.AUDIO.code(), audioCodec);
     }
 
     @Override
@@ -107,7 +92,7 @@ public class FrameOutput extends TcpOutput<FrameOutput> implements Output {
      * @return FrameOutput
      */
     public static FrameOutput withConsumer(final FrameConsumer consumer) {
-        return new FrameOutput(consumer);
+        return withConsumer(consumer, ImageFormats.BGR24);
     }
 
     /**
@@ -117,28 +102,31 @@ public class FrameOutput extends TcpOutput<FrameOutput> implements Output {
      * @return FrameOutput
      */
     public static FrameOutput withConsumerAlpha(final FrameConsumer consumer) {
-        return withConsumer(consumer)
-                .setAlpha(true);
+        return withConsumer(consumer, ImageFormats.ABGR);
+    }
+
+    protected static FrameOutput withConsumer(final FrameConsumer consumer, final ImageFormat imageFormat) {
+        return new FrameOutput(
+                new NutFrameReader(consumer, imageFormat),
+                "nut", "rawvideo", imageFormat.getPixelFormat(), "pcm_s32be"
+        );
+    }
+
+    protected interface FrameReader {
+        void read(InputStream inputStream) throws IOException;
     }
 
     @ThreadSafe
     protected static class FrameOutputNegotiator implements TcpNegotiator {
-        private final FrameConsumer consumer;
-        @GuardedBy("this")
-        private boolean alpha = false;
+        private final FrameReader frameReader;
 
-        public FrameOutputNegotiator(FrameConsumer consumer) {
-            this.consumer = consumer;
-        }
-
-        public synchronized void setAlpha(boolean alpha) {
-            this.alpha = alpha;
+        public FrameOutputNegotiator(FrameReader frameReader) {
+            this.frameReader = frameReader;
         }
 
         @Override
         public synchronized void negotiate(Socket socket) throws IOException {
             try (InputStream inputStream = socket.getInputStream()) {
-                NutFrameReader frameReader = new NutFrameReader(consumer, alpha);
                 frameReader.read(inputStream);
             }
         }
