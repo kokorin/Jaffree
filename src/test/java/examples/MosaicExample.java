@@ -9,6 +9,7 @@ import com.github.kokorin.jaffree.ffmpeg.FrameConsumer;
 import com.github.kokorin.jaffree.ffmpeg.FrameInput;
 import com.github.kokorin.jaffree.ffmpeg.FrameOutput;
 import com.github.kokorin.jaffree.ffmpeg.FrameProducer;
+import com.github.kokorin.jaffree.ffmpeg.ImageFormats;
 import com.github.kokorin.jaffree.ffmpeg.Stream;
 import com.github.kokorin.jaffree.ffmpeg.UrlInput;
 import com.github.kokorin.jaffree.ffmpeg.UrlOutput;
@@ -113,9 +114,8 @@ public class MosaicExample {
         FFmpegResult mosaicResult = FFmpeg.atPath(ffmpegBin)
                 .addInput(
                         FrameInput
-                                .withProducer(frameProducer)
+                                .withProducer(frameProducer, ImageFormats.BGR24, 5_000L)
                                 .setFrameRate(frameRate)
-                                .setFrameOrderingBuffer(5_000L)
                 )
                 .setOverwriteOutput(true)
                 .setLogLevel(LogLevel.TRACE)

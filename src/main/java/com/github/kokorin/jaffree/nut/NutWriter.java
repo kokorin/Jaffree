@@ -281,7 +281,7 @@ public class NutWriter {
      */
     public void writeFrame(NutFrame frame) throws IOException {
         if (closed) {
-            throw new JaffreeException("NutWriter is ");
+            throw new JaffreeException("NutWriter is closed");
         }
 
         StreamHeader stream = streamHeaders[frame.streamId];
