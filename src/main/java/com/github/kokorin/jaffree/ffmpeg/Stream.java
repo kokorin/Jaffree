@@ -23,6 +23,7 @@ public class Stream {
     private Long timebase;
     private Integer width;
     private Integer height;
+    //TODO check if sampleRate can have Integer type
     private Long sampleRate;
     private Integer channels;
 

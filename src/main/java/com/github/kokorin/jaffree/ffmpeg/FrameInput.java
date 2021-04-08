@@ -27,7 +27,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Allows to supply ffmpeg with audio &amp; video frames constructed in Java.
@@ -44,91 +43,44 @@ public class FrameInput extends TcpInput<FrameInput> implements Input {
     /**
      * Creates {@link FrameInput} for {@link FFmpeg}.
      *
-     * @param producer frame producer
+     * @param frameWriter frame writer
+     * @see NutFrameWriter
      */
-    public FrameInput(final FrameProducer producer) {
-        this(new FrameInputNegotiator(producer));
+    protected FrameInput(final FrameWriter frameWriter, final String format) {
+        this(new FrameInputNegotiator(frameWriter), format);
     }
 
-    protected FrameInput(FrameInputNegotiator negotiator) {
+    private FrameInput(final FrameInputNegotiator negotiator, final String format) {
         super(negotiator);
         this.negotiator = negotiator;
-        super.setFormat("nut");
+        super.setFormat(format);
     }
 
     /**
-     * Whether produced video stream should contain alpha channel.
-     *
-     * @param containsAlphaChannel alpha channel
-     * @return this
-     */
-    // TODO rename method
-    public FrameInput produceAlpha(final boolean containsAlphaChannel) {
-        negotiator.setAlpha(containsAlphaChannel);
-        return this;
-    }
-
-    /**
+     * {@inheritDoc}
+     * <p>
      * <b>It's strongly recommended</b> to specify videoFrameRate for video producing.
      * <p>
      * Otherwise conversion can be very slow (20-50 times slower) and even can result in
      * corrupted video.
-     *
-     * @param frameRate video frames per second
-     * @return this
      */
     @Override
-    public FrameInput setFrameRate(final Number frameRate) {
-        negotiator.setFrameRateSet(true);
+    public FrameInput setFrameRate(Number frameRate) {
         return super.setFrameRate(frameRate);
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * <b>It's strongly recommended</b> to specify videoFrameRate for video producing.
      * <p>
      * Otherwise conversion can be very slow (20-50 times slower) and even can result in
      * corrupted video.
-     *
-     * @param streamSpecifier stream specifier
-     * @param frameRate       video frames per second
-     * @return this
      */
     @Override
     public FrameInput setFrameRate(final String streamSpecifier, final Number frameRate) {
         negotiator.setFrameRateSet(true);
         return super.setFrameRate(streamSpecifier, frameRate);
-    }
-
-    /**
-     * Sets frame ordering buffer while producing NUT video. Default is 200 ms.
-     * <p>
-     * Frame ordering buffer allows {@link FrameProducer} to produce frame without strict ordering
-     * (which is required by NUT format).
-     * <p>
-     * Note: high values may cause OutOfMemoryError or performance degradation.
-     *
-     * @param bufferTime buffer time
-     * @param unit       time unit
-     * @return this
-     */
-    public FrameInput setFrameOrderingBuffer(final long bufferTime, final TimeUnit unit) {
-        return setFrameOrderingBuffer(unit.toMillis(bufferTime));
-    }
-
-    /**
-     * Sets frame ordering buffer while producing NUT video. Default is 200 ms.
-     * <p>
-     * Frame ordering buffer allows {@link FrameProducer} to produce frame without strict ordering
-     * (which is required by NUT format).
-     * <p>
-     * Note: high values may cause OutOfMemoryError or performance degradation.
-     *
-     * @param bufferTimeMillis buffer time in milliseconds
-     * @return this
-     */
-    public FrameInput setFrameOrderingBuffer(final long bufferTimeMillis) {
-        negotiator.setFrameOrderingBufferMillis(bufferTimeMillis);
-        return this;
     }
 
     @Override
@@ -137,41 +89,82 @@ public class FrameInput extends TcpInput<FrameInput> implements Input {
     }
 
     /**
-     * Creates {@link FrameInput} with {@link FrameProducer}.
+     * Creates {@link FrameInput} with specified frame producer.
+     * <p>
+     * Note: frame producer should produce video frames in BGR24 format.
      *
      * @param producer frame producer
      * @return FrameInput
+     * @see ImageFormats#BGR24
      */
     public static FrameInput withProducer(final FrameProducer producer) {
-        return new FrameInput(producer);
+        return withProducer(producer, ImageFormats.BGR24);
+    }
+
+    /**
+     * Creates {@link FrameInput} with specified frame producer with alpha channel.
+     * <p>
+     * Note: frame producer should produce video frames in ABGR format.
+     *
+     * @param producer frame producer
+     * @return FrameInput
+     * @see ImageFormats#ABGR
+     */
+    public static FrameInput withProducerAlpha(final FrameProducer producer) {
+        return withProducer(producer, ImageFormats.ABGR);
+    }
+
+    /**
+     * Creates {@link FrameInput} with specified frame producer and image format.
+     *
+     * @param producer    frame producer
+     * @param imageFormat video frame image format
+     * @return FrameInput
+     * @see ImageFormats
+     */
+    public static FrameInput withProducer(final FrameProducer producer, final ImageFormat imageFormat) {
+        return withProducer(producer, imageFormat, 200);
+    }
+
+    /**
+     * Creates {@link FrameInput} with specified frame producer, format and frame ordering buffer
+     * <p>
+     * Frame ordering buffer allows {@link FrameProducer} to produce frame without strict ordering
+     * (which is required by NUT format).
+     * <p>
+     * Note: too long frame ordering buffer may cause {@link OutOfMemoryError} or performance degradation.
+     *
+     * @param producer                  frame producer
+     * @param imageFormat               video frame image format
+     * @param frameOrderingBufferMillis frame ordering buffer milliseconds
+     * @return FrameInput
+     * @see ImageFormats
+     */
+    public static FrameInput withProducer(final FrameProducer producer, final ImageFormat imageFormat,
+                                          long frameOrderingBufferMillis) {
+        return new FrameInput(
+                new NutFrameWriter(producer, imageFormat, frameOrderingBufferMillis),
+                "nut"
+        );
+    }
+
+    protected interface FrameWriter {
+        void write(OutputStream outputStream) throws IOException;
     }
 
     @ThreadSafe
     protected static class FrameInputNegotiator implements TcpNegotiator {
-        private final FrameProducer producer;
+        private final FrameWriter frameWriter;
 
-        @GuardedBy("this")
-        private boolean alpha;
         @GuardedBy("this")
         private boolean frameRateSet;
-        @GuardedBy("this")
-        private Long frameOrderingBufferMillis;
 
-        public FrameInputNegotiator(FrameProducer producer) {
-            this.producer = producer;
-        }
-
-        public synchronized void setAlpha(final boolean alpha) {
-            this.alpha = alpha;
+        public FrameInputNegotiator(FrameWriter frameWriter) {
+            this.frameWriter = frameWriter;
         }
 
         public synchronized void setFrameRateSet(final boolean frameRateSet) {
             this.frameRateSet = frameRateSet;
-        }
-
-        public synchronized void setFrameOrderingBufferMillis(
-                final Long frameOrderingBufferMillis) {
-            this.frameOrderingBufferMillis = frameOrderingBufferMillis;
         }
 
         @Override
@@ -182,9 +175,8 @@ public class FrameInput extends TcpInput<FrameInput> implements Input {
                         + "and may produce corrupted video");
             }
 
-            NutFrameWriter supplier = new NutFrameWriter(producer, alpha, frameOrderingBufferMillis);
             try (OutputStream output = socket.getOutputStream()) {
-                supplier.write(output);
+                frameWriter.write(output);
             }
         }
     }

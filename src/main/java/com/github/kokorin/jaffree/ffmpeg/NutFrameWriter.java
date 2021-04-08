@@ -30,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
@@ -41,14 +40,11 @@ import java.util.Objects;
 /**
  * {@link NutFrameWriter} allows writing uncompressed (raw) Frames in Nut format.
  */
-// TODO combine with NutWriter
-public class NutFrameWriter {
+public class NutFrameWriter implements FrameInput.FrameWriter {
     private final FrameProducer producer;
-    private final boolean alpha;
+    private final ImageFormat imageFormat;
     private final Long frameOrderingBufferMillis;
 
-    private static final byte[] FOURCC_ABGR = {'A', 'B', 'G', 'R'};
-    private static final byte[] FOURCC_BGR24 = {'B', 'G', 'R', 24};
     //PCM Signed Differential?
     private static final byte[] FOURCC_PCM_S32BE = {32, 'D', 'S', 'P'};
 
@@ -58,24 +54,24 @@ public class NutFrameWriter {
     /**
      * Creates {@link NutFrameWriter} with default frame reordering buffer length.
      *
-     * @param producer frame producer
-     * @param alpha    video stream alpha channel
+     * @param producer    frame producer
+     * @param imageFormat video frames image format
      */
-    public NutFrameWriter(final FrameProducer producer, final boolean alpha) {
-        this(producer, alpha, null);
+    public NutFrameWriter(final FrameProducer producer, final ImageFormat imageFormat) {
+        this(producer, imageFormat, null);
     }
 
     /**
      * Creates {@link NutFrameWriter}.
      *
      * @param producer                  frame producer
-     * @param alpha                     video stream alpha channel
+     * @param imageFormat               video frames image format
      * @param frameOrderingBufferMillis frame reordering buffer length
      */
-    public NutFrameWriter(final FrameProducer producer, final boolean alpha,
+    public NutFrameWriter(final FrameProducer producer, final ImageFormat imageFormat,
                           final Long frameOrderingBufferMillis) {
         this.producer = producer;
-        this.alpha = alpha;
+        this.imageFormat = imageFormat;
         this.frameOrderingBufferMillis = frameOrderingBufferMillis;
     }
 
@@ -120,7 +116,7 @@ public class NutFrameWriter {
                     streamHeader = new StreamHeader(
                             stream.getId(),
                             StreamHeader.Type.VIDEO,
-                            alpha ? FOURCC_ABGR : FOURCC_BGR24,
+                            imageFormat.getFourCC(),
                             i,
                             0,
                             60_000,
@@ -197,15 +193,7 @@ public class NutFrameWriter {
             switch (streamHeader.streamType) {
                 case VIDEO:
                     BufferedImage image = frame.getImage();
-
-                    if (alpha && BufferedImage.TYPE_4BYTE_ABGR != image.getType()) {
-                        throw new JaffreeException("Type of BufferedImage must be TYPE_4BYTE_ABGR");
-                    }
-                    if (!alpha && BufferedImage.TYPE_3BYTE_BGR != image.getType()) {
-                        throw new JaffreeException("Type of BufferedImage must be TYPE_3BYTE_BGR");
-                    }
-
-                    data = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
+                    data = imageFormat.toBytes(image);
                     break;
 
                 case AUDIO:
