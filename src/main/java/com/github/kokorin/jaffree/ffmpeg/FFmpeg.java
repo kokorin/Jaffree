@@ -42,23 +42,18 @@ import java.util.concurrent.FutureTask;
  * {@link FFmpeg} provides an ability to start &amp; stop ffmpeg process and keep track of
  * encoding progress.
  */
-//TODO add debug statements for all methods
 public class FFmpeg {
     private final List<Input> inputs = new ArrayList<>();
     private final List<Output> outputs = new ArrayList<>();
     private final List<String> additionalArguments = new ArrayList<>();
-    //TODO make it Boolean (non-primitive)
     private boolean overwriteOutput;
     private ProgressListener progressListener;
     private OutputListener outputListener;
     private String progress;
     //-filter_threads nb_threads (global)
     //-debug_ts (global)
-    private FilterGraph complexFilter;
 
-    /**
-     * A map with 0 or 1 filter per stream type. Type can be "a" (audio), "v" (video) or "" (plain 'filter')
-     */
+    private String complexFilter;
     private final Map<String, Object> filters = new HashMap<>();
 
     private LogLevel logLevel = LogLevel.INFO;
@@ -149,28 +144,34 @@ public class FFmpeg {
      * applied to one stream. This is the case, for example, when the graph has more than one input
      * and/or output, or when output stream type is different from input.
      *
-     * @param graph complex filter graph
+     * @param complexFilter complex filter graph
      * @return this
      * @see <a href="https://ffmpeg.org/ffmpeg-all.html#toc-Filtergraph-syntax-1">
      * Filtergraph syntax</a>
      * @see <a href="https://ffmpeg.org/ffmpeg-all.html#Complex-filtergraphs">
      * Complex filtergraph</a>
      */
-    // TODO overload with String parameter
-    public FFmpeg setComplexFilter(final FilterGraph graph) {
-        this.complexFilter = graph;
-        return this;
+    public FFmpeg setComplexFilter(final FilterGraph complexFilter) {
+        return setComplexFilter(complexFilter.getValue());
     }
 
     /**
-     * Sets the 'generic' filter value (equivalent to the "-filter" command-line parameter).
+     * Adds complex filter graph to ffmpeg arguments list.
+     * <p>
+     * Complex filtergraphs are those which cannot be described as simply a linear processing chain
+     * applied to one stream. This is the case, for example, when the graph has more than one input
+     * and/or output, or when output stream type is different from input.
      *
-     * @param filter a String describing the filter to apply
+     * @param complexFilter complex filter graph
      * @return this
-     * @see <a href="https://ffmpeg.org/ffmpeg-all.html#Simple-filtergraphs">Simple filtergraphs</a>
+     * @see <a href="https://ffmpeg.org/ffmpeg-all.html#toc-Filtergraph-syntax-1">
+     * Filtergraph syntax</a>
+     * @see <a href="https://ffmpeg.org/ffmpeg-all.html#Complex-filtergraphs">
+     * Complex filtergraph</a>
      */
-    public FFmpeg setFilter(String filter) {
-        return setFilter("", filter);
+    public FFmpeg setComplexFilter(final String complexFilter) {
+        this.complexFilter = complexFilter;
+        return this;
     }
 
     /**
@@ -181,11 +182,23 @@ public class FFmpeg {
      * @see <a href="https://ffmpeg.org/ffmpeg-all.html#Simple-filtergraphs">Simple filtergraphs</a>
      */
     public FFmpeg setFilter(FilterGraph filter) {
-        return setFilter("", filter.getValue());
+        return setFilter(filter.getValue());
     }
 
     /**
-     * Sets a 'stream specific' filter value (equivalent to the "-av" / "-filter:a" or "-fv" / "-filter:v" command-line parameters).
+     * Sets the 'generic' filter value (equivalent to the "-filter" command-line parameter).
+     *
+     * @param filter a String describing the filter to apply
+     * @return this
+     * @see <a href="https://ffmpeg.org/ffmpeg-all.html#Simple-filtergraphs">Simple filtergraphs</a>
+     */
+    public FFmpeg setFilter(String filter) {
+        return setFilter((String) null, filter);
+    }
+
+    /**
+     * Sets a 'stream specific' filter value (equivalent to the "-av" / "-filter:a" or "-fv" / "-filter:v"
+     * command-line parameters).
      *
      * @param streamType  the stream type to apply this filter to (StreamType.AUDIO or StreamType.VIDEO)
      * @param filterGraph a graph describing the filters to apply
@@ -193,11 +206,12 @@ public class FFmpeg {
      * @see <a href="https://ffmpeg.org/ffmpeg-all.html#Simple-filtergraphs">Simple filtergraphs</a>
      */
     public FFmpeg setFilter(StreamType streamType, FilterGraph filterGraph) {
-        return setFilter(streamType.code(), filterGraph.getValue());
+        return setFilter(streamType, filterGraph.getValue());
     }
 
     /**
-     * Sets a 'stream specific' filter value (equivalent to the "-av" / "-filter:a" or "-fv" / "-filter:v" command-line parameters).
+     * Sets a 'stream specific' filter value (equivalent to the "-av" / "-filter:a" or "-fv" / "-filter:v"
+     * command-line parameters).
      *
      * @param streamType the stream type to apply this filter to (StreamType.AUDIO or StreamType.VIDEO)
      * @param filter     a String describing the filter to apply
@@ -209,9 +223,11 @@ public class FFmpeg {
     }
 
     /**
-     * Sets a 'stream specific' filter value (equivalent to the "-av" / "-filter:a" or "-fv" / "-filter:v" / "-filter" command-line parameters).
+     * Sets a 'stream specific' filter value (equivalent to the "-av" / "-filter:a" or "-fv" / "-filter:v" / "-filter"
+     * command-line parameters).
      *
-     * @param streamSpecifier a String specifying to which stream this filter must be applied ("a" for audio, "v" "for video, or "" for generic 'filter')
+     * @param streamSpecifier a String specifying to which stream this filter must be applied ("a" for audio,
+     *                        "v" "for video, or "" for generic 'filter')
      * @param filterGraph     a graph describing the filters to apply
      * @return this
      * @see <a href="https://ffmpeg.org/ffmpeg-all.html#Simple-filtergraphs">Simple filtergraphs</a>
@@ -221,28 +237,19 @@ public class FFmpeg {
     }
 
     /**
-     * Sets a 'stream specific' filter value (equivalent to the "-av" / "-filter:a" or "-fv" / "-filter:v" / "-filter" command-line parameters).
+     * Sets a 'stream specific' filter value (equivalent to the "-av" / "-filter:a" or "-fv" / "-filter:v" / "-filter"
+     * command-line parameters).
      *
-     * @param streamSpecifier a String specifying to which stream this filter must be applied ("a" for audio, "v" "for video, or "" for generic 'filter')
+     * @param streamSpecifier a String specifying to which stream this filter must be applied ("a" for audio,
+     *                        "v" "for video, or "" for generic 'filter')
      * @param filter          a String describing the filter to apply
      * @return this
      * @see <a href="https://ffmpeg.org/ffmpeg-all.html#Simple-filtergraphs">Simple filtergraphs</a>
      */
     public FFmpeg setFilter(String streamSpecifier, String filter) {
-        // If a previous filter was set, warn that it is replaced by the new one
-        final String previousFilter = (String) filters.get(streamSpecifier);
-        if (previousFilter != null) {
-            if (streamSpecifier.isEmpty()) {
-                LOGGER.warn("Only one generic filter is supported. Ignoring previous filter '" + previousFilter + "'.");
-            } else {
-                LOGGER.error("Only one filter per stream is supported. Ignoring previous filter '" + previousFilter + "' for stream '" + streamSpecifier + "'.");
-            }
-        }
-        // Store the new filter
         filters.put(streamSpecifier, filter);
         return this;
     }
-
 
     /**
      * Whether to overwrite output. False by default.
@@ -467,7 +474,7 @@ public class FFmpeg {
         }
 
         if (complexFilter != null) {
-            result.addAll(Arrays.asList("-filter_complex", complexFilter.getValue()));
+            result.addAll(Arrays.asList("-filter_complex", complexFilter));
         }
 
         result.addAll(BaseInOut.toArguments("-filter", filters));
