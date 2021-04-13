@@ -5,10 +5,10 @@ import com.github.kokorin.jaffree.ffprobe.data.ProbeData;
 public interface TagAware {
 
     /**
-     * Returns data section which holds all the data provided by ffprobe for current {@link Format}.
+     * Returns data section which holds all the data provided by ffprobe.
      * <p>
      * Use this method if you have to access properties which are not accessible through
-     * other getters in this class.
+     * other getters.
      *
      * @return data section
      */
