@@ -111,12 +111,10 @@ public class FFmpegResultFuture {
         return resultFuture.get(timeout, unit);
     }
 
-    // TODO check if required or replace with more suitable method
     public boolean isCancelled() {
         return resultFuture.isCancelled();
     }
 
-    // TODO check if required or replace with more suitable method
     public boolean isDone() {
         return resultFuture.isDone();
     }

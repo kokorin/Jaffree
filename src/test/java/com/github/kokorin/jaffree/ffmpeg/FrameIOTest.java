@@ -270,10 +270,10 @@ public class FrameIOTest {
                 }
 
                 if (videoPts <= audioPts) {
-                    return new Frame(0, videoPts++, flag);
+                    return Frame.createVideoFrame(0, videoPts++, flag);
                 }
 
-                return new Frame(1, audioPts++, samples);
+                return Frame.createAudioFrame(1, audioPts++, samples);
             }
         };
 
@@ -406,10 +406,10 @@ public class FrameIOTest {
                 }
 
                 if (videoPts <= audioPts) {
-                    return new Frame(0, videoPts++, redCross);
+                    return Frame.createVideoFrame(0, videoPts++, redCross);
                 }
 
-                return new Frame(1, audioPts++, samples);
+                return Frame.createAudioFrame(1, audioPts++, samples);
             }
         };
 
@@ -504,7 +504,6 @@ public class FrameIOTest {
 
         final AtomicReference<FFmpegProgress> progressRef = new AtomicReference<>();
 
-        // TODO: convert outputPath to MP4 with ffmpeg and check how long will it take
         FFmpeg.atPath(BIN)
                 .addInput(FrameInput.withProducer(
                         new FrameProducer() {
@@ -546,7 +545,7 @@ public class FrameIOTest {
                                     lastSecond = currentSecond;
                                 }
 
-                                Frame result = new Frame(0, frame * timebase / fps, image);
+                                Frame result = Frame.createVideoFrame(0, frame * timebase / fps, image);
                                 frame++;
 
                                 return result;

@@ -33,32 +33,6 @@ public class Frame {
     private final int[] samples;
 
     /**
-     * Creates video {@link Frame}, samples are set to null.
-     *
-     * @param streamId stream id (starting with 0)
-     * @param pts      pts in {@link Stream} timebase
-     * @param image    video frame image
-     * @see Stream#getTimebase()
-     */
-    // TODO make static method
-    public Frame(final int streamId, final long pts, final BufferedImage image) {
-        this(streamId, pts, image, null);
-    }
-
-    /**
-     * Creates audio {@link Frame}, image is set to null.
-     *
-     * @param streamId streamId
-     * @param pts      pts in {@link Stream} timebase
-     * @param samples  audio samples in PCM S32BE format
-     * @see Stream#getTimebase()
-     */
-    // TODO make static method
-    public Frame(final int streamId, final long pts, final int[] samples) {
-        this(streamId, pts, null, samples);
-    }
-
-    /**
      * Creates {@link Frame}.
      *
      * @param streamId streamId
@@ -67,7 +41,7 @@ public class Frame {
      * @param samples  audio samples in PCM S32BE format
      * @see Stream#getTimebase()
      */
-    public Frame(final int streamId, final long pts, final BufferedImage image,
+    protected Frame(final int streamId, final long pts, final BufferedImage image,
                  final int[] samples) {
         if (image != null && samples != null) {
             throw new IllegalArgumentException(
@@ -133,4 +107,29 @@ public class Frame {
                 + ", samples?=" + (samples != null)
                 + '}';
     }
+
+    /**
+     * Creates video {@link Frame}, samples are set to null.
+     *
+     * @param streamId stream id (starting with 0)
+     * @param pts      pts in {@link Stream} timebase
+     * @param image    video frame image
+     * @see Stream#getTimebase()
+     */
+    public static Frame createVideoFrame(final int streamId, final long pts, final BufferedImage image) {
+        return new Frame(streamId, pts, image, null);
+    }
+
+    /**
+     * Creates audio {@link Frame}, image is set to null.
+     *
+     * @param streamId streamId
+     * @param pts      pts in {@link Stream} timebase
+     * @param samples  audio samples in PCM S32BE format
+     * @see Stream#getTimebase()
+     */
+    public static Frame createAudioFrame(final int streamId, final long pts, final int[] samples) {
+        return new Frame(streamId, pts, null, samples);
+    }
+
 }

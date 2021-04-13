@@ -411,8 +411,6 @@ public class FFmpeg {
      * @return this
      */
     protected StdReader<FFmpegResult> createStdOutReader() {
-        // TODO ffmpeg normally doesn't write to Std OUT, stdOutReader should throw an error
-        // if it reads any byte
         return new LoggingStdReader<>();
     }
 
