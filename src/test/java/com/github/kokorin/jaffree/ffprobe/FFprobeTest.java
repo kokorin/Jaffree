@@ -175,6 +175,10 @@ public class FFprobeTest {
         assertNotNull(format.getBitRate());
         assertNotNull(format.getProbeScore());
         assertEquals("isom", format.getTag("major_brand"));
+        assertNotNull(format.getTagInteger("minor_version"));
+        assertNotNull(format.getTagLong("minor_version"));
+        assertNotNull(format.getTagDouble("minor_version"));
+        assertNotNull(format.getTagFloat("minor_version"));
     }
 
     //private String showFormatEntry;

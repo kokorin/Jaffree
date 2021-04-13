@@ -25,23 +25,23 @@ import com.github.kokorin.jaffree.ffprobe.data.ProbeDataConverter;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public class Stream {
+public class Stream implements TagAware {
     private final ProbeData probeData;
 
     public Stream(ProbeData probeData) {
         this.probeData = probeData;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public ProbeData getProbeData() {
         return probeData;
     }
 
     public StreamDisposition getDisposition() {
         return new StreamDisposition(probeData.getSubData("disposition"));
-    }
-
-    public String getTag(String name) {
-        return probeData.getSubDataString("tags", name);
     }
 
     public List<SideData> getSideDataList() {

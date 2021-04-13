@@ -86,16 +86,53 @@ public interface ProbeData {
 
     /**
      * @param subDataName sub-data name
-     * @param property property name
+     * @param property    property name
      * @return sub-data property value
      */
     Object getSubDataValue(String subDataName, String property);
 
     /**
+     * Handy method which returns subdata property with specified name converted to T type.
+     *
      * @param subDataName sub-data name
-     * @param property property name
+     * @param property    property name
+     * @return sub-data property value
+     */
+    <T> T getSubDataValue(String subDataName, String property, ValueConverter<T> converter);
+
+    /**
+     * @param subDataName sub-data name
+     * @param property    property name
      * @return sub-data property value
      */
     String getSubDataString(String subDataName, String property);
+
+    /**
+     * @param subDataName sub-data name
+     * @param property    property name
+     * @return sub-data property value
+     */
+    Long getSubDataLong(String subDataName, String property);
+
+    /**
+     * @param subDataName sub-data name
+     * @param property    property name
+     * @return sub-data property value
+     */
+    Integer getSubDataInteger(String subDataName, String property);
+
+    /**
+     * @param subDataName sub-data name
+     * @param property    property name
+     * @return sub-data property value
+     */
+    Double getSubDataDouble(String subDataName, String property);
+
+    /**
+     * @param subDataName sub-data name
+     * @param property    property name
+     * @return sub-data property value
+     */
+    Float getSubDataFloat(String subDataName, String property);
 
 }
