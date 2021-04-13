@@ -30,53 +30,52 @@ public class StreamDisposition {
         return probeData;
     }
 
-    // TODO make boolean?
-    public Integer getDefault() {
-        return probeData.getInteger("default");
+    public Boolean getDefault() {
+        return probeData.getBoolean("default");
     }
 
-    public Integer getDub() {
-        return probeData.getInteger("dub");
+    public Boolean getDub() {
+        return probeData.getBoolean("dub");
     }
 
-    public Integer getOriginal() {
-        return probeData.getInteger("original");
+    public Boolean getOriginal() {
+        return probeData.getBoolean("original");
     }
 
-    public Integer getComment() {
-        return probeData.getInteger("comment");
+    public Boolean getComment() {
+        return probeData.getBoolean("comment");
     }
 
-    public Integer getLyrics() {
-        return probeData.getInteger("lyrics");
+    public Boolean getLyrics() {
+        return probeData.getBoolean("lyrics");
     }
 
-    public Integer getKaraoke() {
-        return probeData.getInteger("karaoke");
+    public Boolean getKaraoke() {
+        return probeData.getBoolean("karaoke");
     }
 
-    public Integer getForced() {
-        return probeData.getInteger("forced");
+    public Boolean getForced() {
+        return probeData.getBoolean("forced");
     }
 
-    public Integer getHearingImpaired() {
-        return probeData.getInteger("hearing_impaired");
+    public Boolean getHearingImpaired() {
+        return probeData.getBoolean("hearing_impaired");
     }
 
-    public Integer getVisualImpaired() {
-        return probeData.getInteger("visual_impaired");
+    public Boolean getVisualImpaired() {
+        return probeData.getBoolean("visual_impaired");
     }
 
-    public Integer getCleanEffects() {
-        return probeData.getInteger("clean_effects");
+    public Boolean getCleanEffects() {
+        return probeData.getBoolean("clean_effects");
     }
 
-    public Integer getAttachedPic() {
-        return probeData.getInteger("attached_pic");
+    public Boolean getAttachedPic() {
+        return probeData.getBoolean("attached_pic");
     }
 
-    public Integer getTimedThumbnails() {
-        return probeData.getInteger("timed_thumbnails");
+    public Boolean getTimedThumbnails() {
+        return probeData.getBoolean("timed_thumbnails");
     }
 
 
