@@ -23,19 +23,19 @@ import com.github.kokorin.jaffree.ffprobe.data.ProbeDataConverter;
 import java.util.List;
 
 // TODO check what timebase are used for StartPts & EndPts
-public class Program {
+public class Program implements TagAware {
     private final ProbeData probeData;
 
     public Program(ProbeData probeData) {
         this.probeData = probeData;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public ProbeData getProbeData() {
         return probeData;
-    }
-
-    public String getTag(String name) {
-        return probeData.getSubDataString("tags", name);
     }
 
     public List<Stream> getStreams() {

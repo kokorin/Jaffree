@@ -29,7 +29,7 @@ import java.util.List;
  *
  * @see FFprobe#setShowFrames(boolean)
  */
-public class Frame implements FrameSubtitle, PacketFrameSubtitle {
+public class Frame implements TagAware, FrameSubtitle, PacketFrameSubtitle {
     private final ProbeData probeData;
 
     /**
@@ -42,20 +42,11 @@ public class Frame implements FrameSubtitle, PacketFrameSubtitle {
     }
 
     /**
-     * Returns data section which holds all the data provided by ffprobe for
-     * the current {@link Frame}.
-     * <p>
-     * Use this method if you have to access properties which are not accessible through
-     * other getters in this class.
-     *
-     * @return data section
+     * {@inheritDoc}
      */
+    @Override
     public ProbeData getProbeData() {
         return probeData;
-    }
-
-    public String getTag(String name) {
-        return probeData.getSubDataString("tags", name);
     }
 
     /**

@@ -183,12 +183,37 @@ public abstract class AbstractProbeData implements ProbeData {
     }
 
     @Override
-    public String getSubDataString(String subDataName, String property) {
-        ProbeData subData = getSubData(subDataName);
-        if (subData == null) {
+    public <T> T getSubDataValue(String subDataName, String property, ValueConverter<T> converter) {
+        Object value = getSubDataValue(subDataName, property);
+        if (value == null) {
             return null;
         }
-        return subData.getString(property);
+        return converter.convert(value);
+    }
+
+    @Override
+    public String getSubDataString(String subDataName, String property) {
+        return getSubDataValue(subDataName, property, STRING_CONVERTER);
+    }
+
+    @Override
+    public Long getSubDataLong(String subDataName, String property) {
+        return getSubDataValue(subDataName, property, LONG_CONVERTER);
+    }
+
+    @Override
+    public Integer getSubDataInteger(String subDataName, String property) {
+        return getSubDataValue(subDataName, property, INTEGER_CONVERTER);
+    }
+
+    @Override
+    public Double getSubDataDouble(String subDataName, String property) {
+        return getSubDataValue(subDataName, property, DOUBLE_CONVERTER);
+    }
+
+    @Override
+    public Float getSubDataFloat(String subDataName, String property) {
+        return getSubDataValue(subDataName, property, FLOAT_CONVERTER);
     }
 
     private static final ValueConverter<String> STRING_CONVERTER =
