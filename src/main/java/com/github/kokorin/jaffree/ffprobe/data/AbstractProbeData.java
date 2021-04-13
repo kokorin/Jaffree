@@ -41,6 +41,17 @@ public abstract class AbstractProbeData implements ProbeData {
     }
 
     /**
+     * Returns boolean value for specified key (using default converter).
+     *
+     * @param key key
+     * @return value
+     */
+    @Override
+    public Boolean getBoolean(final String key) {
+        return getValue(key, BOOLEAN_CONVERTER);
+    }
+
+    /**
      * Returns long value for specified key (using default converter).
      *
      * @param key key
@@ -90,7 +101,6 @@ public abstract class AbstractProbeData implements ProbeData {
      * @param key key
      * @return StreamType
      */
-    // TODO: check if it should be here
     @Override
     public StreamType getStreamType(final String key) {
         return getValue(key, STREAM_TYPE_CONVERTER);
@@ -224,6 +234,27 @@ public abstract class AbstractProbeData implements ProbeData {
                         return null;
                     }
                     return value.toString();
+                }
+            };
+
+    private static final ValueConverter<Boolean> BOOLEAN_CONVERTER =
+            new ValueConverter<Boolean>() {
+                @Override
+                public Boolean convert(final Object value) {
+                    if (value == null || value.equals("") || value.equals("N/A")) {
+                        return null;
+                    }
+                    if (value instanceof Number) {
+                        return ((Number) value).intValue() > 0;
+                    }
+
+                    try {
+                        return Integer.parseInt(value.toString()) > 0;
+                    } catch (Exception e) {
+                        LOGGER.warn("Failed to parse int number: " + value, e);
+                    }
+
+                    return null;
                 }
             };
 

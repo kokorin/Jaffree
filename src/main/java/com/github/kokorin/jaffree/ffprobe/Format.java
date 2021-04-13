@@ -80,7 +80,6 @@ public class Format implements TagAware {
     /**
      * @return media start time in seconds
      */
-    // TODO: getter with TimeUnit?
     public Float getStartTime() {
         return probeData.getFloat("start_time");
     }
@@ -88,7 +87,6 @@ public class Format implements TagAware {
     /**
      * @return media duration in seconds
      */
-    // TODO: getter with TimeUnit?
     public Float getDuration() {
         return probeData.getFloat("duration");
     }

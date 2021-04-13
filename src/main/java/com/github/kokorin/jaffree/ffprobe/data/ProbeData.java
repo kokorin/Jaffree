@@ -34,6 +34,8 @@ public interface ProbeData {
 
     String getString(String key);
 
+    Boolean getBoolean(String key);
+
     Long getLong(String key);
 
     Integer getInteger(String key);
