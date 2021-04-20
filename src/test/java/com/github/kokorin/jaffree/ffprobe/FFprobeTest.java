@@ -175,6 +175,10 @@ public class FFprobeTest {
         assertNotNull(format.getBitRate());
         assertNotNull(format.getProbeScore());
         assertEquals("isom", format.getTag("major_brand"));
+        assertNotNull(format.getTagInteger("minor_version"));
+        assertNotNull(format.getTagLong("minor_version"));
+        assertNotNull(format.getTagDouble("minor_version"));
+        assertNotNull(format.getTagFloat("minor_version"));
     }
 
     //private String showFormatEntry;
@@ -336,18 +340,18 @@ public class FFprobeTest {
 
         StreamDisposition disposition = audioStream.getDisposition();
         assertNotNull(disposition);
-        assertEquals((Integer) 1, disposition.getDefault());
-        assertEquals((Integer) 0, disposition.getDub());
-        assertEquals((Integer) 0, disposition.getOriginal());
-        assertEquals((Integer) 0, disposition.getComment());
-        assertEquals((Integer) 0, disposition.getLyrics());
-        assertEquals((Integer) 0, disposition.getKaraoke());
-        assertEquals((Integer) 0, disposition.getForced());
-        assertEquals((Integer) 0, disposition.getHearingImpaired());
-        assertEquals((Integer) 0, disposition.getVisualImpaired());
-        assertEquals((Integer) 0, disposition.getCleanEffects());
-        assertEquals((Integer) 0, disposition.getAttachedPic());
-        assertEquals((Integer) 0, disposition.getTimedThumbnails());
+        assertEquals(Boolean.TRUE, disposition.getDefault());
+        assertEquals(Boolean.FALSE, disposition.getDub());
+        assertEquals(Boolean.FALSE, disposition.getOriginal());
+        assertEquals(Boolean.FALSE, disposition.getComment());
+        assertEquals(Boolean.FALSE, disposition.getLyrics());
+        assertEquals(Boolean.FALSE, disposition.getKaraoke());
+        assertEquals(Boolean.FALSE, disposition.getForced());
+        assertEquals(Boolean.FALSE, disposition.getHearingImpaired());
+        assertEquals(Boolean.FALSE, disposition.getVisualImpaired());
+        assertEquals(Boolean.FALSE, disposition.getCleanEffects());
+        assertEquals(Boolean.FALSE, disposition.getAttachedPic());
+        assertEquals(Boolean.FALSE, disposition.getTimedThumbnails());
     }
 
     @Test

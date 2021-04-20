@@ -60,7 +60,6 @@ package com.github.kokorin.jaffree.nut;
 public class DataItem {
     public final String name;
     public final Object value;
-    // TODO: introduce type enum?
     public final String type;
 
     /**

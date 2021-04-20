@@ -22,7 +22,7 @@ import com.github.kokorin.jaffree.ffprobe.data.ProbeData;
 /**
  * Format description.
  */
-public class Format {
+public class Format implements TagAware {
     private final ProbeData probeData;
 
     /**
@@ -35,25 +35,11 @@ public class Format {
     }
 
     /**
-     * Returns data section which holds all the data provided by ffprobe for current {@link Format}.
-     * <p>
-     * Use this method if you have to access properties which are not accessible through
-     * other getters in this class.
-     *
-     * @return data section
+     * {@inheritDoc}
      */
+    @Override
     public ProbeData getProbeData() {
         return probeData;
-    }
-
-    /**
-     * Return tag value by name
-     * @param name tag name
-     * @return tag value
-     */
-    // TODO Type-specific getters: Integer, Long, etc
-    public String getTag(String name) {
-        return probeData.getSubDataString("tags", name);
     }
 
     /**
@@ -94,7 +80,6 @@ public class Format {
     /**
      * @return media start time in seconds
      */
-    // TODO: getter with TimeUnit?
     public Float getStartTime() {
         return probeData.getFloat("start_time");
     }
@@ -102,7 +87,6 @@ public class Format {
     /**
      * @return media duration in seconds
      */
-    // TODO: getter with TimeUnit?
     public Float getDuration() {
         return probeData.getFloat("duration");
     }

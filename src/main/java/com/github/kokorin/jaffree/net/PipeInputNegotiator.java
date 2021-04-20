@@ -32,18 +32,12 @@ import java.net.SocketException;
 @ThreadSafe
 public class PipeInputNegotiator implements TcpNegotiator {
     private final InputStream source;
+    private final int bufferSize;
 
-    @GuardedBy("this")
-    private int bufferSize = DEFAULT_BUFFER_SIZE;
-
-    private static final int DEFAULT_BUFFER_SIZE = 1_000_000;
     private static final Logger LOGGER = LoggerFactory.getLogger(PipeInputNegotiator.class);
 
-    public PipeInputNegotiator(InputStream source) {
+    public PipeInputNegotiator(InputStream source, int bufferSize) {
         this.source = source;
-    }
-
-    public synchronized void setBufferSize(int bufferSize) {
         this.bufferSize = bufferSize;
     }
 

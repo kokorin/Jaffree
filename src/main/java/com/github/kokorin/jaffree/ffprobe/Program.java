@@ -23,19 +23,19 @@ import com.github.kokorin.jaffree.ffprobe.data.ProbeDataConverter;
 import java.util.List;
 
 // TODO check what timebase are used for StartPts & EndPts
-public class Program {
+public class Program implements TagAware {
     private final ProbeData probeData;
 
     public Program(ProbeData probeData) {
         this.probeData = probeData;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public ProbeData getProbeData() {
         return probeData;
-    }
-
-    public String getTag(String name) {
-        return probeData.getSubDataString("tags", name);
     }
 
     public List<Stream> getStreams() {
@@ -63,6 +63,13 @@ public class Program {
         return probeData.getFloat("start_time");
     }
 
+    /**
+     * Returns program start PTS.
+     * <p>
+     * Timebase is hardcoded in ffmpeg code and is equal to 1_000_000.
+     *
+     * @return start pts
+     */
     public Long getStartPts() {
         return probeData.getLong("start_pts");
     }
@@ -71,6 +78,13 @@ public class Program {
         return probeData.getFloat("end_time");
     }
 
+    /**
+     * Returns program end PTS.
+     * <p>
+     * Timebase is hardcoded in ffmpeg code and is equal to 1_000_000.
+     *
+     * @return end pts
+     */
     public Long getEndPts() {
         return probeData.getLong("end_pts");
     }

@@ -235,7 +235,7 @@ public class MosaicExample {
                     return null;
                 }
 
-                Frame result = new Frame(0, nextVideoFrameTimecode, mosaic);
+                Frame result = Frame.createVideoFrame(0, nextVideoFrameTimecode, mosaic);
 
                 nextVideoFrameTimecode += videoFrameDuration;
 
@@ -273,7 +273,7 @@ public class MosaicExample {
                 if (aFrame == null) {
                     return null;
                 }
-                aFrame = new Frame(1 + minI, aFrame.getPts(), aFrame.getSamples());
+                aFrame = Frame.createAudioFrame(1 + minI, aFrame.getPts(), aFrame.getSamples());
 
                 if (nextPts != Long.MAX_VALUE) {
                     nextAudioFrameTimecode = 1000L * nextPts / sampleRate;

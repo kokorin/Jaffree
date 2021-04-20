@@ -267,7 +267,7 @@ FrameProducer producer = new FrameProducer() {
         graphics.setPaint(new Color(frameCounter * 1.0f / 30, 0, 0));
         graphics.fillRect(0, 0, 320, 240);
         long pts = frameCounter * 1000 / 10; // Frame PTS in Stream Timebase
-        Frame videoFrame = new Frame(0, pts, image);
+        Frame videoFrame = Frame.createVideoFrame(0, pts, image);
         frameCounter++;
 
         return videoFrame;
