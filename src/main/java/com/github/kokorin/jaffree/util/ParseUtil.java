@@ -122,7 +122,6 @@ public class ParseUtil {
      * @param value string to parse
      * @return parsed double or null if value can't be parsed
      */
-    // TODO probably too specific method, instead parseDoubleWithSuffix can be public
     public static Double parseSpeed(final String value) {
         return parseDoubleWithSuffix(value, SPEED_SUFFIX);
     }

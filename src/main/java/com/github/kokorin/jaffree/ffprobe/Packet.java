@@ -23,7 +23,7 @@ import com.github.kokorin.jaffree.ffprobe.data.ProbeDataConverter;
 
 import java.util.List;
 
-public class Packet implements PacketFrameSubtitle {
+public class Packet implements TagAware, PacketFrameSubtitle {
 
     private final ProbeData probeData;
 
@@ -31,6 +31,10 @@ public class Packet implements PacketFrameSubtitle {
         this.probeData = probeData;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public ProbeData getProbeData() {
         return probeData;
     }
@@ -41,11 +45,6 @@ public class Packet implements PacketFrameSubtitle {
 
     public Float getPtsTime() {
         return probeData.getFloat("pts_time");
-    }
-
-    // TODO Does Packet contain any tags?
-    public String getTag(String name) {
-        return probeData.getSubDataString("tags", name);
     }
 
     public List<SideData> getSideDataList() {

@@ -106,7 +106,6 @@ public abstract class CaptureInput<T extends CaptureInput<T>> extends BaseInput<
      */
     public abstract CaptureInput<T> setCaptureCursor(boolean captureCursor);
 
-    // TODO check static method references
     public static CaptureInput<?> captureDesktop() {
         CaptureInput<?> result = null;
         if (OS.IS_LINUX) {

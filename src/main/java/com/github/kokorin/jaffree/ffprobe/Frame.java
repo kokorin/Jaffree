@@ -29,7 +29,7 @@ import java.util.List;
  *
  * @see FFprobe#setShowFrames(boolean)
  */
-public class Frame implements FrameSubtitle, PacketFrameSubtitle {
+public class Frame implements TagAware, FrameSubtitle, PacketFrameSubtitle {
     private final ProbeData probeData;
 
     /**
@@ -42,20 +42,11 @@ public class Frame implements FrameSubtitle, PacketFrameSubtitle {
     }
 
     /**
-     * Returns data section which holds all the data provided by ffprobe for
-     * the current {@link Frame}.
-     * <p>
-     * Use this method if you have to access properties which are not accessible through
-     * other getters in this class.
-     *
-     * @return data section
+     * {@inheritDoc}
      */
+    @Override
     public ProbeData getProbeData() {
         return probeData;
-    }
-
-    public String getTag(String name) {
-        return probeData.getSubDataString("tags", name);
     }
 
     /**
@@ -127,11 +118,10 @@ public class Frame implements FrameSubtitle, PacketFrameSubtitle {
     }
 
     /**
-     * @return 1 -> keyframe, 0-> not
+     * @return true if key frame
      */
-    // TODO make boolean
-    public Integer getKeyFrame() {
-        return probeData.getInteger("key_frame");
+    public Boolean getKeyFrame() {
+        return probeData.getBoolean("key_frame");
     }
 
     /**
@@ -332,21 +322,19 @@ public class Frame implements FrameSubtitle, PacketFrameSubtitle {
     /**
      * The content of the picture is interlaced.
      *
-     * @return 1 -> interlaced, 0-> not
+     * @return true if interlaced
      */
-    // TODO make boolean
-    public Integer getInterlacedFrame() {
-        return probeData.getInteger("interlaced_frame");
+    public Boolean getInterlacedFrame() {
+        return probeData.getBoolean("interlaced_frame");
     }
 
     /**
      * If the content is interlaced, is top field displayed first.
      *
-     * @return 1, if top field displayed first
+     * @return true if top field is displayed first
      */
-    // TODO make boolean
-    public Integer getTopFieldFirst() {
-        return probeData.getInteger("top_field_first");
+    public Boolean getTopFieldFirst() {
+        return probeData.getBoolean("top_field_first");
     }
 
     /**
