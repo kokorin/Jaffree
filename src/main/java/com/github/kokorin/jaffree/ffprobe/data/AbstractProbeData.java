@@ -184,8 +184,8 @@ public abstract class AbstractProbeData implements ProbeData {
     }
 
     @Override
-    public Object getSubDataValue(String subDataName, String property) {
-        ProbeData subData = getSubData(subDataName);
+    public Object getSubDataValue(String name, String property) {
+        ProbeData subData = getSubData(name);
         if (subData == null) {
             return null;
         }
@@ -193,8 +193,8 @@ public abstract class AbstractProbeData implements ProbeData {
     }
 
     @Override
-    public <T> T getSubDataValue(String subDataName, String property, ValueConverter<T> converter) {
-        Object value = getSubDataValue(subDataName, property);
+    public <T> T getSubDataValue(String name, String property, ValueConverter<T> converter) {
+        Object value = getSubDataValue(name, property);
         if (value == null) {
             return null;
         }
