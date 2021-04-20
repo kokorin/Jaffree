@@ -26,12 +26,13 @@ public class CutAndScaleExample {
                                 .setPosition(10, TimeUnit.SECONDS)
                                 .setDuration(42, TimeUnit.SECONDS)
                 )
+                .setFilter(StreamType.VIDEO, "scale=160:-2")
+                .setOverwriteOutput(true)
+                .addArguments("-movflags", "faststart")
                 .addOutput(
                         UrlOutput.toUrl(pathToDst)
                                 .setPosition(10, TimeUnit.SECONDS)
                 )
-                .setFilter(StreamType.VIDEO, "scale=160:-2")
-                .setOverwriteOutput(true)
                 .execute();
     }
 }

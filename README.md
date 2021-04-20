@@ -88,8 +88,8 @@ See whole example [here](/src/test/java/examples/ReEncodeExample.java).
 final AtomicLong duration = new AtomicLong();
 FFmpeg.atPath()
     .addInput(UrlInput.fromUrl(pathToSrc))
-    .addOutput(new NullOutput())
     .setOverwriteOutput(true)
+    .addOutput(new NullOutput())
     .setProgressListener(new ProgressListener() {
         @Override
         public void onProgress(FFmpegProgress progress) {
@@ -100,6 +100,8 @@ FFmpeg.atPath()
 
 FFmpeg.atPath()
     .addInput(UrlInput.fromUrl(pathToSrc))
+    .setOverwriteOutput(true)
+    .addArguments("-movflags", "faststart")
     .addOutput(UrlOutput.toUrl(pathToDst))
     .setProgressListener(new ProgressListener() {
         @Override
@@ -108,7 +110,6 @@ FFmpeg.atPath()
             System.out.println("Progress: " + percents + "%");
         }
     })
-    .setOverwriteOutput(true)
     .execute();
 ```
 
@@ -121,16 +122,17 @@ See whole example [here](/src/test/java/examples/CutAndScaleExample.java).
 ```java
 FFmpeg.atPath()
     .addInput(
-            UrlInput.fromUrl(pathToSrc)
-                    .setPosition(10, TimeUnit.SECONDS)
-                    .setDuration(42, TimeUnit.SECONDS)
-    )
-    .addOutput(
-            UrlOutput.toUrl(pathToDst)
-                    .setPosition(10, TimeUnit.SECONDS)
+        UrlInput.fromUrl(pathToSrc)
+                .setPosition(10, TimeUnit.SECONDS)
+                .setDuration(42, TimeUnit.SECONDS)
     )
     .setFilter(StreamType.VIDEO, "scale=160:-2")
     .setOverwriteOutput(true)
+    .addArguments("-movflags", "faststart")
+    .addOutput(
+        UrlOutput.toUrl(pathToDst)
+                 .setPosition(10, TimeUnit.SECONDS)
+    )
     .execute();
 ```
 
