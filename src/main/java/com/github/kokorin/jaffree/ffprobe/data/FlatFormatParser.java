@@ -31,9 +31,11 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * {@link com.github.kokorin.jaffree.ffprobe.FFprobe} output parser which parses
- * ffprobe "flat" output.
+ * ffprobe flat format output parser.
+ *
+ * @deprecated use {@link JsonFormatParser}
  */
+@Deprecated
 public class FlatFormatParser implements FormatParser {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FlatFormatParser.class);
@@ -95,7 +97,6 @@ public class FlatFormatParser implements FormatParser {
      * @param value value
      * @return true if parsed and set
      */
-    // TODO: refactor me
     protected boolean setKeyValue(final TreeMap<String, Object> data, final String key, final String value) {
         String[] pathStr = key.split("\\.");
         List<Path> path = new ArrayList<>();
@@ -108,7 +109,6 @@ public class FlatFormatParser implements FormatParser {
             if (i + 2 < pathStr.length) {
                 step = SectionPath.parse(pathStr[i], pathStr[i + 1], pathStr[i + 2]);
                 if (step != null) {
-                    // TODO checkstyle?
                     inc = 1 + 1 + 1;
                 }
             }

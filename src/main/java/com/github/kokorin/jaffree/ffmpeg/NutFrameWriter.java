@@ -198,7 +198,6 @@ public class NutFrameWriter implements FrameInput.FrameWriter {
 
                 case AUDIO:
                     data = new byte[frame.getSamples().length * 4];
-                    // TODO check number of samples provided
                     ByteBuffer.wrap(data).asIntBuffer().put(frame.getSamples());
                     break;
 

@@ -27,6 +27,9 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * ffprobe json format output parser.
+ */
 public class JsonFormatParser implements FormatParser {
     @Override
     public String getFormatName() {

@@ -41,6 +41,17 @@ public abstract class AbstractProbeData implements ProbeData {
     }
 
     /**
+     * Returns boolean value for specified key (using default converter).
+     *
+     * @param key key
+     * @return value
+     */
+    @Override
+    public Boolean getBoolean(final String key) {
+        return getValue(key, BOOLEAN_CONVERTER);
+    }
+
+    /**
      * Returns long value for specified key (using default converter).
      *
      * @param key key
@@ -90,7 +101,6 @@ public abstract class AbstractProbeData implements ProbeData {
      * @param key key
      * @return StreamType
      */
-    // TODO: check if it should be here
     @Override
     public StreamType getStreamType(final String key) {
         return getValue(key, STREAM_TYPE_CONVERTER);
@@ -183,12 +193,37 @@ public abstract class AbstractProbeData implements ProbeData {
     }
 
     @Override
-    public String getSubDataString(String subDataName, String property) {
-        ProbeData subData = getSubData(subDataName);
-        if (subData == null) {
+    public <T> T getSubDataValue(String subDataName, String property, ValueConverter<T> converter) {
+        Object value = getSubDataValue(subDataName, property);
+        if (value == null) {
             return null;
         }
-        return subData.getString(property);
+        return converter.convert(value);
+    }
+
+    @Override
+    public String getSubDataString(String subDataName, String property) {
+        return getSubDataValue(subDataName, property, STRING_CONVERTER);
+    }
+
+    @Override
+    public Long getSubDataLong(String subDataName, String property) {
+        return getSubDataValue(subDataName, property, LONG_CONVERTER);
+    }
+
+    @Override
+    public Integer getSubDataInteger(String subDataName, String property) {
+        return getSubDataValue(subDataName, property, INTEGER_CONVERTER);
+    }
+
+    @Override
+    public Double getSubDataDouble(String subDataName, String property) {
+        return getSubDataValue(subDataName, property, DOUBLE_CONVERTER);
+    }
+
+    @Override
+    public Float getSubDataFloat(String subDataName, String property) {
+        return getSubDataValue(subDataName, property, FLOAT_CONVERTER);
     }
 
     private static final ValueConverter<String> STRING_CONVERTER =
@@ -199,6 +234,27 @@ public abstract class AbstractProbeData implements ProbeData {
                         return null;
                     }
                     return value.toString();
+                }
+            };
+
+    private static final ValueConverter<Boolean> BOOLEAN_CONVERTER =
+            new ValueConverter<Boolean>() {
+                @Override
+                public Boolean convert(final Object value) {
+                    if (value == null || value.equals("") || value.equals("N/A")) {
+                        return null;
+                    }
+                    if (value instanceof Number) {
+                        return ((Number) value).intValue() > 0;
+                    }
+
+                    try {
+                        return Integer.parseInt(value.toString()) > 0;
+                    } catch (Exception e) {
+                        LOGGER.warn("Failed to parse int number: " + value, e);
+                    }
+
+                    return null;
                 }
             };
 

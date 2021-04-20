@@ -23,8 +23,8 @@ public class ReEncodeExample {
         final AtomicLong duration = new AtomicLong();
         FFmpeg.atPath()
                 .addInput(UrlInput.fromUrl(pathToSrc))
-                .addOutput(new NullOutput())
                 .setOverwriteOutput(true)
+                .addOutput(new NullOutput())
                 .setProgressListener(new ProgressListener() {
                     @Override
                     public void onProgress(FFmpegProgress progress) {
@@ -35,6 +35,8 @@ public class ReEncodeExample {
 
         FFmpeg.atPath()
                 .addInput(UrlInput.fromUrl(pathToSrc))
+                .setOverwriteOutput(true)
+                .addArguments("-movflags", "faststart")
                 .addOutput(UrlOutput.toUrl(pathToDst))
                 .setProgressListener(new ProgressListener() {
                     @Override
@@ -43,7 +45,6 @@ public class ReEncodeExample {
                         System.out.println("Progress: " + percents + "%");
                     }
                 })
-                .setOverwriteOutput(true)
                 .execute();
 
     }
