@@ -5,6 +5,7 @@ import com.github.kokorin.jaffree.StackTraceMatcher;
 import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffprobe.FFprobe;
 import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
+import org.apache.commons.io.output.NullOutputStream;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -89,8 +90,6 @@ public class FrameIOTest {
     }
 
     @Test
-    @Ignore
-    // TODO unstable test
     public void testStreamId() throws Exception {
         expectedException.expect(new StackTraceMatcher("Stream ids must start with 0 and increase by 1 subsequently"));
 
@@ -113,16 +112,8 @@ public class FrameIOTest {
             }
         };
 
-        FFmpegResult result = FFmpeg.atPath(BIN)
-                .addInput(
-                        FrameInput.withProducer(producer)
-                )
-                .addOutput(
-                        new NullOutput()
-                )
-                .execute();
-
-        Assert.assertNotNull(result);
+        NutFrameWriter writer = new NutFrameWriter(producer, ImageFormats.BGR24);
+        writer.write(new NullOutputStream());
     }
 
     @Test

@@ -27,29 +27,18 @@ import java.io.InputStream;
  * @see ChannelInput
  */
 public class PipeInput extends TcpInput<PipeInput> implements Input {
-    private final PipeInputNegotiator negotiator;
+    private static final int DEFAULT_BUFFER_SIZE = 1_000_000;
 
-    public PipeInput(InputStream source) {
-        this(new PipeInputNegotiator(source));
-    }
-
-    public PipeInput(PipeInputNegotiator negotiator) {
-        super(negotiator);
-        this.negotiator = negotiator;
-    }
-
-    public PipeInput setBufferSize(int bufferSize) {
-        negotiator.setBufferSize(bufferSize);
-        return this;
+    protected PipeInput(final InputStream source, final int bufferSize) {
+        super(new PipeInputNegotiator(source, bufferSize));
     }
 
     public static PipeInput pumpFrom(InputStream source) {
-        return new PipeInput(source);
+        return pumpFrom(source, DEFAULT_BUFFER_SIZE);
     }
 
     public static PipeInput pumpFrom(InputStream source, int bufferSize) {
-        return pumpFrom(source)
-                .setBufferSize(bufferSize);
+        return new PipeInput(source, bufferSize);
     }
 
 }

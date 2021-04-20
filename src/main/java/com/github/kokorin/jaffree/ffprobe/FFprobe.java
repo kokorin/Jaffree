@@ -68,7 +68,6 @@ public class FFprobe {
 
     private final List<String> additionalArguments = new ArrayList<>();
 
-    // TODO: make it final?
     private Input input;
 
     private FormatParser formatParser = new JsonFormatParser();
@@ -409,8 +408,7 @@ public class FFprobe {
      * @return this
      */
     public FFprobe setInput(final String inputUriOrPath) {
-        this.input = new UrlInput(inputUriOrPath);
-        return this;
+        return setInput(new UrlInput(inputUriOrPath));
     }
 
     /**
@@ -420,8 +418,7 @@ public class FFprobe {
      * @return this
      */
     public FFprobe setInput(final InputStream inputStream) {
-        this.input = PipeInput.pumpFrom(inputStream);
-        return this;
+        return setInput(PipeInput.pumpFrom(inputStream));
     }
 
     /**
@@ -432,8 +429,7 @@ public class FFprobe {
      * @return this
      */
     public FFprobe setInput(final InputStream inputStream, final int bufferSize) {
-        this.input = PipeInput.pumpFrom(inputStream, bufferSize);
-        return this;
+        return setInput(PipeInput.pumpFrom(inputStream, bufferSize));
     }
 
     /**
@@ -442,16 +438,36 @@ public class FFprobe {
      * @param inputChannel byte channel to analyze
      * @return this
      */
-    //TODO add setInput(SeekableByteChannel, int) to allow custom buffer size
     public FFprobe setInput(final SeekableByteChannel inputChannel) {
-        this.input = ChannelInput.fromChannel(inputChannel);
+        return setInput(ChannelInput.fromChannel(inputChannel));
+    }
+
+    /**
+     * Sets input to analyze with ffprobe.
+     *
+     * @param inputChannel byte channel to analyze
+     * @param bufferSize   buffer size to copy bytes from input stream
+     * @return this
+     */
+    public FFprobe setInput(final SeekableByteChannel inputChannel, final int bufferSize) {
+        return setInput(ChannelInput.fromChannel(inputChannel, bufferSize));
+    }
+
+    /**
+     * Sets input to analyze with ffprobe.
+     *
+     * @param input input to analyze
+     * @return this
+     */
+    public FFprobe setInput(Input input) {
+        this.input = input;
         return this;
     }
 
     /**
      * Sets ffprobe output format parser (and corresponding output format).
      * <p>
-     * {@link FlatFormatParser} is used by default. It's possible to provide custom implementation.
+     * {@link JsonFormatParser} is used by default. It's possible to provide custom implementation.
      *
      * @param formatParser format parser
      * @return this
