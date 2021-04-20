@@ -27,7 +27,7 @@ public class FFprobeResultTest {
 
         assertEquals(StreamType.VIDEO, videoStream.getCodecType());
         assertEquals("hevc", videoStream.getCodecName());
-        assertEquals((Integer) 1, videoStream.getDisposition().getDefault());
+        assertEquals(Boolean.TRUE, videoStream.getDisposition().getDefault());
 
         Stream audioStream = streams.get(1);
         assertEquals(StreamType.AUDIO, audioStream.getCodecType());

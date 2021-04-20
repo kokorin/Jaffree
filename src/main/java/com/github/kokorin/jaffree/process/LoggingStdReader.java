@@ -40,13 +40,10 @@ public class LoggingStdReader<T> implements StdReader<T> {
      */
     @Override
     public T read(final InputStream stdOut) {
-        // TODO use line iterator?
         BufferedReader reader = new BufferedReader(new InputStreamReader(stdOut));
 
         try {
             String line;
-            // TODO log message with the same logging level
-            // for example if message starts with [DEBUG] output it to debug.
             while ((line = reader.readLine()) != null) {
                 LOGGER.info(line);
             }

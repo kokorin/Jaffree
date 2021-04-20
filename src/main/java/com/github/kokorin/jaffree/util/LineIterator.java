@@ -27,7 +27,6 @@ import java.util.NoSuchElementException;
 /**
  * Adapts {@link BufferedReader} to line {@link Iterator}.
  */
-// TODO: move to util package
 public class LineIterator implements Iterator<String> {
     private final BufferedReader reader;
     private String nextLine = null;

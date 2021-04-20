@@ -23,7 +23,7 @@ import com.github.kokorin.jaffree.ffprobe.data.ProbeData;
 /**
  * Chapter description.
  */
-public class Chapter {
+public class Chapter implements TagAware {
     private final ProbeData probeData;
 
     /**
@@ -36,19 +36,11 @@ public class Chapter {
     }
 
     /**
-     * Returns data section which holds all the data provided by ffprobe for the current Chapter.
-     * <p>
-     * Use this method if you have to access properties which are not accessible through
-     * other getters in this class.
-     *
-     * @return data section
+     * {@inheritDoc}
      */
+    @Override
     public ProbeData getProbeData() {
         return probeData;
-    }
-
-    public String getTag(String name) {
-        return probeData.getSubDataString("tags", name);
     }
 
     /**

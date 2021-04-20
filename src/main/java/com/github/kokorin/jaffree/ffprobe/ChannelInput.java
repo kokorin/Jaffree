@@ -27,23 +27,17 @@ import java.nio.channels.SeekableByteChannel;
  */
 public class ChannelInput extends TcpInput {
 
-    /**
-     * Creates {@link ChannelInput}.
-     *
-     * @param channel byte channel
-     */
-    public ChannelInput(final SeekableByteChannel channel) {
-        this("", channel);
-    }
+    private static final int DEFAULT_BUFFER_SIZE = 1_000_000;
 
     /**
      * Creates {@link ChannelInput}.
      *
-     * @param channel  byte channel
-     * @param fileName file name
+     * @param channel    byte channel
+     * @param fileName   file name
+     * @param bufferSize buffer size to use when copying data
      */
-    public ChannelInput(final String fileName, final SeekableByteChannel channel) {
-        super("ftp", "/" + fileName, FtpServer.onRandomPorts(channel));
+    protected ChannelInput(final String fileName, final SeekableByteChannel channel, final int bufferSize) {
+        super("ftp", "/" + fileName, FtpServer.onRandomPorts(channel, bufferSize));
     }
 
     /**
@@ -55,7 +49,20 @@ public class ChannelInput extends TcpInput {
      * @return ChannelInput
      */
     public static ChannelInput fromChannel(final SeekableByteChannel channel) {
-        return new ChannelInput(channel);
+        return fromChannel("", channel);
+    }
+
+    /**
+     * Creates {@link ChannelInput}.
+     * <p>
+     * ffmpeg uses fileName's extension to autodetect input format
+     *
+     * @param channel byte channel
+     * @param bufferSize buffer size to copy data
+     * @return ChannelInput
+     */
+    public static ChannelInput fromChannel(final SeekableByteChannel channel, final int bufferSize) {
+        return fromChannel("", channel, bufferSize);
     }
 
     /**
@@ -69,6 +76,22 @@ public class ChannelInput extends TcpInput {
      */
     public static ChannelInput fromChannel(final String fileName,
                                            final SeekableByteChannel channel) {
-        return new ChannelInput(fileName, channel);
+        return fromChannel(fileName, channel, DEFAULT_BUFFER_SIZE);
+    }
+
+    /**
+     * Creates {@link ChannelInput}.
+     * <p>
+     * ffmpeg uses fileName's extension to autodetect input format
+     *
+     * @param fileName file name
+     * @param channel  byte channel
+     * @param bufferSize buffer size to copy data
+     * @return ChannelInput
+     */
+    public static ChannelInput fromChannel(final String fileName,
+                                           final SeekableByteChannel channel,
+                                           final int bufferSize) {
+        return new ChannelInput(fileName, channel, bufferSize);
     }
 }
