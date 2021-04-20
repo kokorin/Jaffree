@@ -36,7 +36,8 @@ public class ChannelInput extends TcpInput {
      * @param fileName   file name
      * @param bufferSize buffer size to use when copying data
      */
-    protected ChannelInput(final String fileName, final SeekableByteChannel channel, final int bufferSize) {
+    protected ChannelInput(final String fileName, final SeekableByteChannel channel,
+                           final int bufferSize) {
         super("ftp", "/" + fileName, FtpServer.onRandomPorts(channel, bufferSize));
     }
 
@@ -61,7 +62,8 @@ public class ChannelInput extends TcpInput {
      * @param bufferSize buffer size to copy data
      * @return ChannelInput
      */
-    public static ChannelInput fromChannel(final SeekableByteChannel channel, final int bufferSize) {
+    public static ChannelInput fromChannel(final SeekableByteChannel channel,
+                                           final int bufferSize) {
         return fromChannel("", channel, bufferSize);
     }
 
