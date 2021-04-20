@@ -201,46 +201,46 @@ public interface ProbeData {
     /**
      * Returns value of nested data property converted to {@link String}.
      *
-     * @param subDataName sub-data name
+     * @param name sub-data name
      * @param property    property name
      * @return sub-data property {@link String} value
      */
-    String getSubDataString(String subDataName, String property);
+    String getSubDataString(String name, String property);
 
     /**
      * Returns value of nested data property converted to {@link Long}.
      *
-     * @param subDataName sub-data name
+     * @param name sub-data name
      * @param property    property name
      * @return sub-data property value
      */
-    Long getSubDataLong(String subDataName, String property);
+    Long getSubDataLong(String name, String property);
 
     /**
      * Returns value of nested data property converted to {@link Integer}.
      *
-     * @param subDataName sub-data name
+     * @param name sub-data name
      * @param property    property name
      * @return sub-data property value
      */
-    Integer getSubDataInteger(String subDataName, String property);
+    Integer getSubDataInteger(String name, String property);
 
     /**
      * Returns value of nested data property converted to {@link Double}.
      *
-     * @param subDataName sub-data name
+     * @param name sub-data name
      * @param property    property name
      * @return sub-data property value
      */
-    Double getSubDataDouble(String subDataName, String property);
+    Double getSubDataDouble(String name, String property);
 
     /**
      * Returns value of nested data property converted to {@link Float}.
      *
-     * @param subDataName sub-data name
+     * @param name sub-data name
      * @param property    property name
      * @return sub-data property value
      */
-    Float getSubDataFloat(String subDataName, String property);
+    Float getSubDataFloat(String name, String property);
 
 }
