@@ -103,20 +103,20 @@ public class NutFrameReader implements FrameOutput.FrameReader {
                         .setHeight(streamHeader.video.height);
             } else if (streamHeader.streamType == StreamHeader.Type.AUDIO) {
                 Rational samplerate = streamHeader.audio.samplerate;
-                if (samplerate.denominator != 1) {
-                    LOGGER.warn("Samplerate should be integer but it is ({}).", samplerate);
+                if (samplerate.getDenominator() != 1) {
+                    LOGGER.warn("Audio samplerate should be integer but it is ({}).", samplerate);
                 }
 
                 stream = new Stream()
                         .setType(Stream.Type.AUDIO)
-                        .setSampleRate(samplerate.numerator / samplerate.denominator)
+                        .setSampleRate(samplerate.longValue())
                         .setChannels(streamHeader.audio.channelCount);
             }
 
             if (stream != null) {
                 Rational timebase = mainHeader.timeBases[streamHeader.timeBaseId];
                 stream.setId(streamHeader.streamId)
-                        .setTimebase(timebase.denominator / timebase.numerator);
+                        .setTimebase(timebase.getDenominator() / timebase.getNumerator());
                 result.add(stream);
             }
         }
