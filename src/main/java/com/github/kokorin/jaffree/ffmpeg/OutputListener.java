@@ -18,7 +18,7 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
 /**
- * Extend this interface to analyze ffmpeg output
+ * Extend this interface to analyze ffmpeg output.
  */
 public interface OutputListener {
     /**
