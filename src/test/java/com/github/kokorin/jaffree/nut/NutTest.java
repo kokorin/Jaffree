@@ -138,8 +138,8 @@ public class NutTest {
 
             Assert.assertEquals(StreamHeader.Type.AUDIO, streamHeaders[1].streamType);
             Assert.assertEquals(1, streamHeaders[1].audio.channelCount);
-            Assert.assertEquals(44100, streamHeaders[1].audio.samplerate.numerator);
-            Assert.assertEquals(1, streamHeaders[1].audio.samplerate.denominator);
+            Assert.assertEquals(44100, streamHeaders[1].audio.samplerate.getNumerator());
+            Assert.assertEquals(1, streamHeaders[1].audio.samplerate.getDenominator());
 
             NutFrame frame = reader.readFrame();
             Assert.assertNotNull(frame);

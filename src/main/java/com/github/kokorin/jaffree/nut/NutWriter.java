@@ -145,8 +145,8 @@ public class NutWriter {
 
         Rational[] timeBases = mainHeader.timeBases;
         for (Rational timeBase : timeBases) {
-            bufOutput.writeValue(timeBase.numerator);
-            bufOutput.writeValue(timeBase.denominator);
+            bufOutput.writeValue(timeBase.getNumerator());
+            bufOutput.writeValue(timeBase.getDenominator());
         }
 
         int fields, streamId = 0, size;
@@ -259,8 +259,8 @@ public class NutWriter {
             bufOutput.writeValue(streamHeader.video.sampleHeight);
             bufOutput.writeValue(streamHeader.video.type.code);
         } else if (streamHeader.streamType == StreamHeader.Type.AUDIO) {
-            bufOutput.writeValue(streamHeader.audio.samplerate.numerator);
-            bufOutput.writeValue(streamHeader.audio.samplerate.denominator);
+            bufOutput.writeValue(streamHeader.audio.samplerate.getNumerator());
+            bufOutput.writeValue(streamHeader.audio.samplerate.getDenominator());
             bufOutput.writeValue(streamHeader.audio.channelCount);
         }
 
@@ -579,8 +579,8 @@ public class NutWriter {
                     break;
                 case "r":
                     Rational rational = (Rational) item.value;
-                    output.writeSignedValue(-rational.denominator - 4);
-                    output.writeSignedValue(rational.numerator);
+                    output.writeSignedValue(-rational.getDenominator() - 4);
+                    output.writeSignedValue(rational.getNumerator());
                     break;
                 case "v":
                     long value = ((Number) item.value).longValue();

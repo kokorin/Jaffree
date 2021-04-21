@@ -20,6 +20,9 @@ package com.github.kokorin.jaffree.ffmpeg;
 public class Stream {
     private int id;
     private Type type;
+    //TODO NUT format allows rational timebases,  e.g.
+    // 29.97" is an approximation of 30000/1001
+    // "23.976" is an approximation of 24000/1001
     private Long timebase;
     private Integer width;
     private Integer height;
