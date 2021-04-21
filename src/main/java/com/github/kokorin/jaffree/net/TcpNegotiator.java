@@ -20,7 +20,19 @@ package com.github.kokorin.jaffree.net;
 import java.io.IOException;
 import java.net.Socket;
 
+/**
+ * Implement {@link TcpNegotiator} to interact with ffmpeg (or ffprobe) via TCP socket.
+ */
 public interface TcpNegotiator {
+    //TODO check it's worth replacing with
+    // void negotiate(InputStream inputStream, OutputStream outputStream) throws IOException;
+
+    /**
+     * Negotiate with ffmpeg (or ffprobe) via TCP socket.
+     *
+     * @param socket TCP socket
+     * @throws IOException if any IO error
+     */
     void negotiate(Socket socket) throws IOException;
 }
 
