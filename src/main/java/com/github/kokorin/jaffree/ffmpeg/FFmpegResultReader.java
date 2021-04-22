@@ -60,6 +60,7 @@ public class FFmpegResultReader implements StdReader<FFmpegResult> {
      * @throws JaffreeException if IOException appears or ffmpeg ends with error message.
      * @see FFmpeg#setLogLevel(LogLevel)
      */
+    @SuppressWarnings("checkstyle:MissingSwitchDefault")
     @Override
     public FFmpegResult read(final InputStream stdOut) {
         LogMessageIterator logMessageIterator = new LogMessageIterator(
@@ -113,7 +114,8 @@ public class FFmpegResultReader implements StdReader<FFmpegResult> {
                 outputListener.onOutput(logMessage.message);
             }
 
-            if (logMessage.logLevel != null && logMessage.logLevel.code() <= LogLevel.ERROR.code()) {
+            if (logMessage.logLevel != null
+                    && logMessage.logLevel.code() <= LogLevel.ERROR.code()) {
                 if (errorMessage == null) {
                     errorMessage = logMessage.message;
                 } else {
