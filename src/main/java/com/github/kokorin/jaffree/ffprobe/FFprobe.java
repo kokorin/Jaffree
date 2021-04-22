@@ -68,6 +68,7 @@ public class FFprobe {
 
     private final List<String> additionalArguments = new ArrayList<>();
 
+    private String format;
     private Input input;
 
     private FormatParser formatParser = new JsonFormatParser();
@@ -392,6 +393,18 @@ public class FFprobe {
     }
 
     /**
+     * Force input file format. The format is normally auto detected for input files,
+     * so this option is not needed in most cases.
+     *
+     * @param format format
+     * @return this
+     */
+    public FFprobe setFormat(final String format) {
+        this.format = format;
+        return this;
+    }
+
+    /**
      * Sets input to analyze with ffprobe.
      *
      * @param inputPath path to media file
@@ -618,6 +631,10 @@ public class FFprobe {
         result.addAll(Arrays.asList("-print_format", formatParser.getFormatName()));
 
         result.addAll(additionalArguments);
+
+        if (format != null) {
+            result.addAll(Arrays.asList("-f", format));
+        }
 
         if (input != null) {
             result.addAll(Arrays.asList("-i", input.getUrl()));
