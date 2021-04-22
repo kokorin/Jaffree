@@ -600,6 +600,7 @@ public class FFprobeTest {
     public void testStreamSideDataListAttributes() throws Exception {
         FFprobeResult result;
         try (InputStream rotatedInput = FFprobeTest.class.getResourceAsStream("rotated.mp4")) {
+            assertNotNull(rotatedInput);
             result = FFprobe.atPath(BIN)
                     .setInput(rotatedInput)
                     .setShowStreams(true)
@@ -627,11 +628,17 @@ public class FFprobeTest {
 
     @Test
     public void testFrameSideDataListAttributes() throws Exception {
-        FFprobeResult result = FFprobe.atPath(BIN)
-                .setInput(Artifacts.VIDEO_MJPEG)
-                .setShowFrames(true)
-                .setFormatParser(formatParser)
-                .execute();
+        FFprobeResult result;
+
+        try (InputStream inputStream = FFprobeTest.class.getResourceAsStream("frames_side_data.mjpeg")) {
+            assertNotNull(inputStream);
+            result = FFprobe.atPath(BIN)
+                    .setInput(PipeInput.pumpFrom(inputStream))
+                    .setFormat("mjpeg")
+                    .setShowFrames(true)
+                    .setFormatParser(formatParser)
+                    .execute();
+        }
 
         assertNotNull(result);
         assertNotNull(result.getFrames());

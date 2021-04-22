@@ -24,7 +24,6 @@ public class Artifacts {
     public static final Path VIDEO_WITH_CHAPTERS = getMkvArtifactWithChapters();
     public static final Path VIDEO_WITH_SUBTITLES = getMkvArtifactWithSubtitles();
     public static final Path AUDIO_OPUS = getOpusArtifact(180);
-    public static final Path VIDEO_MJPEG = getMjpegArtifact(20);
     public static final Path VIDEO_NUT = getNutArtifact(180);
 
     private static Path getMp4Artifact(int duration) {
@@ -174,14 +173,6 @@ public class Artifacts {
 
     private static synchronized Path getOpusArtifact(int samplerate, int duration) {
         return getArtifact(null, 0, samplerate, "opus", duration);
-    }
-
-    private static synchronized Path getMjpegArtifact(int duration) {
-        return getMjpegArtifact("160x120", 1, duration);
-    }
-
-    private static synchronized Path getMjpegArtifact(String resolution, int fps, int duration) {
-        return getArtifact(resolution, fps, 0, "mjpeg", duration);
     }
 
     private static synchronized Path getArtifact(String resolution, Integer fps, int samplerate,
