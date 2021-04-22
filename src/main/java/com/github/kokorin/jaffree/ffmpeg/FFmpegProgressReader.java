@@ -38,7 +38,13 @@ public class FFmpegProgressReader implements TcpNegotiator {
         }
     }
 
-    protected void readProgress(InputStream inputStream) throws IOException {
+    /**
+     * Reads periodical ffmpeg progress report, parses it and passes to {@link ProgressListener}.
+     *
+     * @param inputStream input stream to read from
+     * @throws IOException if any IO error
+     */
+    protected void readProgress(final InputStream inputStream) throws IOException {
         BufferedReader lineReader = new BufferedReader(new InputStreamReader(inputStream));
         String line = null;
 
