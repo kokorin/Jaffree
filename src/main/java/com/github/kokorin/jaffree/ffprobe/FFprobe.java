@@ -19,7 +19,6 @@ package com.github.kokorin.jaffree.ffprobe;
 
 import com.github.kokorin.jaffree.LogLevel;
 import com.github.kokorin.jaffree.StreamType;
-import com.github.kokorin.jaffree.ffprobe.data.FlatFormatParser;
 import com.github.kokorin.jaffree.ffprobe.data.FormatParser;
 import com.github.kokorin.jaffree.ffprobe.data.JsonFormatParser;
 import com.github.kokorin.jaffree.process.ProcessHandler;

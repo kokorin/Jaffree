@@ -19,7 +19,7 @@ package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.JaffreeException;
 
-import java.awt.*;
+import java.awt.Transparency;
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.awt.image.ComponentColorModel;
