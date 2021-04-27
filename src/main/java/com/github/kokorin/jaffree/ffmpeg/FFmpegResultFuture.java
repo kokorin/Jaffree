@@ -25,11 +25,20 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+/**
+ * A {@link FFmpegResultFuture} represents the result of an asynchronous ffmpeg execution.
+ */
 public class FFmpegResultFuture {
     private final Future<FFmpegResult> resultFuture;
     private final Stopper stopper;
 
-    public FFmpegResultFuture(Future<FFmpegResult> resultFuture, Stopper stopper) {
+    /**
+     * Creates {@link FFmpegResultFuture}.
+     *
+     * @param resultFuture
+     * @param stopper
+     */
+    public FFmpegResultFuture(final Future<FFmpegResult> resultFuture, final Stopper stopper) {
         this.resultFuture = resultFuture;
         this.stopper = stopper;
     }
@@ -57,7 +66,7 @@ public class FFmpegResultFuture {
      *
      * @param forcefully true to stop immediately
      */
-    public void stop(boolean forcefully) {
+    public void stop(final boolean forcefully) {
         if (forcefully) {
             forceStop();
         }
@@ -73,7 +82,7 @@ public class FFmpegResultFuture {
      * {@link FFmpegResultFuture#forceStop()} or {@link FFmpegResultFuture#graceStop()}
      */
     @Deprecated
-    public boolean cancel(boolean forceStop) {
+    public boolean cancel(final boolean forceStop) {
         stop(forceStop);
         return true;
     }
@@ -84,10 +93,8 @@ public class FFmpegResultFuture {
      *
      * @return ffmpeg result
      * @throws CancellationException if the computation was cancelled
-     * @throws ExecutionException    if the computation threw an
-     *                               exception
-     * @throws InterruptedException  if the current thread was interrupted
-     *                               while waiting
+     * @throws ExecutionException    if the computation threw an exception
+     * @throws InterruptedException  if the current thread was interrupted while waiting
      */
     public FFmpegResult get() throws InterruptedException, ExecutionException {
         return resultFuture.get();
@@ -101,20 +108,32 @@ public class FFmpegResultFuture {
      * @param unit    the time unit of the timeout argument
      * @return the computed result
      * @throws CancellationException if the computation was cancelled
-     * @throws ExecutionException    if the computation threw an
-     *                               exception
-     * @throws InterruptedException  if the current thread was interrupted
-     *                               while waiting
+     * @throws ExecutionException    if the computation threw an exception
+     * @throws InterruptedException  if the current thread was interrupted while waiting
      * @throws TimeoutException      if the wait timed out
      */
-    public FFmpegResult get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+    public FFmpegResult get(final long timeout, final TimeUnit unit)
+            throws InterruptedException, ExecutionException, TimeoutException {
         return resultFuture.get(timeout, unit);
     }
 
+    /**
+     * Returns {@code true} if ffmpeg execution was cancelled before it completed normally.
+     *
+     * @return {@code true} if ffmpeg execution was cancelled before it completed
+     */
     public boolean isCancelled() {
         return resultFuture.isCancelled();
     }
 
+    /**
+     * Returns {@code true} if ffmpeg execution completed.
+     * <p>
+     * Completion may be due to normal termination, an exception, or cancellation --
+     * in all of these cases, this method will return {@code true}.
+     *
+     * @return {@code true} if ffmpeg execution completed
+     */
     public boolean isDone() {
         return resultFuture.isDone();
     }

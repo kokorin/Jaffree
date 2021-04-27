@@ -35,16 +35,16 @@ import java.util.List;
 public abstract class AbstractProbeData implements ProbeData {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractProbeData.class);
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getString(final String key) {
         return getValue(key, STRING_CONVERTER);
     }
 
     /**
-     * Returns boolean value for specified key (using default converter).
-     *
-     * @param key key
-     * @return value
+     * {@inheritDoc}
      */
     @Override
     public Boolean getBoolean(final String key) {
@@ -52,10 +52,7 @@ public abstract class AbstractProbeData implements ProbeData {
     }
 
     /**
-     * Returns long value for specified key (using default converter).
-     *
-     * @param key key
-     * @return value
+     * {@inheritDoc}
      */
     @Override
     public Long getLong(final String key) {
@@ -63,10 +60,7 @@ public abstract class AbstractProbeData implements ProbeData {
     }
 
     /**
-     * Returns integer value for specified key (using default converter).
-     *
-     * @param key key
-     * @return value
+     * {@inheritDoc}
      */
     @Override
     public Integer getInteger(final String key) {
@@ -74,10 +68,7 @@ public abstract class AbstractProbeData implements ProbeData {
     }
 
     /**
-     * Returns float value for specified key (using default converter).
-     *
-     * @param key key
-     * @return value
+     * {@inheritDoc}
      */
     @Override
     public Float getFloat(final String key) {
@@ -85,10 +76,7 @@ public abstract class AbstractProbeData implements ProbeData {
     }
 
     /**
-     * Returns double value for specified key (using default converter).
-     *
-     * @param key key
-     * @return value
+     * {@inheritDoc}
      */
     @Override
     public Double getDouble(final String key) {
@@ -96,10 +84,7 @@ public abstract class AbstractProbeData implements ProbeData {
     }
 
     /**
-     * Returns {@link StreamType} value for specified key (using default converter).
-     *
-     * @param key key
-     * @return StreamType
+     * {@inheritDoc}
      */
     @Override
     public StreamType getStreamType(final String key) {
@@ -107,10 +92,7 @@ public abstract class AbstractProbeData implements ProbeData {
     }
 
     /**
-     * Returns {@link LogLevel} value for specified key (using default converter).
-     *
-     * @param key key
-     * @return LogLevel
+     * {@inheritDoc}
      */
     @Override
     public LogLevel getLogLevel(final String key) {
@@ -118,10 +100,7 @@ public abstract class AbstractProbeData implements ProbeData {
     }
 
     /**
-     * Returns {@link LogCategory} value for specified key (using default converter).
-     *
-     * @param key key
-     * @return LogCategory
+     * {@inheritDoc}
      */
     @Override
     public LogCategory getLogCategory(final String key) {
@@ -129,10 +108,7 @@ public abstract class AbstractProbeData implements ProbeData {
     }
 
     /**
-     * Returns rational value for specified key (using default converter).
-     *
-     * @param key key
-     * @return value
+     * {@inheritDoc}
      */
     @Override
     public Rational getRational(final String key) {
@@ -140,20 +116,18 @@ public abstract class AbstractProbeData implements ProbeData {
     }
 
     /**
-     * Returns ratio value for specified key (using default converter).
-     * <p>
-     * Note: usually ration is represented by 2 digits separated by : (colon)
-     *
-     * @param key key
-     * @return value
+     * {@inheritDoc}
      */
     @Override
     public Rational getRatio(final String key) {
         return getValue(key, RATIO_CONVERTER);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public <T> T getValue(String name, ValueConverter<T> converter) {
+    public <T> T getValue(final String name, final ValueConverter<T> converter) {
         Object value = getValue(name);
         if (value == null) {
             return null;
@@ -161,8 +135,11 @@ public abstract class AbstractProbeData implements ProbeData {
         return converter.convert(value);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public final <T> T getSubData(String name, ProbeDataConverter<T> converter) {
+    public final <T> T getSubData(final String name, final ProbeDataConverter<T> converter) {
         ProbeData data = getSubData(name);
         if (data == null) {
             return null;
@@ -170,8 +147,12 @@ public abstract class AbstractProbeData implements ProbeData {
         return converter.convert(data);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public final <T> List<T> getSubDataList(String name, ProbeDataConverter<T> converter) {
+    public final <T> List<T> getSubDataList(final String name,
+                                            final ProbeDataConverter<T> converter) {
         List<ProbeData> dataList = getSubDataList(name);
         if (dataList == null) {
             return null;
@@ -183,47 +164,69 @@ public abstract class AbstractProbeData implements ProbeData {
         return result;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public Object getSubDataValue(String subDataName, String property) {
-        ProbeData subData = getSubData(subDataName);
+    public Object getSubDataValue(final String name, final String property) {
+        ProbeData subData = getSubData(name);
         if (subData == null) {
             return null;
         }
         return subData.getValue(property);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public <T> T getSubDataValue(String subDataName, String property, ValueConverter<T> converter) {
-        Object value = getSubDataValue(subDataName, property);
+    public <T> T getSubDataValue(final String name, final String property,
+                                 final ValueConverter<T> converter) {
+        Object value = getSubDataValue(name, property);
         if (value == null) {
             return null;
         }
         return converter.convert(value);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public String getSubDataString(String subDataName, String property) {
-        return getSubDataValue(subDataName, property, STRING_CONVERTER);
+    public String getSubDataString(final String name, final String property) {
+        return getSubDataValue(name, property, STRING_CONVERTER);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public Long getSubDataLong(String subDataName, String property) {
-        return getSubDataValue(subDataName, property, LONG_CONVERTER);
+    public Long getSubDataLong(final String name, final String property) {
+        return getSubDataValue(name, property, LONG_CONVERTER);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public Integer getSubDataInteger(String subDataName, String property) {
-        return getSubDataValue(subDataName, property, INTEGER_CONVERTER);
+    public Integer getSubDataInteger(final String name, final String property) {
+        return getSubDataValue(name, property, INTEGER_CONVERTER);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public Double getSubDataDouble(String subDataName, String property) {
-        return getSubDataValue(subDataName, property, DOUBLE_CONVERTER);
+    public Double getSubDataDouble(final String name, final String property) {
+        return getSubDataValue(name, property, DOUBLE_CONVERTER);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public Float getSubDataFloat(String subDataName, String property) {
-        return getSubDataValue(subDataName, property, FLOAT_CONVERTER);
+    public Float getSubDataFloat(final String name, final String property) {
+        return getSubDataValue(name, property, FLOAT_CONVERTER);
     }
 
     private static final ValueConverter<String> STRING_CONVERTER =

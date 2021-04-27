@@ -11,22 +11,40 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.Socket;
 
+/**
+ * {@link FFmpegProgressReader} receives periodical ffmpeg progress report, parses it and passes
+ * to {@link ProgressListener}.
+ */
 public class FFmpegProgressReader implements TcpNegotiator {
     private final ProgressListener progressListener;
     private static final Logger LOGGER = LoggerFactory.getLogger(FFmpegProgressReader.class);
 
-    public FFmpegProgressReader(ProgressListener progressListener) {
+    /**
+     * Creates {@link FFmpegProgressReader}.
+     *
+     * @param progressListener progress listener to pass parsed progress
+     */
+    public FFmpegProgressReader(final ProgressListener progressListener) {
         this.progressListener = progressListener;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public void negotiate(Socket socket) throws IOException {
+    public void negotiate(final Socket socket) throws IOException {
         try (InputStream inputStream = socket.getInputStream()) {
             readProgress(inputStream);
         }
     }
 
-    protected void readProgress(InputStream inputStream) throws IOException {
+    /**
+     * Reads periodical ffmpeg progress report, parses it and passes to {@link ProgressListener}.
+     *
+     * @param inputStream input stream to read from
+     * @throws IOException if any IO error
+     */
+    protected void readProgress(final InputStream inputStream) throws IOException {
         BufferedReader lineReader = new BufferedReader(new InputStreamReader(inputStream));
         String line = null;
 

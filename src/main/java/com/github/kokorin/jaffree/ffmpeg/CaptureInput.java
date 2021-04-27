@@ -25,21 +25,25 @@ import org.slf4j.LoggerFactory;
 /**
  * This Input provides a live capture of your computer desktop as source.
  * <p>
- * Most of the information comes from https://trac.ffmpeg.org/wiki/Capture/Desktop
+ * Most of the information comes from <a href="https://trac.ffmpeg.org/wiki/Capture/Desktop">ffmpeg
+ * capture desktop documentation</a>
  * <p>
  * TODO list:
  * - Screen selection when multiscreen?
  * - Audio Capture?
  * - Call ffmpeg to return list of devices? list of screens?
+ *
+ * @param <T> self
  */
-public abstract class CaptureInput<T extends CaptureInput<T>> extends BaseInput<T> implements Input {
+public abstract class CaptureInput<T extends CaptureInput<T>> extends BaseInput<T>
+        implements Input {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CaptureInput.class);
 
     /**
      * @param input input identifier
      */
-    public CaptureInput(String input) {
+    protected CaptureInput(final String input) {
         super(input);
     }
 
@@ -60,7 +64,7 @@ public abstract class CaptureInput<T extends CaptureInput<T>> extends BaseInput<
      * @param value Hz value, fraction or abbreviation
      * @return this
      */
-    public CaptureInput<T> setCaptureFrameRate(Number value) {
+    public CaptureInput<T> setCaptureFrameRate(final Number value) {
         return addArguments("-framerate", String.valueOf(value));
     }
 
@@ -80,20 +84,42 @@ public abstract class CaptureInput<T extends CaptureInput<T>> extends BaseInput<
      * @see #setCaptureFrameRate(Number)
      */
     @Override
-    public T setFrameRate(String streamSpecifier, Number value) {
-        LOGGER.warn("Be careful not to specify framerate with the \"-r\" parameter, rather use " +
-                "setCaptureFrameRate method or \"-framerate\" parameter");
+    public T setFrameRate(final String streamSpecifier, final Number value) {
+        LOGGER.warn("Be careful not to specify framerate with the \"-r\" parameter, rather use "
+                + "setCaptureFrameRate method or \"-framerate\" parameter");
         return super.setFrameRate(streamSpecifier, value);
     }
 
-    public CaptureInput<T> setCaptureVideoSize(int width, int height) {
+    /**
+     * Set the video size in the captured video.
+     *
+     * @param width  width
+     * @param height height
+     * @return this
+     */
+    public CaptureInput<T> setCaptureVideoSize(final int width, final int height) {
         return setCaptureVideoSize(width + "x" + height);
     }
 
-    public CaptureInput<T> setCaptureVideoSize(String size) {
+    /**
+     * Sets the video size in the captured video given as a {@link String} such as 640x480 or hd720.
+     *
+     * @param size video size
+     * @return this
+     */
+    public CaptureInput<T> setCaptureVideoSize(final String size) {
         return addArguments("-video_size", size);
     }
 
+    /**
+     * Sets the video region offsets.
+     * <p>
+     * Note: this option doesn't work for some capture devices.
+     *
+     * @param xOffset x offset
+     * @param yOffset y offset
+     * @return this
+     */
     public abstract CaptureInput<T> setCaptureVideoOffset(int xOffset, int yOffset);
 
     /**
@@ -106,6 +132,17 @@ public abstract class CaptureInput<T extends CaptureInput<T>> extends BaseInput<
      */
     public abstract CaptureInput<T> setCaptureCursor(boolean captureCursor);
 
+    /**
+     * Creates {@link CaptureInput} with automatically selected capture device.
+     * <p>
+     * Note: consider using concrete subclass factory methods.
+     *
+     * @return CaptureInput
+     * @see LinuxX11Grab
+     * @see MacOsAvFoundation
+     * @see WindowsGdiGrab
+     * @see WindowsDirectShow
+     */
     public static CaptureInput<?> captureDesktop() {
         CaptureInput<?> result = null;
         if (OS.IS_LINUX) {
@@ -124,6 +161,8 @@ public abstract class CaptureInput<T extends CaptureInput<T>> extends BaseInput<
     }
 
     /**
+     * {@link Input} implementation for Direct Show capture device.
+     *
      * @see <a href="https://ffmpeg.org/ffmpeg-devices.html#dshow">dshow documentation</a>
      * @see <a href="https://trac.ffmpeg.org/wiki/DirectShow">dshow ffmepg wiki</a>
      */
@@ -133,19 +172,39 @@ public abstract class CaptureInput<T extends CaptureInput<T>> extends BaseInput<
         /**
          * @param input input identifier
          */
-        public WindowsDirectShow(String input) {
+        public WindowsDirectShow(final String input) {
             super(input);
         }
 
-        public static WindowsDirectShow captureVideo(String videoDevice) {
+        /**
+         * Creates {@link WindowsDirectShow} capture device.
+         *
+         * @param videoDevice video device identifier
+         * @return WindowsDirectShow
+         */
+        public static WindowsDirectShow captureVideo(final String videoDevice) {
             return captureVideoAndAudio(videoDevice, null);
         }
 
-        public static WindowsDirectShow captureAudio(String audioDevice) {
+        /**
+         * Creates {@link WindowsDirectShow} capture device.
+         *
+         * @param audioDevice audio device identifier
+         * @return WindowsDirectShow
+         */
+        public static WindowsDirectShow captureAudio(final String audioDevice) {
             return captureVideoAndAudio(null, audioDevice);
         }
 
-        public static WindowsDirectShow captureVideoAndAudio(String videoDevice, String audioDevice) {
+        /**
+         * Creates {@link WindowsDirectShow} capture device.
+         *
+         * @param videoDevice video device identifier
+         * @param audioDevice audio device identifier
+         * @return WindowsDirectShow
+         */
+        public static WindowsDirectShow captureVideoAndAudio(final String videoDevice,
+                                                             final String audioDevice) {
             String input = "";
             if (videoDevice != null) {
                 input = "video=" + videoDevice;
@@ -161,20 +220,37 @@ public abstract class CaptureInput<T extends CaptureInput<T>> extends BaseInput<
                     .setFormat("dshow");
         }
 
+        /**
+         * <b>Not supported for {@link WindowsDirectShow}</b>.
+         *
+         * @param captureCursor true to capture cursor
+         * @return this
+         */
         @Override
-        public WindowsDirectShow setCaptureCursor(boolean captureCursor) {
+        public WindowsDirectShow setCaptureCursor(final boolean captureCursor) {
             LOGGER.warn("Cursor capture option is not supported");
             return this;
         }
 
+        /**
+         * <b>Not supported for {@link WindowsDirectShow}</b>.
+         * <p>
+         * {@inheritDoc}
+         *
+         * @param xOffset x offset
+         * @param yOffset y offset
+         * @return this
+         */
         @Override
-        public WindowsDirectShow setCaptureVideoOffset(int xOffset, int yOffset) {
+        public WindowsDirectShow setCaptureVideoOffset(final int xOffset, final int yOffset) {
             LOGGER.warn("Capture offset option is not supported");
             return this;
         }
     }
 
     /**
+     * {@link Input} implementation for GDI Grab capture device.
+     *
      * @see <a href="https://ffmpeg.org/ffmpeg-devices.html#gdigrab">gdigrab documentation</a>
      */
     public static class WindowsGdiGrab extends CaptureInput<WindowsGdiGrab> {
@@ -182,34 +258,54 @@ public abstract class CaptureInput<T extends CaptureInput<T>> extends BaseInput<
         /**
          * @param input input identifier
          */
-        public WindowsGdiGrab(String input) {
+        public WindowsGdiGrab(final String input) {
             super(input);
         }
 
+        /**
+         * Creates {@link WindowsGdiGrab} capture device to capture desktop.
+         *
+         * @return WindowsGdiGrab
+         */
         public static WindowsGdiGrab captureDesktop() {
             return new WindowsGdiGrab("desktop")
                     .setFormat("gdigrab");
         }
 
-        public static WindowsGdiGrab captureWindow(String windowTitle) {
+        /**
+         * Creates {@link WindowsGdiGrab} capture device.
+         * Cpatures single window with specified title.
+         *
+         * @param windowTitle window title
+         * @return WindowsGdiGrab
+         */
+        public static WindowsGdiGrab captureWindow(final String windowTitle) {
             return new WindowsGdiGrab("title=" + windowTitle)
                     .setFormat("gdigrab");
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
-        public WindowsGdiGrab setCaptureCursor(boolean captureCursor) {
+        public WindowsGdiGrab setCaptureCursor(final boolean captureCursor) {
             String argValue = captureCursor ? "1" : "0";
             return addArguments("-draw_mouse", argValue);
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
-        public WindowsGdiGrab setCaptureVideoOffset(int xOffset, int yOffset) {
+        public WindowsGdiGrab setCaptureVideoOffset(final int xOffset, final int yOffset) {
             return addArguments("-offset_x", String.valueOf(xOffset))
                     .addArguments("-offset_y", String.valueOf(yOffset));
         }
     }
 
     /**
+     * {@link Input} implementation for AVFoundation capture device.
+     *
      * @see <a href="https://ffmpeg.org/ffmpeg-devices.html#avfoundation">avfoundation
      * documentation</a>
      */
@@ -219,33 +315,49 @@ public abstract class CaptureInput<T extends CaptureInput<T>> extends BaseInput<
         /**
          * @param input input identifier
          */
-        public MacOsAvFoundation(String input) {
+        public MacOsAvFoundation(final String input) {
             super(input);
         }
 
+        /**
+         * Creates {@link MacOsAvFoundation} capture device to capture desktop.
+         *
+         * @return MacOsAvFoundation
+         */
         public static MacOsAvFoundation captureDesktop() {
             return captureVideoAndAudio("default", null);
         }
 
-        public static MacOsAvFoundation captureVideoAndAudio(String videoDevice, String audioDevice) {
-            if (videoDevice == null) {
-                videoDevice = "none";
-            }
-            if (audioDevice == null) {
-                audioDevice = "none";
-            }
-            return new MacOsAvFoundation(videoDevice + ":" + audioDevice)
+        /**
+         * Creates {@link MacOsAvFoundation} capture device.
+         *
+         * @param videoDevice video deice or null
+         * @param audioDevice audio device or null
+         * @return MacOsAvFoundation
+         */
+        public static MacOsAvFoundation captureVideoAndAudio(final String videoDevice,
+                                                             final String audioDevice) {
+            String videoDeviceOrNone = videoDevice == null ? "none" : videoDevice;
+            String audioDeviceOrNone = audioDevice == null ? "none" : audioDevice;
+
+            return new MacOsAvFoundation(videoDeviceOrNone + ":" + audioDeviceOrNone)
                     .setFormat("avfoundation");
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
-        public MacOsAvFoundation setCaptureCursor(boolean captureCursor) {
+        public MacOsAvFoundation setCaptureCursor(final boolean captureCursor) {
             String argValue = captureCursor ? "1" : "0";
             return addArguments("-capture_cursor", argValue);
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
-        public MacOsAvFoundation setCaptureVideoOffset(int xOffset, int yOffset) {
+        public MacOsAvFoundation setCaptureVideoOffset(final int xOffset, final int yOffset) {
             LOGGER.warn("Capture offset option is not supported");
             return this;
         }
@@ -259,31 +371,58 @@ public abstract class CaptureInput<T extends CaptureInput<T>> extends BaseInput<
         /**
          * @param input input identifier
          */
-        public LinuxX11Grab(String input) {
+        public LinuxX11Grab(final String input) {
             super(input);
         }
 
+        /**
+         * Creates {@link LinuxX11Grab} capture device to capture desktop.
+         *
+         * @return LinuxX11Grab
+         */
         public static LinuxX11Grab captureDesktop() {
             return captureDisplayAndScreen(0, 0);
         }
 
-        public static LinuxX11Grab captureDisplayAndScreen(int display, int screen) {
+        /**
+         * Creates {@link LinuxX11Grab} capture device.
+         *
+         * @param display display
+         * @param screen  screen
+         * @return LinuxX11Grab
+         */
+        public static LinuxX11Grab captureDisplayAndScreen(final int display, final int screen) {
             return captureHostDisplayAndScreen("", display, screen);
         }
 
-        public static LinuxX11Grab captureHostDisplayAndScreen(String host, int display, int screen) {
+        /**
+         * Creates {@link LinuxX11Grab} capture device.
+         *
+         * @param host    host
+         * @param display display
+         * @param screen  screen
+         * @return LinuxX11Grab
+         */
+        public static LinuxX11Grab captureHostDisplayAndScreen(final String host, final int display,
+                                                               final int screen) {
             return new LinuxX11Grab(host + ":" + display + "." + screen)
                     .setFormat("x11grab");
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
-        public LinuxX11Grab setCaptureCursor(boolean captureCursor) {
+        public LinuxX11Grab setCaptureCursor(final boolean captureCursor) {
             String argValue = captureCursor ? "1" : "0";
             return addArguments("-draw_mouse", argValue);
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
-        public LinuxX11Grab setCaptureVideoOffset(int xOffset, int yOffset) {
+        public LinuxX11Grab setCaptureVideoOffset(final int xOffset, final int yOffset) {
             return addArguments("-grab_x", String.valueOf(xOffset))
                     .addArguments("-grab_y", String.valueOf(yOffset));
         }
