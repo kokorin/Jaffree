@@ -243,7 +243,7 @@ public abstract class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> i
      * @param streams stream to add to a program
      * @return this
      */
-    public T addProgram(int number, String title, int... streams) {
+    public T addProgram(final int number, final String title, final int... streams) {
         String[] streamsStr = new String[streams.length];
         for (int i = 0; i < streams.length; i++) {
             streamsStr[i] = String.valueOf(streams[i]);
@@ -261,7 +261,7 @@ public abstract class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> i
      * @param streams stream to add to a program
      * @return this
      */
-    public T addProgram(int number, String title, String... streams) {
+    public T addProgram(final int number, final String title, final String... streams) {
         this.programs.add(new Program(number, title, streams));
         return thisAsT();
     }
@@ -367,7 +367,7 @@ public abstract class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> i
         private final String title;
         private final String[] streams;
 
-        public Program(Integer number, String title, String[] streams) {
+        Program(final Integer number, final String title, final String[] streams) {
             this.number = number;
             this.title = title;
             this.streams = streams;

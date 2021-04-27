@@ -17,8 +17,24 @@
 
 package com.github.kokorin.jaffree.process;
 
+/**
+ * Implement {@link Stopper} to allow forceful and graceful ffmpeg/ffprobe stop.
+ */
 public interface Stopper {
+    /**
+     * Stops ffmpeg/ffprobe gracefully.
+     */
     void graceStop();
+
+    /**
+     * Stops ffmpeg/ffprobe forcefully.
+     */
     void forceStop();
+
+    /**
+     * Sets ffmpeg/ffprobe process to be stopped.
+     *
+     * @param process ffmpeg/ffprobe process
+     */
     void setProcess(Process process);
 }

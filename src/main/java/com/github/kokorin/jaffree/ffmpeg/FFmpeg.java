@@ -181,7 +181,7 @@ public class FFmpeg {
      * @return this
      * @see <a href="https://ffmpeg.org/ffmpeg-all.html#Simple-filtergraphs">Simple filtergraphs</a>
      */
-    public FFmpeg setFilter(FilterGraph filter) {
+    public FFmpeg setFilter(final FilterGraph filter) {
         return setFilter(filter.getValue());
     }
 
@@ -192,61 +192,69 @@ public class FFmpeg {
      * @return this
      * @see <a href="https://ffmpeg.org/ffmpeg-all.html#Simple-filtergraphs">Simple filtergraphs</a>
      */
-    public FFmpeg setFilter(String filter) {
+    public FFmpeg setFilter(final String filter) {
         return setFilter((String) null, filter);
     }
 
     /**
-     * Sets a 'stream specific' filter value (equivalent to the "-av" / "-filter:a" or "-fv" / "-filter:v"
-     * command-line parameters).
+     * Sets a 'stream specific' filter value (equivalent to the "-av" / "-filter:a" or "-fv" /
+     * "-filter:v" command-line parameters).
      *
-     * @param streamType  the stream type to apply this filter to (StreamType.AUDIO or StreamType.VIDEO)
+     * @param streamType  the stream type to apply this filter to
      * @param filterGraph a graph describing the filters to apply
      * @return this
+     * @see <a href="http://ffmpeg.org/ffmpeg-all.html#toc-Stream-specifiers-1">Stream specifiers
+     * </a>
      * @see <a href="https://ffmpeg.org/ffmpeg-all.html#Simple-filtergraphs">Simple filtergraphs</a>
      */
-    public FFmpeg setFilter(StreamType streamType, FilterGraph filterGraph) {
+    public FFmpeg setFilter(final StreamType streamType, final FilterGraph filterGraph) {
         return setFilter(streamType, filterGraph.getValue());
     }
 
     /**
-     * Sets a 'stream specific' filter value (equivalent to the "-av" / "-filter:a" or "-fv" / "-filter:v"
-     * command-line parameters).
+     * Sets a 'stream specific' filter value (equivalent to the "-av" / "-filter:a" or "-fv" /
+     * "-filter:v" command-line parameters).
      *
-     * @param streamType the stream type to apply this filter to (StreamType.AUDIO or StreamType.VIDEO)
+     * @param streamType the stream type to apply this filter to
      * @param filter     a String describing the filter to apply
      * @return this
+     * @see <a href="http://ffmpeg.org/ffmpeg-all.html#toc-Stream-specifiers-1">Stream specifiers
+     * </a>
      * @see <a href="https://ffmpeg.org/ffmpeg-all.html#Simple-filtergraphs">Simple filtergraphs</a>
      */
-    public FFmpeg setFilter(StreamType streamType, String filter) {
+    public FFmpeg setFilter(final StreamType streamType, final String filter) {
         return setFilter(streamType.code(), filter);
     }
 
     /**
-     * Sets a 'stream specific' filter value (equivalent to the "-av" / "-filter:a" or "-fv" / "-filter:v" / "-filter"
-     * command-line parameters).
+     * Sets a 'stream specific' filter value (equivalent to the "-av" / "-filter:a" or "-fv" /
+     * "-filter:v" / "-filter" command-line parameters).
      *
-     * @param streamSpecifier a String specifying to which stream this filter must be applied ("a" for audio,
-     *                        "v" "for video, or "" for generic 'filter')
+     * @param streamSpecifier a String specifying to which stream this filter must be applied
+     *                        ("a" for audio, "v" "for video, or "" for generic 'filter')
      * @param filterGraph     a graph describing the filters to apply
      * @return this
+     * @see <a href="http://ffmpeg.org/ffmpeg-all.html#toc-Stream-specifiers-1">Stream specifiers
+     * </a>
      * @see <a href="https://ffmpeg.org/ffmpeg-all.html#Simple-filtergraphs">Simple filtergraphs</a>
      */
-    public FFmpeg setFilter(String streamSpecifier, FilterGraph filterGraph) {
+    public FFmpeg setFilter(final String streamSpecifier, final FilterGraph filterGraph) {
         return setFilter(streamSpecifier, filterGraph.getValue());
     }
 
     /**
-     * Sets a 'stream specific' filter value (equivalent to the "-av" / "-filter:a" or "-fv" / "-filter:v" / "-filter"
-     * command-line parameters).
+     * Sets a 'stream specific' filter value (equivalent to the "-av" / "-filter:a" or "-fv" /
+     * "-filter:v" / "-filter" command-line parameters).
      *
-     * @param streamSpecifier a String specifying to which stream this filter must be applied ("a" for audio,
-     *                        "v" "for video, or "" for generic 'filter')
+     * @param streamSpecifier a String specifying to which stream this filter must be applied
+     *                        ("a" for audio, "v" "for video, or "" for generic 'filter')
      * @param filter          a String describing the filter to apply
      * @return this
+     * @see <a href="http://ffmpeg.org/ffmpeg-all.html#toc-Stream-specifiers-1">Stream specifiers
+     * </a>
      * @see <a href="https://ffmpeg.org/ffmpeg-all.html#Simple-filtergraphs">Simple filtergraphs</a>
      */
-    public FFmpeg setFilter(String streamSpecifier, String filter) {
+    public FFmpeg setFilter(final String streamSpecifier, final String filter) {
         filters.put(streamSpecifier, filter);
         return this;
     }
@@ -292,7 +300,20 @@ public class FFmpeg {
         return this;
     }
 
-    protected void setProgress(String progress) {
+    /**
+     * Send program-friendly progress information to url.
+     * <p>
+     * Progress information is written periodically and at the end of the encoding process. It is
+     * made of "key=value" lines. key consists of only alphanumeric characters. The last key of
+     * a sequence of progress information is always "progress".
+     * <p>
+     * This method is protected intentionally. One should use  {@link ProgressListener} to get
+     * periodic progress reports.
+     *
+     * @param progress progress url
+     * @see #setProgressListener(ProgressListener)
+     */
+    protected void setProgress(final String progress) {
         this.progress = progress;
     }
 
@@ -359,6 +380,12 @@ public class FFmpeg {
         return new FFmpegResultFuture(resultFuture, stopper);
     }
 
+    /**
+     * Creates {@link ProcessHandler} which executes ffmpeg command and starts specified
+     * {@link ProcessHelper ProcessHelpers}.
+     *
+     * @return ProcessHandler
+     */
     protected ProcessHandler<FFmpegResult> createProcessHandler() {
         List<ProcessHelper> helpers = new ArrayList<>();
 
@@ -387,6 +414,11 @@ public class FFmpeg {
                 .setArguments(buildArguments());
     }
 
+    /**
+     * Creates {@link Stopper} which is used to stop ffmpeg gracefully and forcefully.
+     *
+     * @return Stopper
+     */
     protected Stopper createStopper() {
         return new FFmpegStopper();
     }
@@ -397,10 +429,11 @@ public class FFmpeg {
      * Note: should be overridden wisely: otherwise {@link FFmpeg} may produce wrong result or
      * even produce an error.
      *
+     * @param listener output listener for non-progress-related ffmpeg output
      * @return this
      */
-    protected StdReader<FFmpegResult> createStdErrReader(OutputListener outputListener) {
-        return new FFmpegResultReader(outputListener);
+    protected StdReader<FFmpegResult> createStdErrReader(final OutputListener listener) {
+        return new FFmpegResultReader(listener);
     }
 
     /**
@@ -414,13 +447,20 @@ public class FFmpeg {
         return new LoggingStdReader<>();
     }
 
-    protected ProcessHelper createProgressHelper(ProgressListener progressListener) {
+    /**
+     * Creates {@link ProcessHelper} if required. It receives ffmpeg progress report, parses it
+     * and passes to listener.
+     *
+     * @param listener progress listener
+     * @return ProcessHelper, or null
+     */
+    protected ProcessHelper createProgressHelper(final ProgressListener listener) {
         NegotiatingTcpServer result = null;
         String progressReportUrl = null;
 
-        if (progressListener != null) {
+        if (listener != null) {
             result = NegotiatingTcpServer.onRandomPort(
-                    new FFmpegProgressReader(progressListener)
+                    new FFmpegProgressReader(listener)
             );
             progressReportUrl = "tcp://" + result.getAddressAndPort();
         }

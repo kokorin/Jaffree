@@ -28,113 +28,219 @@ import java.util.List;
  * Interface describing tree-like data structure which holds parsed ffprobe output.
  */
 public interface ProbeData {
+    /**
+     * Returns property value as is (without any conversion).
+     *
+     * @param name property name
+     * @return property value
+     */
     Object getValue(String name);
 
+    /**
+     * Returns property value converted to T-type using passed in convertor.
+     *
+     * @param name      property name
+     * @param converter converter to use
+     * @param <T>       result type
+     * @return property value converted to T
+     */
     <T> T getValue(String name, ValueConverter<T> converter);
 
-    String getString(String key);
-
-    Boolean getBoolean(String key);
-
-    Long getLong(String key);
-
-    Integer getInteger(String key);
-
-    Float getFloat(String key);
-
-    Double getDouble(String key);
-
-    StreamType getStreamType(String key);
-
-    LogLevel getLogLevel(String key);
-
-    LogCategory getLogCategory(String key);
-
-    Rational getRational(String key);
-
-    Rational getRatio(String key);
+    /**
+     * Returns property value as {@link String} (using default converter).
+     *
+     * @param name property name
+     * @return property value as {@link String}
+     */
+    String getString(String name);
 
     /**
-     * @param name name
-     * @return sections
+     * Returns property value as {@link Boolean} (using default converter).
+     *
+     * @param name property name
+     * @return property value as {@link Boolean}
+     */
+    Boolean getBoolean(String name);
+
+    /**
+     * Returns property value as {@link Long} (using default converter).
+     *
+     * @param name property name
+     * @return property value as {@link Long}
+     */
+    Long getLong(String name);
+
+    /**
+     * Returns property value as {@link Integer} (using default converter).
+     *
+     * @param name property name
+     * @return property value as {@link Integer}
+     */
+    Integer getInteger(String name);
+
+    /**
+     * Returns property value as {@link Float} (using default converter).
+     *
+     * @param name property name
+     * @return property value as {@link Float}
+     */
+    Float getFloat(String name);
+
+    /**
+     * Returns property value as {@link Double} (using default converter).
+     *
+     * @param name property name
+     * @return property value as {@link Double}
+     */
+    Double getDouble(String name);
+
+    /**
+     * Returns property value as {@link StreamType} (using default converter).
+     *
+     * @param name property name
+     * @return property value as {@link StreamType}
+     */
+    StreamType getStreamType(String name);
+
+    /**
+     * Returns property value as {@link StreamType} (using default converter).
+     *
+     * @param name property name
+     * @return property value as {@link StreamType}
+     */
+    LogLevel getLogLevel(String name);
+
+    /**
+     * Returns property value as {@link LogCategory} (using default converter).
+     *
+     * @param name property name
+     * @return property value as {@link LogCategory}
+     */
+    LogCategory getLogCategory(String name);
+
+    /**
+     * Returns property value as {@link Rational} (using default converter).
+     * <p>
+     * Note: this method parses rationals with numerator and denominator separated with
+     * / (slash) character
+     *
+     * @param name property name
+     * @return property value as {@link Rational}
+     * @see #getRatio(String)
+     */
+    Rational getRational(String name);
+
+    /**
+     * Returns property value as {@link Rational} (using default converter).
+     * <p>
+     * Note: this method parses rationals with numerator and denominator separated with
+     * : (colon) character
+     *
+     * @param name property name
+     * @return property value as {@link Rational}
+     * @see #getRational(String)
+     */
+    Rational getRatio(String name);
+
+    /**
+     * Returns nested data list.
+     *
+     * @param name property name
+     * @return nested data list
      */
     List<ProbeData> getSubDataList(String name);
 
     /**
-     * Handy method which returns property with specified name converted to {@link List} of T.
+     * Returns nested data list converted to {@link List} of T.
      *
      * @param name      property name
      * @param converter converter
      * @param <T>       result type
-     * @return converted sections
+     * @return list of converted values
      */
     <T> List<T> getSubDataList(String name, ProbeDataConverter<T> converter);
 
     /**
-     * @param name name
-     * @return sections
+     * Returns nested data.
+     *
+     * @param name sub-data name
+     * @return nested property
      */
     ProbeData getSubData(String name);
 
     /**
-     * Handy method which returns property with specified name converted to T type.
+     * Returns nested data converted to T type.
      *
-     * @param name      property name
+     * @param name      sub-data name
      * @param converter converter
      * @param <T>       result type
-     * @return converted sections
+     * @return nested property converted to T type
      */
     <T> T getSubData(String name, ProbeDataConverter<T> converter);
 
     /**
-     * @param subDataName sub-data name
-     * @param property    property name
-     * @return sub-data property value
-     */
-    Object getSubDataValue(String subDataName, String property);
-
-    /**
-     * Handy method which returns subdata property with specified name converted to T type.
+     * Returns value of nested data property.
      *
-     * @param subDataName sub-data name
-     * @param property    property name
-     * @return sub-data property value
+     * @param name     sub-data name
+     * @param property property name
+     * @return value of nested data property
      */
-    <T> T getSubDataValue(String subDataName, String property, ValueConverter<T> converter);
+    Object getSubDataValue(String name, String property);
 
     /**
-     * @param subDataName sub-data name
-     * @param property    property name
-     * @return sub-data property value
+     * Returns value of nested data property converted to T type.
+     *
+     * @param name      sub-data name
+     * @param property  property name
+     * @param converter converter to use
+     * @param <T>       result type
+     * @return value of nested data property converted to T type
      */
-    String getSubDataString(String subDataName, String property);
+    <T> T getSubDataValue(String name, String property, ValueConverter<T> converter);
 
     /**
-     * @param subDataName sub-data name
+     * Returns value of nested data property converted to {@link String}.
+     *
+     * @param name sub-data name
      * @param property    property name
-     * @return sub-data property value
+     * @return sub-data property {@link String} value
      */
-    Long getSubDataLong(String subDataName, String property);
+    String getSubDataString(String name, String property);
 
     /**
-     * @param subDataName sub-data name
+     * Returns value of nested data property converted to {@link Long}.
+     *
+     * @param name sub-data name
      * @param property    property name
      * @return sub-data property value
      */
-    Integer getSubDataInteger(String subDataName, String property);
+    Long getSubDataLong(String name, String property);
 
     /**
-     * @param subDataName sub-data name
+     * Returns value of nested data property converted to {@link Integer}.
+     *
+     * @param name sub-data name
      * @param property    property name
      * @return sub-data property value
      */
-    Double getSubDataDouble(String subDataName, String property);
+    Integer getSubDataInteger(String name, String property);
 
     /**
-     * @param subDataName sub-data name
+     * Returns value of nested data property converted to {@link Double}.
+     *
+     * @param name sub-data name
      * @param property    property name
      * @return sub-data property value
      */
-    Float getSubDataFloat(String subDataName, String property);
+    Double getSubDataDouble(String name, String property);
+
+    /**
+     * Returns value of nested data property converted to {@link Float}.
+     *
+     * @param name sub-data name
+     * @param property    property name
+     * @return sub-data property value
+     */
+    Float getSubDataFloat(String name, String property);
 
 }
