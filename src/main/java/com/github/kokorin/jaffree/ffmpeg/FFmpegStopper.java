@@ -24,11 +24,17 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.OutputStream;
 
+/**
+ * Implement {@link Stopper} to allow forceful and graceful ffmpeg stop.
+ */
 public class FFmpegStopper implements Stopper {
     private volatile Process process;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FFmpegStopper.class);
 
+    /**
+     * Stops ffmpeg gracefully.
+     */
     @Override
     public void graceStop() {
         if (process == null) {
@@ -44,6 +50,9 @@ public class FFmpegStopper implements Stopper {
         }
     }
 
+    /**
+     * Stops ffmpeg forcefully.
+     */
     @Override
     public void forceStop() {
         if (process == null) {
@@ -54,8 +63,11 @@ public class FFmpegStopper implements Stopper {
         process.destroy();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public void setProcess(Process process) {
+    public void setProcess(final Process process) {
         this.process = process;
     }
 }

@@ -425,7 +425,7 @@ public abstract class BaseInOut<T extends BaseInOut<T>> {
         return result;
     }
 
-    protected List<String> getAdditionalArguments() {
+    protected final List<String> getAdditionalArguments() {
         return Collections.unmodifiableList(additionalArguments);
     }
 

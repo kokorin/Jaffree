@@ -21,11 +21,16 @@ import com.github.kokorin.jaffree.Rational;
 import static java.lang.Long.MIN_VALUE;
 import static java.lang.Long.compare;
 
-public class Util {
+/**
+ * Different utility methods used in Nut format muxer and demuxer.
+ */
+public final class Util {
     private Util() {
     }
 
     /**
+     * TODO replace with  {@link Long#compareUnsigned(long, long)}
+     * <p>
      * Method is a copy of {@link Long#compareUnsigned(long, long)},
      * which is available only since 1.8
      * <p>
@@ -39,20 +44,29 @@ public class Util {
      * a value greater than {@code 0} if {@code x > y} as
      * unsigned values
      */
-    public static int compareUnsigned(long x, long y) {
+    public static int compareUnsigned(final long x, final long y) {
         return compare(x + MIN_VALUE, y + MIN_VALUE);
     }
 
 
-    public static long convertTimestamp(long pts, Rational timeBaseFrom, Rational timeBaseTo) {
-        long ln = timeBaseFrom.numerator * pts;
-        long sn = timeBaseTo.denominator;
-        long d1 = timeBaseFrom.denominator;
-        long d2 = timeBaseTo.numerator;
+    /**
+     * Switches from one timebase to another.
+     * <p>
+     * This method is equivalent to (ln*sn)/(d1*d2)
+     *
+     * @param pts          pts in timeBaseFrom
+     * @param timeBaseFrom pts timebase
+     * @param timeBaseTo   timebase to switch to
+     * @return @{code (ln*sn)/(d1*d2)}
+     */
+    public static long convertTimestamp(final long pts, final Rational timeBaseFrom,
+                                        final Rational timeBaseTo) {
+        long ln = timeBaseFrom.getNumerator() * pts;
+        long sn = timeBaseTo.getDenominator();
+        long d1 = timeBaseFrom.getDenominator();
+        long d2 = timeBaseTo.getNumerator();
+        // This calculation MUST be done with unsigned 64 bit integers, and
+        // is equivalent to (ln*sn)/(d1*d2) but this would require a 96 bit integer
         return (ln / d1 * sn + ln % d1 * sn / d1) / d2;
-    }
-
-    public static long toMillis(long pts, Rational timebase) {
-        return 1000L * pts * timebase.numerator / timebase.denominator;
     }
 }
