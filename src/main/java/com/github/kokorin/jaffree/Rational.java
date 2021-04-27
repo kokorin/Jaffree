@@ -1,5 +1,5 @@
 /*
- *    Copyright  2017 Denis Kokorin
+ *    Copyright 2017-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -21,14 +21,26 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Objects;
 
-public class Rational extends Number implements Comparable<Rational> {
-    public final long numerator;
-    public final long denominator;
+/**
+ * Represents rational numbers.
+ * <p>
+ * {@link Double} and {@link Float} can't represent every rational number without precision loss,
+ * which is crucial for correct media representation.
+ */
+public final class Rational extends Number implements Comparable<Rational> {
+    private final long numerator;
+    private final long denominator;
 
     public static final Rational ZERO = new Rational(0, 1);
     public static final Rational ONE = new Rational(1, 1);
 
-    public Rational(long numerator, long denominator) {
+    /**
+     * Create {@link Rational}.
+     *
+     * @param numerator   numerator
+     * @param denominator denominator
+     */
+    public Rational(final long numerator, final long denominator) {
         if (denominator <= 0) {
             throw new IllegalArgumentException("Denominator must be positive!");
         }
@@ -36,36 +48,80 @@ public class Rational extends Number implements Comparable<Rational> {
         this.denominator = denominator;
     }
 
+    /**
+     * Returns this {@link Rational} numerator.
+     *
+     * @return numerator
+     */
+    public long getNumerator() {
+        return numerator;
+    }
+
+    /**
+     * Returns this {@link Rational} denominator.
+     *
+     * @return denominator
+     */
+    public long getDenominator() {
+        return denominator;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public int compareTo(Rational that) {
+    public int compareTo(final Rational that) {
         return Long.compare(this.numerator * that.denominator, this.denominator * that.numerator);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int intValue() {
         return (int) longValue();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public long longValue() {
         return numerator / denominator;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public float floatValue() {
         return (float) doubleValue();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double doubleValue() {
         return 1. * numerator / denominator;
     }
 
+    /**
+     * Returns a {@link Rational} whose value is {@code (-this)}.
+     *
+     * @return {@code -this}
+     */
     public Rational negate() {
         return new Rational(-numerator, denominator);
     }
 
-    public Rational add(Number value) {
+    /**
+     * Returns a {@link Rational} whose value is {@code (this + value)}.
+     *
+     * @param value value to be added to this {@link Rational}.
+     * @return {@code this + val}
+     */
+    public Rational add(final Number value) {
         Rational that = toRational(value);
         return new Rational(
                 this.numerator * that.denominator + that.numerator * this.denominator,
@@ -73,43 +129,116 @@ public class Rational extends Number implements Comparable<Rational> {
         );
     }
 
-    public Rational subtract(Number value) {
+    /**
+     * Returns a {@link Rational} whose value is {@code (this - value)}.
+     *
+     * @param value value to be subtracted from this {@link Rational}.
+     * @return {@code this - val}
+     */
+    public Rational subtract(final Number value) {
         Rational that = toRational(value);
         return add(that.negate());
     }
 
-    public Rational multiply(Number value) {
+    /**
+     * Returns a {@link Rational} whose value is {@code (this * value)}.
+     *
+     * @param value value to be multiplied by this {@link Rational}.
+     * @return {@code this * value}
+     */
+    public Rational multiply(final Number value) {
         Rational that = toRational(value);
         return new Rational(this.numerator * that.numerator, this.denominator * that.denominator);
     }
 
-    public boolean lessThan(Number that) {
+    /**
+     * Returns a {@link Rational} whose value is {@code (this / value)}.
+     *
+     * @param value divisor
+     * @return {@code this / value}
+     */
+    public Rational divide(final Number value) {
+        return multiply(toRational(value).inverse());
+    }
+
+    /**
+     * Returns a {@link Rational} whose value is {@code (1 / this)}.
+     *
+     * @return {@code 1 / this}
+     */
+    public Rational inverse() {
+        long sign = numerator >= 0 ? 1 : -1;
+        return new Rational(sign * denominator, Math.abs(numerator));
+    }
+
+    /**
+     * Returns true if {@code (this < value)}.
+     *
+     * @param that value to be compared with this {@link Rational}.
+     * @return {@code this < value}
+     */
+    public boolean lessThan(final Number that) {
         return compareTo(toRational(that)) < 0;
     }
 
-    public boolean lessThanOrEqual(Number that) {
+    /**
+     * Returns true if {@code (this <= value)}.
+     *
+     * @param that value to be compared with this {@link Rational}.
+     * @return {@code this <= value}
+     */
+    public boolean lessThanOrEqual(final Number that) {
         return compareTo(toRational(that)) <= 0;
     }
 
-    public boolean greaterThan(Number that) {
+    /**
+     * Returns true if {@code (this > value)}.
+     *
+     * @param that value to be compared with this {@link Rational}.
+     * @return {@code this > value}
+     */
+    public boolean greaterThan(final Number that) {
         return compareTo(toRational(that)) > 0;
     }
 
-    public boolean greaterThanOrEqual(Number that) {
+    /**
+     * Returns true if {@code (this >= value)}.
+     *
+     * @param that value to be compared with this {@link Rational}.
+     * @return {@code this >= value}
+     */
+    public boolean greaterThanOrEqual(final Number that) {
         return compareTo(toRational(that)) >= 0;
     }
 
+    /**
+     * Simplifies this {@link Rational} by dividing numerator and denominator by greatest common
+     * divisor.
+     * <p>
+     * E.g. {@code 2/6 } is simplified to {@code 1/3 }
+     *
+     * @return simplified {@link Rational}
+     */
     public Rational simplify() {
         long gcd = gcd(Math.abs(numerator), denominator);
         return new Rational(numerator / gcd, denominator / gcd);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         return toString("/");
     }
 
-    public String toString(String delimiter) {
+    /**
+     * Converts {@link Rational} to {@link String} using specified delimiter.
+     *
+     * @param delimiter delimiter
+     * @return this converted to {@link String}
+     */
+    public String toString(final String delimiter) {
         if (denominator == 1) {
             return Long.toString(numerator);
         }
@@ -117,46 +246,94 @@ public class Rational extends Number implements Comparable<Rational> {
         return numerator + delimiter + denominator;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         Rational that = (Rational) o;
         return this.numerator * that.denominator == this.denominator * that.numerator;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int hashCode() {
         return Objects.hash(numerator, denominator);
     }
 
-    public static Rational valueOf(long value) {
+    /**
+     * Returns a {@link Rational} whose value is equal to that of the specified {@code long}.
+     *
+     * @param value value of the {@link Rational} to return.
+     * @return a {@link Rational} with the specified value.
+     */
+    public static Rational valueOf(final long value) {
         return new Rational(value, 1L);
     }
 
-    public static Rational valueOf(double d) {
-        BigDecimal bigDecimal = BigDecimal.valueOf(d);
+    /**
+     * Returns a {@link Rational} whose value is equal to that of the specified {@code double}.
+     *
+     * @param value value of the {@link Rational} to return.
+     * @return a {@link Rational} with the specified value.
+     */
+    @SuppressWarnings("checkstyle:MagicNumber")
+    public static Rational valueOf(final double value) {
+        BigDecimal bigDecimal = BigDecimal.valueOf(value);
         long numerator = bigDecimal.unscaledValue().longValue();
         long denominator = 1L;
-        // pow(10L, bigDecimal.scale());
-        for (int i = 0; i < bigDecimal.scale(); i++) {
+        int scale = bigDecimal.scale();
+        while (scale > 0) {
             denominator *= 10L;
+            scale--;
+        }
+        while (scale < 0) {
+            numerator *= 10L;
+            scale++;
         }
 
         return new Rational(numerator, denominator);
     }
 
-    public static Rational valueOf(String value) throws NumberFormatException {
+
+    /**
+     * Parses {@link Rational}.
+     * <p>
+     * Numerator and denominator are expected to be separated by / (slash) symbol.
+     *
+     * @param value value to parse
+     * @return Rational value
+     * @throws NumberFormatException if wrong format
+     */
+    public static Rational valueOf(final String value) throws NumberFormatException {
         return valueOf(value, "/");
     }
 
-    public static Rational valueOf(String value, String delimiter) throws NumberFormatException {
+    /**
+     * Parses {@link Rational}.
+     * <p>
+     * Numerator and denominator are expected to be separated by delimiter.
+     *
+     * @param value     value to parse
+     * @param delimiter delimiter which separates numerator and denominator
+     * @return Rational value
+     * @throws NumberFormatException if wrong format
+     */
+    public static Rational valueOf(final String value, final String delimiter)
+            throws NumberFormatException {
         String[] parts = value.split(delimiter, 2);
 
         try {
-            long numerator;
+            long numerator = Long.parseLong(parts[0]);
             long denominator = 1L;
-            numerator = Long.parseLong(parts[0]);
             if (parts.length == 2) {
                 denominator = Long.parseLong(parts[1]);
             }
@@ -166,7 +343,7 @@ public class Rational extends Number implements Comparable<Rational> {
         }
     }
 
-    private static Rational toRational(Number value) {
+    private static Rational toRational(final Number value) {
         if (value instanceof Rational) {
             return (Rational) value;
         }
@@ -178,7 +355,14 @@ public class Rational extends Number implements Comparable<Rational> {
         return valueOf(value.longValue());
     }
 
-    private static long gcd(long a, long b) {
+    /**
+     * Returns greatest common divisor.
+     *
+     * @param a a
+     * @param b b
+     * @return greatest common divisor
+     */
+    private static long gcd(final long a, final long b) {
         BigInteger bigA = BigInteger.valueOf(a);
         BigInteger bigB = BigInteger.valueOf(b);
         return bigA.gcd(bigB).longValue();

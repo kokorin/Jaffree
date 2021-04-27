@@ -52,7 +52,7 @@ public abstract class TcpServer implements ProcessHelper {
      *                     Pay attention that server socket should listen on <b>loopback</b>
      *                     (127.0.0.1) address for security reasons.
      */
-    protected TcpServer(ServerSocket serverSocket) {
+    protected TcpServer(final ServerSocket serverSocket) {
         this.serverSocket = serverSocket;
         this.addressAndPort = serverSocket.getInetAddress().getHostAddress() + ":"
                 + serverSocket.getLocalPort();

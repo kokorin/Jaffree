@@ -98,6 +98,9 @@ public class FFmpegProgress {
         return getTime(TimeUnit.MILLISECONDS);
     }
 
+    /**
+     * @return encoded time in microseconds
+     */
     public Long getTimeMicros() {
         return timeMicros;
     }
@@ -149,18 +152,21 @@ public class FFmpegProgress {
         return speed;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
-        return "FFmpegProgress{" +
-                "frame=" + frame +
-                ", fps=" + fps +
-                ", q=" + q +
-                ", size=" + size +
-                ", timeMicros=" + timeMicros +
-                ", dup=" + dup +
-                ", drop=" + drop +
-                ", bitrate=" + bitrate +
-                ", speed=" + speed +
-                '}';
+        return "FFmpegProgress{"
+                + "frame=" + frame
+                + ", fps=" + fps
+                + ", q=" + q
+                + ", size=" + size
+                + ", timeMicros=" + timeMicros
+                + ", dup=" + dup
+                + ", drop=" + drop
+                + ", bitrate=" + bitrate
+                + ", speed=" + speed
+                + '}';
     }
 }

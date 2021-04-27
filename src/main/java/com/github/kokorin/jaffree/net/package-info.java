@@ -16,6 +16,6 @@
  */
 
 /**
- * Classes used to integrate with ffmpeg.
+ * Classes used to interact with ffmpeg via local TCP connection.
  */
-package com.github.kokorin.jaffree.ffmpeg;
+package com.github.kokorin.jaffree.net;
