@@ -19,7 +19,6 @@ package com.github.kokorin.jaffree.ffprobe;
 
 import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffprobe.data.ProbeData;
-import com.github.kokorin.jaffree.ffprobe.data.ProbeDataConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,12 +57,7 @@ public class FFprobeResult {
      * @see FFprobe#setShowFormat(boolean)
      */
     public Format getFormat() {
-        return probeData.getSubData("format", new ProbeDataConverter<Format>() {
-            @Override
-            public Format convert(ProbeData probeData) {
-                return new Format(probeData);
-            }
-        });
+        return probeData.getSubData("format", Format::new);
     }
 
     /**
@@ -71,12 +65,7 @@ public class FFprobeResult {
      * @see FFprobe#setShowPackets(boolean)
      */
     public List<Packet> getPackets() {
-        return probeData.getSubDataList("packets", new ProbeDataConverter<Packet>() {
-            @Override
-            public Packet convert(final ProbeData probeData) {
-                return new Packet(probeData);
-            }
-        });
+        return probeData.getSubDataList("packets", Packet::new);
     }
 
     /**
@@ -86,15 +75,12 @@ public class FFprobeResult {
      * @see Subtitle
      */
     public List<FrameSubtitle> getFrames() {
-        return probeData.getSubDataList("frames", new ProbeDataConverter<FrameSubtitle>() {
-            @Override
-            public FrameSubtitle convert(final ProbeData probeData) {
-                StreamType streamType = probeData.getStreamType("media_type");
-                if (streamType == StreamType.SUBTITLE) {
-                    return new Subtitle(probeData);
-                }
-                return new Frame(probeData);
+        return probeData.getSubDataList("frames", subData -> {
+            StreamType streamType = subData.getStreamType("media_type");
+            if (streamType == StreamType.SUBTITLE) {
+                return new Subtitle(subData);
             }
+            return new Frame(subData);
         });
     }
 
@@ -107,26 +93,23 @@ public class FFprobeResult {
      * @see Subtitle
      */
     public List<PacketFrameSubtitle> getPacketsAndFrames() {
-        return probeData.getSubDataList("packets_and_frames", new ProbeDataConverter<PacketFrameSubtitle>() {
-            @Override
-            public PacketFrameSubtitle convert(final ProbeData probeData) {
-                String type = probeData.getString("type");
-                if (type == null) {
-                    LOGGER.error("No type property found");
-                    return null;
-                }
+        return probeData.getSubDataList("packets_and_frames", subData -> {
+            String type = subData.getString("type");
+            if (type == null) {
+                LOGGER.error("No type property found");
+                return null;
+            }
 
-                switch (type) {
-                    case "packet":
-                        return new Packet(probeData);
-                    case "frame":
-                        return new Frame(probeData);
-                    case "subtitle":
-                        return new Subtitle(probeData);
-                    default:
-                        LOGGER.error("Unknown type: " + type);
-                        return null;
-                }
+            switch (type) {
+                case "packet":
+                    return new Packet(subData);
+                case "frame":
+                    return new Frame(subData);
+                case "subtitle":
+                    return new Subtitle(subData);
+                default:
+                    LOGGER.error("Unknown type: " + type);
+                    return null;
             }
         });
     }
@@ -136,12 +119,7 @@ public class FFprobeResult {
      * @see FFprobe#setShowPrograms(boolean)
      */
     public List<Program> getPrograms() {
-        return probeData.getSubDataList("programs", new ProbeDataConverter<Program>() {
-            @Override
-            public Program convert(final ProbeData dSection) {
-                return new Program(dSection);
-            }
-        });
+        return probeData.getSubDataList("programs", Program::new);
     }
 
     /**
@@ -149,12 +127,7 @@ public class FFprobeResult {
      * @see FFprobe#setShowStreams(boolean)
      */
     public List<Stream> getStreams() {
-        return probeData.getSubDataList("streams", new ProbeDataConverter<Stream>() {
-            @Override
-            public Stream convert(final ProbeData probeData) {
-                return new Stream(probeData);
-            }
-        });
+        return probeData.getSubDataList("streams", Stream::new);
     }
 
     /**
@@ -162,11 +135,6 @@ public class FFprobeResult {
      * @see FFprobe#setShowChapters(boolean)
      */
     public List<Chapter> getChapters() {
-        return probeData.getSubDataList("chapters", new ProbeDataConverter<Chapter>() {
-            @Override
-            public Chapter convert(final ProbeData probeData) {
-                return new Chapter(probeData);
-            }
-        });
+        return probeData.getSubDataList("chapters", Chapter::new);
     }
 }
