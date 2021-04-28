@@ -32,7 +32,7 @@ import java.net.Socket;
 public class FrameOutput extends TcpOutput<FrameOutput> implements Output {
 
     /**
-     * Create {@link FrameOutput} for {@link FFmpeg}
+     * Create {@link FrameOutput} for {@link FFmpeg}.
      *
      * @param frameReader frame reader
      * @param format      media format
@@ -41,8 +41,9 @@ public class FrameOutput extends TcpOutput<FrameOutput> implements Output {
      * @param audioCodec  audio codec
      * @see NutFrameReader
      */
-    protected FrameOutput(FrameReader frameReader, String format,
-                          String videoCodec, String pixelFormat, String audioCodec) {
+    protected FrameOutput(final FrameReader frameReader, final String format,
+                          final String videoCodec, final String pixelFormat,
+                          final String audioCodec) {
         super(new FrameOutputNegotiator(frameReader));
         super.setFormat(format);
         super.setCodec(StreamType.VIDEO.code(), videoCodec);
@@ -50,23 +51,91 @@ public class FrameOutput extends TcpOutput<FrameOutput> implements Output {
         super.setCodec(StreamType.AUDIO.code(), audioCodec);
     }
 
+    /**
+     * Format change is prohibited after {@link FrameOutput} instantiation.
+     *
+     * @param format format
+     * @return never returns, always throws an exception
+     */
     @Override
-    public final FrameOutput setFormat(String format) {
+    public final FrameOutput setFormat(final String format) {
         throw new JaffreeException("Format can't be changed");
     }
 
+    /**
+     * Codec change is prohibited after {@link FrameOutput} instantiation.
+     *
+     * @param streamSpecifier stream specifier
+     * @param codec           codec name
+     * @return never returns, always throws an exception
+     */
     @Override
-    public final FrameOutput setCodec(String streamSpecifier, String codec) {
+    public final FrameOutput setCodec(final String streamSpecifier, final String codec) {
         throw new JaffreeException("Codec can't be changed");
     }
 
+    /**
+     * Codec change is prohibited after {@link FrameOutput} instantiation.
+     *
+     * @param streamType stream type
+     * @param codec      codec name
+     * @return never returns, always throws an exception
+     */
     @Override
-    public final FrameOutput setPixelFormat(String streamSpecifier, String pixelFormat) {
+    public final FrameOutput setCodec(final StreamType streamType, final String codec) {
+        throw new JaffreeException("Codec can't be changed");
+    }
+
+    /**
+     * Codec copying is impossible, every frame is raw frame.
+     *
+     * @return never returns, always throws an exception
+     */
+    @Override
+    public final FrameOutput copyAllCodecs() {
+        throw new JaffreeException("Codec can't be changed");
+    }
+
+    /**
+     * Codec copying is impossible, every frame is raw frame.
+     *
+     * @param streamSpecifier stream specifier
+     * @return never returns, always throws an exception
+     */
+    @Override
+    public final FrameOutput copyCodec(final String streamSpecifier) {
+        throw new JaffreeException("Codec can't be changed");
+    }
+
+    /**
+     * Codec copying is impossible, every frame is raw frame.
+     *
+     * @param streamType stream type
+     * @return never returns, always throws an exception
+     */
+    @Override
+    public final FrameOutput copyCodec(final StreamType streamType) {
+        throw new JaffreeException("Codec can't be changed");
+    }
+
+    /**
+     * Pixel format change is prohibited after {@link FrameOutput} instantiation.
+     *
+     * @param streamSpecifier stream specifier
+     * @param pixelFormat     pixel format
+     * @return never returns, always throws an exception
+     */
+    @Override
+    public final FrameOutput setPixelFormat(final String streamSpecifier,
+                                            final String pixelFormat) {
         throw new JaffreeException("Pixel Format can't be changed");
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public FrameOutput disableStream(StreamType streamType) {
+    public FrameOutput disableStream(final StreamType streamType) {
         super.disableStream(streamType);
 
         // We have to reset codec and pixel format if video or audio output is disabled because
@@ -105,7 +174,8 @@ public class FrameOutput extends TcpOutput<FrameOutput> implements Output {
         return withConsumer(consumer, ImageFormats.ABGR);
     }
 
-    protected static FrameOutput withConsumer(final FrameConsumer consumer, final ImageFormat imageFormat) {
+    protected static FrameOutput withConsumer(final FrameConsumer consumer,
+                                              final ImageFormat imageFormat) {
         return new FrameOutput(
                 new NutFrameReader(consumer, imageFormat),
                 "nut", "rawvideo", imageFormat.getPixelFormat(), "pcm_s32be"
@@ -116,16 +186,26 @@ public class FrameOutput extends TcpOutput<FrameOutput> implements Output {
         void read(InputStream inputStream) throws IOException;
     }
 
+    /**
+     * {@link TcpNegotiator} implementation which uses {@link FrameReader} to receive bytes over
+     * TCP connection.
+     */
     @ThreadSafe
     protected static class FrameOutputNegotiator implements TcpNegotiator {
         private final FrameReader frameReader;
 
-        public FrameOutputNegotiator(FrameReader frameReader) {
+        public FrameOutputNegotiator(final FrameReader frameReader) {
             this.frameReader = frameReader;
         }
 
+        /**
+         * Receives media over TCP connection.
+         *
+         * @param socket TCP socket
+         * @throws IOException if any IO error
+         */
         @Override
-        public synchronized void negotiate(Socket socket) throws IOException {
+        public synchronized void negotiate(final Socket socket) throws IOException {
             try (InputStream inputStream = socket.getInputStream()) {
                 frameReader.read(inputStream);
             }
