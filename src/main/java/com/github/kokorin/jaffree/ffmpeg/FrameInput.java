@@ -89,7 +89,8 @@ public class FrameInput extends TcpInput<FrameInput> implements Input {
      * Format change is prohibited after {@link FrameInput} instantiation.
      *
      * @param format format
-     * @return never returns, always throws an exception
+     * @return never returns
+     * @throws JaffreeException always
      */
     @Override
     public final FrameInput setFormat(final String format) {
@@ -184,6 +185,7 @@ public class FrameInput extends TcpInput<FrameInput> implements Input {
 
         /**
          * Sends media over TCP connection.
+         *
          * @param socket TCP socket
          * @throws IOException if any IO error
          */

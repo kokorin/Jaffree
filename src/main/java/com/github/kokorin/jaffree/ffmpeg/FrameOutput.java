@@ -55,7 +55,8 @@ public class FrameOutput extends TcpOutput<FrameOutput> implements Output {
      * Format change is prohibited after {@link FrameOutput} instantiation.
      *
      * @param format format
-     * @return never returns, always throws an exception
+     * @return never returns
+     * @throws JaffreeException always
      */
     @Override
     public final FrameOutput setFormat(final String format) {
@@ -67,7 +68,8 @@ public class FrameOutput extends TcpOutput<FrameOutput> implements Output {
      *
      * @param streamSpecifier stream specifier
      * @param codec           codec name
-     * @return never returns, always throws an exception
+     * @return never returns
+     * @throws JaffreeException always
      */
     @Override
     public final FrameOutput setCodec(final String streamSpecifier, final String codec) {
@@ -79,7 +81,8 @@ public class FrameOutput extends TcpOutput<FrameOutput> implements Output {
      *
      * @param streamType stream type
      * @param codec      codec name
-     * @return never returns, always throws an exception
+     * @return never returns
+     * @throws JaffreeException always
      */
     @Override
     public final FrameOutput setCodec(final StreamType streamType, final String codec) {
@@ -89,7 +92,8 @@ public class FrameOutput extends TcpOutput<FrameOutput> implements Output {
     /**
      * Codec copying is impossible, every frame is raw frame.
      *
-     * @return never returns, always throws an exception
+     * @return never returns
+     * @throws JaffreeException always
      */
     @Override
     public final FrameOutput copyAllCodecs() {
@@ -100,7 +104,8 @@ public class FrameOutput extends TcpOutput<FrameOutput> implements Output {
      * Codec copying is impossible, every frame is raw frame.
      *
      * @param streamSpecifier stream specifier
-     * @return never returns, always throws an exception
+     * @return never returns
+     * @throws JaffreeException always
      */
     @Override
     public final FrameOutput copyCodec(final String streamSpecifier) {
@@ -111,7 +116,8 @@ public class FrameOutput extends TcpOutput<FrameOutput> implements Output {
      * Codec copying is impossible, every frame is raw frame.
      *
      * @param streamType stream type
-     * @return never returns, always throws an exception
+     * @return never returns
+     * @throws JaffreeException always
      */
     @Override
     public final FrameOutput copyCodec(final StreamType streamType) {
@@ -123,7 +129,8 @@ public class FrameOutput extends TcpOutput<FrameOutput> implements Output {
      *
      * @param streamSpecifier stream specifier
      * @param pixelFormat     pixel format
-     * @return never returns, always throws an exception
+     * @return never returns
+     * @throws JaffreeException always
      */
     @Override
     public final FrameOutput setPixelFormat(final String streamSpecifier,
