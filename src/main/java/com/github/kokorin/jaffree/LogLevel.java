@@ -94,7 +94,13 @@ public enum LogLevel {
         return code;
     }
 
-    public static LogLevel fromCode(int code) {
+    /**
+     * Returns LogLevel with specified code.
+     *
+     * @param code category code
+     * @return LogLevel or null
+     */
+    public static LogLevel fromCode(final int code) {
         for (LogLevel level : values()) {
             if (level.code == code) {
                 return level;
