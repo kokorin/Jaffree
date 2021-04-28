@@ -50,7 +50,7 @@ public class NutFrameReader implements FrameOutput.FrameReader {
      * @param frameConsumer frame consumer
      * @param imageFormat image format
      */
-    public NutFrameReader(FrameConsumer frameConsumer, ImageFormat imageFormat) {
+    public NutFrameReader(final FrameConsumer frameConsumer, final ImageFormat imageFormat) {
         this.frameConsumer = frameConsumer;
         this.imageFormat = imageFormat;
     }
