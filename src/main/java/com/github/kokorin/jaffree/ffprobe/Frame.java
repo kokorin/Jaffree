@@ -20,7 +20,6 @@ package com.github.kokorin.jaffree.ffprobe;
 import com.github.kokorin.jaffree.Rational;
 import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffprobe.data.ProbeData;
-import com.github.kokorin.jaffree.ffprobe.data.ProbeDataConverter;
 
 import java.util.List;
 
@@ -57,31 +56,22 @@ public class Frame implements TagAware, FrameSubtitle, PacketFrameSubtitle {
      * @see FFprobe#setShowLog(com.github.kokorin.jaffree.LogLevel)
      */
     public List<Log> getLogs() {
-        return probeData.getSubDataList("logs", new ProbeDataConverter<Log>() {
-            @Override
-            public Log convert(final ProbeData probeData) {
-                return new Log(probeData);
-            }
-        });
+        return probeData.getSubDataList("logs", Log::new);
     }
 
     /**
      * @return side data for the frame
      */
     public List<SideData> getSideDataList() {
-        return probeData.getSubDataList("side_data_list", new ProbeDataConverter<SideData>() {
-            @Override
-            public SideData convert(final ProbeData probeData) {
-                return new SideData(probeData);
-            }
-        });
+        return probeData.getSubDataList("side_data_list", SideData::new);
     }
 
     /**
      * Presentation timestamp in time_base units (time when frame should be shown to user).
      * <p>
-     * <b>Note</b>: despite declared in <a href="https://github.com/FFmpeg/FFmpeg/blob/master/doc/ffprobe.xsd">ffprobe.xsd</a>
-     * for ffprobe:frameType this property has never been reported by ffprobe.
+     * <b>Note</b>: despite declared in
+     * <a href="https://github.com/FFmpeg/FFmpeg/blob/master/doc/ffprobe.xsd">ffprobe.xsd</a>
+     * for ffprobe:frameType, this property has never been reported by ffprobe.
      *
      * @return pts
      * @see #getPktPts()
@@ -93,8 +83,9 @@ public class Frame implements TagAware, FrameSubtitle, PacketFrameSubtitle {
     /**
      * Presentation timestamp in seconds (time when frame should be shown to user).
      * <p>
-     * <b>Note</b>: despite declared in <a href="https://github.com/FFmpeg/FFmpeg/blob/master/doc/ffprobe.xsd">ffprobe.xsd</a>
-     * for ffprobe:frameType this property has never been reported by ffprobe.
+     * <b>Note</b>: despite declared in
+     * <a href="https://github.com/FFmpeg/FFmpeg/blob/master/doc/ffprobe.xsd">ffprobe.xsd</a>
+     * for ffprobe:frameType, this property has never been reported by ffprobe.
      *
      * @return pts in seconds
      * @see #getPktPtsTime()
