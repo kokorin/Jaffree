@@ -23,15 +23,26 @@ import com.github.kokorin.jaffree.util.ParseUtil;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+/**
+ * {@link Iterator} implementation which can iterate over multiline ffprobe/ffmpeg log messages.
+ */
 public class LogMessageIterator implements Iterator<LogMessage> {
     private final Iterator<String> lineIterator;
     private String nextLine = null;
     private LogLevel nextLogLevel = null;
 
-    public LogMessageIterator(Iterator<String> lineIterator) {
+    /**
+     * Create {@link LogMessageIterator}.
+     *
+     * @param lineIterator line iterator
+     */
+    public LogMessageIterator(final Iterator<String> lineIterator) {
         this.lineIterator = lineIterator;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean hasNext() {
         if (nextLine != null) {
@@ -47,6 +58,9 @@ public class LogMessageIterator implements Iterator<LogMessage> {
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public LogMessage next() {
         if (!hasNext()) {
@@ -76,6 +90,11 @@ public class LogMessageIterator implements Iterator<LogMessage> {
         return new LogMessage(logLevel, message);
     }
 
+    /**
+     * Remove not supported.
+     *
+     * @throws UnsupportedOperationException always
+     */
     @Override
     public void remove() {
         throw new UnsupportedOperationException("Remove not supported");
