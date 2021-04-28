@@ -28,31 +28,40 @@ import java.awt.image.DataBufferByte;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 
+/**
+ * Standard {@link ImageFormat ImageFormats} used by {@link FrameInput} & {@link FrameOutput}.
+ */
 public enum ImageFormats implements ImageFormat {
+    /**
+     * 3-byte format using 1 byte per each color component.
+     */
     BGR24(
             "bgr24",
             3,
-            new byte[]{'B', 'G', 'R', 24},
+            new byte[] {'B', 'G', 'R', 24},
             BufferedImage.TYPE_3BYTE_BGR,
             new ComponentColorModel(
                     ColorSpace.getInstance(ColorSpace.CS_sRGB),
-                    new int[]{8, 8, 8}, false, false,
+                    new int[] {8, 8, 8}, false, false,
                     Transparency.OPAQUE,
                     DataBuffer.TYPE_BYTE
             ),
-            new int[]{2, 1, 0}
+            new int[] {2, 1, 0}
     ),
+    /**
+     * 4-byte format using 1 byte per each color component and 1 byte for transparency.
+     */
     ABGR(
             "abgr",
             4,
-            new byte[]{'A', 'B', 'G', 'R'},
+            new byte[] {'A', 'B', 'G', 'R'},
             BufferedImage.TYPE_4BYTE_ABGR,
             new ComponentColorModel(
                     ColorSpace.getInstance(ColorSpace.CS_sRGB),
-                    new int[]{8, 8, 8, 8}, true, false,
+                    new int[] {8, 8, 8, 8}, true, false,
                     Transparency.TRANSLUCENT, DataBuffer.TYPE_BYTE
             ),
-            new int[]{3, 2, 1, 0}
+            new int[] {3, 2, 1, 0}
     );
 
     private final String pixelFormat;
@@ -62,8 +71,9 @@ public enum ImageFormats implements ImageFormat {
     private final ComponentColorModel componentColorModel;
     private final int[] bOffs;
 
-    ImageFormats(String pixelFormat, int bytesPerPixel, byte[] fourcc, int imageType,
-                 ComponentColorModel componentColorModel, int[] bOffs) {
+    ImageFormats(final String pixelFormat, final int bytesPerPixel,
+                 final byte[] fourcc, final int imageType,
+                 final ComponentColorModel componentColorModel, final int[] bOffs) {
         this.pixelFormat = pixelFormat;
         this.bytesPerPixel = bytesPerPixel;
         this.fourcc = fourcc;
@@ -72,26 +82,39 @@ public enum ImageFormats implements ImageFormat {
         this.bOffs = bOffs;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getPixelFormat() {
         return pixelFormat;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getBytesPerPixel() {
         return bytesPerPixel;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public byte[] getFourCC() {
         return fourcc.clone();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public BufferedImage toImage(byte[] data, int width, int height) {
+    public BufferedImage toImage(final byte[] data, final int width, final int height) {
         int expectedLength = width * height * bytesPerPixel;
         if (data.length != expectedLength) {
-            throw new JaffreeException("Not enough bytes: " + data.length + ", expected " + expectedLength);
+            throw new JaffreeException(
+                    "Not enough bytes: " + data.length + ", expected " + expectedLength);
         }
 
         DataBuffer buffer = new DataBufferByte(data, data.length);
@@ -104,10 +127,14 @@ public enum ImageFormats implements ImageFormat {
         return new BufferedImage(componentColorModel, raster, false, null);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public byte[] toBytes(BufferedImage image) {
+    public byte[] toBytes(final BufferedImage image) {
         if (image.getType() != imageType) {
-            throw new JaffreeException("Wrong image type: " + image.getType() + ", expected: " + imageType);
+            throw new JaffreeException(
+                    "Wrong image type: " + image.getType() + ", expected: " + imageType);
         }
 
         return ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
