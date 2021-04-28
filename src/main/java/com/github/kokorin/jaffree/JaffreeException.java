@@ -17,20 +17,42 @@
 
 package com.github.kokorin.jaffree;
 
+/**
+ * Common exception used in this library.
+ */
 public class JaffreeException extends RuntimeException {
 
+    /**
+     * Constructs a new {@link JaffreeException} with null as its detail message.
+     */
     public JaffreeException() {
     }
 
-    public JaffreeException(String message) {
+    /**
+     * Constructs a new {@link JaffreeException} with the specified detail message.
+     *
+     * @param message message
+     */
+    public JaffreeException(final String message) {
         super(message);
     }
 
-    public JaffreeException(String message, Throwable cause) {
+    /**
+     * Constructs a new {@link JaffreeException} with the specified detail message and cause.
+     *
+     * @param message message
+     * @param cause   cause
+     */
+    public JaffreeException(final String message, final Throwable cause) {
         super(message, cause);
     }
 
-    public JaffreeException(Throwable cause) {
+    /**
+     * Constructs a new {@link JaffreeException} with the specified cause.
+     *
+     * @param cause cause
+     */
+    public JaffreeException(final Throwable cause) {
         super(cause);
     }
 }
