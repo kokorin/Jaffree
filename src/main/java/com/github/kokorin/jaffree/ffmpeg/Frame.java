@@ -42,7 +42,7 @@ public class Frame {
      * @see Stream#getTimebase()
      */
     protected Frame(final int streamId, final long pts, final BufferedImage image,
-                 final int[] samples) {
+                    final int[] samples) {
         if (image != null && samples != null) {
             throw new IllegalArgumentException(
                     "Only one of image and samples parameters may be non null");
@@ -114,9 +114,11 @@ public class Frame {
      * @param streamId stream id (starting with 0)
      * @param pts      pts in {@link Stream} timebase
      * @param image    video frame image
+     * @return video {@link Frame}
      * @see Stream#getTimebase()
      */
-    public static Frame createVideoFrame(final int streamId, final long pts, final BufferedImage image) {
+    public static Frame createVideoFrame(final int streamId, final long pts,
+                                         final BufferedImage image) {
         return new Frame(streamId, pts, image, null);
     }
 
@@ -126,6 +128,7 @@ public class Frame {
      * @param streamId streamId
      * @param pts      pts in {@link Stream} timebase
      * @param samples  audio samples in PCM S32BE format
+     * @return audio {@link Frame}
      * @see Stream#getTimebase()
      */
     public static Frame createAudioFrame(final int streamId, final long pts, final int[] samples) {
