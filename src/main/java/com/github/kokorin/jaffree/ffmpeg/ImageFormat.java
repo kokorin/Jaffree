@@ -40,14 +40,15 @@ public interface ImageFormat {
     int getBytesPerPixel();
 
     /**
-     * Returns FOURCC (four character code)
+     * Returns FOURCC (four character code).
+     *
      * @return FOURCC
      * @see <a href="https://www.fourcc.org/fourcc.php">What is a FOURCC?</a>
      */
     byte[] getFourCC();
 
     /**
-     * Converts byte array to {@link BufferedImage} of specified size
+     * Converts byte array to {@link BufferedImage} of specified size.
      *
      * @param data   raw image data
      * @param width  image width
@@ -57,7 +58,7 @@ public interface ImageFormat {
     BufferedImage toImage(byte[] data, int width, int height);
 
     /**
-     * Converts BufferedImage to raw image data
+     * Converts BufferedImage to raw image data.
      *
      * @param image image
      * @return raw data
