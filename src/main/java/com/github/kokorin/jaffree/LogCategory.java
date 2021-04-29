@@ -1,5 +1,26 @@
+/*
+ *    Copyright 2021 Denis Kokorin
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ *
+ */
+
 package com.github.kokorin.jaffree;
 
+/**
+ * Log categories declared by ffmpeg as
+ * <a href="https://github.com/FFmpeg/FFmpeg/blob/master/libavutil/log.h#L29">AVClassCategory</a>.
+ */
 public enum LogCategory {
     NA(0),
     INPUT(1),
@@ -22,11 +43,17 @@ public enum LogCategory {
 
     private final int code;
 
-    LogCategory(int code) {
+    LogCategory(final int code) {
         this.code = code;
     }
 
-    public static LogCategory fromCode(int code) {
+    /**
+     * Returns LogCategory with specified code.
+     *
+     * @param code category code
+     * @return LogCategory or null
+     */
+    public static LogCategory fromCode(final int code) {
         for (LogCategory category : values()) {
             if (category.code == code) {
                 return category;

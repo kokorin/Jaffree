@@ -23,21 +23,37 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+/**
+ * {@link TcpServer} implementation using {@link TcpNegotiator} to serve TCP connection.
+ */
 @ThreadSafe
 public class NegotiatingTcpServer extends TcpServer {
-    protected final TcpNegotiator negotiator;
+    private final TcpNegotiator negotiator;
 
-    protected NegotiatingTcpServer(ServerSocket serverSocket, TcpNegotiator negotiator) {
+    protected NegotiatingTcpServer(final ServerSocket serverSocket,
+                                   final TcpNegotiator negotiator) {
         super(serverSocket);
         this.negotiator = negotiator;
     }
 
+    /**
+     * Serves TCP connection using {@link TcpNegotiator}.
+     *
+     * @param socket TCP socket
+     * @throws IOException socket IO exception
+     */
     @Override
-    protected void serve(Socket socket) throws IOException {
+    protected void serve(final Socket socket) throws IOException {
         negotiator.negotiate(socket);
     }
 
-    public static NegotiatingTcpServer onRandomPort(TcpNegotiator negotiator) {
+    /**
+     * Creates {@link NegotiatingTcpServer} waiting for TCP connection on random port.
+     *
+     * @param negotiator negotiator to use
+     * @return NegotiatingTcpServer
+     */
+    public static NegotiatingTcpServer onRandomPort(final TcpNegotiator negotiator) {
         return new NegotiatingTcpServer(allocateSocket(), negotiator);
     }
 

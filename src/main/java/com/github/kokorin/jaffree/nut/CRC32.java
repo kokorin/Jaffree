@@ -24,7 +24,7 @@ package com.github.kokorin.jaffree.nut;
  * <p>
  * Can't be replaced with java.util.zip.CRC32 because it has different polynomial generator
  */
-@SuppressWarnings("checkstyle:magicnumber")
+@SuppressWarnings("checkstyle:MagicNumber")
 class CRC32 {
     private int crc = 0;
 

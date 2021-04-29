@@ -46,7 +46,7 @@ public class NutTest {
         try (NutInputStream inputStream = new NutInputStream(new FileInputStream(Artifacts.VIDEO_NUT.toFile()));
              NutOutputStream outputStream = new NutOutputStream(new FileOutputStream(outputPath.toFile()))) {
             NutReader reader = new NutReader(inputStream);
-            NutWriter writer = new NutWriter(outputStream);
+            NutWriter writer = new NutWriter(outputStream, 200);
 
             MainHeader mainHeader = reader.getMainHeader();
             StreamHeader[] streamHeaders = reader.getStreamHeaders();

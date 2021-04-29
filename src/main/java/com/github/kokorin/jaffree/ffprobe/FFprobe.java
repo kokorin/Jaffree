@@ -211,9 +211,10 @@ public class FFprobe {
      * <p>
      * SECTION_ENTRIES       ::= SECTION_ENTRY[:SECTION_ENTRIES]
      * <p>
-     * <b>Note:</b> this option overwrites any &quot;show...&quot; set before, so this method should not be used
-     * together with any of {@link #setShowFormat(boolean)}, {@link #setShowFrames(boolean)},
-     * {@link #setShowPackets(boolean)}, {@link #setShowStreams(boolean)}, {@link #setShowChapters(boolean)} or
+     * <b>Note:</b> this option overwrites any &quot;show...&quot; set before, so this method
+     * should not be used together with any of {@link #setShowFormat(boolean)},
+     * {@link #setShowFrames(boolean)}, {@link #setShowPackets(boolean)},
+     * {@link #setShowStreams(boolean)}, {@link #setShowChapters(boolean)} or
      * {@link #setShowPrograms(boolean)}
      *
      * @param showEntries list entries syntax
@@ -471,7 +472,7 @@ public class FFprobe {
      * @param input input to analyze
      * @return this
      */
-    public FFprobe setInput(Input input) {
+    public FFprobe setInput(final Input input) {
         this.input = input;
         return this;
     }
@@ -647,9 +648,11 @@ public class FFprobe {
      * <p>
      * Note: default implementation uses {@link FormatParser} to parse output.
      *
+     * @param formatParser format parser to use
      * @return this
      */
-    protected StdReader<FFprobeResult> createStdOutReader(FormatParser formatParser) {
+    @SuppressWarnings("checkstyle:HiddenField")
+    protected StdReader<FFprobeResult> createStdOutReader(final FormatParser formatParser) {
         return new FFprobeResultReader(formatParser);
     }
 
