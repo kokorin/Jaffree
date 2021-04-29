@@ -21,6 +21,14 @@ import com.github.kokorin.jaffree.process.ProcessHelper;
 
 import java.util.List;
 
+/**
+ * Interface for any ffmpeg output.
+ * <p>
+ * This interface should not be implemented by custom solutions.
+ * It's better to use {@link BaseOutput}.
+ *
+ * @see BaseOutput
+ */
 public interface Output {
 
     /**
@@ -31,7 +39,7 @@ public interface Output {
     List<String> buildArguments();
 
     /**
-     * Helper {@link ProcessHelper} which should be ran in dedicated thread
+     * Helper {@link ProcessHelper} which should be ran in dedicated thread.
      *
      * @return ProcessHelper, or null if no helper thread is needed
      */
