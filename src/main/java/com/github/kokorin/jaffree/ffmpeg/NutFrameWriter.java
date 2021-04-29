@@ -43,23 +43,13 @@ import java.util.Objects;
 public class NutFrameWriter implements FrameInput.FrameWriter {
     private final FrameProducer producer;
     private final ImageFormat imageFormat;
-    private final Long frameOrderingBufferMillis;
+    private final long frameOrderingBufferMillis;
 
     //PCM Signed Differential?
     private static final byte[] FOURCC_PCM_S32BE = {32, 'D', 'S', 'P'};
 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NutFrameWriter.class);
-
-    /**
-     * Creates {@link NutFrameWriter} with default frame reordering buffer length.
-     *
-     * @param producer    frame producer
-     * @param imageFormat video frames image format
-     */
-    public NutFrameWriter(final FrameProducer producer, final ImageFormat imageFormat) {
-        this(producer, imageFormat, null);
-    }
 
     /**
      * Creates {@link NutFrameWriter}.
@@ -69,7 +59,7 @@ public class NutFrameWriter implements FrameInput.FrameWriter {
      * @param frameOrderingBufferMillis frame reordering buffer length
      */
     public NutFrameWriter(final FrameProducer producer, final ImageFormat imageFormat,
-                          final Long frameOrderingBufferMillis) {
+                          final long frameOrderingBufferMillis) {
         this.producer = producer;
         this.imageFormat = imageFormat;
         this.frameOrderingBufferMillis = frameOrderingBufferMillis;
@@ -82,10 +72,10 @@ public class NutFrameWriter implements FrameInput.FrameWriter {
      * @param outputStream OutputStream output stream to write to
      */
     public void write(final OutputStream outputStream) throws IOException {
-        NutWriter writer = new NutWriter(new NutOutputStream(outputStream));
-        if (frameOrderingBufferMillis != null) {
-            writer.setFrameOrderingBufferMillis(frameOrderingBufferMillis);
-        }
+        NutWriter writer = new NutWriter(
+                new NutOutputStream(outputStream),
+                frameOrderingBufferMillis
+        );
         write(writer);
         writer.writeFooter();
     }

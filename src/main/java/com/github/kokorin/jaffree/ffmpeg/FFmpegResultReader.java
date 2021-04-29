@@ -19,10 +19,10 @@ package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.JaffreeException;
 import com.github.kokorin.jaffree.LogLevel;
+import com.github.kokorin.jaffree.log.LogMessage;
+import com.github.kokorin.jaffree.log.LogMessageIterator;
 import com.github.kokorin.jaffree.process.StdReader;
 import com.github.kokorin.jaffree.util.LineIterator;
-import com.github.kokorin.jaffree.util.LogMessage;
-import com.github.kokorin.jaffree.util.LogMessageIterator;
 import com.github.kokorin.jaffree.util.ParseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

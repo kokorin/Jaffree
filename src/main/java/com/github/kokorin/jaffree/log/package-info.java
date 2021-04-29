@@ -1,5 +1,5 @@
 /*
- *    Copyright 2020-2021 Denis Kokorin
+ *    Copyright 2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,6 +16,6 @@
  */
 
 /**
- * Base package for Jaffree project.
+ * This package contains different classes used for ffmpeg/ffprobe log parsing.
  */
-package com.github.kokorin.jaffree;
+package com.github.kokorin.jaffree.log;

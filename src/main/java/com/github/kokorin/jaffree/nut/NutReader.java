@@ -27,6 +27,10 @@ import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * {@link NutReader} provides limited NUT demuxer functionality.
+ */
+@SuppressWarnings("checkstyle:MagicNumber")
 public class NutReader {
     private final NutInputStream input;
     private boolean read = false;
@@ -35,26 +39,48 @@ public class NutReader {
     private Info[] infos;
     private long[] lastPts;
 
-    public NutReader(NutInputStream input) {
+    /**
+     * Creates {@link NutReader}.
+     *
+     * @param input input stream
+     */
+    public NutReader(final NutInputStream input) {
         this.input = input;
     }
 
+    /**
+     * Returns NUT Main header.
+     *
+     * @return main header
+     * @throws IOException if any IO error
+     */
     public MainHeader getMainHeader() throws IOException {
         readToFrame();
         return mainHeader;
     }
 
+    /**
+     * Returns NUT Stream headers.
+     *
+     * @return stream headers
+     * @throws IOException if any IO error
+     */
     public StreamHeader[] getStreamHeaders() throws IOException {
         readToFrame();
         return Arrays.copyOf(streamHeaders, streamHeaders.length);
     }
 
+    /**
+     * Returns NUT Info headers.
+     *
+     * @return info headers
+     * @throws IOException if any IO error
+     */
     public Info[] getInfos() throws IOException {
         readToFrame();
         return Arrays.copyOf(infos, infos.length);
     }
 
-    // package-private for tests
     private void readToFrame() throws IOException {
         if (input.getPosition() == 0) {
             String fileId = input.readCString();
@@ -146,10 +172,19 @@ public class NutReader {
         }
 
         Set<FrameCode.Flag> flags;
-        int streamId = 0, dataSizeMul = 1, size;
-        long fields, ptsDelta = 0, reserved, count, matchTimeDelta = 1L - (1L << 62), elisionHeaderIdx = 0;
+        int streamId = 0;
+        int dataSizeMul = 1;
+        int size;
+        long fields;
+        long ptsDelta = 0;
+        long reserved;
+        long count;
+        long matchTimeDelta = 1L - (1L << 62);
+        long elisionHeaderIdx = 0;
+
         FrameCode[] frameCodes = new FrameCode[256];
-        for (int i = 0; i < 256; ) {
+        int i = 0;
+        while (i < 256) {
             flags = FrameCode.Flag.fromBitCode(input.readValue());
             fields = input.readValue();
 
@@ -178,11 +213,13 @@ public class NutReader {
                 count = dataSizeMul - size;
             }
 
-            // MatchTimeDelta is present in NUT specification, but is absent in FFMPEG NUT implementation
+            // MatchTimeDelta is present in NUT specification,
+            // but is absent in FFMPEG NUT implementation
             if (fields > 6) {
                 matchTimeDelta = input.readSignedValue();
             }
-            // ElisionHeaders are present in NUT specification, but are absent in FFMPEG NUT implementation
+            // ElisionHeaders are present in NUT specification,
+            // but are absent in FFMPEG NUT implementation
             if (fields > 7) {
                 elisionHeaderIdx = input.readValue();
             }
@@ -197,14 +234,16 @@ public class NutReader {
                     ft = FrameCode.INVALID;
                     j--;
                 } else {
-                    ft = new FrameCode(flags, streamId, dataSizeMul, size + j, ptsDelta, reserved, matchTimeDelta, elisionHeaderIdx);
+                    ft = new FrameCode(flags, streamId, dataSizeMul, size + j, ptsDelta, reserved,
+                            matchTimeDelta, elisionHeaderIdx);
                 }
 
                 frameCodes[i] = ft;
             }
         }
 
-        // ElisionHeaders are present in NUT specification, but are absent in FFMPEG NUT implementation
+        // ElisionHeaders are present in NUT specification,
+        // but are absent in FFMPEG NUT implementation
         // int elisionHeaderCount = (int) input.readValue();
         // long[] elisionHeaderSize = new long[elisionHeaderCount];
         // for (int i = 0; i < elisionHeaderCount; i++) {
@@ -212,11 +251,13 @@ public class NutReader {
         // }
         long[] elisionHeaderSize = new long[255];
 
-        // <MainHeader.Flag is present in NUT specification, but is absent in FFMPEG NUT implementation
+        // <MainHeader.Flag is present in NUT specification,
+        // but is absent in FFMPEG NUT implementation
         // Set<MainHeader.Flag> mainFlags = MainHeader.Flag.fromBitCode(input.readValue());
         Set<MainHeader.Flag> mainFlags = Collections.emptySet();
 
-        return new MainHeader(majorVersion, minorVersion, streamCount, maxDistance, timeBases, frameCodes, elisionHeaderSize, mainFlags);
+        return new MainHeader(majorVersion, minorVersion, streamCount, maxDistance, timeBases,
+                frameCodes, elisionHeaderSize, mainFlags);
     }
 
     private StreamHeader readStreamHeader() throws IOException {
@@ -237,9 +278,11 @@ public class NutReader {
             int height = (int) input.readValue();
             int sampleWidth = (int) input.readValue();
             int sampleHeight = (int) input.readValue();
-            StreamHeader.ColourspaceType colourspaceType = StreamHeader.ColourspaceType.fromCode(input.readValue());
+            StreamHeader.ColourspaceType colourspaceType =
+                    StreamHeader.ColourspaceType.fromCode(input.readValue());
 
-            video = new StreamHeader.Video(width, height, sampleWidth, sampleHeight, colourspaceType);
+            video = new StreamHeader.Video(width, height, sampleWidth, sampleHeight,
+                    colourspaceType);
         } else if (streamType == StreamHeader.Type.AUDIO) {
             long samplerateNumerator = input.readValue();
             long samplerateDenominator = input.readValue();
@@ -249,7 +292,8 @@ public class NutReader {
             audio = new StreamHeader.Audio(sampleRate, channelCount);
         }
 
-        return new StreamHeader(streamId, streamType, fourcc, timeBaseId, msbPtsShift, maxPtsDistance, decodeDelay,
+        return new StreamHeader(streamId, streamType, fourcc, timeBaseId, msbPtsShift,
+                maxPtsDistance, decodeDelay,
                 flags, codecSpcificData, video, audio);
     }
 
@@ -264,6 +308,12 @@ public class NutReader {
         return new SyncPoint(pts, backPtrDiv16, transmitTs);
     }
 
+    /**
+     * Returns next NUT frame.
+     *
+     * @return frame
+     * @throws IOException if any IO error
+     */
     public NutFrame readFrame() throws IOException {
         readToFrame();
 
@@ -326,12 +376,14 @@ public class NutReader {
             dataSizeMsb = input.readValue();
         }
 
-        // MatchTimeDelta is present in NUT specification, but is absent in FFMPEG NUT implementation
+        // MatchTimeDelta is present in NUT specification,
+        // but is absent in FFMPEG NUT implementation
         if (flags.contains(FrameCode.Flag.MATCH_TIME)) {
             matchTimeDelta = input.readSignedValue();
         }
 
-        // ElisionHeaders are present in NUT specification, but are absent in FFMPEG NUT implementation
+        // ElisionHeaders are present in NUT specification,
+        // but are absent in FFMPEG NUT implementation
         if (flags.contains(FrameCode.Flag.HEADER_IDX)) {
             int elisionHeaderIdx = (int) input.readValue();
             elisionHeaderSize = mainHeader.elisionHeaderSize[elisionHeaderIdx];
@@ -384,7 +436,8 @@ public class NutReader {
         long chapterLengthPts = input.readValue();
         DataItem[] meta = readDataItems();
 
-        return new Info(streamId, chapterId, chapterStartPts, chapterLengthPts, timestamp.timebaseId, meta);
+        return new Info(streamId, chapterId, chapterStartPts, chapterLengthPts,
+                timestamp.timebaseId, meta);
     }
 
     private DataItem[] readDataItems() throws IOException {
@@ -436,7 +489,7 @@ public class NutReader {
 
 
     private static class PacketHeader {
-        public final long startcode;
+        private final long startcode;
 
         /**
          * Size of the packet data (exactly the distance from the first byte
@@ -446,10 +499,10 @@ public class NutReader {
          * with the exception of frame_code-based packets. The forward pointer
          * can be used to skip over the packet without decoding its contents.
          */
-        public final long forwardPtr;
-        public final long headerChecksum;
+        private final long forwardPtr;
+        private final long headerChecksum;
 
-        public PacketHeader(long startcode, long forwardPtr, long headerChecksum) {
+        PacketHeader(final long startcode, final long forwardPtr, final long headerChecksum) {
             this.startcode = startcode;
             this.forwardPtr = forwardPtr;
             this.headerChecksum = headerChecksum;
@@ -457,9 +510,9 @@ public class NutReader {
     }
 
     private static class PacketFooter {
-        public final long checksum;
+        private final long checksum;
 
-        public PacketFooter(long checksum) {
+        PacketFooter(final long checksum) {
             this.checksum = checksum;
         }
     }
