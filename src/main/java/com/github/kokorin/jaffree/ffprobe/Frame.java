@@ -283,17 +283,21 @@ public class Frame implements TagAware, FrameSubtitle, PacketFrameSubtitle {
     /**
      * Possible return values:
      * <ul>
-     *     <li>I -> Intra</li>
-     *     <li>P -> Predicted</li>
-     *     <li>B -> Bi-dir predicted</li>
-     *     <li>S -> S(GMC)-VOP MPEG-4</li>
-     *     <li>i -> Switching Intra</li>
-     *     <li>p -> Switching Predicted</li>
-     *     <li>b -> BI type</li>
-     *     <li>? - > unknown/undefined</li>
+     *     <li>I -&gt; Intra</li>
+     *     <li>P -&gt; Predicted</li>
+     *     <li>B -&gt; Bi-dir predicted</li>
+     *     <li>S -&gt; S(GMC)-VOP MPEG-4</li>
+     *     <li>i -&gt; Switching Intra</li>
+     *     <li>p -&gt; Switching Predicted</li>
+     *     <li>b -&gt; BI type</li>
+     *     <li>? -&gt; unknown/undefined</li>
      * </ul>
      *
      * @return picture type of the frame
+     * @see <a href="https://github.com/FFmpeg/FFmpeg/blob/master/libavutil/avutil.h#L272">
+     *     enum AVPictureType</a>
+     * @see <a href="https://github.com/FFmpeg/FFmpeg/blob/master/libavutil/utils.c#L88">
+     *     char av_get_picture_type_char(enum AVPictureType pict_type)</a>
      */
     public String getPictType() {
         return probeData.getString("pict_type");
