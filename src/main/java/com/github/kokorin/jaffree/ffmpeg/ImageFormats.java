@@ -29,7 +29,7 @@ import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 
 /**
- * Standard {@link ImageFormat ImageFormats} used by {@link FrameInput} & {@link FrameOutput}.
+ * Standard {@link ImageFormat ImageFormats} used by {@link FrameInput} and {@link FrameOutput}.
  */
 public enum ImageFormats implements ImageFormat {
     /**

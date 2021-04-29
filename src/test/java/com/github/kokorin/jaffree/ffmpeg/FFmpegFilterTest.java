@@ -35,7 +35,6 @@ public class FFmpegFilterTest {
      * <p>
      * Note, that this example lacks audio filter.
      *
-     * @throws Exception
      * @see <a href="https://trac.ffmpeg.org/wiki/Create%20a%20mosaic%20out%20of%20several%20input%20videos">mosaic</a>
      */
     @Test
@@ -153,7 +152,6 @@ public class FFmpegFilterTest {
     /**
      * Concatenates 2 video with reencoding
      *
-     * @throws Exception
      * @see <a href="Concatenate">Concatenate</a>
      */
     @Test
