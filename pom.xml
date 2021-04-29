@@ -45,7 +45,7 @@
 
 
     <properties>
-        <sl4j.version>1.7.25</sl4j.version>
+        <sl4j.version>1.7.30</sl4j.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <createSourcesJar>false</createSourcesJar>
         <shadeSourcesContent>false</shadeSourcesContent>
