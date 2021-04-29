@@ -19,6 +19,17 @@ package com.github.kokorin.jaffree.process;
 
 import java.io.InputStream;
 
+/**
+ * Implement {@link StdReader} interface to parse program stdout or stderr streams.
+ *
+ * @param <T> std read result
+ */
 public interface StdReader<T> {
+    /**
+     * Reads program stdout or stderr and returns parsed result.
+     *
+     * @param stdOut input stream
+     * @return parsed result
+     */
     T read(InputStream stdOut);
 }

@@ -22,7 +22,12 @@ import com.github.kokorin.jaffree.ffprobe.data.ProbeData;
 public class StreamDisposition {
     private final ProbeData probeData;
 
-    public StreamDisposition(ProbeData probeData) {
+    /**
+     * Creates {@link StreamDisposition} description based on provided ffprobe data.
+     *
+     * @param probeData ffprobe data
+     */
+    public StreamDisposition(final ProbeData probeData) {
         this.probeData = probeData;
     }
 
