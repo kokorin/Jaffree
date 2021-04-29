@@ -28,7 +28,12 @@ import java.util.concurrent.TimeUnit;
 public class Stream implements TagAware {
     private final ProbeData probeData;
 
-    public Stream(ProbeData probeData) {
+    /**
+     * Creates {@link Stream} description based on provided ffprobe data.
+     *
+     * @param probeData ffprobe data
+     */
+    public Stream(final ProbeData probeData) {
         this.probeData = probeData;
     }
 

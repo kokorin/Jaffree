@@ -1,5 +1,5 @@
 /*
- *    Copyright  2017 Denis Kokorin
+ *    Copyright 2017 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,6 +17,12 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
+/**
+ * Represents audio/video stream.
+ *
+ * @see FrameInput
+ * @see FrameOutput
+ */
 public class Stream {
     private int id;
     private Type type;
@@ -29,83 +35,154 @@ public class Stream {
     private Long sampleRate;
     private Integer channels;
 
+    /**
+     * Stream type.
+     */
     public enum Type {
         VIDEO,
         AUDIO
     }
 
+    /**
+     * @return stream id
+     */
     public int getId() {
         return id;
     }
 
-    public Stream setId(int id) {
+    /**
+     * @param id stream id
+     * @return this
+     */
+    public Stream setId(final int id) {
         this.id = id;
         return this;
     }
 
+    /**
+     * @return stream type
+     */
     public Type getType() {
         return type;
     }
 
-    public Stream setType(Type type) {
+    /**
+     * @param type stream type
+     * @return this
+     */
+    public Stream setType(final Type type) {
         this.type = type;
         return this;
     }
 
+    /**
+     * @return stream timebase
+     */
     public Long getTimebase() {
         return timebase;
     }
 
-    public Stream setTimebase(Long timebase) {
+    /**
+     * @param timebase stream timebase
+     * @return this
+     */
+    public Stream setTimebase(final Long timebase) {
         this.timebase = timebase;
         return this;
     }
 
+    /**
+     * Return stream width for video stream  or null for other stream types.
+     *
+     * @return stream width
+     */
     public Integer getWidth() {
         return width;
     }
 
-    public Stream setWidth(int width) {
+    /**
+     * @param width stream width
+     * @return this
+     */
+    public Stream setWidth(final int width) {
         this.width = width;
         return this;
     }
 
+    /**
+     * Return stream height for video stream  or null for other stream types.
+     *
+     * @return stream height
+     */
     public Integer getHeight() {
         return height;
     }
 
-    public Stream setHeight(int height) {
+    /**
+     * @param height stream width
+     * @return this
+     */
+    public Stream setHeight(final int height) {
         this.height = height;
         return this;
     }
 
-    public Stream setResolution(int width, int height) {
+    /**
+     * Sets both width and height.
+     *
+     * @param width  stream width
+     * @param height stream height
+     * @return this
+     */
+    @SuppressWarnings("checkstyle:HiddenField")
+    public Stream setResolution(final int width, final int height) {
         return setWidth(width).setHeight(height);
     }
 
+    /**
+     * Returns stream sample rate for audio stream or null for other stream types.
+     *
+     * @return sample rate
+     */
     public Long getSampleRate() {
         return sampleRate;
     }
 
-    public Stream setSampleRate(long sampleRate) {
+    /**
+     * @param sampleRate sample rate
+     * @return this
+     */
+    public Stream setSampleRate(final long sampleRate) {
         this.sampleRate = sampleRate;
         return this;
     }
 
+    /**
+     * Returns stream number of channels for audio stream or null for other stream types.
+     *
+     * @return number of channels
+     */
     public Integer getChannels() {
         return channels;
     }
 
-    public Stream setChannels(int channels) {
+    /**
+     * @param channels number of audio channels.
+     * @return this
+     */
+    public Stream setChannels(final int channels) {
         this.channels = channels;
         return this;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
-        return "Stream{" +
-                "id=" + id +
-                ", type=" + type +
-                '}';
+        return "Stream{"
+                + "id=" + id
+                + ", type=" + type
+                + '}';
     }
 }

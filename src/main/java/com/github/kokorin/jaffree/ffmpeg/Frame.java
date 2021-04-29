@@ -25,6 +25,9 @@ import java.awt.image.BufferedImage;
  * <b>Note</b>: image and samples must not be changed after creating Frame instance.
  * Otherwise it may affect (or event corrupt) produced media, because Jaffree internally
  * maintains frame reordering buffer while producing video.
+ *
+ * @see FrameInput
+ * @see FrameOutput
  */
 public class Frame {
     private final int streamId;

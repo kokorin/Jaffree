@@ -30,6 +30,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * {@link ProcessHandler} executes program.
+ * <p>
+ * To read stdout and stderr configure {@link StdReader StdReaders}
+ *
+ * @param <T> process execution result
+ * @see StdReader
+ * @see #setStdOutReader(StdReader)
+ * @see #setStdErrReader(StdReader)
+ */
 public class ProcessHandler<T> {
     private final Path executable;
     private final String contextName;
@@ -39,44 +49,83 @@ public class ProcessHandler<T> {
     private Stopper stopper = null;
     private List<String> arguments = Collections.emptyList();
 
+    private static final int EXECUTOR_TIMEOUT_MILLIS = 10_000;
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessHandler.class);
 
-    public ProcessHandler(Path executable, String contextName) {
+    /**
+     * Create {@link ProcessHandler}.
+     *
+     * @param executable  path to executable
+     * @param contextName logging context
+     */
+    public ProcessHandler(final Path executable, final String contextName) {
         this.executable = executable;
         this.contextName = contextName;
     }
 
-    public synchronized ProcessHandler<T> setStdOutReader(StdReader<T> stdOutReader) {
+    /**
+     * Sets stdout reader.
+     *
+     * @param stdOutReader stdout reader
+     * @return this
+     */
+    public synchronized ProcessHandler<T> setStdOutReader(final StdReader<T> stdOutReader) {
         this.stdOutReader = stdOutReader;
         return this;
     }
 
-    public synchronized ProcessHandler<T> setStdErrReader(StdReader<T> stdErrReader) {
+    /**
+     * Sets stderr reader.
+     *
+     * @param stdErrReader stdout reader
+     * @return this
+     */
+    public synchronized ProcessHandler<T> setStdErrReader(final StdReader<T> stdErrReader) {
         this.stdErrReader = stdErrReader;
         return this;
     }
 
     /**
-     * Set extra {@link Runnable}s that must be executed in parallel with process
+     * Set extra {@link ProcessHelper ProcessHelpers} that must be executed in parallel with
+     * process.
      *
-     * @param helpers list
+     * @param helpers helpers list
      * @return this
      */
-    public synchronized ProcessHandler<T> setHelpers(List<ProcessHelper> helpers) {
+    public synchronized ProcessHandler<T> setHelpers(final List<ProcessHelper> helpers) {
         this.helpers = helpers;
         return this;
     }
 
-    public synchronized ProcessHandler<T> setStopper(Stopper stopper) {
+    /**
+     * Sets {@link Stopper} which can be used to interrupt program execution.
+     *
+     * @param stopper stopper
+     * @return this
+     */
+    public synchronized ProcessHandler<T> setStopper(final Stopper stopper) {
         this.stopper = stopper;
         return this;
     }
 
-    public synchronized ProcessHandler<T> setArguments(List<String> arguments) {
+    /**
+     * Sets arguments list to pass to a program.
+     *
+     * @param arguments arguments list
+     * @return this
+     */
+    public synchronized ProcessHandler<T> setArguments(final List<String> arguments) {
         this.arguments = arguments;
         return this;
     }
 
+    /**
+     * Executes a program.
+     * <p>
+     * Returns program result from stdout or stderr {@link StdReader readers}.
+     *
+     * @return program result
+     */
     public synchronized T execute() {
         try {
             List<String> command = new ArrayList<>();
@@ -101,8 +150,9 @@ public class ProcessHandler<T> {
                 if (process != null) {
                     // TODO on Windows process sometimes doesn't stop and keeps running
                     process.destroy();
-                    // Process must be destroyed before closing streams, can't use try-with-resources,
-                    // as resources are closing when leaving try block, before finally
+                    // Process must be destroyed before closing streams, can't use
+                    // try-with-resources, as resources are closing when leaving try block,
+                    // before finally
                     closeQuietly(process.getInputStream());
                     closeQuietly(process.getOutputStream());
                     closeQuietly(process.getErrorStream());
@@ -113,7 +163,13 @@ public class ProcessHandler<T> {
         }
     }
 
-    protected T interactWithProcess(Process process) {
+    /**
+     * Interacts with {@link Process}: reads stderr and stdout.
+     *
+     * @param process process
+     * @return program result
+     */
+    protected T interactWithProcess(final Process process) {
         AtomicReference<T> resultRef = new AtomicReference<>();
         Executor executor = null;
         Integer status = null;
@@ -126,7 +182,7 @@ public class ProcessHandler<T> {
             status = process.waitFor();
             LOGGER.info("Process has finished with status: {}", status);
 
-            waitForExecutorToStop(executor, 10_000);
+            waitForExecutorToStop(executor, EXECUTOR_TIMEOUT_MILLIS);
         } catch (InterruptedException e) {
             LOGGER.warn("Process has been interrupted");
             interrupted = e;
@@ -141,7 +197,8 @@ public class ProcessHandler<T> {
             exception = executor.getException();
         }
         if (exception != null) {
-            throw new JaffreeException("Failed to execute, exception appeared in one of helper threads", exception);
+            throw new JaffreeException(
+                    "Failed to execute, exception appeared in one of helper threads", exception);
         }
 
         if (interrupted != null) {
@@ -149,7 +206,8 @@ public class ProcessHandler<T> {
         }
 
         if (!Integer.valueOf(0).equals(status)) {
-            throw new JaffreeException("Process execution has ended with non-zero status: " + status);
+            throw new JaffreeException(
+                    "Process execution has ended with non-zero status: " + status);
         }
 
         T result = resultRef.get();
@@ -160,7 +218,18 @@ public class ProcessHandler<T> {
         return result;
     }
 
-    protected Executor startExecution(final Process process, final AtomicReference<T> resultReference) {
+    /**
+     * Starts execution of stdout and stderr {@link StdReader readers} as well as
+     * {@link ProcessHelper ProcessHelpers}.
+     * <p>
+     * Returns {@link Executor}
+     *
+     * @param process         process
+     * @param resultReference reference to set result
+     * @return executor
+     */
+    protected Executor startExecution(final Process process,
+                                      final AtomicReference<T> resultReference) {
         Executor executor = new Executor(contextName);
 
         LOGGER.debug("Starting IO interaction with process");
@@ -205,7 +274,7 @@ public class ProcessHandler<T> {
         return executor;
     }
 
-    protected static String joinArguments(List<String> arguments) {
+    protected static String joinArguments(final List<String> arguments) {
         StringBuilder result = new StringBuilder();
         boolean first = true;
         for (String argument : arguments) {
@@ -220,7 +289,7 @@ public class ProcessHandler<T> {
         return result.toString();
     }
 
-    private static void closeQuietly(Closeable toClose) {
+    private static void closeQuietly(final Closeable toClose) {
         try {
             if (toClose != null) {
                 toClose.close();
@@ -239,17 +308,21 @@ public class ProcessHandler<T> {
         }
     }
 
-    private static void waitForExecutorToStop(Executor executor, long timeoutMillis) throws InterruptedException {
+    @SuppressWarnings("checkstyle:MagicNumber")
+    private static void waitForExecutorToStop(final Executor executor, final long timeoutMillis)
+            throws InterruptedException {
         LOGGER.debug("Waiting for Executor to stop");
 
         long waitStarted = System.currentTimeMillis();
         do {
             if (System.currentTimeMillis() - waitStarted > timeoutMillis) {
-                LOGGER.warn("Executor hasn't stopped in {} millis, won't wait longer", timeoutMillis);
+                LOGGER.warn("Executor hasn't stopped in {} millis, won't wait longer",
+                        timeoutMillis);
                 break;
             }
 
-            LOGGER.trace("Executor hasn't yet stopped, still running threads: {}", executor.getRunningThreadNames());
+            LOGGER.trace("Executor hasn't yet stopped, still running threads: {}",
+                    executor.getRunningThreadNames());
             Thread.sleep(100);
         } while (executor.isRunning());
     }

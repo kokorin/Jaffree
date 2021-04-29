@@ -23,7 +23,12 @@ import com.github.kokorin.jaffree.ffprobe.data.ProbeData;
 public class Subtitle implements FrameSubtitle, PacketFrameSubtitle {
     private final ProbeData probeData;
 
-    public Subtitle(ProbeData probeData) {
+    /**
+     * Creates {@link Subtitle} description based on provided ffprobe data.
+     *
+     * @param probeData ffprobe data
+     */
+    public Subtitle(final ProbeData probeData) {
         this.probeData = probeData;
     }
 
