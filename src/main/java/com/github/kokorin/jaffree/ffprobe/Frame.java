@@ -60,6 +60,9 @@ public class Frame implements TagAware, FrameSubtitle, PacketFrameSubtitle {
     }
 
     /**
+     * Returns additional frame data that can be provided by the container.
+     * Frame can contain several types of side information.
+     *
      * @return side data for the frame
      */
     public List<SideData> getSideDataList() {
@@ -67,7 +70,7 @@ public class Frame implements TagAware, FrameSubtitle, PacketFrameSubtitle {
     }
 
     /**
-     * Presentation timestamp in time_base units (time when frame should be shown to user).
+     * Presentation timestamp in timebase units (time when frame should be shown to user).
      * <p>
      * <b>Note</b>: despite declared in
      * <a href="https://github.com/FFmpeg/FFmpeg/blob/master/doc/ffprobe.xsd">ffprobe.xsd</a>

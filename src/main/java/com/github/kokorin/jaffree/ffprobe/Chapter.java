@@ -27,9 +27,9 @@ public class Chapter implements TagAware {
     private final ProbeData probeData;
 
     /**
-     * Creates {@link Chapter} description based on provided data sections.
+     * Creates {@link Chapter} description based on provided ffprobe data.
      *
-     * @param probeData data section
+     * @param probeData ffprobe data
      */
     public Chapter(final ProbeData probeData) {
         this.probeData = probeData;
