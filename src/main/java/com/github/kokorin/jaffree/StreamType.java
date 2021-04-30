@@ -17,6 +17,8 @@
 
 package com.github.kokorin.jaffree;
 
+//TODO rename to MediaType, StreamType should not be removed,
+// instead StreamType.VIDEO = MediaType.VIDEO for backward compatibility
 public enum StreamType {
     /**
      * Matches all video streams
