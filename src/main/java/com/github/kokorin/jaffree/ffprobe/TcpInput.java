@@ -22,23 +22,44 @@ import com.github.kokorin.jaffree.net.TcpNegotiator;
 import com.github.kokorin.jaffree.net.TcpServer;
 import com.github.kokorin.jaffree.process.ProcessHelper;
 
+/**
+ * Base implementation of {@link Input} for all TCP-based inputs.
+ */
 public abstract class TcpInput implements Input {
     private final String url;
     private final TcpServer tcpServer;
 
-    public TcpInput(TcpNegotiator negotiator) {
+    /**
+     * Creates {@link TcpInput}.
+     *
+     * @param negotiator tcp negotiator
+     */
+    public TcpInput(final TcpNegotiator negotiator) {
         this("tcp", negotiator);
     }
 
-    public TcpInput(String protocol, TcpNegotiator negotiator) {
+    /**
+     * Creates {@link TcpInput}.
+     *
+     * @param protocol   protocol
+     * @param negotiator tcp negotiator
+     */
+    public TcpInput(final String protocol, final TcpNegotiator negotiator) {
         this(protocol, "", negotiator);
     }
 
-    public TcpInput(String protocol, String suffix, TcpNegotiator negotiator) {
+    /**
+     * Creates {@link TcpInput}.
+     *
+     * @param protocol   protocol
+     * @param suffix     url suffix
+     * @param negotiator tcp negotiator
+     */
+    public TcpInput(final String protocol, final String suffix, final TcpNegotiator negotiator) {
         this(protocol, suffix, NegotiatingTcpServer.onRandomPort(negotiator));
     }
 
-    protected TcpInput(String protocol, String suffix, TcpServer tcpServer) {
+    protected TcpInput(final String protocol, final String suffix, final TcpServer tcpServer) {
         this.url = protocol + "://" + tcpServer.getAddressAndPort() + suffix;
         this.tcpServer = tcpServer;
     }
@@ -48,6 +69,9 @@ public abstract class TcpInput implements Input {
         return url;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ProcessHelper helperThread() {
         return tcpServer;
