@@ -10,7 +10,7 @@ public interface TagAware {
      * Use this method if you have to access properties which are not accessible through
      * other getters.
      *
-     * @return data section
+     * @return probe data
      */
     ProbeData getProbeData();
 
