@@ -1,8 +1,6 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.Artifacts;
-import com.github.kokorin.jaffree.StreamSpecifier;
-import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffprobe.FFprobe;
 import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
 import com.github.kokorin.jaffree.ffprobe.Stream;
@@ -26,7 +24,9 @@ public class FFmpegFilterTest {
         if (ffmpegHome == null) {
             ffmpegHome = System.getenv("FFMPEG_BIN");
         }
-        Assert.assertNotNull("Nor command line property, neither system variable FFMPEG_BIN is set up", ffmpegHome);
+        Assert.assertNotNull(
+                "Nor command line property, neither system variable FFMPEG_BIN is set up",
+                ffmpegHome);
         BIN = Paths.get(ffmpegHome);
     }
 
@@ -55,7 +55,7 @@ public class FFmpegFilterTest {
                                         .addOutputLink("base")
                         ),
                         FilterChain.of(
-                                Filter.fromInputLink(StreamSpecifier.withInputIndexAndType(0, StreamType.VIDEO))
+                                Filter.fromInputLink("0:v")
                                         .setName("setpts")
                                         .addArgument("PTS-STARTPTS"),
                                 Filter.withName("scale")
@@ -63,7 +63,7 @@ public class FFmpegFilterTest {
                                         .addOutputLink("upperleft")
                         ),
                         FilterChain.of(
-                                Filter.fromInputLink(StreamSpecifier.withInputIndexAndType(1, StreamType.VIDEO))
+                                Filter.fromInputLink("1:v")
                                         .setName("setpts")
                                         .addArgument("PTS-STARTPTS"),
                                 Filter.withName("scale")
@@ -71,7 +71,7 @@ public class FFmpegFilterTest {
                                         .addOutputLink("upperright")
                         ),
                         FilterChain.of(
-                                Filter.fromInputLink(StreamSpecifier.withInputIndexAndType(2, StreamType.VIDEO))
+                                Filter.fromInputLink("2:v")
                                         .setName("setpts")
                                         .addArgument("PTS-STARTPTS"),
                                 Filter.withName("scale")
@@ -79,7 +79,7 @@ public class FFmpegFilterTest {
                                         .addOutputLink("lowerleft")
                         ),
                         FilterChain.of(
-                                Filter.fromInputLink(StreamSpecifier.withInputIndexAndType(3, StreamType.VIDEO))
+                                Filter.fromInputLink("3:v")
                                         .setName("setpts")
                                         .addArgument("PTS-STARTPTS"),
                                 Filter.withName("scale")
@@ -161,14 +161,15 @@ public class FFmpegFilterTest {
 
         FFmpegResult result = FFmpeg.atPath(BIN)
                 .addInput(UrlInput.fromPath(Artifacts.VIDEO_MP4).setDuration(5, TimeUnit.SECONDS))
-                .addInput(UrlInput.fromPath(Artifacts.VIDEO_MKV).setPositionEof(-5, TimeUnit.SECONDS))
+                .addInput(
+                        UrlInput.fromPath(Artifacts.VIDEO_MKV).setPositionEof(-5, TimeUnit.SECONDS))
 
                 .setComplexFilter(FilterGraph.of(
                         FilterChain.of(
-                                Filter.fromInputLink(StreamSpecifier.withInputIndexAndType(0, StreamType.VIDEO))
-                                        .addInputLink(StreamSpecifier.withInputIndexAndType(0, StreamType.AUDIO))
-                                        .addInputLink(StreamSpecifier.withInputIndexAndType(1, StreamType.VIDEO))
-                                        .addInputLink(StreamSpecifier.withInputIndexAndType(1, StreamType.AUDIO))
+                                Filter.fromInputLink("0:v")
+                                        .addInputLink("0:a")
+                                        .addInputLink("1:v")
+                                        .addInputLink("1:a")
                                         .setName("concat")
                                         .addArgument("n", "2")
                                         .addArgument("v", "1")
