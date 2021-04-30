@@ -4,7 +4,6 @@ import com.github.kokorin.jaffree.Artifacts;
 import com.github.kokorin.jaffree.LogLevel;
 import com.github.kokorin.jaffree.Rational;
 import com.github.kokorin.jaffree.StackTraceMatcher;
-import com.github.kokorin.jaffree.StreamSpecifier;
 import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffprobe.data.FlatFormatParser;
 import com.github.kokorin.jaffree.ffprobe.data.FormatParser;
@@ -383,7 +382,7 @@ public class FFprobeTest {
         FFprobeResult result = FFprobe.atPath(BIN)
                 .setInput(Artifacts.VIDEO_MP4)
                 .setShowPackets(true)
-                .setSelectStreams(StreamSpecifier.withIndex(1))
+                .setSelectStreams("1")
                 .setFormatParser(formatParser)
                 .execute();
 
