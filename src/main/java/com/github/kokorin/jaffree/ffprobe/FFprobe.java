@@ -124,7 +124,6 @@ public class FFprobe {
      * @return this
      * @see <a href="https://ffmpeg.org/ffmpeg.html#Stream-specifiers">
      * stream specifiers</a>
-     * @see com.github.kokorin.jaffree.StreamSpecifier
      */
     public FFprobe setSelectStreams(final String streamSpecifier) {
         this.selectStreams = streamSpecifier;

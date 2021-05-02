@@ -53,7 +53,6 @@ public class Filter {
      * @return this
      * @see <a href="https://ffmpeg.org/ffmpeg.html#Stream-specifiers">
      * stream specifiers</a>
-     * @see com.github.kokorin.jaffree.StreamSpecifier
      */
     public Filter addInputLink(final String linkOrStreamSpecifier) {
         this.inputLinks.add(linkOrStreamSpecifier);
@@ -196,7 +195,6 @@ public class Filter {
      * @return this
      * @see <a href="https://ffmpeg.org/ffmpeg.html#Stream-specifiers">
      * stream specifiers</a>
-     * @see com.github.kokorin.jaffree.StreamSpecifier
      */
     public static Filter fromInputLink(final String linkOrStreamSpecifier) {
         return new Filter().addInputLink(linkOrStreamSpecifier);
