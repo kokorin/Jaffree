@@ -46,7 +46,7 @@ public class NutTest {
         try (NutInputStream inputStream = new NutInputStream(new FileInputStream(Artifacts.VIDEO_NUT.toFile()));
              NutOutputStream outputStream = new NutOutputStream(new FileOutputStream(outputPath.toFile()))) {
             NutReader reader = new NutReader(inputStream);
-            NutWriter writer = new NutWriter(outputStream);
+            NutWriter writer = new NutWriter(outputStream, 200);
 
             MainHeader mainHeader = reader.getMainHeader();
             StreamHeader[] streamHeaders = reader.getStreamHeaders();
@@ -138,8 +138,8 @@ public class NutTest {
 
             Assert.assertEquals(StreamHeader.Type.AUDIO, streamHeaders[1].streamType);
             Assert.assertEquals(1, streamHeaders[1].audio.channelCount);
-            Assert.assertEquals(44100, streamHeaders[1].audio.samplerate.getNumerator());
-            Assert.assertEquals(1, streamHeaders[1].audio.samplerate.getDenominator());
+            Assert.assertEquals(44100, streamHeaders[1].audio.sampleRate.getNumerator());
+            Assert.assertEquals(1, streamHeaders[1].audio.sampleRate.getDenominator());
 
             NutFrame frame = reader.readFrame();
             Assert.assertNotNull(frame);

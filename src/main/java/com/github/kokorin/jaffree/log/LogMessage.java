@@ -1,5 +1,5 @@
 /*
- *    Copyright 2020 Denis Kokorin
+ *    Copyright 2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -15,7 +15,26 @@
  *
  */
 
+package com.github.kokorin.jaffree.log;
+
+import com.github.kokorin.jaffree.LogLevel;
+
 /**
- * Classes partially implementing NUT container format muxer &amp; demuxer.
+ * ffprobe/ffmpeg log message with log level.
  */
-package com.github.kokorin.jaffree.nut;
+@SuppressWarnings("checkstyle:VisibilityModifier")
+public class LogMessage {
+    public final LogLevel logLevel;
+    public final String message;
+
+    /**
+     * Creates {@link LogMessage}.
+     *
+     * @param logLevel log level
+     * @param message  message
+     */
+    public LogMessage(final LogLevel logLevel, final String message) {
+        this.logLevel = logLevel;
+        this.message = message;
+    }
+}

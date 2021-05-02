@@ -1,5 +1,5 @@
 /*
- *    Copyright  2017-2021 Denis Kokorin
+ *    Copyright 2017-2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import java.io.InputStream;
  * {@link NutInputStream} adapts {@link InputStream} and provides methods to read
  * Nut-specific data structures.
  */
-@SuppressWarnings("checkstyle:magicnumber")
+@SuppressWarnings("checkstyle:MagicNumber")
 public class NutInputStream implements AutoCloseable {
 
     private final InputStream input;
@@ -39,15 +39,7 @@ public class NutInputStream implements AutoCloseable {
      * @param input input stream
      */
     public NutInputStream(final InputStream input) {
-        BufferedInputStream bufferedInputStream;
-
-        if (input instanceof BufferedInputStream) {
-            bufferedInputStream = (BufferedInputStream) input;
-        } else {
-            bufferedInputStream = new BufferedInputStream(input);
-        }
-
-        this.input = bufferedInputStream;
+        this.input = asBuffered(input);
     }
 
     /**
@@ -61,6 +53,7 @@ public class NutInputStream implements AutoCloseable {
      * Reads v type (variable length value, unsigned).
      *
      * @return unsigned value, or -1 if no data
+     * @throws IOException if any IO error
      */
     public long readValue() throws IOException {
         long result = 0;
@@ -84,6 +77,7 @@ public class NutInputStream implements AutoCloseable {
      * Reads s type (variable length value, signed).
      *
      * @return signed value
+     * @throws IOException if any IO error
      */
     public long readSignedValue() throws IOException {
         long tmp = readValue();
@@ -100,6 +94,7 @@ public class NutInputStream implements AutoCloseable {
      * n == 64
      *
      * @return long
+     * @throws IOException if any IO error
      */
     public long readLong() throws IOException {
         long result = 0;
@@ -121,6 +116,7 @@ public class NutInputStream implements AutoCloseable {
      * n == 32
      *
      * @return int as long
+     * @throws IOException if any IO error
      */
     long readInt() throws IOException {
         long result = 0;
@@ -142,6 +138,7 @@ public class NutInputStream implements AutoCloseable {
      * n == 8
      *
      * @return byte
+     * @throws IOException if any IO error
      */
     public int readByte() throws IOException {
         int result = input.read();
@@ -157,6 +154,7 @@ public class NutInputStream implements AutoCloseable {
      * Reads vb type (variable length binary data or string).
      *
      * @return String
+     * @throws IOException if any IO error
      */
     public String readVariableString() throws IOException {
         byte[] bytes = readVariableBytes();
@@ -164,9 +162,10 @@ public class NutInputStream implements AutoCloseable {
     }
 
     /**
-     * Reads input till char \0 not found.
+     * Reads null-terminated string.
      *
      * @return String
+     * @throws IOException if any IO error
      */
     public String readCString() throws IOException {
         try (ByteArrayOutputStream buffer = new ByteArrayOutputStream(32)) {
@@ -191,6 +190,7 @@ public class NutInputStream implements AutoCloseable {
      * Reads vb type (variable length binary data or string).
      *
      * @return String
+     * @throws IOException if any IO error
      */
     public byte[] readVariableBytes() throws IOException {
         int length = (int) readValue();
@@ -202,6 +202,7 @@ public class NutInputStream implements AutoCloseable {
      *
      * @param timeBaseCount time base count
      * @return Timestamp
+     * @throws IOException if any IO error
      */
     public Timestamp readTimestamp(final int timeBaseCount) throws IOException {
         long tmp = readValue();
@@ -217,6 +218,7 @@ public class NutInputStream implements AutoCloseable {
      * Note: position in {@link InputStream} isn't changed.
      *
      * @return next byte, or -1 if the end of the stream is reached
+     * @throws IOException if any IO error
      */
     public int checkNextByte() throws IOException {
         input.mark(1);
@@ -230,6 +232,7 @@ public class NutInputStream implements AutoCloseable {
      * Returns true if stream contains more data.
      *
      * @return next byte
+     * @throws IOException if any IO error
      */
     public boolean hasMoreData() throws IOException {
         input.mark(1);
@@ -244,6 +247,7 @@ public class NutInputStream implements AutoCloseable {
      *
      * @param toRead bytes to read
      * @return byte array
+     * @throws IOException if any IO error
      */
     public byte[] readBytes(final long toRead) throws IOException {
         byte[] result = new byte[(int) toRead];
@@ -266,6 +270,7 @@ public class NutInputStream implements AutoCloseable {
      * Skips specified number of bytes.
      *
      * @param toSkip bytes to skip
+     * @throws IOException if any IO error
      */
     public void skipBytes(final long toSkip) throws IOException {
         long leftToSkip = toSkip;
@@ -291,5 +296,13 @@ public class NutInputStream implements AutoCloseable {
     @Override
     public void close() throws IOException {
         input.close();
+    }
+
+    private static BufferedInputStream asBuffered(final InputStream inputStream) {
+        if (inputStream instanceof BufferedInputStream) {
+            return (BufferedInputStream) inputStream;
+        }
+
+        return new BufferedInputStream(inputStream);
     }
 }

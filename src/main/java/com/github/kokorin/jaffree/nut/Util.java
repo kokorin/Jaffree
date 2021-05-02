@@ -18,6 +18,7 @@
 package com.github.kokorin.jaffree.nut;
 
 import com.github.kokorin.jaffree.Rational;
+
 import static java.lang.Long.MIN_VALUE;
 import static java.lang.Long.compare;
 
@@ -50,14 +51,14 @@ public final class Util {
 
 
     /**
-     * Switches from one timebase to another.
+     * Converts passed in PTS from one timebase to another.
      * <p>
      * This method is equivalent to (ln*sn)/(d1*d2)
      *
      * @param pts          pts in timeBaseFrom
      * @param timeBaseFrom pts timebase
      * @param timeBaseTo   timebase to switch to
-     * @return @{code (ln*sn)/(d1*d2)}
+     * @return converted PTS
      */
     public static long convertTimestamp(final long pts, final Rational timeBaseFrom,
                                         final Rational timeBaseTo) {

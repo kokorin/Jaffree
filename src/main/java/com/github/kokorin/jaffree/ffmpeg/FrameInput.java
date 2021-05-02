@@ -38,12 +38,14 @@ import java.net.Socket;
 public class FrameInput extends TcpInput<FrameInput> implements Input {
     private final FrameInputNegotiator negotiator;
 
+    private static final int DEFAULT_FRAME_ORDERING_BUFFER_MILLIS = 200;
     private static final Logger LOGGER = LoggerFactory.getLogger(FrameInput.class);
 
     /**
      * Creates {@link FrameInput} for {@link FFmpeg}.
      *
      * @param frameWriter frame writer
+     * @param format      media format
      * @see NutFrameWriter
      */
     protected FrameInput(final FrameWriter frameWriter, final String format) {
@@ -65,7 +67,7 @@ public class FrameInput extends TcpInput<FrameInput> implements Input {
      * corrupted video.
      */
     @Override
-    public FrameInput setFrameRate(Number frameRate) {
+    public FrameInput setFrameRate(final Number frameRate) {
         return super.setFrameRate(frameRate);
     }
 
@@ -83,8 +85,15 @@ public class FrameInput extends TcpInput<FrameInput> implements Input {
         return super.setFrameRate(streamSpecifier, frameRate);
     }
 
+    /**
+     * Format change is prohibited after {@link FrameInput} instantiation.
+     *
+     * @param format format
+     * @return never returns
+     * @throws JaffreeException always
+     */
     @Override
-    public final FrameInput setFormat(String format) {
+    public final FrameInput setFormat(final String format) {
         throw new JaffreeException("Format can't be changed");
     }
 
@@ -122,8 +131,9 @@ public class FrameInput extends TcpInput<FrameInput> implements Input {
      * @return FrameInput
      * @see ImageFormats
      */
-    public static FrameInput withProducer(final FrameProducer producer, final ImageFormat imageFormat) {
-        return withProducer(producer, imageFormat, 200);
+    public static FrameInput withProducer(final FrameProducer producer,
+                                          final ImageFormat imageFormat) {
+        return withProducer(producer, imageFormat, DEFAULT_FRAME_ORDERING_BUFFER_MILLIS);
     }
 
     /**
@@ -132,7 +142,8 @@ public class FrameInput extends TcpInput<FrameInput> implements Input {
      * Frame ordering buffer allows {@link FrameProducer} to produce frame without strict ordering
      * (which is required by NUT format).
      * <p>
-     * Note: too long frame ordering buffer may cause {@link OutOfMemoryError} or performance degradation.
+     * <b>Note</b>: too long frame ordering buffer may cause {@link OutOfMemoryError} or
+     * performance degradation.
      *
      * @param producer                  frame producer
      * @param imageFormat               video frame image format
@@ -140,8 +151,9 @@ public class FrameInput extends TcpInput<FrameInput> implements Input {
      * @return FrameInput
      * @see ImageFormats
      */
-    public static FrameInput withProducer(final FrameProducer producer, final ImageFormat imageFormat,
-                                          long frameOrderingBufferMillis) {
+    public static FrameInput withProducer(final FrameProducer producer,
+                                          final ImageFormat imageFormat,
+                                          final long frameOrderingBufferMillis) {
         return new FrameInput(
                 new NutFrameWriter(producer, imageFormat, frameOrderingBufferMillis),
                 "nut"
@@ -152,6 +164,10 @@ public class FrameInput extends TcpInput<FrameInput> implements Input {
         void write(OutputStream outputStream) throws IOException;
     }
 
+    /**
+     * {@link TcpNegotiator} implementation which uses {@link FrameWriter} to send bytes over
+     * TCP connection.
+     */
     @ThreadSafe
     protected static class FrameInputNegotiator implements TcpNegotiator {
         private final FrameWriter frameWriter;
@@ -159,14 +175,20 @@ public class FrameInput extends TcpInput<FrameInput> implements Input {
         @GuardedBy("this")
         private boolean frameRateSet;
 
-        public FrameInputNegotiator(FrameWriter frameWriter) {
+        public FrameInputNegotiator(final FrameWriter frameWriter) {
             this.frameWriter = frameWriter;
         }
 
-        public synchronized void setFrameRateSet(final boolean frameRateSet) {
+        private synchronized void setFrameRateSet(final boolean frameRateSet) {
             this.frameRateSet = frameRateSet;
         }
 
+        /**
+         * Sends media over TCP connection.
+         *
+         * @param socket TCP socket
+         * @throws IOException if any IO error
+         */
         @Override
         public synchronized void negotiate(final Socket socket) throws IOException {
             if (!frameRateSet) {

@@ -97,7 +97,8 @@ public class FlatFormatParser implements FormatParser {
      * @param value value
      * @return true if parsed and set
      */
-    protected boolean setKeyValue(final TreeMap<String, Object> data, final String key, final String value) {
+    protected boolean setKeyValue(final TreeMap<String, Object> data, final String key,
+                                  final String value) {
         String[] pathStr = key.split("\\.");
         List<Path> path = new ArrayList<>();
 
@@ -181,7 +182,8 @@ public class FlatFormatParser implements FormatParser {
         @Override
         public TreeMap<String, Object> next(final TreeMap<String, Object> prev) {
             @SuppressWarnings("unchecked")
-            List<TreeMap<String, Object>> valueList = (List<TreeMap<String, Object>>) prev.get(section);
+            List<TreeMap<String, Object>> valueList =
+                    (List<TreeMap<String, Object>>) prev.get(section);
             if (valueList == null) {
                 valueList = new ArrayList<>();
                 prev.put(section, valueList);
@@ -281,22 +283,27 @@ public class FlatFormatParser implements FormatParser {
     }
 
     /**
-     * {@link java.util.Map}-based implementation of {@link ProbeData}
+     * {@link java.util.Map}-based implementation of {@link ProbeData}.
      */
-    public static class ProbeDataMap extends AbstractProbeData implements ProbeData {
+    public static final class ProbeDataMap extends AbstractProbeData implements ProbeData {
         private final Map<String, Object> data;
 
-        public ProbeDataMap(Map<String, Object> data) {
+        /**
+         * Creates ProbeDataMap.
+         * @param data data map
+         */
+        public ProbeDataMap(final Map<String, Object> data) {
             this.data = data;
         }
 
         @Override
-        public Object getValue(String name) {
+        public Object getValue(final String name) {
             return data.get(name);
         }
 
         @Override
-        public ProbeData getSubData(String name) {
+        @SuppressWarnings("unchecked")
+        public ProbeData getSubData(final String name) {
             Object value = data.get(name);
             if (value == null) {
                 return null;
@@ -308,7 +315,8 @@ public class FlatFormatParser implements FormatParser {
         }
 
         @Override
-        public List<ProbeData> getSubDataList(String name) {
+        @SuppressWarnings("unchecked")
+        public List<ProbeData> getSubDataList(final String name) {
             Object value = data.get(name);
             if (value == null) {
                 return null;

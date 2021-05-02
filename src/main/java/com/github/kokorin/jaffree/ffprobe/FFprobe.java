@@ -19,7 +19,6 @@ package com.github.kokorin.jaffree.ffprobe;
 
 import com.github.kokorin.jaffree.LogLevel;
 import com.github.kokorin.jaffree.StreamType;
-import com.github.kokorin.jaffree.ffprobe.data.FlatFormatParser;
 import com.github.kokorin.jaffree.ffprobe.data.FormatParser;
 import com.github.kokorin.jaffree.ffprobe.data.JsonFormatParser;
 import com.github.kokorin.jaffree.process.ProcessHandler;
@@ -125,7 +124,6 @@ public class FFprobe {
      * @return this
      * @see <a href="https://ffmpeg.org/ffmpeg.html#Stream-specifiers">
      * stream specifiers</a>
-     * @see com.github.kokorin.jaffree.StreamSpecifier
      */
     public FFprobe setSelectStreams(final String streamSpecifier) {
         this.selectStreams = streamSpecifier;
@@ -212,9 +210,10 @@ public class FFprobe {
      * <p>
      * SECTION_ENTRIES       ::= SECTION_ENTRY[:SECTION_ENTRIES]
      * <p>
-     * <b>Note:</b> this option overwrites any &quot;show...&quot; set before, so this method should not be used
-     * together with any of {@link #setShowFormat(boolean)}, {@link #setShowFrames(boolean)},
-     * {@link #setShowPackets(boolean)}, {@link #setShowStreams(boolean)}, {@link #setShowChapters(boolean)} or
+     * <b>Note:</b> this option overwrites any &quot;show...&quot; set before, so this method
+     * should not be used together with any of {@link #setShowFormat(boolean)},
+     * {@link #setShowFrames(boolean)}, {@link #setShowPackets(boolean)},
+     * {@link #setShowStreams(boolean)}, {@link #setShowChapters(boolean)} or
      * {@link #setShowPrograms(boolean)}
      *
      * @param showEntries list entries syntax
@@ -472,7 +471,7 @@ public class FFprobe {
      * @param input input to analyze
      * @return this
      */
-    public FFprobe setInput(Input input) {
+    public FFprobe setInput(final Input input) {
         this.input = input;
         return this;
     }
@@ -648,9 +647,11 @@ public class FFprobe {
      * <p>
      * Note: default implementation uses {@link FormatParser} to parse output.
      *
+     * @param formatParser format parser to use
      * @return this
      */
-    protected StdReader<FFprobeResult> createStdOutReader(FormatParser formatParser) {
+    @SuppressWarnings("checkstyle:HiddenField")
+    protected StdReader<FFprobeResult> createStdOutReader(final FormatParser formatParser) {
         return new FFprobeResultReader(formatParser);
     }
 

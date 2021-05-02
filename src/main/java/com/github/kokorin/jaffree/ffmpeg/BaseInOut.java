@@ -205,7 +205,6 @@ public abstract class BaseInOut<T extends BaseInOut<T>> {
      * @return this
      * @see <a href="https://ffmpeg.org/ffmpeg.html#Stream-specifiers">
      * stream specifiers</a>
-     * @see com.github.kokorin.jaffree.StreamSpecifier
      */
     public T setFrameRate(final String streamSpecifier, final Number frameRate) {
         this.frameRates.put(streamSpecifier, frameRate);
@@ -246,7 +245,6 @@ public abstract class BaseInOut<T extends BaseInOut<T>> {
      * @return this
      * @see <a href="https://ffmpeg.org/ffmpeg.html#Stream-specifiers">
      * stream specifiers</a>
-     * @see com.github.kokorin.jaffree.StreamSpecifier
      */
     public T setFrameSize(final String streamSpecifier, final Number width, final Number height) {
         return setFrameSize(streamSpecifier, width + "x" + height);
@@ -267,7 +265,6 @@ public abstract class BaseInOut<T extends BaseInOut<T>> {
      * @return this
      * @see <a href="https://ffmpeg.org/ffmpeg.html#Stream-specifiers">
      * stream specifiers</a>
-     * @see com.github.kokorin.jaffree.StreamSpecifier
      */
     public T setFrameSize(final String streamSpecifier, final String resolution) {
         this.frameSizes.put(streamSpecifier, resolution);
@@ -301,7 +298,6 @@ public abstract class BaseInOut<T extends BaseInOut<T>> {
      * @return this
      * @see <a href="https://ffmpeg.org/ffmpeg.html#Stream-specifiers">
      * stream specifiers</a>
-     * @see com.github.kokorin.jaffree.StreamSpecifier
      */
     public T setCodec(final String streamSpecifier, final String codec) {
         codecs.put(streamSpecifier, codec);
@@ -346,7 +342,6 @@ public abstract class BaseInOut<T extends BaseInOut<T>> {
      * @return this
      * @see <a href="https://ffmpeg.org/ffmpeg.html#Stream-specifiers">
      * stream specifiers</a>
-     * @see com.github.kokorin.jaffree.StreamSpecifier
      */
     public T setPixelFormat(final String streamSpecifier, final String pixelFormat) {
         pixelFormats.put(streamSpecifier, pixelFormat);

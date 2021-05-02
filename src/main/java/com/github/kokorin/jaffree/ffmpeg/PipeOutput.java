@@ -32,34 +32,45 @@ import java.io.OutputStream;
  * @see ChannelOutput
  */
 public class PipeOutput extends TcpOutput<PipeOutput> implements Output {
-    private final PipeOutputNegotiator negotiator;
-
     private static final int DEFAULT_BUFFER_SIZE = 1_000_000;
     private static final Logger LOGGER = LoggerFactory.getLogger(PipeOutput.class);
 
-    public PipeOutput(OutputStream destination) {
-        this(new PipeOutputNegotiator(destination));
+    /**
+     * Creates {@link PipeOutput}.
+     *
+     * @param destination output stream to copy to
+     * @param bufferSize  buffer size to copy data
+     */
+    protected PipeOutput(final OutputStream destination, final int bufferSize) {
+        this(new PipeOutputNegotiator(destination, bufferSize));
     }
 
-    protected PipeOutput(PipeOutputNegotiator negotiator) {
+    protected PipeOutput(final PipeOutputNegotiator negotiator) {
         super(negotiator);
-        this.negotiator = negotiator;
         LOGGER.warn("It's recommended to use ChannelOutput since ffmpeg requires seekable output"
                 + " for many formats");
     }
 
-    public PipeOutput setBufferSize(int bufferSize) {
-        negotiator.setBufferSize(bufferSize);
-        return this;
+
+    /**
+     * Creates {@link PipeOutput} with default buffer size.
+     *
+     * @param destination output stream to copy to
+     * @return PipeOutput
+     */
+    public static PipeOutput pumpTo(final OutputStream destination) {
+        return pumpTo(destination, DEFAULT_BUFFER_SIZE);
     }
 
-    public static PipeOutput pumpTo(OutputStream destination) {
-        return new PipeOutput(destination);
-    }
-
-    public static PipeOutput pumpTo(OutputStream destination, int bufferSize) {
-        return pumpTo(destination)
-                .setBufferSize(bufferSize);
+    /**
+     * Creates {@link PipeOutput}.
+     *
+     * @param destination output stream to copy to
+     * @param bufferSize  buffer size to copy data
+     * @return PipeOutput
+     */
+    public static PipeOutput pumpTo(final OutputStream destination, final int bufferSize) {
+        return new PipeOutput(destination, bufferSize);
     }
 
 }

@@ -29,15 +29,34 @@ import java.io.InputStream;
 public class PipeInput extends TcpInput<PipeInput> implements Input {
     private static final int DEFAULT_BUFFER_SIZE = 1_000_000;
 
+    /**
+     * Creates {@link PipeInput}.
+     *
+     * @param source     input stream to copy from
+     * @param bufferSize buffer size to copy data
+     */
     protected PipeInput(final InputStream source, final int bufferSize) {
         super(new PipeInputNegotiator(source, bufferSize));
     }
 
-    public static PipeInput pumpFrom(InputStream source) {
+    /**
+     * Creates {@link PipeInput}.
+     *
+     * @param source input stream to copy from
+     * @return PipeInput
+     */
+    public static PipeInput pumpFrom(final InputStream source) {
         return pumpFrom(source, DEFAULT_BUFFER_SIZE);
     }
 
-    public static PipeInput pumpFrom(InputStream source, int bufferSize) {
+    /**
+     * Creates {@link PipeInput}.
+     *
+     * @param source     input stream to copy from
+     * @param bufferSize buffer size to copy data
+     * @return PipeInput
+     */
+    public static PipeInput pumpFrom(final InputStream source, final int bufferSize) {
         return new PipeInput(source, bufferSize);
     }
 

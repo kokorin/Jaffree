@@ -23,7 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -41,7 +40,6 @@ import java.nio.channels.SeekableByteChannel;
  * since it uses knowledge of how ffmpeg operates with FTP input &amp; output.
  */
 public class FtpServer extends TcpServer {
-    private final ServerSocket dataServerSocket;
     private final SeekableByteChannel channel;
     private final byte[] buffer;
 
@@ -53,35 +51,33 @@ public class FtpServer extends TcpServer {
      * Creates {@link FtpServer}.
      *
      * @param controlServerSocket server socket to establish FTP control connection
-     * @param dataServerSocket    server socket to establish FTP data connection
      * @param channel             channel to read from or write to
      * @param bufferSize          size of buffer to copy data to or from Channel
      */
-    protected FtpServer(ServerSocket controlServerSocket,
-                        ServerSocket dataServerSocket,
-                        SeekableByteChannel channel,
-                        int bufferSize) {
+    protected FtpServer(final ServerSocket controlServerSocket,
+                        final SeekableByteChannel channel,
+                        final int bufferSize) {
         super(controlServerSocket);
 
         if (bufferSize <= 0) {
             throw new IllegalArgumentException("Buffer size must be positive");
         }
 
-        this.dataServerSocket = dataServerSocket;
         this.channel = channel;
         this.buffer = new byte[bufferSize];
     }
 
     /**
-     * Serves FTP control connection.
+     * Serves FTP using passed in {@link Socket} for control connection.
      *
      * @param controlServerSocket socket with established control connection
+     * @throws IOException socket IO exception
      */
     @Override
-    protected void serve(Socket controlServerSocket) throws IOException {
+    protected void serve(final Socket controlServerSocket) throws IOException {
         LOGGER.debug("Serving FTP control connection {}", getAddressAndPort());
 
-        try (Closeable toClose = dataServerSocket;
+        try (ServerSocket dataServerSocket = allocateSocket();
              BufferedReader controlReader = new BufferedReader(
                      new InputStreamReader(controlServerSocket.getInputStream()));
              OutputStream controlOutput = controlServerSocket.getOutputStream()) {
@@ -89,13 +85,6 @@ public class FtpServer extends TcpServer {
             operate(controlReader, controlOutput, dataServerSocket);
         } catch (Exception e) {
             throw new JaffreeException("Failed to serve FTP", e);
-        }
-    }
-
-    @Override
-    public void close() throws IOException {
-        try (Closeable toClose = dataServerSocket) {
-            super.close();
         }
     }
 
@@ -351,13 +340,25 @@ public class FtpServer extends TcpServer {
         output.write(NEW_LINE);
     }
 
-    public static FtpServer onRandomPorts(SeekableByteChannel channel) {
+    /**
+     * Creates {@link FtpServer} waiting for TCP connection on random port.
+     *
+     * @param channel byte channel to serve data
+     * @return FtpServer
+     */
+    public static FtpServer onRandomPorts(final SeekableByteChannel channel) {
         return onRandomPorts(channel, DEFAULT_BUFFER_SIZE);
     }
 
-    public static FtpServer onRandomPorts(SeekableByteChannel channel, int bufferSize) {
+    /**
+     * Creates {@link FtpServer} waiting for TCP connection on random port.
+     *
+     * @param channel    byte channel to serve data
+     * @param bufferSize buffer size to copy bytes
+     * @return FtpServer
+     */
+    public static FtpServer onRandomPorts(final SeekableByteChannel channel, final int bufferSize) {
         return new FtpServer(
-                allocateSocket(),
                 allocateSocket(),
                 channel,
                 bufferSize

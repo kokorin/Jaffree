@@ -20,7 +20,6 @@ package com.github.kokorin.jaffree.ffprobe;
 import com.github.kokorin.jaffree.Rational;
 import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffprobe.data.ProbeData;
-import com.github.kokorin.jaffree.ffprobe.data.ProbeDataConverter;
 
 import java.util.List;
 
@@ -57,31 +56,25 @@ public class Frame implements TagAware, FrameSubtitle, PacketFrameSubtitle {
      * @see FFprobe#setShowLog(com.github.kokorin.jaffree.LogLevel)
      */
     public List<Log> getLogs() {
-        return probeData.getSubDataList("logs", new ProbeDataConverter<Log>() {
-            @Override
-            public Log convert(final ProbeData probeData) {
-                return new Log(probeData);
-            }
-        });
+        return probeData.getSubDataList("logs", Log::new);
     }
 
     /**
+     * Returns additional frame data that can be provided by the container.
+     * Frame can contain several types of side information.
+     *
      * @return side data for the frame
      */
     public List<SideData> getSideDataList() {
-        return probeData.getSubDataList("side_data_list", new ProbeDataConverter<SideData>() {
-            @Override
-            public SideData convert(final ProbeData probeData) {
-                return new SideData(probeData);
-            }
-        });
+        return probeData.getSubDataList("side_data_list", SideData::new);
     }
 
     /**
-     * Presentation timestamp in time_base units (time when frame should be shown to user).
+     * Presentation timestamp in timebase units (time when frame should be shown to user).
      * <p>
-     * <b>Note</b>: despite declared in <a href="https://github.com/FFmpeg/FFmpeg/blob/master/doc/ffprobe.xsd">ffprobe.xsd</a>
-     * for ffprobe:frameType this property has never been reported by ffprobe.
+     * <b>Note</b>: despite declared in
+     * <a href="https://github.com/FFmpeg/FFmpeg/blob/master/doc/ffprobe.xsd">ffprobe.xsd</a>
+     * for ffprobe:frameType, this property has never been reported by ffprobe.
      *
      * @return pts
      * @see #getPktPts()
@@ -93,8 +86,9 @@ public class Frame implements TagAware, FrameSubtitle, PacketFrameSubtitle {
     /**
      * Presentation timestamp in seconds (time when frame should be shown to user).
      * <p>
-     * <b>Note</b>: despite declared in <a href="https://github.com/FFmpeg/FFmpeg/blob/master/doc/ffprobe.xsd">ffprobe.xsd</a>
-     * for ffprobe:frameType this property has never been reported by ffprobe.
+     * <b>Note</b>: despite declared in
+     * <a href="https://github.com/FFmpeg/FFmpeg/blob/master/doc/ffprobe.xsd">ffprobe.xsd</a>
+     * for ffprobe:frameType, this property has never been reported by ffprobe.
      *
      * @return pts in seconds
      * @see #getPktPtsTime()
@@ -289,17 +283,21 @@ public class Frame implements TagAware, FrameSubtitle, PacketFrameSubtitle {
     /**
      * Possible return values:
      * <ul>
-     *     <li>I -> Intra</li>
-     *     <li>P -> Predicted</li>
-     *     <li>B -> Bi-dir predicted</li>
-     *     <li>S -> S(GMC)-VOP MPEG-4</li>
-     *     <li>i -> Switching Intra</li>
-     *     <li>p -> Switching Predicted</li>
-     *     <li>b -> BI type</li>
-     *     <li>? - > unknown/undefined</li>
+     *     <li>I -&gt; Intra</li>
+     *     <li>P -&gt; Predicted</li>
+     *     <li>B -&gt; Bi-dir predicted</li>
+     *     <li>S -&gt; S(GMC)-VOP MPEG-4</li>
+     *     <li>i -&gt; Switching Intra</li>
+     *     <li>p -&gt; Switching Predicted</li>
+     *     <li>b -&gt; BI type</li>
+     *     <li>? -&gt; unknown/undefined</li>
      * </ul>
      *
      * @return picture type of the frame
+     * @see <a href="https://github.com/FFmpeg/FFmpeg/blob/master/libavutil/avutil.h#L272">
+     *     enum AVPictureType</a>
+     * @see <a href="https://github.com/FFmpeg/FFmpeg/blob/master/libavutil/utils.c#L88">
+     *     char av_get_picture_type_char(enum AVPictureType pict_type)</a>
      */
     public String getPictType() {
         return probeData.getString("pict_type");

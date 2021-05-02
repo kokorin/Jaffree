@@ -1,5 +1,5 @@
 /*
- *    Copyright 2020 Denis Kokorin
+ *    Copyright [years] [authors]
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -14,8 +14,3 @@
  *    limitations under the License.
  *
  */
-
-/**
- * Classes partially implementing NUT container format muxer &amp; demuxer.
- */
-package com.github.kokorin.jaffree.nut;

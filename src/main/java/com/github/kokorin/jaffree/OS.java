@@ -1,5 +1,5 @@
 /*
- *    Copyright  2017 Denis Kokorin
+ *    Copyright 2017 Apache commons participants, Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,13 +17,16 @@
 
 package com.github.kokorin.jaffree;
 
+/**
+ * Provides a way to detect Operating System.
+ */
 public final class OS {
-    // Test and values taken from org.apache.commons.lang3.SystemUtils
-    public static final String OS_NAME = System.getProperty("os.name");
+    // Test and values are kindly borrowed from org.apache.commons.lang3.SystemUtils
+    static final String OS_NAME = System.getProperty("os.name", "").toLowerCase();
 
-    public static final boolean IS_WINDOWS = OS_NAME.startsWith("Windows");
-    public static final boolean IS_MAC = OS_NAME.startsWith("Mac");
-    public static final boolean IS_LINUX = OS_NAME.startsWith("Linux") || OS_NAME.startsWith("LINUX");
+    public static final boolean IS_WINDOWS = OS_NAME.startsWith("windows");
+    public static final boolean IS_MAC = OS_NAME.startsWith("mac");
+    public static final boolean IS_LINUX = OS_NAME.startsWith("linux");
 
     private OS() {
     }

@@ -28,7 +28,7 @@ public class Format implements TagAware {
     /**
      * Creates {@link Format} description based on provided data sections.
      *
-     * @param probeData data section
+     * @param probeData probe data
      */
     public Format(final ProbeData probeData) {
         this.probeData = probeData;

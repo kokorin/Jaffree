@@ -28,7 +28,7 @@ public class UrlInput extends BaseInput<UrlInput> implements Input {
      * Creates {@link UrlInput}.
      * @param input input location
      */
-    public UrlInput(String input) {
+    protected UrlInput(final String input) {
         super(input);
     }
 
@@ -46,7 +46,7 @@ public class UrlInput extends BaseInput<UrlInput> implements Input {
      * @param path input location: path on filesystem
      * @return UrlInput
      */
-    public static UrlInput fromPath(Path path) {
+    public static UrlInput fromPath(final Path path) {
         return new UrlInput(path.toString());
     }
 }
