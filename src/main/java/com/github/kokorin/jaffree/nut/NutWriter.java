@@ -284,8 +284,8 @@ public class NutWriter {
             bufOutput.writeValue(streamHeader.video.sampleHeight);
             bufOutput.writeValue(streamHeader.video.type.code);
         } else if (streamHeader.streamType == StreamHeader.Type.AUDIO) {
-            bufOutput.writeValue(streamHeader.audio.samplerate.getNumerator());
-            bufOutput.writeValue(streamHeader.audio.samplerate.getDenominator());
+            bufOutput.writeValue(streamHeader.audio.sampleRate.getNumerator());
+            bufOutput.writeValue(streamHeader.audio.sampleRate.getDenominator());
             bufOutput.writeValue(streamHeader.audio.channelCount);
         }
 

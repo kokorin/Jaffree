@@ -131,7 +131,6 @@ public abstract class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> i
      * @return this
      * @see <a href="https://ffmpeg.org/ffmpeg.html#Stream-specifiers">
      * stream specifiers</a>
-     * @see com.github.kokorin.jaffree.StreamSpecifier
      */
     public T copyCodec(final String streamSpecifier) {
         return setCodec(streamSpecifier, "copy");
@@ -213,7 +212,6 @@ public abstract class BaseOutput<T extends BaseOutput<T>> extends BaseInOut<T> i
      * @return this
      * @see <a href="https://ffmpeg.org/ffmpeg.html#Stream-specifiers">
      * stream specifiers</a>
-     * @see com.github.kokorin.jaffree.StreamSpecifier
      */
     public T addMap(final int inputFileIndex, final String streamSpecifier) {
         this.maps.add(new DefaultMapping(false, inputFileIndex, streamSpecifier, false));

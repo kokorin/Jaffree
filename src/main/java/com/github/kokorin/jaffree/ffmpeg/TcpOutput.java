@@ -21,38 +21,56 @@ import com.github.kokorin.jaffree.net.NegotiatingTcpServer;
 import com.github.kokorin.jaffree.net.TcpNegotiator;
 import com.github.kokorin.jaffree.net.TcpServer;
 import com.github.kokorin.jaffree.process.ProcessHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
- * Provides possibility to consume ffmpeg output via TCP socket.
+ * {@link TcpOutput} allows to consume ffmpeg output via local TCP socket on loopback address.
  * <p>
  * <b>Note</b> there are limitation because of non-seekable nature of TCP output.
  *
- * @param <T>
+ * @param <T> self
  */
 public abstract class TcpOutput<T extends TcpOutput<T>> extends BaseOutput<T> implements Output {
     private final TcpServer tcpServer;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(TcpOutput.class);
-
-    public TcpOutput(TcpNegotiator tcpNegotiator) {
+    /**
+     * Creates {@link TcpOutput}.
+     *
+     * @param tcpNegotiator tcp negotiator
+     */
+    public TcpOutput(final TcpNegotiator tcpNegotiator) {
         this("tcp", tcpNegotiator);
     }
 
-    public TcpOutput(String protocol, TcpNegotiator tcpNegotiator) {
+    /**
+     * Creates {@link TcpOutput}.
+     *
+     * @param protocol      protocol
+     * @param tcpNegotiator tcp negotiator
+     */
+    public TcpOutput(final String protocol, final TcpNegotiator tcpNegotiator) {
         this(protocol, "", tcpNegotiator);
     }
 
-    public TcpOutput(String protocol, String suffix, TcpNegotiator tcpNegotiator) {
+    /**
+     * Creates {@link TcpOutput}.
+     *
+     * @param protocol      protocol
+     * @param suffix        url suffix
+     * @param tcpNegotiator tcp negotiator
+     */
+    public TcpOutput(final String protocol, final String suffix,
+                     final TcpNegotiator tcpNegotiator) {
         this(protocol, suffix, NegotiatingTcpServer.onRandomPort(tcpNegotiator));
     }
 
-    public TcpOutput(String protocol, String suffix, TcpServer tcpServer) {
+    protected TcpOutput(final String protocol, final String suffix, final TcpServer tcpServer) {
         super(protocol + "://" + tcpServer.getAddressAndPort() + suffix);
         this.tcpServer = tcpServer;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public final ProcessHelper helperThread() {
         return tcpServer;

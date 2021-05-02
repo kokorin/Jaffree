@@ -23,6 +23,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 
+/**
+ * Nut format stream header.
+ */
+@SuppressWarnings("checkstyle:VisibilityModifier")
 public class StreamHeader {
 
     public final int streamId;
@@ -37,9 +41,11 @@ public class StreamHeader {
     public final Video video;
     public final Audio audio;
 
-    public StreamHeader(int streamId, Type streamType, byte[] fourcc, int timeBaseId, int msbPtsShift,
-                        long maxPtsDistance, long decodeDelay, Set<Flag> flags,
-                        byte[] codecSpecificData, Video video, Audio audio) {
+    @SuppressWarnings({"checkstyle:MissingJavadocMethod", "checkstyle:ParameterNumber"})
+    public StreamHeader(final int streamId, final Type streamType, final byte[] fourcc,
+                        final int timeBaseId, final int msbPtsShift, final long maxPtsDistance,
+                        final long decodeDelay, final Set<Flag> flags,
+                        final byte[] codecSpecificData, final Video video, final Audio audio) {
         this.streamId = streamId;
         this.streamType = streamType;
         this.fourcc = fourcc;
@@ -53,23 +59,29 @@ public class StreamHeader {
         this.audio = audio;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
-        return "StreamHeader{" +
-                "streamId=" + streamId +
-                ", streamType=" + streamType +
-                ", fourcc=" + Arrays.toString(fourcc) +
-                ", timeBaseId=" + timeBaseId +
-                ", msbPtsShift=" + msbPtsShift +
-                ", maxPtsDistance=" + maxPtsDistance +
-                ", decodeDelay=" + decodeDelay +
-                ", flags=" + flags +
-                ", codecSpecificData=" + Arrays.toString(codecSpecificData) +
-                ", video=" + video +
-                ", audio=" + audio +
-                '}';
+        return "StreamHeader{"
+                + "streamId=" + streamId
+                + ", streamType=" + streamType
+                + ", fourcc=" + Arrays.toString(fourcc)
+                + ", timeBaseId=" + timeBaseId
+                + ", msbPtsShift=" + msbPtsShift
+                + ", maxPtsDistance=" + maxPtsDistance
+                + ", decodeDelay=" + decodeDelay
+                + ", flags=" + flags
+                + ", codecSpecificData=" + Arrays.toString(codecSpecificData)
+                + ", video=" + video
+                + ", audio=" + audio
+                + '}';
     }
 
+    /**
+     * Video-related data for {@link StreamHeader}.
+     */
     public static class Video {
         public final int width;
         public final int height;
@@ -77,7 +89,10 @@ public class StreamHeader {
         public final int sampleHeight;
         public final ColourspaceType type;
 
-        public Video(int width, int height, int sampleWidth, int sampleHeight, ColourspaceType type) {
+        @SuppressWarnings("checkstyle:MissingJavadocMethod")
+        public Video(final int width, final int height,
+                     final int sampleWidth, final int sampleHeight,
+                     final ColourspaceType type) {
             this.width = width;
             this.height = height;
             this.sampleWidth = sampleWidth;
@@ -85,38 +100,48 @@ public class StreamHeader {
             this.type = type;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public String toString() {
-            return "Video{" +
-                    "width=" + width +
-                    ", height=" + height +
-                    ", sampleWidth=" + sampleWidth +
-                    ", sampleHeight=" + sampleHeight +
-                    ", type=" + type +
-                    '}';
-        }
-    }
-
-    public static class Audio {
-        public final Rational samplerate;
-        public final int channelCount;
-
-        public Audio(Rational samplerate, int channelCount) {
-            this.samplerate = samplerate;
-            this.channelCount = channelCount;
-        }
-
-        @Override
-        public String toString() {
-            return "Audio{" +
-                    "samplerate=" + samplerate +
-                    ", channelCount=" + channelCount +
-                    '}';
+            return "Video{"
+                    + "width=" + width
+                    + ", height=" + height
+                    + ", sampleWidth=" + sampleWidth
+                    + ", sampleHeight=" + sampleHeight
+                    + ", type=" + type
+                    + '}';
         }
     }
 
     /**
-     * AKA Stream Class
+     * Audio-related data for {@link StreamHeader}.
+     */
+    public static class Audio {
+        public final Rational sampleRate;
+        public final int channelCount;
+
+        @SuppressWarnings("checkstyle:MissingJavadocMethod")
+        public Audio(final Rational sampleRate, final int channelCount) {
+            this.sampleRate = sampleRate;
+            this.channelCount = channelCount;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public String toString() {
+            return "Audio{"
+                    + "samplerate=" + sampleRate
+                    + ", channelCount=" + channelCount
+                    + '}';
+        }
+    }
+
+    /**
+     * AKA Stream Class.
      */
     public enum Type {
         VIDEO(0),
@@ -126,11 +151,12 @@ public class StreamHeader {
 
         public final long code;
 
-        Type(long code) {
+        Type(final long code) {
             this.code = code;
         }
 
-        public static Type fromCode(long code) {
+        @SuppressWarnings("checkstyle:MissingJavadocMethod")
+        public static Type fromCode(final long code) {
             for (Type type : values()) {
                 if (type.code == code) {
                     return type;
@@ -141,19 +167,23 @@ public class StreamHeader {
         }
     }
 
+    /**
+     * NUT Stream bit flags.
+     */
+    @SuppressWarnings("checkstyle:MissingJavadocMethod")
     public enum Flag {
         /**
-         * indicates that the fps is fixed
+         * indicates that the fps is fixed.
          */
         FIXED_FPS(1);
 
         private final long code;
 
-        Flag(long code) {
+        Flag(final long code) {
             this.code = code;
         }
 
-        public static Set<Flag> fromBitCode(long value) {
+        public static Set<Flag> fromBitCode(final long value) {
             if (value == FIXED_FPS.code) {
                 return Collections.singleton(FIXED_FPS);
             }
@@ -161,7 +191,7 @@ public class StreamHeader {
             return Collections.emptySet();
         }
 
-        public static long toBitCode(Set<Flag> flags) {
+        public static long toBitCode(final Set<Flag> flags) {
             long result = 0;
             for (Flag flag : flags) {
                 result += flag.code;
@@ -170,6 +200,9 @@ public class StreamHeader {
         }
     }
 
+    /**
+     * NUT Colorspace type.
+     */
     public enum ColourspaceType {
         /*
      0    unknown
@@ -186,11 +219,12 @@ public class StreamHeader {
 
         public final long code;
 
-        ColourspaceType(long code) {
+        ColourspaceType(final long code) {
             this.code = code;
         }
 
-        public static ColourspaceType fromCode(long code) {
+        @SuppressWarnings("checkstyle:MissingJavadocMethod")
+        public static ColourspaceType fromCode(final long code) {
             for (ColourspaceType type : values()) {
                 if (code == type.code) {
                     return type;

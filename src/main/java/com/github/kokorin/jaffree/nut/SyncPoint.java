@@ -17,6 +17,10 @@
 
 package com.github.kokorin.jaffree.nut;
 
+/**
+ * NUT sync point.
+ */
+@SuppressWarnings({"checkstyle:VisibilityModifier", "checkstyle:MissingJavadocMethod"})
 public class SyncPoint {
     /**
      * After a syncpoint, last_pts of each stream is to be set to:
@@ -51,11 +55,12 @@ public class SyncPoint {
      */
     public final Timestamp transmitTs;
 
-    public SyncPoint(Timestamp globalKeyPts, long backPtrDiv16) {
+    public SyncPoint(final Timestamp globalKeyPts, final long backPtrDiv16) {
         this(globalKeyPts, backPtrDiv16, globalKeyPts);
     }
 
-    public SyncPoint(Timestamp globalKeyPts, long backPtrDiv16, Timestamp transmitTs) {
+    public SyncPoint(final Timestamp globalKeyPts, final long backPtrDiv16,
+                     final Timestamp transmitTs) {
         this.globalKeyPts = globalKeyPts;
         this.backPtrDiv16 = backPtrDiv16;
         this.transmitTs = transmitTs;

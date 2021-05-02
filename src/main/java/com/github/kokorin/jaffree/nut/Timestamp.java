@@ -19,24 +19,45 @@ package com.github.kokorin.jaffree.nut;
 
 import java.util.Objects;
 
+/**
+ * NUT timestamp.
+ */
+@SuppressWarnings("checkstyle:VisibilityModifier")
 public class Timestamp {
     public final int timebaseId;
     public final long pts;
 
-    public Timestamp(int timebaseId, long pts) {
+    /**
+     * Creates NUT timestamp.
+     *
+     * @param timebaseId timebase ID
+     * @param pts        presentation timestamp
+     */
+    public Timestamp(final int timebaseId, final long pts) {
         this.timebaseId = timebaseId;
         this.pts = pts;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    // TODO check if required
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         Timestamp timestamp = (Timestamp) o;
-        return timebaseId == timestamp.timebaseId &&
-                pts == timestamp.pts;
+        return timebaseId == timestamp.timebaseId && pts == timestamp.pts;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    // TODO check if required
     @Override
     public int hashCode() {
         return Objects.hash(timebaseId, pts);
