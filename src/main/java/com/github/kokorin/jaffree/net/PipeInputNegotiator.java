@@ -18,7 +18,6 @@
 package com.github.kokorin.jaffree.net;
 
 import com.github.kokorin.jaffree.util.IOUtil;
-import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +28,10 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketException;
 
+/**
+ * {@link TcpNegotiator} implementation which copies bytes from {@link InputStream}
+ * to {@link Socket}.
+ */
 @ThreadSafe
 public class PipeInputNegotiator implements TcpNegotiator {
     private final InputStream source;
@@ -36,13 +39,25 @@ public class PipeInputNegotiator implements TcpNegotiator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PipeInputNegotiator.class);
 
-    public PipeInputNegotiator(InputStream source, int bufferSize) {
+    /**
+     * Creates {@link PipeInputNegotiator}.
+     *
+     * @param source     input stream to copy from
+     * @param bufferSize buffer size to copy data
+     */
+    public PipeInputNegotiator(final InputStream source, final int bufferSize) {
         this.source = source;
         this.bufferSize = bufferSize;
     }
 
+    /**
+     * Copies bytes from {@link #source} to socket {@link OutputStream}.
+     *
+     * @param socket TCP socket
+     * @throws IOException if any IO error
+     */
     @Override
-    public synchronized void negotiate(Socket socket) throws IOException {
+    public void negotiate(final Socket socket) throws IOException {
         try (OutputStream destination = socket.getOutputStream()) {
             IOUtil.copy(source, destination, bufferSize);
         } catch (SocketException e) {

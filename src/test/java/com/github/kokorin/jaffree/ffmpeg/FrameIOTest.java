@@ -8,14 +8,16 @@ import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
 import org.apache.commons.io.output.NullOutputStream;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -112,7 +114,7 @@ public class FrameIOTest {
             }
         };
 
-        NutFrameWriter writer = new NutFrameWriter(producer, ImageFormats.BGR24);
+        NutFrameWriter writer = new NutFrameWriter(producer, ImageFormats.BGR24, 200);
         writer.write(new NullOutputStream());
     }
 

@@ -31,13 +31,22 @@ import java.util.List;
  * ffprobe json format output parser.
  */
 public class JsonFormatParser implements FormatParser {
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getFormatName() {
         return "json";
     }
 
+    /**
+     * Parses JSON from {@link InputStream} and coverts it to {@link ProbeData}.
+     *
+     * @param inputStream input stream
+     * @return ProbeData
+     */
     @Override
-    public ProbeData parse(InputStream inputStream) {
+    public ProbeData parse(final InputStream inputStream) {
         JsonObject jsonObject;
         try {
             jsonObject = JsonParser.object().from(inputStream);
@@ -48,15 +57,15 @@ public class JsonFormatParser implements FormatParser {
         return new ProbeDataJson(jsonObject);
     }
 
-    public static class ProbeDataJson extends AbstractProbeData implements ProbeData {
+    private static final class ProbeDataJson extends AbstractProbeData implements ProbeData {
         private final JsonObject data;
 
-        public ProbeDataJson(JsonObject data) {
+        private ProbeDataJson(final JsonObject data) {
             this.data = data;
         }
 
         @Override
-        public Object getValue(String name) {
+        public Object getValue(final String name) {
             if (data == null) {
                 return null;
             }
@@ -64,7 +73,7 @@ public class JsonFormatParser implements FormatParser {
         }
 
         @Override
-        public List<ProbeData> getSubDataList(String name) {
+        public List<ProbeData> getSubDataList(final String name) {
             if (data == null) {
                 return null;
             }
@@ -82,7 +91,7 @@ public class JsonFormatParser implements FormatParser {
         }
 
         @Override
-        public ProbeData getSubData(String name) {
+        public ProbeData getSubData(final String name) {
             if (data == null) {
                 return null;
             }

@@ -51,7 +51,7 @@ FFprobeResult result = FFprobe.atPath()
 for (Stream stream : result.getStreams()) {
     System.out.println("Stream #" + stream.getIndex()
         + " type: " + stream.getCodecType()
-        + " duration: " + stream.getDuration(TimeUnit.SECONDS) + " seconds");
+        + " duration: " + stream.getDuration() + " seconds");
 }
 ```
 

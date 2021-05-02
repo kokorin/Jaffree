@@ -4,8 +4,6 @@ import com.github.kokorin.jaffree.ffprobe.FFprobe;
 import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
 import com.github.kokorin.jaffree.ffprobe.Stream;
 
-import java.util.concurrent.TimeUnit;
-
 public class ShowStreamsExample {
     public static void main(String[] args) {
         if (args.length != 1) {
@@ -23,7 +21,7 @@ public class ShowStreamsExample {
         for (Stream stream : result.getStreams()) {
             System.out.println("Stream #" + stream.getIndex()
                     + " type: " + stream.getCodecType()
-                    + " duration: " + stream.getDuration(TimeUnit.SECONDS) + " seconds");
+                    + " duration: " + stream.getDuration() + " seconds");
         }
 
     }

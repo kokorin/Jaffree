@@ -26,7 +26,8 @@ import java.util.Map;
 /**
  * Parses ffmpeg progress and result values.
  */
-public class ParseUtil {
+@SuppressWarnings("checkstyle:MagicNumber")
+public final class ParseUtil {
 
     private static final String KBYTES_SUFFIX = "kB";
     private static final String KBITS_PER_SECOND_SUFFIX = "kbits/s";
@@ -37,7 +38,7 @@ public class ParseUtil {
     }
 
     /**
-     * Parses long without exception
+     * Parses long without exception.
      *
      * @param value string to parse
      * @return parsed long or null if value can't be parsed
@@ -55,7 +56,7 @@ public class ParseUtil {
     }
 
     /**
-     * Parses double without exception
+     * Parses double without exception.
      *
      * @param value string to parse
      * @return parsed double or null if value can't be parsed
@@ -73,7 +74,7 @@ public class ParseUtil {
     }
 
     /**
-     * Parses size in kilobytes without exception
+     * Parses size in kilobytes without exception.
      *
      * @param value string to parse
      * @return parsed long or null if value can't be parsed
@@ -89,7 +90,7 @@ public class ParseUtil {
     }
 
     /**
-     * Parses size in kilobytes without exception
+     * Parses size in kilobytes without exception.
      *
      * @param value string to parse
      * @return parsed long or null if value can't be parsed
@@ -103,7 +104,7 @@ public class ParseUtil {
     }
 
     /**
-     * Parses encoding bitrate in kbits/s without exception
+     * Parses encoding bitrate in kbits/s without exception.
      *
      * @param value string to parse
      * @return parsed double or null if value can't be parsed
@@ -117,7 +118,7 @@ public class ParseUtil {
     }
 
     /**
-     * Parses encoding speed without exception
+     * Parses encoding speed without exception.
      *
      * @param value string to parse
      * @return parsed double or null if value can't be parsed
@@ -126,7 +127,16 @@ public class ParseUtil {
         return parseDoubleWithSuffix(value, SPEED_SUFFIX);
     }
 
-    public static Double parseRatio(final String value) {
+
+    /**
+     * Parses percents as ratio.
+     * <p>
+     * E.g. {@code parsePercentsAsRatio("10%")} will return {@code 0.1}
+     *
+     * @param value string to parse
+     * @return parsed double or null if value can't be parsed
+     */
+    public static Double parsePercentsAsRatio(final String value) {
         Double percents = parseDoubleWithSuffix(value, PERCENT_SUFFIX);
 
         if (percents == null) {
@@ -213,7 +223,7 @@ public class ParseUtil {
 
         if (line.regionMatches(offset, "[trace]", 0, 7)
                 // before 2019-12-16 ffmpeg output trace as []
-                // see https://github.com/FFmpeg/FFmpeg/commit/84db67894f9aec4aa0c8df67265019e0391c7572
+                // https://github.com/FFmpeg/FFmpeg/commit/84db67894f9aec4aa0c8df67265019e0391c7572
                 || line.regionMatches(offset, "[]", 0, 2)) {
             return LogLevel.TRACE;
         }
@@ -233,6 +243,12 @@ public class ParseUtil {
         return null;
     }
 
+    /**
+     * Returns parsed {@link FFmpegResult} or null if passed in line contains no ffmpeg result.
+     *
+     * @param line ffmpeg output line
+     * @return FFmpegResult, or null
+     */
     public static FFmpegResult parseResult(final String line) {
         if (line == null || line.isEmpty()) {
             return null;
@@ -247,18 +263,18 @@ public class ParseUtil {
 
             Map<String, String> map = parseKeyValues(valueWithoutSpaces, ":");
 
-            Long videoSize = ParseUtil.parseSizeInBytes(map.get("video"));
-            Long audioSize = ParseUtil.parseSizeInBytes(map.get("audio"));
-            Long subtitleSize = ParseUtil.parseSizeInBytes(map.get("subtitle"));
-            Long otherStreamsSize = ParseUtil.parseSizeInBytes(map.get("other_streams"));
-            Long globalHeadersSize = ParseUtil.parseSizeInBytes(map.get("global_headers"));
-            Double muxOverhead = ParseUtil.parseRatio(map.get("muxing_overhead"));
+            Long videoSize = parseSizeInBytes(map.get("video"));
+            Long audioSize = parseSizeInBytes(map.get("audio"));
+            Long subtitleSize = parseSizeInBytes(map.get("subtitle"));
+            Long otherStreamsSize = parseSizeInBytes(map.get("other_streams"));
+            Long globalHeadersSize = parseSizeInBytes(map.get("global_headers"));
+            Double muxOverheadRatio = parsePercentsAsRatio(map.get("muxing_overhead"));
 
             if (videoSize != null || audioSize != null || subtitleSize != null
                     || otherStreamsSize != null || globalHeadersSize != null
-                    || muxOverhead != null) {
+                    || muxOverheadRatio != null) {
                 return new FFmpegResult(videoSize, audioSize, subtitleSize, otherStreamsSize,
-                        globalHeadersSize, muxOverhead);
+                        globalHeadersSize, muxOverheadRatio);
             }
         } catch (Exception e) {
             // suppress

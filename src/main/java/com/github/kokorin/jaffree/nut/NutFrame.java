@@ -20,7 +20,7 @@ package com.github.kokorin.jaffree.nut;
 /**
  * Nut frame.
  */
-@SuppressWarnings("checkstyle:visibilitymodifier")
+@SuppressWarnings("checkstyle:VisibilityModifier")
 public class NutFrame {
     /**
      * Stream id.

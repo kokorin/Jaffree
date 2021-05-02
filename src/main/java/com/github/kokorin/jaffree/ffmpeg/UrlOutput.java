@@ -28,7 +28,7 @@ public class UrlOutput extends BaseOutput<UrlOutput> implements Output {
      * Creates {@link UrlOutput}.
      * @param output output location
      */
-    public UrlOutput(String output) {
+    protected UrlOutput(final String output) {
         super(output);
     }
 
@@ -37,7 +37,7 @@ public class UrlOutput extends BaseOutput<UrlOutput> implements Output {
      * @param output output location: path on filesystem, URL, etc
      * @return UrlOutput
      */
-    public static UrlOutput toUrl(String output) {
+    public static UrlOutput toUrl(final String output) {
         return new UrlOutput(output);
     }
 
@@ -46,7 +46,7 @@ public class UrlOutput extends BaseOutput<UrlOutput> implements Output {
      * @param path output location: path on filesystem
      * @return UrlOutput
      */
-    public static UrlOutput toPath(Path path) {
+    public static UrlOutput toPath(final Path path) {
         return new UrlOutput(path.toString());
     }
 }

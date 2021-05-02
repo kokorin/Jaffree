@@ -19,20 +19,57 @@ package com.github.kokorin.jaffree.ffprobe;
 
 import com.github.kokorin.jaffree.process.ProcessHelper;
 
-public class UrlInput implements Input {
-    private final String url;
+import java.nio.file.Path;
 
-    public UrlInput(String url) {
-        this.url = url;
+/**
+ * {@link Input} implementation which allows {@link String} to specify input location.
+ */
+public class UrlInput implements Input {
+    private final String input;
+
+    /**
+     * Creates {@link UrlInput}.
+     *
+     * @param input input location
+     */
+    protected UrlInput(final String input) {
+        this.input = input;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getUrl() {
-        return url;
+        return input;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public ProcessHelper helperThread() {
+    public final ProcessHelper helperThread() {
         return null;
     }
+
+    /**
+     * Creates {@link UrlInput}.
+     *
+     * @param input input location: path on filesystem, URL, etc
+     * @return UrlInput
+     */
+    public static UrlInput fromUrl(final String input) {
+        return new UrlInput(input);
+    }
+
+    /**
+     * Creates {@link UrlInput}.
+     *
+     * @param path input location: path on filesystem
+     * @return UrlInput
+     */
+    public static UrlInput fromPath(final Path path) {
+        return new UrlInput(path.toString());
+    }
+
 }

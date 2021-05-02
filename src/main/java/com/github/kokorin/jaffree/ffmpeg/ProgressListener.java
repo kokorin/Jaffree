@@ -1,5 +1,5 @@
 /*
- *    Copyright  2017 Denis Kokorin
+ *    Copyright 2017 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,6 +17,11 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
+/**
+ * Implement {@link ProgressListener} interface to receive ffmpeg progress reports.
+ *
+ * @see FFmpeg#setProgressListener(ProgressListener)
+ */
 public interface ProgressListener {
     /**
      * Attention: this method is not thread safe and may be invoked in different thread.

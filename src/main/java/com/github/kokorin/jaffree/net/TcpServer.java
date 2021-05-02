@@ -70,6 +70,12 @@ public abstract class TcpServer implements ProcessHelper {
         }
     }
 
+    /**
+     * Serves TCP connection.
+     *
+     * @param socket TCP socket
+     * @throws IOException socket IO exception
+     */
     protected abstract void serve(Socket socket) throws IOException;
 
     @Override
@@ -78,6 +84,11 @@ public abstract class TcpServer implements ProcessHelper {
         close();
     }
 
+    /**
+     * Closes underlying TCP Socket.
+     *
+     * @throws IOException if any IO error
+     */
     @Override
     public void close() throws IOException {
         if (serverSocket != null) {
@@ -85,15 +96,28 @@ public abstract class TcpServer implements ProcessHelper {
         }
     }
 
+    /**
+     * Returns string representation of host and port.
+     *
+     * @return host and port string
+     */
     public String getAddressAndPort() {
         return addressAndPort;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         return "TcpServer{addressAndPort=" + addressAndPort + '}';
     }
 
+    /**
+     * Allocates {@link ServerSocket} on random port of loopback network interface.
+     *
+     * @return ServerSocket
+     */
     protected static ServerSocket allocateSocket() {
         try {
             return new ServerSocket(0, 1, InetAddress.getLoopbackAddress());

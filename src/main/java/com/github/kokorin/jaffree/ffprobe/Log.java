@@ -30,9 +30,9 @@ public class Log {
     private final ProbeData probeData;
 
     /**
-     * Creates {@link Log}.
+     * Creates {@link Log} description based on provided ffprobe data.
      *
-     * @param probeData data section
+     * @param probeData ffprobe data
      */
     public Log(final ProbeData probeData) {
         this.probeData = probeData;

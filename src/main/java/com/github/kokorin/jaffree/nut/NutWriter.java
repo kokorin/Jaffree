@@ -31,8 +31,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * {@link NutWriter} provides limited NUT muxer functionality.
+ */
+@SuppressWarnings("checkstyle:MagicNumber")
 public class NutWriter {
     private final NutOutputStream output;
+    private final long frameOrderingBufferMillis;
     private final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
     private MainHeader mainHeader;
@@ -46,18 +51,32 @@ public class NutWriter {
     private boolean initialized = false;
     private boolean closed = false;
 
-    private long frameOrderingBufferMillis = 200;
-
     private final List<TsFrame> frameOrderingBuffer = new ArrayList<>();
 
     private static final long MAJOR_VERSION = 3;
     private static final long MINOR_VERSION = 0;
 
-    public NutWriter(NutOutputStream output) {
+    /**
+     * Creates {@link NutWriter}.
+     *
+     * @param output                    output stream
+     * @param frameOrderingBufferMillis frame reordering buffer length
+     */
+    public NutWriter(final NutOutputStream output, final long frameOrderingBufferMillis) {
         this.output = output;
+        this.frameOrderingBufferMillis = frameOrderingBufferMillis;
     }
 
-    public void setMainHeader(int streamCount, long maxDistance, Rational[] timebases, FrameCode[] frameCodes) {
+    /**
+     * Sets NUT Main header.
+     *
+     * @param streamCount stream count
+     * @param maxDistance max distance
+     * @param timebases   timebases
+     * @param frameCodes  frame codes
+     */
+    public void setMainHeader(final int streamCount, final long maxDistance,
+                              final Rational[] timebases, final FrameCode[] frameCodes) {
         if (initialized) {
             throw new JaffreeException("NutWriter is already initialized!");
         }
@@ -73,27 +92,28 @@ public class NutWriter {
         );
     }
 
-    public void setStreamHeaders(StreamHeader[] streamHeaders) {
+    /**
+     * Sets NUT Stream headers.
+     *
+     * @param streamHeaders stream headers
+     */
+    public void setStreamHeaders(final StreamHeader[] streamHeaders) {
         if (initialized) {
             throw new JaffreeException("NutWriter is already initialized!");
         }
         this.streamHeaders = streamHeaders;
     }
 
-    public void setInfos(Info[] infos) {
+    /**
+     * Sets NUT Info headers.
+     *
+     * @param infos info headers
+     */
+    public void setInfos(final Info[] infos) {
         if (initialized) {
             throw new JaffreeException("NutWriter is already initialized!");
         }
         this.infos = infos;
-    }
-
-    /**
-     * By default 200 milliseconds.
-     *
-     * @param frameOrderingBufferMillis size of frame ordering buffer in milliseconds
-     */
-    public void setFrameOrderingBufferMillis(long frameOrderingBufferMillis) {
-        this.frameOrderingBufferMillis = frameOrderingBufferMillis;
     }
 
     private void initialize() throws IOException {
@@ -149,11 +169,15 @@ public class NutWriter {
             bufOutput.writeValue(timeBase.getDenominator());
         }
 
-        int fields, streamId = 0, size;
-        long ptsDelta = 0, dataSizeMul = 1;
+        int fields;
+        int streamId = 0;
+        int size;
+        long ptsDelta = 0;
+        long dataSizeMul = 1;
         Set<Flag> flags;
 
-        for (int i = 0; i < 256; ) {
+        int i = 0;
+        while (i < 256) {
             fields = 0;
             FrameCode frameCode = mainHeader.frameCodes[i];
             flags = frameCode.flags;
@@ -186,7 +210,8 @@ public class NutWriter {
                 }
 
                 frameCode = mainHeader.frameCodes[i];
-                boolean flagsAreEqual = frameCode.flags.containsAll(flags) && frameCode.flags.size() == flags.size();
+                boolean flagsAreEqual = frameCode.flags.containsAll(flags)
+                        && frameCode.flags.size() == flags.size();
                 if (!flagsAreEqual) {
                     break;
                 }
@@ -237,7 +262,7 @@ public class NutWriter {
         writePacket(NutConst.MAIN_STARTCODE, buffer.toByteArray());
     }
 
-    private void writeStreamHeader(StreamHeader streamHeader) throws IOException {
+    private void writeStreamHeader(final StreamHeader streamHeader) throws IOException {
         buffer.reset();
         // Temp buffer, used to calculate data size
         NutOutputStream bufOutput = new NutOutputStream(buffer);
@@ -259,8 +284,8 @@ public class NutWriter {
             bufOutput.writeValue(streamHeader.video.sampleHeight);
             bufOutput.writeValue(streamHeader.video.type.code);
         } else if (streamHeader.streamType == StreamHeader.Type.AUDIO) {
-            bufOutput.writeValue(streamHeader.audio.samplerate.getNumerator());
-            bufOutput.writeValue(streamHeader.audio.samplerate.getDenominator());
+            bufOutput.writeValue(streamHeader.audio.sampleRate.getNumerator());
+            bufOutput.writeValue(streamHeader.audio.sampleRate.getDenominator());
             bufOutput.writeValue(streamHeader.audio.channelCount);
         }
 
@@ -273,13 +298,13 @@ public class NutWriter {
      * <p>
      * Note: When all frames are passed to this method the caller MUST invoke {@link #writeFooter()}
      * <p>
-     * Note: frames are not written immediately to stream, instead they are buffered, reordered and than written.
+     * Note: frames are not written immediately to stream, instead they are buffered,
+     * reordered and than written.
      *
      * @param frame frame to write
-     * @throws IOException
-     * @see #setFrameOrderingBufferMillis(long)
+     * @throws IOException if any IO error
      */
-    public void writeFrame(NutFrame frame) throws IOException {
+    public void writeFrame(final NutFrame frame) throws IOException {
         if (closed) {
             throw new JaffreeException("NutWriter is closed");
         }
@@ -289,13 +314,15 @@ public class NutWriter {
         frameOrderingBuffer.add(new TsFrame(timestamp, frame));
         Collections.sort(frameOrderingBuffer, TsFrame.COMPARATOR);
 
-        Rational lastFrameTimestamp = frameOrderingBuffer.get(frameOrderingBuffer.size() - 1).timestamp;
+        Rational lastFrameTimestamp =
+                frameOrderingBuffer.get(frameOrderingBuffer.size() - 1).timestamp;
         // Check if we have to remove some frames from buffer and to write them to ouput
         Iterator<TsFrame> frameIterator = frameOrderingBuffer.iterator();
         while (frameIterator.hasNext()) {
             TsFrame tsFrame = frameIterator.next();
             // current frame can't be written yet, as well as all subsequent
-            if (lastFrameTimestamp.subtract(tsFrame.timestamp).lessThanOrEqual(new Rational(frameOrderingBufferMillis, 1000))) {
+            if (lastFrameTimestamp.subtract(tsFrame.timestamp)
+                    .lessThanOrEqual(new Rational(frameOrderingBufferMillis, 1000))) {
                 break;
             }
 
@@ -304,7 +331,8 @@ public class NutWriter {
         }
     }
 
-    private void writeFrameInternal(NutFrame frame) throws IOException {
+    @SuppressWarnings("checkstyle:MethodLength")
+    private void writeFrameInternal(final NutFrame frame) throws IOException {
         initialize();
 
         // EOR frames by specification use TS of the previous frame in the same stream.
@@ -319,27 +347,33 @@ public class NutWriter {
             StreamHeader steam = streamHeaders[frame.streamId];
             Rational framedTs = mainHeader.timeBases[steam.timeBaseId].multiply(frame.pts);
             if (framedTs.lessThan(maxTs)) {
-                throw new JaffreeException("Unordered frames! Try to increase frameOrderingBufferMillis. maxTs: " + maxTs + ", but current: " + framedTs);
+                throw new JaffreeException(
+                        "Unordered frames! Try to increase frameOrderingBufferMillis. maxTs: "
+                                + maxTs + ", but current: " + framedTs);
             }
         }
 
         StreamHeader sc = streamHeaders[frame.streamId];
 
-        int i, ftnum = -1, size = 0, msb_pts = (1 << sc.msbPtsShift);
+        int i;
+        int ftnum = -1;
+        int size = 0;
+        int msbPts = (1 << sc.msbPtsShift);
         Set<Flag> codedFlags = Collections.emptySet();
-        long coded_pts, pts_delta = frame.pts - lastPts[frame.streamId];
+        long codedPts;
+        long ptsDelta = frame.pts - lastPts[frame.streamId];
         boolean checksum = false;
 
-        if (Math.abs(pts_delta) < (msb_pts / 2) - 1) {
-            coded_pts = frame.pts & (msb_pts - 1);
+        if (Math.abs(ptsDelta) < (msbPts / 2) - 1) {
+            codedPts = frame.pts & (msbPts - 1);
         } else {
-            coded_pts = frame.pts + msb_pts;
+            codedPts = frame.pts + msbPts;
         }
 
         if (frame.data.length > 2 * mainHeader.maxDistance) {
             checksum = true;
         }
-        if (Math.abs(pts_delta) > sc.maxPtsDistance) {
+        if (Math.abs(ptsDelta) > sc.maxPtsDistance) {
             checksum = true;
         }
 
@@ -366,7 +400,7 @@ public class NutWriter {
                 if (ft.streamId != frame.streamId) {
                     flags.add(Flag.STREAM_ID);
                 }
-                if (ft.ptsDelta != pts_delta) {
+                if (ft.ptsDelta != ptsDelta) {
                     flags.add(Flag.CODED_PTS);
                 }
                 if (ft.dataSizeLsb != frame.data.length) {
@@ -389,7 +423,7 @@ public class NutWriter {
                 continue;
             }
 
-            if (!flags.contains(Flag.CODED_PTS) && ft.ptsDelta != pts_delta) {
+            if (!flags.contains(Flag.CODED_PTS) && ft.ptsDelta != ptsDelta) {
                 continue;
             }
 
@@ -436,7 +470,8 @@ public class NutWriter {
         }
 
         // Distance between synpoints (in bytes) should be no more that maxDistance
-        if (lastSyncPointPosition + mainHeader.maxDistance < output.getPosition() + size + frame.data.length) {
+        if ((lastSyncPointPosition + mainHeader.maxDistance)
+                < (output.getPosition() + size + frame.data.length)) {
             writeSyncPoint();
         }
 
@@ -451,7 +486,7 @@ public class NutWriter {
             output.writeValue(frame.streamId);
         }
         if (codedFlags.contains(Flag.CODED_PTS)) {
-            output.writeValue(coded_pts);
+            output.writeValue(codedPts);
         }
         if (codedFlags.contains(Flag.SIZE_MSB)) {
             output.writeValue((frame.data.length - ft.dataSizeLsb) / ft.dataSizeMul);
@@ -467,6 +502,11 @@ public class NutWriter {
         eor[frame.streamId] = codedFlags.contains(Flag.EOR);
     }
 
+    /**
+     * Writes NUT footer.
+     *
+     * @throws IOException if any IO error
+     */
     public void writeFooter() throws IOException {
         // writeEorFrame uses lastPts, it is updated by writeFrameInternal
         for (TsFrame tsFrame : frameOrderingBuffer) {
@@ -495,13 +535,14 @@ public class NutWriter {
         closed = true;
     }
 
-    private void writeEorFrame(int streamId) throws IOException {
-        NutFrame frame = new NutFrame(streamId, lastPts[streamId], new byte[0], null, null, true, true);
+    private void writeEorFrame(final int streamId) throws IOException {
+        NutFrame frame =
+                new NutFrame(streamId, lastPts[streamId], new byte[0], null, null, true, true);
         writeFrame(frame);
     }
 
 
-    private void writeInfo(Info info) throws IOException {
+    private void writeInfo(final Info info) throws IOException {
         buffer.reset();
         // Temp buffer, used to calculate data size
         NutOutputStream bufOutput = new NutOutputStream(buffer);
@@ -522,7 +563,8 @@ public class NutWriter {
         long maxPts = lastPts[0];
         int maxI = 0;
         for (int i = 1; i < mainHeader.timeBases.length; i++) {
-            long pts = Util.convertTimestamp(lastPts[i], mainHeader.timeBases[i], mainHeader.timeBases[maxI]);
+            long pts = Util.convertTimestamp(lastPts[i], mainHeader.timeBases[i],
+                    mainHeader.timeBases[maxI]);
             if (pts > maxPts) {
                 maxPts = lastPts[i];
                 maxI = i;
@@ -536,7 +578,8 @@ public class NutWriter {
             if (i == maxI) {
                 continue;
             }
-            long pts = Util.convertTimestamp(maxPts, mainHeader.timeBases[maxI], mainHeader.timeBases[i]);
+            long pts = Util.convertTimestamp(maxPts, mainHeader.timeBases[maxI],
+                    mainHeader.timeBases[i]);
             lastPts[i] = pts;
         }
 
@@ -555,10 +598,9 @@ public class NutWriter {
         writePacket(NutConst.SYNCPOINT_STARTCODE, buffer.toByteArray());
     }
 
-    private void writeDataItems(DataItem[] items, NutOutputStream output) throws IOException {
-        if (items == null) {
-            items = new DataItem[0];
-        }
+    @SuppressWarnings("checkstyle:HiddenField")
+    private void writeDataItems(final DataItem[] items,
+                                final NutOutputStream output) throws IOException {
         output.writeValue(items.length);
 
         for (DataItem item : items) {
@@ -585,7 +627,8 @@ public class NutWriter {
                 case "v":
                     long value = ((Number) item.value).longValue();
                     if (value < 0) {
-                        throw new IllegalArgumentException("Value with type 'v' must be non negative");
+                        throw new IllegalArgumentException(
+                                "Value with type 'v' must be non negative");
                     }
                     output.writeSignedValue(value);
                 default:
@@ -597,7 +640,7 @@ public class NutWriter {
     }
 
 
-    private void writePacket(long startcode, byte[] data) throws IOException {
+    private void writePacket(final long startcode, final byte[] data) throws IOException {
         long forwardPtr = data.length + 4; // checksum footer it 4 bytes long
         output.resetCrc32();
 
@@ -616,17 +659,13 @@ public class NutWriter {
 
 
     private static class TsFrame {
-        public final Rational timestamp;
-        public final NutFrame frame;
+        private final Rational timestamp;
+        private final NutFrame frame;
 
-        private static final Comparator<TsFrame> COMPARATOR = new Comparator<TsFrame>() {
-            @Override
-            public int compare(TsFrame o1, TsFrame o2) {
-                return o1.timestamp.compareTo(o2.timestamp);
-            }
-        };
+        static final Comparator<TsFrame> COMPARATOR =
+                Comparator.comparing((TsFrame ts) -> ts.timestamp);
 
-        public TsFrame(Rational timestamp, NutFrame frame) {
+        TsFrame(final Rational timestamp, final NutFrame frame) {
             this.timestamp = timestamp;
             this.frame = frame;
         }

@@ -17,14 +17,19 @@
 
 package com.github.kokorin.jaffree;
 
+/**
+ * Represents media types known by ffmpeg/ffprobe.
+ */
+//TODO rename to MediaType, StreamType should not be removed,
+// instead StreamType.VIDEO = MediaType.VIDEO for backward compatibility
 public enum StreamType {
     /**
-     * Matches all video streams
+     * Matches all video streams.
      */
     VIDEO("v"),
 
     /**
-     * Only matches video streams which are not attached pictures
+     * Only matches video streams which are not attached pictures.
      */
     VIDEO_NOT_PICTURE("V"),
     AUDIO("a"),
@@ -34,10 +39,13 @@ public enum StreamType {
 
     private String code;
 
-    StreamType(String code) {
+    StreamType(final String code) {
         this.code = code;
     }
 
+    /**
+     * @return stream type code
+     */
     public String code() {
         return code;
     }

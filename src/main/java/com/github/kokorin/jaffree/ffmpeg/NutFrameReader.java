@@ -50,7 +50,7 @@ public class NutFrameReader implements FrameOutput.FrameReader {
      * @param frameConsumer frame consumer
      * @param imageFormat image format
      */
-    public NutFrameReader(FrameConsumer frameConsumer, ImageFormat imageFormat) {
+    public NutFrameReader(final FrameConsumer frameConsumer, final ImageFormat imageFormat) {
         this.frameConsumer = frameConsumer;
         this.imageFormat = imageFormat;
     }
@@ -102,7 +102,7 @@ public class NutFrameReader implements FrameOutput.FrameReader {
                         .setWidth(streamHeader.video.width)
                         .setHeight(streamHeader.video.height);
             } else if (streamHeader.streamType == StreamHeader.Type.AUDIO) {
-                Rational samplerate = streamHeader.audio.samplerate;
+                Rational samplerate = streamHeader.audio.sampleRate;
                 if (samplerate.getDenominator() != 1) {
                     LOGGER.warn("Audio samplerate should be integer but it is ({}).", samplerate);
                 }
