@@ -1,12 +1,17 @@
-
 name: "CodeQL"
 
 on:
   push:
-    branches: [ master, develop ]
+    paths-ignore:
+      - publiccode.yml
+    branches:
+      - master
+      - develop
   pull_request:
     # The branches below must be a subset of the branches above
-    branches: [ master ]
+    branches:
+      - master
+      - develop
   schedule:
     - cron: '28 17 * * 0'
 

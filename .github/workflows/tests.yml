@@ -8,8 +8,6 @@ on:
       - master
       - develop
   pull_request:
-    paths-ignore:
-      - publiccode.yml
     types:
       - opened
       - reopened
