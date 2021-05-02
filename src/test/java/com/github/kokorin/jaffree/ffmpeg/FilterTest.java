@@ -1,6 +1,5 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
-import com.github.kokorin.jaffree.StreamSpecifier;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -9,8 +8,8 @@ public class FilterTest {
     public void testGetValue() throws Exception {
         String expected = "[0:1][0:2]amerge";
         String actual = new Filter()
-                .addInputLink(StreamSpecifier.withInputIndexAndStreamIndex(0, 1))
-                .addInputLink(StreamSpecifier.withInputIndexAndStreamIndex(0, 2))
+                .addInputLink("0:1")
+                .addInputLink("0:2")
                 .setName("amerge")
                 .getValue();
 

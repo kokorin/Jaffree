@@ -4,7 +4,6 @@ import com.github.kokorin.jaffree.Artifacts;
 import com.github.kokorin.jaffree.LogLevel;
 import com.github.kokorin.jaffree.Rational;
 import com.github.kokorin.jaffree.StackTraceMatcher;
-import com.github.kokorin.jaffree.StreamSpecifier;
 import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffprobe.data.FlatFormatParser;
 import com.github.kokorin.jaffree.ffprobe.data.FormatParser;
@@ -62,7 +61,8 @@ public class FFprobeTest {
         if (ffmpegHome == null) {
             ffmpegHome = System.getenv("FFMPEG_BIN");
         }
-        assertNotNull("Nor command line property, neither system variable FFMPEG_BIN is set up", ffmpegHome);
+        assertNotNull("Nor command line property, neither system variable FFMPEG_BIN is set up",
+                ffmpegHome);
         BIN = Paths.get(ffmpegHome);
     }
 
@@ -190,7 +190,8 @@ public class FFprobeTest {
 
         FFprobeResult result = FFprobe.atPath(BIN)
                 .setInput(Artifacts.VIDEO_MP4)
-                .setShowEntries("packet=pts_time,duration_time,stream_index : stream=index,codec_type")
+                .setShowEntries(
+                        "packet=pts_time,duration_time,stream_index : stream=index,codec_type")
                 .setFormatParser(formatParser)
                 .execute();
 
@@ -310,6 +311,8 @@ public class FFprobeTest {
 
         assertEquals(StreamType.VIDEO, videoStream.getCodecType());
         assertEquals("h264", videoStream.getCodecName());
+        assertEquals("0x31637661", videoStream.getCodecTag());
+        assertEquals("avc1", videoStream.getCodecTagString());
         assertNotNull(videoStream.getIndex());
         assertEquals((Integer) 640, videoStream.getWidth());
         assertEquals((Integer) 480, videoStream.getHeight());
@@ -317,11 +320,10 @@ public class FFprobeTest {
         assertNotNull(videoStream.getDisplayAspectRatio());
         assertNotNull(videoStream.getStartPts());
         assertNotNull(videoStream.getTimeBase());
-        assertNotNull(videoStream.getStartTime(TimeUnit.NANOSECONDS));
-        assertEquals((Long) 180L, videoStream.getDuration(TimeUnit.SECONDS));
         assertEquals((Float) 180.f, videoStream.getDuration(), 0.01f);
         assertNotNull(videoStream.getBitRate());
         assertNotNull(videoStream.getNbFrames());
+        assertEquals((Integer) 0, videoStream.hasBFrames());
         assertNotNull(videoStream.getBitsPerRawSample());
         assertNotNull(videoStream.getPixFmt());
         assertNotNull(videoStream.getRFrameRate());
@@ -334,10 +336,13 @@ public class FFprobeTest {
         assertEquals(StreamType.AUDIO, audioStream.getCodecType());
         assertEquals((Integer) 1, audioStream.getIndex());
         assertEquals("aac", audioStream.getCodecName());
+        assertEquals("0x6134706d", audioStream.getCodecTag());
+        assertEquals("mp4a", audioStream.getCodecTagString());
         assertNotNull(audioStream.getChannels());
         assertNotNull(audioStream.getChannelLayout());
         assertNotNull(audioStream.getSampleRate());
         assertNotNull(audioStream.getSampleFmt());
+        assertNotNull(audioStream.getBitsPerSample());
 
         StreamDisposition disposition = audioStream.getDisposition();
         assertNotNull(disposition);
@@ -377,7 +382,7 @@ public class FFprobeTest {
         FFprobeResult result = FFprobe.atPath(BIN)
                 .setInput(Artifacts.VIDEO_MP4)
                 .setShowPackets(true)
-                .setSelectStreams(StreamSpecifier.withIndex(1))
+                .setSelectStreams("1")
                 .setFormatParser(formatParser)
                 .execute();
 
@@ -779,7 +784,8 @@ public class FFprobeTest {
     public void testInputStream() throws Exception {
         FFprobeResult result;
 
-        try (InputStream inputStream = Files.newInputStream(Artifacts.VIDEO_FLV, StandardOpenOption.READ)) {
+        try (InputStream inputStream = Files
+                .newInputStream(Artifacts.VIDEO_FLV, StandardOpenOption.READ)) {
             result = FFprobe.atPath(BIN)
                     .setShowStreams(true)
                     .setInput(inputStream)
@@ -796,7 +802,8 @@ public class FFprobeTest {
     public void testInputChannel() throws Exception {
         FFprobeResult result;
 
-        try (SeekableByteChannel channel = Files.newByteChannel(Artifacts.VIDEO_MP4, StandardOpenOption.READ)) {
+        try (SeekableByteChannel channel = Files
+                .newByteChannel(Artifacts.VIDEO_MP4, StandardOpenOption.READ)) {
             result = FFprobe.atPath(BIN)
                     .setShowStreams(true)
                     .setInput(channel)

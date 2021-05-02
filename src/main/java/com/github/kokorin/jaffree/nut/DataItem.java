@@ -56,19 +56,13 @@ package com.github.kokorin.jaffree.nut;
  * <p>
  * Nut specification references to this data as <b>side/meta data</b> or <b>sm_data</b>
  */
-@SuppressWarnings("checkstyle:visibilitymodifier")
+@SuppressWarnings("checkstyle:VisibilityModifier")
 public class DataItem {
     public final String name;
     public final Object value;
     public final String type;
 
-    /**
-     * Creates {@link DataItem}.
-     *
-     * @param name  name
-     * @param value value
-     * @param type  type
-     */
+    @SuppressWarnings("checkstyle:MissingJavadocMethod")
     public DataItem(final String name, final Object value, final String type) {
         this.name = name;
         this.value = value;

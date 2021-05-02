@@ -29,9 +29,9 @@ public class SideData {
     private final ProbeData probeData;
 
     /**
-     * Creates {@link SideData}.
+     * Creates {@link SideData} description based on provided ffprobe data.
      *
-     * @param probeData data section
+     * @param probeData ffprobe data
      */
     public SideData(final ProbeData probeData) {
         this.probeData = probeData;
@@ -53,15 +53,19 @@ public class SideData {
     /**
      * Returns side data type name.
      * <p>
-     * Possible side data types for side data in {@link Packet} and {@link Stream} are represented by
-     * <a href="https://github.com/FFmpeg/FFmpeg/blob/master/libavcodec/packet.h#L40">AVPacketSideDataType</a> enum.
+     * Possible side data types for side data in {@link Packet} and {@link Stream} are represented
+     * by <a href="https://github.com/FFmpeg/FFmpeg/blob/master/libavcodec/packet.h#L40">
+     * AVPacketSideDataType</a> enum.
      * <p>
      * Possible side data types for side data in {@link Frame} are represented by
-     * <a href="https://github.com/FFmpeg/FFmpeg/blob/master/libavutil/frame.h#L48">AVFrameSideDataType</a> enum.
+     * <a href="https://github.com/FFmpeg/FFmpeg/blob/master/libavutil/frame.h#L48">
+     * AVFrameSideDataType</a> enum.
      *
      * @return side data type name
-     * @see <a href="https://github.com/FFmpeg/FFmpeg/blob/master/libavcodec/packet.h#L370">av_packet_side_data_name</a>
-     * @see <a href="https://github.com/FFmpeg/FFmpeg/blob/master/libavutil/frame.c#L826">av_frame_side_data_name</a>
+     * @see <a href="https://github.com/FFmpeg/FFmpeg/blob/master/libavcodec/packet.h#L370">
+     * av_packet_side_data_name</a>
+     * @see <a href="https://github.com/FFmpeg/FFmpeg/blob/master/libavutil/frame.c#L826">
+     * av_frame_side_data_name</a>
      */
     public String getSideDataType() {
         return probeData.getString("side_data_type");
@@ -94,7 +98,7 @@ public class SideData {
      * @param name property name
      * @return property value
      */
-    public Object getValue(String name) {
+    public Object getValue(final String name) {
         return probeData.getValue(name);
     }
 
@@ -106,7 +110,7 @@ public class SideData {
      * @param <T>       type to convert to
      * @return converted property value
      */
-    public <T> T getValue(String name, ValueConverter<T> converter) {
+    public <T> T getValue(final String name, final ValueConverter<T> converter) {
         return probeData.getValue(name, converter);
     }
 
@@ -116,7 +120,7 @@ public class SideData {
      * @param name property name
      * @return property value converted to {@link String}
      */
-    public String getString(String name) {
+    public String getString(final String name) {
         return probeData.getString(name);
     }
 
@@ -127,7 +131,7 @@ public class SideData {
      * @param name property name
      * @return property value converted to {@link Long}
      */
-    public Long getLong(String name) {
+    public Long getLong(final String name) {
         return probeData.getLong(name);
     }
 
@@ -137,7 +141,7 @@ public class SideData {
      * @param name property name
      * @return property value converted to {@link Double}
      */
-    public Double getDouble(String name) {
+    public Double getDouble(final String name) {
         return probeData.getDouble(name);
     }
 }

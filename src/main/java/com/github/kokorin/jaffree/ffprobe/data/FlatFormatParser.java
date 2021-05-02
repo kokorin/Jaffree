@@ -302,6 +302,7 @@ public class FlatFormatParser implements FormatParser {
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public ProbeData getSubData(final String name) {
             Object value = data.get(name);
             if (value == null) {
@@ -314,6 +315,7 @@ public class FlatFormatParser implements FormatParser {
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public List<ProbeData> getSubDataList(final String name) {
             Object value = data.get(name);
             if (value == null) {

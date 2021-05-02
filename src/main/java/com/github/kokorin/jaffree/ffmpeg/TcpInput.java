@@ -21,31 +21,53 @@ import com.github.kokorin.jaffree.net.NegotiatingTcpServer;
 import com.github.kokorin.jaffree.net.TcpNegotiator;
 import com.github.kokorin.jaffree.net.TcpServer;
 import com.github.kokorin.jaffree.process.ProcessHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+/**
+ * {@link TcpInput} allows to provide ffmpeg with input via local TCP socket on loopback address.
+ *
+ * @param <T> self
+ */
 public abstract class TcpInput<T extends TcpInput<T>> extends BaseInput<T> implements Input {
     private final TcpServer tcpServer;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(TcpInput.class);
-
-    public TcpInput(TcpNegotiator tcpNegotiator) {
+    /**
+     * Creates {@link TcpInput}.
+     *
+     * @param tcpNegotiator tcp negotiator
+     */
+    public TcpInput(final TcpNegotiator tcpNegotiator) {
         this("tcp", tcpNegotiator);
     }
 
-    public TcpInput(String protocol, TcpNegotiator tcpNegotiator) {
+    /**
+     * Creates {@link TcpInput}.
+     *
+     * @param protocol      protocol
+     * @param tcpNegotiator tcp negotiator
+     */
+    public TcpInput(final String protocol, final TcpNegotiator tcpNegotiator) {
         this(protocol, "", tcpNegotiator);
     }
 
-    public TcpInput(String protocol, String suffix, TcpNegotiator tcpNegotiator) {
+    /**
+     * Creates {@link TcpInput}.
+     *
+     * @param protocol      protocol
+     * @param suffix        url suffix
+     * @param tcpNegotiator tcp negotiator
+     */
+    public TcpInput(final String protocol, final String suffix, final TcpNegotiator tcpNegotiator) {
         this(protocol, suffix, NegotiatingTcpServer.onRandomPort(tcpNegotiator));
     }
 
-    public TcpInput(String protocol, String suffix, TcpServer tcpServer) {
+    protected TcpInput(final String protocol, final String suffix, final TcpServer tcpServer) {
         super(protocol + "://" + tcpServer.getAddressAndPort() + suffix);
         this.tcpServer = tcpServer;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public final ProcessHelper helperThread() {
         return tcpServer;
