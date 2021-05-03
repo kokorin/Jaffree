@@ -223,7 +223,7 @@ public class FtpServer extends TcpServer {
         try {
             position = Long.parseLong(args);
         } catch (NumberFormatException e) {
-            // ignored
+            LOGGER.warn("Failed to parse position: {}", args);
         }
 
         if (position == null) {
@@ -242,6 +242,7 @@ public class FtpServer extends TcpServer {
      * @param args   arguments, ignored
      * @throws IOException socket IO exception
      */
+    @SuppressWarnings("PMD.UnusedFormalParameter")
     private void doSize(final OutputStream output, final String args) throws IOException {
         long size = channel.size();
         println(output, "213 " + size);
@@ -299,6 +300,7 @@ public class FtpServer extends TcpServer {
      * @param path             path to store a file, ignored
      * @throws IOException socket IO exception
      */
+    @SuppressWarnings("PMD.UnusedFormalParameter")
     private void doStor(final OutputStream output, final ServerSocket dataServerSocket,
                         final String path) throws IOException {
         println(output, "150 File status okay; about to open data connection.");
