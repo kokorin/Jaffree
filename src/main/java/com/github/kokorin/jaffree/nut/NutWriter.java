@@ -358,7 +358,7 @@ public class NutWriter {
         int i;
         int ftnum = -1;
         int size = 0;
-        int msbPts = (1 << sc.msbPtsShift);
+        int msbPts = 1 << sc.msbPtsShift;
         Set<Flag> codedFlags = Collections.emptySet();
         long codedPts;
         long ptsDelta = frame.pts - lastPts[frame.streamId];

@@ -24,8 +24,6 @@ import com.github.kokorin.jaffree.ffprobe.data.JsonFormatParser;
 import com.github.kokorin.jaffree.process.ProcessHandler;
 import com.github.kokorin.jaffree.process.ProcessHelper;
 import com.github.kokorin.jaffree.process.StdReader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.nio.channels.SeekableByteChannel;
@@ -73,8 +71,6 @@ public class FFprobe {
     private FormatParser formatParser = new JsonFormatParser();
 
     private final Path executable;
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(FFprobe.class);
 
     /**
      * Creates {@link FFprobe}.

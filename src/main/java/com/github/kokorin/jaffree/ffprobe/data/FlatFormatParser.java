@@ -271,6 +271,7 @@ public class FlatFormatParser implements FormatParser {
         }
     }
 
+    @SuppressWarnings("PMD.EmptyCatchBlock")
     private static boolean isNumeric(final String value) {
         try {
             Integer.parseInt(value);
