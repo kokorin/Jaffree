@@ -352,8 +352,9 @@ public class FFmpeg {
      * @return ffmpeg result
      */
     public FFmpegResult execute() {
-        ProcessHandler<FFmpegResult> processHandler = createProcessHandler();
-        return processHandler.execute();
+        return createProcessHandler()
+                .setStopper(createStopper())
+                .execute();
     }
 
     /**

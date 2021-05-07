@@ -253,8 +253,8 @@ public abstract class AbstractProbeData implements ProbeData {
 
                     try {
                         return Integer.parseInt(value.toString()) > 0;
-                    } catch (Exception e) {
-                        LOGGER.warn("Failed to parse int number: " + value, e);
+                    } catch (NumberFormatException e) {
+                        LOGGER.warn("Failed to parse int number: {}", value);
                     }
 
                     return null;
@@ -274,8 +274,8 @@ public abstract class AbstractProbeData implements ProbeData {
 
                     try {
                         return Long.valueOf(value.toString());
-                    } catch (Exception e) {
-                        LOGGER.warn("Failed to parse long number: " + value, e);
+                    } catch (NumberFormatException e) {
+                        LOGGER.warn("Failed to parse long number: {}", value);
                     }
 
                     return null;
@@ -295,8 +295,8 @@ public abstract class AbstractProbeData implements ProbeData {
 
                     try {
                         return Integer.valueOf(value.toString());
-                    } catch (Exception e) {
-                        LOGGER.warn("Failed to parse integer number: " + value, e);
+                    } catch (NumberFormatException e) {
+                        LOGGER.warn("Failed to parse integer number: {}", value);
                     }
 
                     return null;
@@ -316,8 +316,8 @@ public abstract class AbstractProbeData implements ProbeData {
 
                     try {
                         return Float.valueOf(value.toString());
-                    } catch (Exception e) {
-                        LOGGER.warn("Failed to parse float number: " + value, e);
+                    } catch (NumberFormatException e) {
+                        LOGGER.warn("Failed to parse float number: {}", value);
                     }
 
                     return null;
@@ -337,8 +337,8 @@ public abstract class AbstractProbeData implements ProbeData {
 
                     try {
                         return Double.valueOf(value.toString());
-                    } catch (Exception e) {
-                        LOGGER.warn("Failed to parse float number: " + value, e);
+                    } catch (NumberFormatException e) {
+                        LOGGER.warn("Failed to parse double number: {}", value);
                     }
 
                     return null;
@@ -356,7 +356,7 @@ public abstract class AbstractProbeData implements ProbeData {
                     try {
                         return StreamType.valueOf(value.toString().toUpperCase());
                     } catch (Exception e) {
-                        LOGGER.warn("Failed to parse StreamType: " + value, e);
+                        LOGGER.warn("Failed to parse StreamType: {}", value);
                     }
 
                     return null;
@@ -375,7 +375,7 @@ public abstract class AbstractProbeData implements ProbeData {
                         try {
                             return LogLevel.fromCode(Integer.parseInt((String) value));
                         } catch (NumberFormatException e) {
-                            // ignored
+                            LOGGER.warn("Failed to parse LogLevel: {}", value);
                         }
                     }
 
@@ -399,7 +399,7 @@ public abstract class AbstractProbeData implements ProbeData {
                         try {
                             return LogCategory.fromCode(Integer.parseInt((String) value));
                         } catch (NumberFormatException e) {
-                            // ignored
+                            LOGGER.warn("Failed to parse LogCategory: {}", value);
                         }
                     }
 

@@ -47,6 +47,11 @@
     <properties>
         <sl4j.version>1.7.30</sl4j.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <sonar.projectKey>kokorin_Jaffree</sonar.projectKey>
+        <sonar.organization>kokorin</sonar.organization>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+
         <createSourcesJar>false</createSourcesJar>
         <shadeSourcesContent>false</shadeSourcesContent>
     </properties>
@@ -198,6 +203,29 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-pmd-plugin</artifactId>
+                <version>3.14.0</version>
+                <configuration>
+                    <failOnViolation>true</failOnViolation>
+                    <printFailingErrors>true</printFailingErrors>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.7</version>
             </plugin>
 
             <plugin>

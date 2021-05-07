@@ -33,7 +33,6 @@ import java.util.Set;
 @SuppressWarnings("checkstyle:MagicNumber")
 public class NutReader {
     private final NutInputStream input;
-    private boolean read = false;
     private MainHeader mainHeader;
     private StreamHeader[] streamHeaders;
     private Info[] infos;
@@ -314,6 +313,7 @@ public class NutReader {
      * @return frame
      * @throws IOException if any IO error
      */
+    @SuppressWarnings("PMD.UnusedLocalVariable")
     public NutFrame readFrame() throws IOException {
         readToFrame();
 
