@@ -185,6 +185,9 @@ public class ProcessHandler<T> {
             waitForExecutorToStop(executor, EXECUTOR_TIMEOUT_MILLIS);
         } catch (InterruptedException e) {
             LOGGER.warn("Process has been interrupted");
+            if (stopper != null) {
+                stopper.forceStop();
+            }
             interrupted = e;
         } finally {
             if (executor != null) {

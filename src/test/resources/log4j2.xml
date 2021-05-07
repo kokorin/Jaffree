@@ -9,6 +9,9 @@
         <Logger name="com.github.kokorin.jaffree.ffprobe.FFprobeLogReader" level="debug" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
+        <Logger name="com.github.kokorin.jaffree.ffmpeg.FFmpegStopper" level="debug" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
         <Logger name="com.github" level="info" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
