@@ -67,6 +67,7 @@ public class FrameInput extends TcpInput<FrameInput> implements Input {
      * corrupted video.
      */
     @Override
+    @SuppressWarnings("PMD.UselessOverridingMethod")
     public FrameInput setFrameRate(final Number frameRate) {
         return super.setFrameRate(frameRate);
     }

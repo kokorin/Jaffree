@@ -72,10 +72,11 @@ public class Executor {
                     + "that created this Executor!");
         }
 
+        String threadName = getThreadName(name);
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                LOGGER.debug("{} thread has started", name);
+                LOGGER.debug("{} thread has started", threadName);
                 runningCounter.incrementAndGet();
                 try {
                     runnable.run();
@@ -96,7 +97,7 @@ public class Executor {
                     LOGGER.debug("{} thread has finished", name);
                 }
             }
-        }, getThreadName(name));
+        }, threadName);
         thread.setDaemon(true);
         thread.start();
 

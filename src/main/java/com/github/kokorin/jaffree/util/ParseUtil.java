@@ -19,6 +19,8 @@ package com.github.kokorin.jaffree.util;
 
 import com.github.kokorin.jaffree.LogLevel;
 import com.github.kokorin.jaffree.ffmpeg.FFmpegResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,6 +36,8 @@ public final class ParseUtil {
     private static final String SPEED_SUFFIX = "x";
     private static final String PERCENT_SUFFIX = "%";
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ParseUtil.class);
+
     private ParseUtil() {
     }
 
@@ -48,7 +52,7 @@ public final class ParseUtil {
             try {
                 return Long.parseLong(value);
             } catch (NumberFormatException e) {
-                // Suppress
+                LOGGER.warn("Failed to parse long number: {}", value, e);
             }
         }
 
@@ -66,7 +70,7 @@ public final class ParseUtil {
             try {
                 return Double.parseDouble(value);
             } catch (NumberFormatException e) {
-                // Suppress
+                LOGGER.warn("Failed to parse double number: {}", value, e);
             }
         }
 
@@ -277,7 +281,7 @@ public final class ParseUtil {
                         globalHeadersSize, muxOverheadRatio);
             }
         } catch (Exception e) {
-            // suppress
+            LOGGER.warn("Failed to parse result: {}", line, e);
         }
 
         return null;
