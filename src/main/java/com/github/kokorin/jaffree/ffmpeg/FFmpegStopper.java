@@ -33,34 +33,19 @@ public class FFmpegStopper implements Stopper {
     private static final Logger LOGGER = LoggerFactory.getLogger(FFmpegStopper.class);
 
     /**
-     * Stops ffmpeg gracefully.
+     * Stops ffmpeg gracefully by sending &quot;q&quot; character to stdin.
      */
     @Override
     public void graceStop() {
-        if (process == null) {
-            LOGGER.error("No Process set yet, can't stop");
-            return;
-        }
-
-        try (OutputStream stdIn = process.getOutputStream()) {
-            stdIn.write('q');
-            stdIn.flush();
-        } catch (IOException e) {
-            LOGGER.info("Ignoring {}: {}", e.getClass(), e.getMessage());
-        }
+        sendToStdIn("q");
     }
 
     /**
-     * Stops ffmpeg forcefully.
+     * Stops ffmpeg forcefully by sending &quot;qq&quot; character to stdin.
      */
     @Override
     public void forceStop() {
-        if (process == null) {
-            LOGGER.error("No Process set yet, can't stop");
-            return;
-        }
-
-        process.destroy();
+        sendToStdIn("qq");
     }
 
     /**
@@ -69,5 +54,25 @@ public class FFmpegStopper implements Stopper {
     @Override
     public void setProcess(final Process process) {
         this.process = process;
+    }
+
+    /**
+     * Send specified characters to process StdIn.
+     *
+     * @param chars characters to send
+     */
+    protected void sendToStdIn(final String chars) {
+        if (process == null) {
+            LOGGER.error("No Process set yet, can't stop");
+            return;
+        }
+
+        try (OutputStream stdIn = process.getOutputStream()) {
+            LOGGER.debug("Stopping ffmpeg by sending \"{}\" to StdIn", chars);
+            stdIn.write(chars.getBytes());
+            stdIn.flush();
+        } catch (IOException e) {
+            LOGGER.info("Ignoring {}: {}", e.getClass(), e.getMessage());
+        }
     }
 }
