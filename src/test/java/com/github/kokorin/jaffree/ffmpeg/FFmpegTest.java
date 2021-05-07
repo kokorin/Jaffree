@@ -8,11 +8,6 @@ import com.github.kokorin.jaffree.ffprobe.FFprobe;
 import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
 import com.github.kokorin.jaffree.ffprobe.Stream;
 import com.github.kokorin.jaffree.process.ProcessHelper;
-import static java.nio.file.StandardOpenOption.CREATE;
-import static java.nio.file.StandardOpenOption.READ;
-import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
-import static java.nio.file.StandardOpenOption.WRITE;
-import org.hamcrest.MatcherAssert;
 import org.hamcrest.core.AllOf;
 import org.hamcrest.core.StringContains;
 import org.junit.Assert;
@@ -36,6 +31,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+
+import static java.nio.file.StandardOpenOption.CREATE;
+import static java.nio.file.StandardOpenOption.READ;
+import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
+import static java.nio.file.StandardOpenOption.WRITE;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class FFmpegTest {
     public static Path BIN;
@@ -110,8 +115,8 @@ public class FFmpegTest {
                 .execute();
 
         Assert.assertNotNull(probe);
-        Assert.assertEquals(1, probe.getStreams().size());
-        Assert.assertEquals(StreamType.AUDIO, probe.getStreams().get(0).getCodecType());
+        assertEquals(1, probe.getStreams().size());
+        assertEquals(StreamType.AUDIO, probe.getStreams().get(0).getCodecType());
     }
 
     @Test
@@ -135,7 +140,7 @@ public class FFmpegTest {
                 .execute();
 
         Assert.assertNotNull(result);
-        Assert.assertTrue(counter.get() > 0);
+        assertTrue(counter.get() > 0);
 
         outputPath = tempDir.resolve("test.flv");
         counter.set(0L);
@@ -147,7 +152,7 @@ public class FFmpegTest {
                 .execute();
 
         Assert.assertNotNull(result);
-        Assert.assertTrue(counter.get() > 0);
+        assertTrue(counter.get() > 0);
     }
 
     @Test
@@ -172,7 +177,7 @@ public class FFmpegTest {
                 .execute();
 
         Assert.assertNotNull(result);
-        Assert.assertTrue(counter.get() > 0);
+        assertTrue(counter.get() > 0);
     }
 
     @Test
@@ -193,7 +198,7 @@ public class FFmpegTest {
         Assert.assertNotNull(result);
 
         double outputDuration = getDuration(outputPath);
-        Assert.assertEquals(10.0, outputDuration, 0.1);
+        assertEquals(10.0, outputDuration, 0.1);
 
         result = FFmpeg.atPath(BIN)
                 .addInput(UrlInput
@@ -209,7 +214,7 @@ public class FFmpegTest {
         Assert.assertNotNull(result);
 
         outputDuration = getDuration(outputPath);
-        Assert.assertEquals(10.0, outputDuration, 0.1);
+        assertEquals(10.0, outputDuration, 0.1);
     }
 
     @Test
@@ -271,10 +276,10 @@ public class FFmpegTest {
         thread.interrupt();
 
         Thread.sleep(1_000);
-        Assert.assertNull(result.get());
-        Assert.assertTrue(Files.exists(outputPath));
-        Assert.assertTrue(executeException.get() instanceof RuntimeException);
-        Assert.assertEquals("Failed to execute, was interrupted", executeException.get().getMessage());
+        assertNull(result.get());
+        assertTrue(Files.exists(outputPath));
+        assertThat(executeException.get(), instanceOf(RuntimeException.class));
+        assertEquals("Failed to execute, was interrupted", executeException.get().getMessage());
     }
 
     @Test
@@ -297,7 +302,7 @@ public class FFmpegTest {
 
         Thread.sleep(1_000);
 
-        Assert.assertTrue(Files.exists(outputPath));
+        assertTrue(Files.exists(outputPath));
     }
 
     @Test
@@ -305,12 +310,14 @@ public class FFmpegTest {
         Path tempDir = Files.createTempDirectory("jaffree");
         Path outputPath = tempDir.resolve(Artifacts.VIDEO_MP4.getFileName());
 
+        final AtomicBoolean ffmpegStopped = new AtomicBoolean();
         final AtomicReference<FFmpegResultFuture> futureRef = new AtomicReference<>();
         final ProgressListener progressListener = new ProgressListener() {
             @Override
             public void onProgress(FFmpegProgress progress) {
                 System.out.println(progress);
-                if (progress.getTime(TimeUnit.SECONDS) >= 15) {
+                if (progress.getTime(TimeUnit.SECONDS) >= 15
+                        && ffmpegStopped.compareAndSet(false, true)) {
                     futureRef.get().graceStop();
                 }
             }
@@ -332,7 +339,7 @@ public class FFmpegTest {
                 .setInput(outputPath)
                 .execute();
 
-        Assert.assertEquals(2, probeResult.getStreams().size());
+        assertEquals(2, probeResult.getStreams().size());
 
 
         final AtomicReference<Long> durationRef = new AtomicReference<>();
@@ -350,7 +357,7 @@ public class FFmpegTest {
                 .execute();
 
         Assert.assertNotNull(result);
-        Assert.assertTrue(durationRef.get() >= 15);
+        assertTrue(durationRef.get() >= 15);
     }
 
     @Test
@@ -370,7 +377,7 @@ public class FFmpegTest {
         Assert.assertNotNull(result);
 
         double outputDuration = getDuration(outputPath);
-        Assert.assertEquals(15.0, outputDuration, 0.1);
+        assertEquals(15.0, outputDuration, 0.1);
     }
 
     @Test
@@ -390,8 +397,8 @@ public class FFmpegTest {
         Assert.assertNotNull(result);
 
         long outputSize = Files.size(outputPath);
-        Assert.assertTrue(outputSize > 900_000);
-        Assert.assertTrue(outputSize < 1_100_000);
+        assertTrue(outputSize > 900_000);
+        assertTrue(outputSize < 1_100_000);
     }
 
     @Test
@@ -414,7 +421,7 @@ public class FFmpegTest {
         double inputDuration = getDuration(Artifacts.VIDEO_MP4);
         double outputDuration = getDuration(outputPath);
 
-        Assert.assertEquals(inputDuration - 10, outputDuration, 0.5);
+        assertEquals(inputDuration - 10, outputDuration, 0.5);
     }
 
     @Test
@@ -436,7 +443,7 @@ public class FFmpegTest {
 
         double outputDuration = getDuration(outputPath);
 
-        Assert.assertEquals(7.0, outputDuration, 0.5);
+        assertEquals(7.0, outputDuration, 0.5);
     }
 
     @Test
@@ -460,7 +467,7 @@ public class FFmpegTest {
                 .execute();
 
         Assert.assertNotNull(result);
-        Assert.assertTrue(time.get() > 165_000);
+        assertTrue(time.get() > 165_000);
     }
 
     @Test
@@ -488,10 +495,10 @@ public class FFmpegTest {
 
         List<Stream> streamTypes = probe.getStreams();
 
-        Assert.assertEquals(3, streamTypes.size());
-        Assert.assertEquals(StreamType.AUDIO, streamTypes.get(0).getCodecType());
-        Assert.assertEquals(StreamType.AUDIO, streamTypes.get(1).getCodecType());
-        Assert.assertEquals(StreamType.VIDEO, streamTypes.get(2).getCodecType());
+        assertEquals(3, streamTypes.size());
+        assertEquals(StreamType.AUDIO, streamTypes.get(0).getCodecType());
+        assertEquals(StreamType.AUDIO, streamTypes.get(1).getCodecType());
+        assertEquals(StreamType.VIDEO, streamTypes.get(2).getCodecType());
     }
 
     @Test
@@ -525,7 +532,7 @@ public class FFmpegTest {
 
         Assert.assertNotNull(result);
 
-        MatcherAssert.assertThat(loudnormReport.get(), AllOf.allOf(
+        assertThat(loudnormReport.get(), AllOf.allOf(
                 StringContains.containsString("input_i"),
                 StringContains.containsString("input_tp"),
                 StringContains.containsString("input_lra"),
@@ -563,7 +570,7 @@ public class FFmpegTest {
 
         Assert.assertNotNull(result);
 
-        MatcherAssert.assertThat(idetReport.toString(), AllOf.allOf(
+        assertThat(idetReport.toString(), AllOf.allOf(
                 StringContains.containsString("Repeated Fields"),
                 StringContains.containsString("Single frame detection"),
                 StringContains.containsString("Multi frame detection")
@@ -589,7 +596,7 @@ public class FFmpegTest {
 
         double expectedDuration = getExactDuration(Artifacts.VIDEO_FLV);
         double actualDuration = getExactDuration(outputPath);
-        Assert.assertEquals(expectedDuration, actualDuration, 1.);
+        assertEquals(expectedDuration, actualDuration, 1.);
     }
 
     @Test
@@ -615,7 +622,7 @@ public class FFmpegTest {
         Assert.assertNotNull(result.getVideoSize());
 
         double actualDuration = getExactDuration(outputPath);
-        Assert.assertEquals(15., actualDuration, 1.);
+        assertEquals(15., actualDuration, 1.);
     }
 
     @Test
@@ -635,7 +642,7 @@ public class FFmpegTest {
         Assert.assertNotNull(result);
         Assert.assertNotNull(result.getVideoSize());
 
-        Assert.assertTrue(getExactDuration(outputPath) > 10.);
+        assertTrue(getExactDuration(outputPath) > 10.);
     }
 
     @Test
@@ -658,8 +665,8 @@ public class FFmpegTest {
             Assert.assertNotNull(result.getVideoSize());
         }
 
-        Assert.assertTrue(Files.exists(outputPath));
-        Assert.assertTrue(Files.size(outputPath) > 1000);
+        assertTrue(Files.exists(outputPath));
+        assertTrue(Files.size(outputPath) > 1000);
     }
 
     @Test
@@ -683,8 +690,8 @@ public class FFmpegTest {
             Assert.assertNotNull(result.getVideoSize());
         }
 
-        Assert.assertTrue(Files.exists(outputPath));
-        Assert.assertTrue(Files.size(outputPath) > 1000);
+        assertTrue(Files.exists(outputPath));
+        assertTrue(Files.size(outputPath) > 1000);
     }
 
     @Test
@@ -709,8 +716,8 @@ public class FFmpegTest {
             Assert.assertNotNull(result.getVideoSize());
         }
 
-        Assert.assertTrue(Files.exists(outputPath));
-        Assert.assertTrue(Files.size(outputPath) > 1000);
+        assertTrue(Files.exists(outputPath));
+        assertTrue(Files.size(outputPath) > 1000);
     }
 
     @Test
@@ -736,8 +743,8 @@ public class FFmpegTest {
             Assert.assertNotNull(result.getVideoSize());
         }
 
-        Assert.assertTrue(Files.exists(outputPath));
-        Assert.assertTrue(Files.size(outputPath) > 1000);
+        assertTrue(Files.exists(outputPath));
+        assertTrue(Files.size(outputPath) > 1000);
     }
 
     @Test
@@ -758,8 +765,8 @@ public class FFmpegTest {
 
         Assert.assertNotNull(result);
         Assert.assertNotNull(result.getVideoSize());
-        Assert.assertTrue(Files.exists(outputPath));
-        Assert.assertTrue(Files.size(outputPath) > 1000);
+        assertTrue(Files.exists(outputPath));
+        assertTrue(Files.size(outputPath) > 1000);
     }
 
     private static double getDuration(Path path) {
@@ -824,13 +831,13 @@ public class FFmpegTest {
 
         List<Stream> streamTypes = probe.getStreams();
 
-        Assert.assertEquals(1, streamTypes.size());
+        assertEquals(1, streamTypes.size());
 
         final Stream stream0 = streamTypes.get(0);
-        Assert.assertEquals(StreamType.VIDEO, stream0.getCodecType());
-        Assert.assertEquals(10.0, stream0.getDuration(), 0.1);
-        Assert.assertEquals(160L, (long) stream0.getWidth());
-        Assert.assertEquals(120L, (long) stream0.getHeight());
+        assertEquals(StreamType.VIDEO, stream0.getCodecType());
+        assertEquals(10.0, stream0.getDuration(), 0.1);
+        assertEquals(160L, (long) stream0.getWidth());
+        assertEquals(120L, (long) stream0.getHeight());
     }
 
     @Test
@@ -874,7 +881,7 @@ public class FFmpegTest {
                 )
                 .execute();
 
-        Assert.assertTrue(inputHelperClosed.get());
-        Assert.assertTrue(outputHelperClosed.get());
+        assertTrue(inputHelperClosed.get());
+        assertTrue(outputHelperClosed.get());
     }
 }
