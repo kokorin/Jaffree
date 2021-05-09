@@ -9,6 +9,9 @@ import org.slf4j.LoggerFactory;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+
 public class UtilTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UtilTest.class);
@@ -18,13 +21,13 @@ public class UtilTest {
         Rational timebaseFrom = new Rational(1, 10);
         Rational timebaseTo = new Rational(1, 10);
         long result = Util.convertTimestamp(10, timebaseFrom, timebaseTo);
-        Assert.assertEquals(10L, result);
+        assertEquals(10L, result);
 
 
         timebaseFrom = new Rational(1, 10);
         timebaseTo = new Rational(1, 1000);
         result = Util.convertTimestamp(10, timebaseFrom, timebaseTo);
-        Assert.assertEquals(1000L, result);
+        assertEquals(1000L, result);
     }
 
     @Test
@@ -33,5 +36,7 @@ public class UtilTest {
         byte[] bytes = new byte[4];
         ByteBuffer.wrap(bytes).asIntBuffer().put(v);
         LOGGER.debug(Arrays.toString(bytes));
+        // ByteBuffer wrapper should write integer value with most significant byte first
+        assertArrayEquals(new byte[] {0x01, 0x02, 0x03, 0x04}, bytes);
     }
 }
