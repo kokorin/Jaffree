@@ -548,7 +548,7 @@ public class NutWriter {
         NutOutputStream bufOutput = new NutOutputStream(buffer);
 
         // stream_id_plus1
-        bufOutput.writeValue(info.streamId + 1);
+        bufOutput.writeValue(info.streamId + 1L);
         bufOutput.writeSignedValue(info.chapterId);
         Timestamp timestamp = new Timestamp(info.timebaseId, info.chapterStartPts);
         bufOutput.writeTimestamp(mainHeader.timeBases.length, timestamp);
@@ -641,7 +641,7 @@ public class NutWriter {
 
 
     private void writePacket(final long startcode, final byte[] data) throws IOException {
-        long forwardPtr = data.length + 4; // checksum footer it 4 bytes long
+        long forwardPtr = data.length + 4L; // checksum footer it 4 bytes long
         output.resetCrc32();
 
         output.writeLong(startcode);
