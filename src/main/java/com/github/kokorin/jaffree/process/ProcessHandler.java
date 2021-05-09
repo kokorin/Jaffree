@@ -188,9 +188,7 @@ public class ProcessHandler<T> {
             throw new JaffreeException("Failed to execute, was interrupted",
                     e, executor.getExceptions());
         } finally {
-            if (executor != null) {
-                executor.stop();
-            }
+            executor.stop();
         }
 
         List<Throwable> exceptions = executor.getExceptions();
