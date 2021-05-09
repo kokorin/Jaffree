@@ -17,16 +17,12 @@
 
 package com.github.kokorin.jaffree;
 
+import java.util.List;
+
 /**
  * Common exception used in this library.
  */
 public class JaffreeException extends RuntimeException {
-
-    /**
-     * Constructs a new {@link JaffreeException} with null as its detail message.
-     */
-    public JaffreeException() {
-    }
 
     /**
      * Constructs a new {@link JaffreeException} with the specified detail message.
@@ -48,11 +44,28 @@ public class JaffreeException extends RuntimeException {
     }
 
     /**
-     * Constructs a new {@link JaffreeException} with the specified cause.
+     * Constructs a new {@link JaffreeException} with the specified message, cause and suppressed
+     * exceptions.
      *
-     * @param cause cause
+     * @param message            message
+     * @param causeAndSuppressed first exception is the cause, others - suppressed
      */
-    public JaffreeException(final Throwable cause) {
-        super(cause);
+    public JaffreeException(final String message, final List<Throwable> causeAndSuppressed) {
+        this(message, causeAndSuppressed.get(0),
+                causeAndSuppressed.subList(1, causeAndSuppressed.size()));
+    }
+
+    /**
+     * Constructs a new {@link JaffreeException} with the specified message, cause and suppressed
+     * exceptions.
+     *
+     * @param message    message
+     * @param cause      cause
+     * @param suppressed suppressed exceptions
+     */
+    public JaffreeException(final String message, final Throwable cause,
+                            final List<Throwable> suppressed) {
+        super(message, cause);
+        suppressed.forEach(this::addSuppressed);
     }
 }

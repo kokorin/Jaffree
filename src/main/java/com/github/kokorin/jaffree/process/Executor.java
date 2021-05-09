@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -36,7 +37,7 @@ public class Executor {
     private final Thread starter;
     private final String contextName;
 
-    private final List<Exception> exceptions = new CopyOnWriteArrayList<>();
+    private final List<Throwable> exceptions = new CopyOnWriteArrayList<>();
     private final List<Thread> threads = new CopyOnWriteArrayList<>();
     private final AtomicInteger runningCounter = new AtomicInteger();
     private final AtomicBoolean starterInterrupted = new AtomicBoolean();
@@ -106,22 +107,11 @@ public class Executor {
 
     /**
      * Returns exceptions (if any) caught during execution.
-     * <p>
-     * The first exception is counted as cause. All others are added to suppressed exceptions.
      *
-     * @return exception
+     * @return exceptions
      */
-    public Exception getException() {
-        if (exceptions.isEmpty()) {
-            return null;
-        }
-
-        Exception result = new JaffreeException("Exception during execution", exceptions.get(0));
-        for (int i = 1; i < exceptions.size(); i++) {
-            result.addSuppressed(exceptions.get(i));
-        }
-
-        return result;
+    public List<Throwable> getExceptions() {
+        return Collections.unmodifiableList(new ArrayList<>(exceptions));
     }
 
     /**
