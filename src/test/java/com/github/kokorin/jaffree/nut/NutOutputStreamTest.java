@@ -69,11 +69,6 @@ public class NutOutputStreamTest {
         closed.flush();
     }
 
-    @Test
-    public void resetCrc32() throws Exception {
-        closed.resetCrc32();
-    }
-
     @Test(expected = IOException.class)
     public void writeCrc32() throws Exception {
         closed.writeCrc32();

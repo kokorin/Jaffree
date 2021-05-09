@@ -631,6 +631,7 @@ public class NutWriter {
                                 "Value with type 'v' must be non negative");
                     }
                     output.writeSignedValue(value);
+                    break;
                 default:
                     output.writeSignedValue(-2);
                     output.writeVariablesString(item.type);
