@@ -171,13 +171,10 @@ public class ProcessHandler<T> {
      */
     protected T interactWithProcess(final Process process) {
         AtomicReference<T> resultRef = new AtomicReference<>();
-        Executor executor = null;
         Integer status = null;
-        Exception interrupted = null;
+        Executor executor = startExecution(process, resultRef);
 
         try {
-            executor = startExecution(process, resultRef);
-
             LOGGER.info("Waiting for process to finish");
             status = process.waitFor();
             LOGGER.info("Process has finished with status: {}", status);
@@ -188,24 +185,18 @@ public class ProcessHandler<T> {
             if (stopper != null) {
                 stopper.forceStop();
             }
-            interrupted = e;
+            throw new JaffreeException("Failed to execute, was interrupted",
+                    e, executor.getExceptions());
         } finally {
             if (executor != null) {
                 executor.stop();
             }
         }
 
-        Exception exception = null;
-        if (executor != null) {
-            exception = executor.getException();
-        }
-        if (exception != null) {
+        List<Throwable> exceptions = executor.getExceptions();
+        if (exceptions != null && !exceptions.isEmpty()) {
             throw new JaffreeException(
-                    "Failed to execute, exception appeared in one of helper threads", exception);
-        }
-
-        if (interrupted != null) {
-            throw new JaffreeException("Failed to execute, was interrupted", interrupted);
+                    "Failed to execute, exception appeared in one of helper threads", exceptions);
         }
 
         if (!Integer.valueOf(0).equals(status)) {
