@@ -20,8 +20,9 @@ package com.github.kokorin.jaffree.ffmpeg;
 import com.github.kokorin.jaffree.process.Stopper;
 
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -29,7 +30,7 @@ import java.util.concurrent.TimeoutException;
  * A {@link FFmpegResultFuture} represents the result of an asynchronous ffmpeg execution.
  */
 public class FFmpegResultFuture {
-    private final Future<FFmpegResult> resultFuture;
+    private final CompletableFuture<FFmpegResult> resultFuture;
     private final Stopper stopper;
 
     /**
@@ -38,7 +39,7 @@ public class FFmpegResultFuture {
      * @param resultFuture
      * @param stopper
      */
-    public FFmpegResultFuture(final Future<FFmpegResult> resultFuture, final Stopper stopper) {
+    public FFmpegResultFuture(final CompletableFuture<FFmpegResult> resultFuture, final Stopper stopper) {
         this.resultFuture = resultFuture;
         this.stopper = stopper;
     }
@@ -49,7 +50,7 @@ public class FFmpegResultFuture {
      * <b>Note</b> output media may be corrupted.
      */
     public void forceStop() {
-        stopper.forceStop();
+        resultFuture.cancel(true);
     }
 
     /**
@@ -136,5 +137,14 @@ public class FFmpegResultFuture {
      */
     public boolean isDone() {
         return resultFuture.isDone();
+    }
+    
+    /**
+     * Returns a completion that can be used to chain operations after FFmpeg completes, using the
+     * {@link CompletionStage} Java 8 API 
+     * @return completion that will complete when 
+     */
+    public CompletableFuture<FFmpegResult> toCompletableFuture() {
+        return resultFuture;
     }
 }
