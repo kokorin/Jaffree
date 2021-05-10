@@ -1,5 +1,5 @@
 /*
- *    Copyright 2017-2021 Denis Kokorin
+ *    Copyright 2017-2021 Denis Kokorin, Oded Arbel
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -35,8 +35,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.FutureTask;
+import java.util.Objects;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 /**
  * {@link FFmpeg} provides an ability to start &amp; stop ffmpeg process and keep track of
@@ -363,20 +365,49 @@ public class FFmpeg {
      * @return ffmpeg result future
      */
     public FFmpegResultFuture executeAsync() {
+        return executeAsync(new Executor() {
+            @Override
+            public void execute(Runnable command) {
+                Thread runner = new Thread(command, "FFmpeg-async-runner");
+                runner.setDaemon(true);
+                runner.start();
+            }
+        });
+    }
+    
+    /**
+     * Starts asynchronous ffmpeg execution, executed using the supplied Executor
+     *
+     * @param executor the executor to use for asynchronous execution
+     * @return ffmpeg result future
+     */
+    public FFmpegResultFuture executeAsync(Executor executor) {
         final ProcessHandler<FFmpegResult> processHandler = createProcessHandler();
         Stopper stopper = createStopper();
         processHandler.setStopper(stopper);
 
-        FutureTask<FFmpegResult> resultFuture = new FutureTask<>(new Callable<FFmpegResult>() {
+        CompletableFuture<FFmpegResult> resultFuture = new CompletableFuture<FFmpegResult>() {
             @Override
-            public FFmpegResult call() throws Exception {
-                return processHandler.execute();
+            public boolean cancel(boolean mayInterruptIfRunning) {
+                if (mayInterruptIfRunning) {
+                    stopper.forceStop();
+                } else {
+                    stopper.graceStop();
+                }
+                return completeExceptionally(new CancellationException());
+            }
+        };
+
+        Objects.requireNonNull(executor, "Executor service must be provided").execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    resultFuture.complete(processHandler.execute());
+                } catch (Throwable error) {
+                    resultFuture.completeExceptionally(error);
+                }
             }
         });
-
-        Thread runner = new Thread(resultFuture, "FFmpeg-async-runner");
-        runner.setDaemon(true);
-        runner.start();
 
         return new FFmpegResultFuture(resultFuture, stopper);
     }
