@@ -84,12 +84,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up GPG keys
-        run: |
-          mkdir .gpg
-          echo '${{ secrets.GPG_PRIVATE_KEY }}' > .gpg/private_key.gpg
-          gpg --import .gpg/private_key.gpg
-          rm -rf .gpg
+      - name: Set up RANDOM GPG key
+        run: gpg --quick-generate-key --batch  --passphrase '' test42
 
       - uses: actions/cache@v2
         with:
