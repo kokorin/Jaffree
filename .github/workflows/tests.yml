@@ -39,7 +39,7 @@ jobs:
           java-version: ${{ matrix.java-version }}
 
       - name: Cache Maven Packages
-        uses: actions/cache@v2
+        uses: actions/cache@v2.1.5
         with:
           # be careful not to include ~/.m2/settings.xml which contains credentials
           path: |
@@ -49,7 +49,7 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
 
       - name: Cache Test Artifacts
-        uses: actions/cache@v2
+        uses: actions/cache@v2.1.5
         with:
           path: |
             .artifacts
@@ -87,7 +87,7 @@ jobs:
       - name: Set up RANDOM GPG key
         run: gpg --quick-generate-key --batch  --passphrase '' test42
 
-      - uses: actions/cache@v2
+      - uses: actions/cache@v2.1.5
         with:
           # be careful not to include ~/.m2/settings.xml which contains credentials
           path: |

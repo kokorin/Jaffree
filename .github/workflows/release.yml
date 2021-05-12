@@ -24,7 +24,7 @@ jobs:
           distribution: 'adopt'
           java-version: 8
 
-      - uses: actions/cache@v2
+      - uses: actions/cache@v2.1.5
         with:
           # be careful not to include ~/.m2/settings.xml which contains credentials
           path: |
