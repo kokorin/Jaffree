@@ -6,9 +6,10 @@ It integrates with ffmpeg via `java.lang.Process`.
 
 Inspired by [ffmpeg-cli-wrapper](https://github.com/bramp/ffmpeg-cli-wrapper)
 
-## Tested with the help of [GitHub Actions](/kokorin/Jaffree/blob/master/.github/workflows/maven.yml) 
+## Tested with the help of [GitHub Actions](/kokorin/Jaffree/blob/master/.github/workflows/tests.yml) 
 
 ![Tests](https://github.com/kokorin/Jaffree/workflows/Tests/badge.svg)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=kokorin_Jaffree&metric=coverage)](https://sonarcloud.io/dashboard?id=kokorin_Jaffree)
 
 **OS**: Ubuntu, MacOS, Windows
 
