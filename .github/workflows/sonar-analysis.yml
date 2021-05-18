@@ -24,6 +24,7 @@ jobs:
   analyze:
     name: Analyze
     runs-on: ubuntu-latest
+    if: github.repository_owner == 'kokorin'
 
     steps:
       - uses: actions/checkout@v2
