@@ -366,28 +366,28 @@ public class FFmpeg {
     public FFmpegResultFuture executeAsync() {
         return executeAsync(new Executor() {
             @Override
-            public void execute(Runnable command) {
+            public void execute(final Runnable command) {
                 Thread runner = new Thread(command, "FFmpeg-async-runner");
                 runner.setDaemon(true);
                 runner.start();
             }
         });
     }
-    
+
     /**
-     * Starts asynchronous ffmpeg execution, executed using the supplied Executor
+     * Starts asynchronous ffmpeg execution, executed using the supplied Executor.
      *
      * @param executor the executor to use for asynchronous execution
      * @return ffmpeg result future
      */
-    public FFmpegResultFuture executeAsync(Executor executor) {
+    public FFmpegResultFuture executeAsync(final Executor executor) {
         final ProcessHandler<FFmpegResult> processHandler = createProcessHandler();
         Stopper stopper = createStopper();
         processHandler.setStopper(stopper);
 
         CompletableFuture<FFmpegResult> resultFuture = new CompletableFuture<FFmpegResult>() {
             @Override
-            public boolean cancel(boolean mayInterruptIfRunning) {
+            public boolean cancel(final boolean mayInterruptIfRunning) {
                 if (mayInterruptIfRunning) {
                     stopper.forceStop();
                 } else {
