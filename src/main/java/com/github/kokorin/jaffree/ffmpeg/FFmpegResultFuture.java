@@ -40,7 +40,8 @@ public class FFmpegResultFuture {
      * @param resultFuture
      * @param stopper
      */
-    public FFmpegResultFuture(final CompletableFuture<FFmpegResult> resultFuture, final Stopper stopper) {
+    public FFmpegResultFuture(final CompletableFuture<FFmpegResult> resultFuture,
+            final Stopper stopper) {
         this.resultFuture = resultFuture;
         this.stopper = stopper;
     }
@@ -139,10 +140,10 @@ public class FFmpegResultFuture {
     public boolean isDone() {
         return resultFuture.isDone();
     }
-    
+
     /**
      * Returns a completion that can be used to chain operations after FFmpeg completes, using the
-     * {@link CompletionStage} Java 8 API 
+     * {@link CompletionStage} Java 8 API.
      * @return completion that will complete when ffmpeg completes normally, and will complete
      *  exceptionally with a {@link CancellationException} if ffmpeg is forcefully stopped or with a
      *  {@link JaffreeException} if an error occurs.
