@@ -402,12 +402,12 @@ See whole examples [here](/src/test/java/examples/CompletionExample.java).
 
 ```java
 ffmpeg.executeAsync().toCompletableFuture()
-        .thenAccept(res -> {
-            // get the result of the operation when it is done
-        })
-        .exceptionally(ex -> {
-            // handle exceptions produced during operation
-        });
+    .thenAccept(res -> {
+        // get the result of the operation when it is done
+    })
+    .exceptionally(ex -> {
+        // handle exceptions produced during operation
+    });
 ```
 
 ## Complex Filtergraph (mosaic video)
