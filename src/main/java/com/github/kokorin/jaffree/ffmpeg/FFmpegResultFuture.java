@@ -17,6 +17,7 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
+import com.github.kokorin.jaffree.JaffreeException;
 import com.github.kokorin.jaffree.process.Stopper;
 
 import java.util.concurrent.CancellationException;
@@ -142,7 +143,9 @@ public class FFmpegResultFuture {
     /**
      * Returns a completion that can be used to chain operations after FFmpeg completes, using the
      * {@link CompletionStage} Java 8 API 
-     * @return completion that will complete when 
+     * @return completion that will complete when ffmpeg completes normally, and will complete
+     *  exceptionally with a {@link CancellationException} if ffmpeg is forcefully stopped or with a
+     *  {@link JaffreeException} if an error occurs.
      */
     public CompletableFuture<FFmpegResult> toCompletableFuture() {
         return resultFuture;
