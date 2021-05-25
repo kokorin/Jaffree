@@ -27,6 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -883,5 +884,33 @@ public class FFmpegTest {
 
         assertTrue(inputHelperClosed.get());
         assertTrue(outputHelperClosed.get());
+    }
+
+    @Test
+    public void testAsyncToCompletableFuture() throws Exception {
+        Path tempDir = Files.createTempDirectory("jaffree");
+        Path outputPath = tempDir.resolve(Artifacts.VIDEO_MP4.getFileName());
+
+        final AtomicReference<FFmpegResult> futureRef = new AtomicReference<>();
+
+        FFmpeg ffmpeg = FFmpeg.atPath(BIN)
+                .addInput(UrlInput.fromPath(Artifacts.VIDEO_MP4))
+                .addOutput(UrlOutput.toPath(outputPath));
+
+        CountDownLatch checkpoint = new CountDownLatch(1);
+        ffmpeg.executeAsync().toCompletableFuture().thenAccept(futureRef::set)
+                .exceptionally(v -> null)
+                .thenRun(checkpoint::countDown);
+
+        Assert.assertTrue(checkpoint.await(30, TimeUnit.SECONDS));
+        FFmpegResult encodingResult = futureRef.get();
+        Assert.assertNotNull(encodingResult);
+
+        FFprobeResult probeResult = FFprobe.atPath(BIN)
+                .setShowStreams(true)
+                .setInput(outputPath)
+                .execute();
+
+        assertEquals(2, probeResult.getStreams().size());
     }
 }
