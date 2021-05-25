@@ -1,4 +1,4 @@
-# Jaffree
+# Jaffree [![Sparkline](https://stars.medv.io/kokorin/Jaffree.svg)](https://stars.medv.io/kokorin/Jaffree)
 
 Jaffree stands for JAva FFmpeg and FFprobe FREE command line wrapper. Jaffree supports programmatic video production and consumption (with transparency)
 
@@ -6,7 +6,7 @@ It integrates with ffmpeg via `java.lang.Process`.
 
 Inspired by [ffmpeg-cli-wrapper](https://github.com/bramp/ffmpeg-cli-wrapper)
 
-## Tested with the help of [GitHub Actions](/kokorin/Jaffree/blob/master/.github/workflows/tests.yml) 
+## Tested with the help of [GitHub Actions](https://github.com/kokorin/Jaffree/blob/master/.github/workflows/tests.yml) 
 
 ![Tests](https://github.com/kokorin/Jaffree/workflows/Tests/badge.svg)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=kokorin_Jaffree&metric=coverage)](https://sonarcloud.io/dashboard?id=kokorin_Jaffree)
@@ -396,7 +396,7 @@ Thread.sleep(5_000);
 thread.interrupt();
 ```
 
-## Java 8 Comletion API
+## Java 8 Completion API
 
 See whole examples [here](/src/test/java/examples/CompletionExample.java).
 
@@ -497,7 +497,39 @@ FFmpegResult result = FFmpeg.atPath(BIN)
         .execute();
 ```
 
-### Programmatic mosaic video creation
+## Programmatic mosaic video creation
 
 Jaffree allows simultaneous reading from several sources (with one instance per every source and target).
 You can find details in  Mosaic [example](/src/test/java/examples/MosaicExample.java).
+
+# Build & configuration
+
+## IntelliJ IDEA
+
+This project uses [maven-git-versioning-extension](https://github.com/qoomon/maven-git-versioning-extension)
+to set project version automatically.
+Check its [intellij-setup](https://github.com/qoomon/maven-git-versioning-extension#intellij-setup) documentation.
+
+## JDK
+
+JDK8 is required to compile this project. JDK9 is required to compile this project with Java 9 module support.
+
+### JDK8
+
+```shell
+mvn clean install
+```
+
+### JDK9
+
+Maven profile `J9-module` enables two pass compilation:
+
+1. Compile all sources with Java 9 target version (including `module-info.java`).
+2. Recompile all sources (except `module-info.java`) with Java 8 target version.
+   
+After this all classes will have Java 8 bytecode (version 52), while `module-info.class`
+will have Java 9 bytecode (version 53).
+
+```shell
+mvn clean install -PJ9-module
+```

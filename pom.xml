@@ -54,6 +54,8 @@
 
         <createSourcesJar>false</createSourcesJar>
         <shadeSourcesContent>false</shadeSourcesContent>
+
+        <project.build.outputTimestamp>${git.commit.timestamp.datetime}</project.build.outputTimestamp>
     </properties>
 
     <dependencies>
@@ -99,6 +101,55 @@
     </dependencies>
 
     <profiles>
+        <profile>
+            <!-- This profile enables two pass compilation:
+                 1. Compile all sources with Java 9 target version (including module-info.java)
+                 2. Recompile all sources with Java 8 target version, but module-info.java
+                 After this all classes will have Java 8 bytecode (version 52), while
+                 module-info.class will have Java 9 bytecode (version 53) -->
+            <id>J9-module</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <release>8</release>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>default-compile</id>
+                                <goals>
+                                    <goal>compile</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <excludes>
+                                        <!--Any value will override excludes set by default plugin
+                                        configuration-->
+                                        <exclude>do-not-exclude-module-info.java</exclude>
+                                    </excludes>
+                                    <release>9</release>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>java-8-recompile</id>
+                                <goals>
+                                    <goal>compile</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <excludes>
+                                        <exclude>module-info.java</exclude>
+                                    </excludes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
         <profile>
             <id>release</id>
             <properties>
@@ -178,6 +229,22 @@
                         <compilerArg>-Xdoclint:all</compilerArg>
                     </compilerArgs>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>default-compile</id>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <phase>compile</phase>
+                        <configuration>
+                            <excludes>
+                                <!--This file contains java 9 module description,
+                                 it can't be compiled with JDK 8-->
+                                <exclude>module-info.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>
