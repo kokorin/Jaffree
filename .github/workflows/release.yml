@@ -22,7 +22,7 @@ jobs:
       - uses: actions/setup-java@v2
         with:
           distribution: 'adopt'
-          java-version: 8
+          java-version: 11
 
       - uses: actions/cache@v2
         with:
@@ -57,7 +57,7 @@ jobs:
           rm -rf .gpg
 
       - name: Release
-        run: bash mvnw -B clean deploy -DskipTests -Prelease
+        run: bash mvnw -B clean deploy -DskipTests -PJ9-module -Prelease
 
       - name: Detect release version
         id: get-version

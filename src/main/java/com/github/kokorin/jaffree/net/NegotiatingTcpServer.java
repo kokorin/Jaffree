@@ -17,8 +17,6 @@
 
 package com.github.kokorin.jaffree.net;
 
-import net.jcip.annotations.ThreadSafe;
-
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -26,7 +24,6 @@ import java.net.Socket;
 /**
  * {@link TcpServer} implementation using {@link TcpNegotiator} to serve TCP connection.
  */
-@ThreadSafe
 public class NegotiatingTcpServer extends TcpServer {
     private final TcpNegotiator negotiator;
 
