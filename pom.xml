@@ -54,14 +54,11 @@
 
         <createSourcesJar>false</createSourcesJar>
         <shadeSourcesContent>false</shadeSourcesContent>
+
+        <project.build.outputTimestamp>${git.commit.timestamp.datetime}</project.build.outputTimestamp>
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>net.jcip</groupId>
-            <artifactId>jcip-annotations</artifactId>
-            <version>1.0</version>
-        </dependency>
 
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -100,6 +97,55 @@
 
     <profiles>
         <profile>
+            <!-- This profile enables two pass compilation:
+                 1. Compile all sources with Java 9 target version (including module-info.java)
+                 2. Recompile all sources with Java 8 target version, but module-info.java
+                 After this all classes will have Java 8 bytecode (version 52), while
+                 module-info.class will have Java 9 bytecode (version 53) -->
+            <id>J9-module</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <release>8</release>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>default-compile</id>
+                                <goals>
+                                    <goal>compile</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <excludes>
+                                        <!--Any value will override excludes set by default plugin
+                                        configuration-->
+                                        <exclude>do-not-exclude-module-info.java</exclude>
+                                    </excludes>
+                                    <release>9</release>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>java-8-recompile</id>
+                                <goals>
+                                    <goal>compile</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <excludes>
+                                        <exclude>module-info.java</exclude>
+                                    </excludes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
             <id>release</id>
             <properties>
                 <createSourcesJar>true</createSourcesJar>
@@ -125,6 +171,9 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
                         <version>3.3.0</version>
+                        <configuration>
+                            <source>8</source>
+                        </configuration>
                         <executions>
                             <execution>
                                 <id>attach-javadocs</id>
@@ -178,6 +227,22 @@
                         <compilerArg>-Xdoclint:all</compilerArg>
                     </compilerArgs>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>default-compile</id>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <phase>compile</phase>
+                        <configuration>
+                            <excludes>
+                                <!--This file contains java 9 module description,
+                                 it can't be compiled with JDK 8-->
+                                <exclude>module-info.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>
@@ -232,36 +297,6 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.7</version>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.4</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                            <artifactSet>
-                                <includes>
-                                    <include>com.grack:nanojson</include>
-                                </includes>
-                            </artifactSet>
-                            <createDependencyReducedPom>true</createDependencyReducedPom>
-                            <createSourcesJar>${createSourcesJar}</createSourcesJar>
-                            <shadeSourcesContent>${shadeSourcesContent}</shadeSourcesContent>
-                            <relocations>
-                                <relocation>
-                                    <pattern>com.grack.nanojson</pattern>
-                                    <shadedPattern>com.github.kokorin.jaffree.shaded.com.grack.nanojson</shadedPattern>
-                                </relocation>
-                            </relocations>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

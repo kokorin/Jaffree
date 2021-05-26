@@ -18,7 +18,6 @@
 package com.github.kokorin.jaffree.net;
 
 import com.github.kokorin.jaffree.util.IOUtil;
-import net.jcip.annotations.ThreadSafe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +31,6 @@ import java.net.SocketException;
  * {@link TcpNegotiator} implementation which copies bytes from {@link InputStream}
  * to {@link Socket}.
  */
-@ThreadSafe
 public class PipeInputNegotiator implements TcpNegotiator {
     private final InputStream source;
     private final int bufferSize;

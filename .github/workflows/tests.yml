@@ -84,6 +84,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: 11
+
       - name: Set up RANDOM GPG key
         run: gpg --quick-generate-key --batch  --passphrase '' test42
 
@@ -99,5 +105,4 @@ jobs:
             ${{ runner.os }}-m2
 
       - name: Test release
-        run: bash mvnw clean install -B -DskipTests -Prelease
-
+        run: bash mvnw clean install -B -DskipTests -PJ9-module -Prelease
