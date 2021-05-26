@@ -19,8 +19,6 @@ package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.JaffreeException;
 import com.github.kokorin.jaffree.net.TcpNegotiator;
-import net.jcip.annotations.GuardedBy;
-import net.jcip.annotations.ThreadSafe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -169,11 +167,9 @@ public class FrameInput extends TcpInput<FrameInput> implements Input {
      * {@link TcpNegotiator} implementation which uses {@link FrameWriter} to send bytes over
      * TCP connection.
      */
-    @ThreadSafe
     protected static class FrameInputNegotiator implements TcpNegotiator {
         private final FrameWriter frameWriter;
 
-        @GuardedBy("this")
         private boolean frameRateSet;
 
         public FrameInputNegotiator(final FrameWriter frameWriter) {

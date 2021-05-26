@@ -177,7 +177,7 @@ public class NutReader {
         long fields;
         long ptsDelta = 0;
         long reserved;
-        long count;
+        int count;
         long matchTimeDelta = 1L - (1L << 62);
         long elisionHeaderIdx = 0;
 
@@ -207,7 +207,7 @@ public class NutReader {
                 reserved = 0;
             }
             if (fields > 5) {
-                count = input.readValue();
+                count = (int) input.readValue();
             } else {
                 count = dataSizeMul - size;
             }

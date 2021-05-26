@@ -18,6 +18,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import static org.junit.Assert.assertNotNull;
+
 public class NutTest {
 
     public static Path BIN;
@@ -30,7 +32,7 @@ public class NutTest {
         if (ffmpegHome == null) {
             ffmpegHome = System.getenv("FFMPEG_BIN");
         }
-        Assert.assertNotNull("Nor command line property, neither system variable FFMPEG_BIN is set up", ffmpegHome);
+        assertNotNull("Nor command line property, neither system variable FFMPEG_BIN is set up", ffmpegHome);
         BIN = Paths.get(ffmpegHome);
     }
 
@@ -76,7 +78,7 @@ public class NutTest {
                 .addInput(UrlInput.fromPath(outputPath))
                 .addOutput(new NullOutput())
                 .execute();
-        Assert.assertNotNull(mpeg);
+        assertNotNull(mpeg);
         Assert.assertTrue(mpeg.getVideoSize() > 100_000);
         Assert.assertTrue(mpeg.getAudioSize() > 10_000);
     }
@@ -103,14 +105,17 @@ public class NutTest {
             NutReader reader = new NutReader(new NutInputStream(input));
             reader.readFrame();
 
+            assertNotNull(reader.getMainHeader());
             LOGGER.debug("-------");
             LOGGER.debug(reader.getMainHeader().toString());
 
+            assertNotNull(reader.getInfos());
             LOGGER.debug("-------");
             for (Info info : reader.getInfos()) {
                 LOGGER.debug(info.toString());
             }
 
+            assertNotNull(reader.getStreamHeaders());
             LOGGER.debug("-------");
             for (StreamHeader streamHeader : reader.getStreamHeaders()) {
                 LOGGER.debug(streamHeader.toString());
@@ -128,7 +133,7 @@ public class NutTest {
             NutReader reader = new NutReader(new NutInputStream(input));
 
             MainHeader mainHeader = reader.getMainHeader();
-            Assert.assertNotNull(mainHeader);
+            assertNotNull(mainHeader);
             Assert.assertTrue(mainHeader.majorVersion >= 3);
 
             StreamHeader[] streamHeaders = reader.getStreamHeaders();
@@ -142,7 +147,7 @@ public class NutTest {
             Assert.assertEquals(1, streamHeaders[1].audio.sampleRate.getDenominator());
 
             NutFrame frame = reader.readFrame();
-            Assert.assertNotNull(frame);
+            assertNotNull(frame);
 
             long videoFrameCount = 0;
             long audioFrameCount = 0;

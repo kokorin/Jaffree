@@ -1,11 +1,15 @@
-<configuration xmlns="https://github.com/qoomon/maven-git-versioning-extension">
-    <updatePom>false</updatePom>
+<configuration xmlns="https://github.com/qoomon/maven-git-versioning-extension" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="https://github.com/qoomon/maven-git-versioning-extension https://qoomon.github.io/maven-git-versioning-extension/configuration-6.4.0.xsd">
+<updatePom>false</updatePom>
     <branch>
         <pattern>master</pattern>
-        <versionFormat>${commit.timestamp.year}-${commit.timestamp.month}-${commit.timestamp.day}</versionFormat>
+        <versionFormat>${commit.timestamp.year}.${commit.timestamp.month}.${commit.timestamp.day}</versionFormat>
     </branch>
     <branch>
         <pattern>.*</pattern>
-        <versionFormat>${branch.slug}-SNAPSHOT</versionFormat>
+        <versionFormat>${commit.timestamp.year}.${commit.timestamp.month}.${commit.timestamp.day}-${branch.slug}-SNAPSHOT</versionFormat>
     </branch>
+    <commit>
+        <versionFormat>${commit.timestamp.year}.${commit.timestamp.month}.${commit.timestamp.day}-${commit.short}-SNAPSHOT</versionFormat>
+    </commit>
 </configuration>
