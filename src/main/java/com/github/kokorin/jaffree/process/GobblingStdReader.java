@@ -17,6 +17,7 @@
 
 package com.github.kokorin.jaffree.process;
 
+import com.github.kokorin.jaffree.JaffreeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,10 +58,10 @@ public class GobblingStdReader<T> implements StdReader<T> {
                 read = stdOut.read(bytes);
             } while (read != -1);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new JaffreeException("Failed to read input", e);
+        } finally {
+            LOGGER.info("Totally read {} bytes", total);
         }
-
-        LOGGER.info("Totally read {} bytes", total);
 
         return null;
     }

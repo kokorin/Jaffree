@@ -8,9 +8,14 @@ on:
       - master
       - develop
   pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
     # The branches below must be a subset of the branches above
     branches:
       - master
+      - develop
 
 env:
   MAVEN_OPTS: -Dhttp.keepAlive=false -Dmaven.wagon.http.pool=false -Dmaven.wagon.http.retryHandler.class=standard -Dmaven.wagon.http.retryHandler.count=3
@@ -53,4 +58,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -DFFMPEG_BIN=/usr/bin
+        run: |
+          if [ -n "$SONAR_TOKEN" ]
+          then
+            bash mvnw -B jacoco:prepare-agent verify jacoco:report sonar:sonar -DFFMPEG_BIN=/usr/bin
+          else
+            echo "Skipping sonar if a PR is created from a fork"
+            echo "Secrets are not available in such PRs for security reason"
+          fi
