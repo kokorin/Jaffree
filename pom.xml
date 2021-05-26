@@ -59,11 +59,6 @@
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>net.jcip</groupId>
-            <artifactId>jcip-annotations</artifactId>
-            <version>1.0</version>
-        </dependency>
 
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -299,36 +294,6 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.7</version>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.4</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                            <artifactSet>
-                                <includes>
-                                    <include>com.grack:nanojson</include>
-                                </includes>
-                            </artifactSet>
-                            <createDependencyReducedPom>true</createDependencyReducedPom>
-                            <createSourcesJar>${createSourcesJar}</createSourcesJar>
-                            <shadeSourcesContent>${shadeSourcesContent}</shadeSourcesContent>
-                            <relocations>
-                                <relocation>
-                                    <pattern>com.grack.nanojson</pattern>
-                                    <shadedPattern>com.github.kokorin.jaffree.shaded.com.grack.nanojson</shadedPattern>
-                                </relocation>
-                            </relocations>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

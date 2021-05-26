@@ -19,7 +19,6 @@ module com.github.kokorin.jaffree {
     requires java.base;
     requires java.desktop;
     requires org.slf4j;
-    requires jcip.annotations;
     requires com.grack.nanojson;
 
     exports com.github.kokorin.jaffree;
