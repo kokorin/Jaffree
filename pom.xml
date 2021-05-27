@@ -119,11 +119,10 @@
                                 </goals>
                                 <phase>compile</phase>
                                 <configuration>
-                                    <excludes>
-                                        <!--Any value will override excludes set by default plugin
-                                        configuration-->
-                                        <exclude>do-not-exclude-module-info.java</exclude>
-                                    </excludes>
+                                    <compileSourceRoots>
+                                        <sourceRoot>${project.basedir}/src/main/java</sourceRoot>
+                                        <sourceRoot>${project.basedir}/src/main/java9</sourceRoot>
+                                    </compileSourceRoots>
                                     <release>9</release>
                                 </configuration>
                             </execution>
@@ -133,11 +132,6 @@
                                     <goal>compile</goal>
                                 </goals>
                                 <phase>compile</phase>
-                                <configuration>
-                                    <excludes>
-                                        <exclude>module-info.java</exclude>
-                                    </excludes>
-                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
@@ -234,13 +228,6 @@
                             <goal>compile</goal>
                         </goals>
                         <phase>compile</phase>
-                        <configuration>
-                            <excludes>
-                                <!--This file contains java 9 module description,
-                                 it can't be compiled with JDK 8-->
-                                <exclude>module-info.java</exclude>
-                            </excludes>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
