@@ -139,7 +139,7 @@ public class FFmpeg {
     }
 
     /**
-     * Adds complex filter graph to ffmpeg arugments list.
+     * Adds complex filter graph to ffmpeg arguments list.
      * <p>
      * Complex filtergraphs are those which cannot be described as simply a linear processing chain
      * applied to one stream. This is the case, for example, when the graph has more than one input
@@ -178,12 +178,23 @@ public class FFmpeg {
     /**
      * Sets the 'generic' filter value (equivalent to the "-filter" command-line parameter).
      *
-     * @param filter a FilterGraph describing the filter to apply
+     * @param filter a filter to apply
      * @return this
      * @see <a href="https://ffmpeg.org/ffmpeg-all.html#Simple-filtergraphs">Simple filtergraphs</a>
      */
-    public FFmpeg setFilter(final FilterGraph filter) {
+    public FFmpeg setFilter(final Filter filter) {
         return setFilter(filter.getValue());
+    }
+
+    /**
+     * Sets the 'generic' filter value (equivalent to the "-filter" command-line parameter).
+     *
+     * @param filterChain a filter chain to apply
+     * @return this
+     * @see <a href="https://ffmpeg.org/ffmpeg-all.html#Simple-filtergraphs">Simple filtergraphs</a>
+     */
+    public FFmpeg setFilter(final FilterChain filterChain) {
+        return setFilter(filterChain.getValue());
     }
 
     /**
@@ -201,15 +212,30 @@ public class FFmpeg {
      * Sets a 'stream specific' filter value (equivalent to the "-av" / "-filter:a" or "-fv" /
      * "-filter:v" command-line parameters).
      *
-     * @param streamType  the stream type to apply this filter to
-     * @param filterGraph a graph describing the filters to apply
+     * @param streamType the stream type to apply this filter to
+     * @param filter     a filter to apply
      * @return this
      * @see <a href="http://ffmpeg.org/ffmpeg-all.html#toc-Stream-specifiers-1">Stream specifiers
      * </a>
      * @see <a href="https://ffmpeg.org/ffmpeg-all.html#Simple-filtergraphs">Simple filtergraphs</a>
      */
-    public FFmpeg setFilter(final StreamType streamType, final FilterGraph filterGraph) {
-        return setFilter(streamType, filterGraph.getValue());
+    public FFmpeg setFilter(final StreamType streamType, final Filter filter) {
+        return setFilter(streamType, filter.getValue());
+    }
+
+    /**
+     * Sets a 'stream specific' filter value (equivalent to the "-av" / "-filter:a" or "-fv" /
+     * "-filter:v" command-line parameters).
+     *
+     * @param streamType  the stream type to apply this filter to
+     * @param filterChain a filter chain to apply
+     * @return this
+     * @see <a href="http://ffmpeg.org/ffmpeg-all.html#toc-Stream-specifiers-1">Stream specifiers
+     * </a>
+     * @see <a href="https://ffmpeg.org/ffmpeg-all.html#Simple-filtergraphs">Simple filtergraphs</a>
+     */
+    public FFmpeg setFilter(final StreamType streamType, final FilterChain filterChain) {
+        return setFilter(streamType, filterChain.getValue());
     }
 
     /**
@@ -233,14 +259,30 @@ public class FFmpeg {
      *
      * @param streamSpecifier a String specifying to which stream this filter must be applied
      *                        ("a" for audio, "v" "for video, or "" for generic 'filter')
-     * @param filterGraph     a graph describing the filters to apply
+     * @param filter          a filter
      * @return this
      * @see <a href="http://ffmpeg.org/ffmpeg-all.html#toc-Stream-specifiers-1">Stream specifiers
      * </a>
      * @see <a href="https://ffmpeg.org/ffmpeg-all.html#Simple-filtergraphs">Simple filtergraphs</a>
      */
-    public FFmpeg setFilter(final String streamSpecifier, final FilterGraph filterGraph) {
-        return setFilter(streamSpecifier, filterGraph.getValue());
+    public FFmpeg setFilter(final String streamSpecifier, final Filter filter) {
+        return setFilter(streamSpecifier, filter.getValue());
+    }
+
+    /**
+     * Sets a 'stream specific' filter value (equivalent to the "-av" / "-filter:a" or "-fv" /
+     * "-filter:v" / "-filter" command-line parameters).
+     *
+     * @param streamSpecifier a String specifying to which stream this filter must be applied
+     *                        ("a" for audio, "v" "for video, or "" for generic 'filter')
+     * @param filterChain     a filter chain describing the filters to apply
+     * @return this
+     * @see <a href="http://ffmpeg.org/ffmpeg-all.html#toc-Stream-specifiers-1">Stream specifiers
+     * </a>
+     * @see <a href="https://ffmpeg.org/ffmpeg-all.html#Simple-filtergraphs">Simple filtergraphs</a>
+     */
+    public FFmpeg setFilter(final String streamSpecifier, final FilterChain filterChain) {
+        return setFilter(streamSpecifier, filterChain.getValue());
     }
 
     /**
