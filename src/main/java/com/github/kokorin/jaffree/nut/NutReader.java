@@ -122,8 +122,9 @@ public class NutReader {
                 SyncPoint syncPoint = readSyncPoint();
                 long pts = syncPoint.globalKeyPts.pts;
                 Rational ptsTimebase = mainHeader.timeBases[syncPoint.globalKeyPts.timebaseId];
-                for (int i = 0; i < mainHeader.timeBases.length; i++) {
-                    lastPts[i] = Util.convertTimestamp(pts, ptsTimebase, mainHeader.timeBases[i]);
+                for (int i = 0; i < mainHeader.streamCount; i++) {
+                    Rational streamTimeBase = mainHeader.timeBases[streamHeaders[i].timeBaseId];
+                    lastPts[i] = Util.convertTimestamp(pts, ptsTimebase, streamTimeBase);
                 }
             }
 
