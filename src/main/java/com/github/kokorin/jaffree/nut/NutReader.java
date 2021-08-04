@@ -1,6 +1,5 @@
 /*
- *    Copyright  2017 Denis Kokorin
- *    Copyright  2021 Mark Lassau
+ *    Copyright 2017-2021 Denis Kokorin, Mark Lassau
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
