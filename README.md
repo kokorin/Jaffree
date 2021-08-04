@@ -533,3 +533,20 @@ will have Java 9 bytecode (version 53).
 ```shell
 mvn clean install -PJ9-module
 ```
+
+## Unit Tests
+
+Some code in the unit tests relies on having ffmpeg / ffprobe available on your `PATH`.
+Other parts of the unit test code requires that you have configured `FFMPEG_BIN` as either an environment variable or as a Java system property.
+
+You will need to ensure that both are set up correctly in order to run the unit tests successfully.
+
+# Contribution Guidelines
+
+If you want to raise a Pull Request, please follow these guidelines:
+
+* Fork the repo
+* Create your feature branch based on the `develop` branch
+* Raise a PR that targets the `kokorin:develop` branch
+* Include appropriate Unit Tests
+  Consider using `com.github.kokorin.jaffree.Artifacts` for sample files used in the tests.

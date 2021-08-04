@@ -26,6 +26,7 @@ public class Artifacts {
     public static final Path AUDIO_OPUS = getOpusArtifact(180);
     public static final Path VIDEO_MJPEG = getMjpegArtifact(20);
     public static final Path VIDEO_NUT = getNutArtifact(180);
+    public static final Path VIDEO_NUT_WITH_CHAPTERS = getNutArtifactWithChapters();
 
     private static Path getMp4Artifact(int duration) {
         return getArtifact("640x480", 30, 44_100, "mp4", duration);
@@ -38,6 +39,24 @@ public class Artifacts {
     private static synchronized Path getNutArtifact(int duration) {
         Path source = getMp4Artifact(duration);
         String filename = source.getFileName().toString().replace(".mp4", ".nut");
+        Path result = getSamplePath(filename);
+
+        if (!Files.exists(result)) {
+            FFmpeg.atPath()
+                    .addInput(UrlInput.fromPath(source))
+                    .addOutput(UrlOutput
+                            .toPath(result)
+                            .copyAllCodecs()
+                    )
+                    .execute();
+        }
+
+        return result;
+    }
+
+    private static synchronized Path getNutArtifactWithChapters() {
+        Path source = getMkvArtifactWithChapters();
+        String filename = source.getFileName().toString().replace(".mkv", ".nut");
         Path result = getSamplePath(filename);
 
         if (!Files.exists(result)) {
