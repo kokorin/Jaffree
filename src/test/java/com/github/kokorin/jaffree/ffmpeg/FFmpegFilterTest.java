@@ -1,6 +1,7 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.Artifacts;
+import com.github.kokorin.jaffree.Config;
 import com.github.kokorin.jaffree.ffprobe.FFprobe;
 import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
 import com.github.kokorin.jaffree.ffprobe.Stream;
@@ -15,21 +16,6 @@ import java.util.concurrent.TimeUnit;
 
 public class FFmpegFilterTest {
 
-    public static Path BIN;
-
-
-    @BeforeClass
-    public static void setUp() throws Exception {
-        String ffmpegHome = System.getProperty("FFMPEG_BIN");
-        if (ffmpegHome == null) {
-            ffmpegHome = System.getenv("FFMPEG_BIN");
-        }
-        Assert.assertNotNull(
-                "Nor command line property, neither system variable FFMPEG_BIN is set up",
-                ffmpegHome);
-        BIN = Paths.get(ffmpegHome);
-    }
-
     /**
      * Test, that creates mosaic video from 4 sources
      * <p>
@@ -42,7 +28,7 @@ public class FFmpegFilterTest {
         Path tempDir = Files.createTempDirectory("jaffree");
         Path outputPath = tempDir.resolve("mosaic.mkv");
 
-        FFmpegResult result = FFmpeg.atPath(BIN)
+        FFmpegResult result = FFmpeg.atPath(Config.FFMPEG_BIN)
                 .addInput(UrlInput.fromPath(Artifacts.VIDEO_MP4).setDuration(10, TimeUnit.SECONDS))
                 .addInput(UrlInput.fromPath(Artifacts.SMALL_FLV).setDuration(10, TimeUnit.SECONDS))
                 .addInput(UrlInput.fromPath(Artifacts.SMALL_MP4).setDuration(10, TimeUnit.SECONDS))
@@ -124,7 +110,7 @@ public class FFmpegFilterTest {
 
         Assert.assertNotNull(result);
 
-        FFprobeResult probe = FFprobe.atPath(BIN)
+        FFprobeResult probe = FFprobe.atPath(Config.FFMPEG_BIN)
                 .setInput(outputPath)
                 .setShowStreams(true)
                 .execute();
@@ -159,7 +145,7 @@ public class FFmpegFilterTest {
         Path tempDir = Files.createTempDirectory("jaffree");
         Path outputPath = tempDir.resolve("concat.mp4");
 
-        FFmpegResult result = FFmpeg.atPath(BIN)
+        FFmpegResult result = FFmpeg.atPath(Config.FFMPEG_BIN)
                 .addInput(UrlInput.fromPath(Artifacts.VIDEO_MP4).setDuration(5, TimeUnit.SECONDS))
                 .addInput(
                         UrlInput.fromPath(Artifacts.VIDEO_MKV).setPositionEof(-5, TimeUnit.SECONDS))
@@ -190,7 +176,7 @@ public class FFmpegFilterTest {
 
         Assert.assertNotNull(result);
 
-        FFprobeResult probe = FFprobe.atPath(BIN)
+        FFprobeResult probe = FFprobe.atPath(Config.FFMPEG_BIN)
                 .setInput(outputPath)
                 .setShowStreams(true)
                 .execute();

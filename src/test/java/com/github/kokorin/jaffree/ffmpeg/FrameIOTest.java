@@ -1,6 +1,7 @@
 package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.Artifacts;
+import com.github.kokorin.jaffree.Config;
 import com.github.kokorin.jaffree.StackTraceMatcher;
 import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffprobe.FFprobe;
@@ -37,19 +38,7 @@ public class FrameIOTest {
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
 
-    public static Path BIN;
-
     private static final Logger LOGGER = LoggerFactory.getLogger(FrameIOTest.class);
-
-    @BeforeClass
-    public static void setUp() throws Exception {
-        String ffmpegHome = System.getProperty("FFMPEG_BIN");
-        if (ffmpegHome == null) {
-            ffmpegHome = System.getenv("FFMPEG_BIN");
-        }
-        Assert.assertNotNull("Nor command line property, neither system variable FFMPEG_BIN is set up", ffmpegHome);
-        BIN = Paths.get(ffmpegHome);
-    }
 
     @Test
     public void countFrames() throws Exception {
@@ -72,7 +61,7 @@ public class FrameIOTest {
             }
         };
 
-        FFmpegResult result = FFmpeg.atPath(BIN)
+        FFmpegResult result = FFmpeg.atPath(Config.FFMPEG_BIN)
                 .addInput(
                         UrlInput.fromPath(Artifacts.VIDEO_MP4)
                 )
@@ -189,7 +178,7 @@ public class FrameIOTest {
             }
         };
 
-        FFmpegResult result = FFmpeg.atPath(BIN)
+        FFmpegResult result = FFmpeg.atPath(Config.FFMPEG_BIN)
                 .addInput(
                         FrameInput.withProducer(producer)
                                 .setFrameRate(10)
@@ -202,7 +191,7 @@ public class FrameIOTest {
 
         Assert.assertNotNull(result);
 
-        FFprobeResult probe = FFprobe.atPath(BIN)
+        FFprobeResult probe = FFprobe.atPath(Config.FFMPEG_BIN)
                 .setInput(output)
                 .setShowStreams(true)
                 .execute();
@@ -497,7 +486,7 @@ public class FrameIOTest {
 
         final AtomicReference<FFmpegProgress> progressRef = new AtomicReference<>();
 
-        FFmpeg.atPath(BIN)
+        FFmpeg.atPath(Config.FFMPEG_BIN)
                 .addInput(FrameInput.withProducer(
                         new FrameProducer() {
                             private BufferedImage image;
