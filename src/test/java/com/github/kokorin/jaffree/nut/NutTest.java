@@ -1,6 +1,7 @@
 package com.github.kokorin.jaffree.nut;
 
 import com.github.kokorin.jaffree.Artifacts;
+import com.github.kokorin.jaffree.Config;
 import com.github.kokorin.jaffree.ffmpeg.FFmpeg;
 import com.github.kokorin.jaffree.ffmpeg.FFmpegResult;
 import com.github.kokorin.jaffree.ffmpeg.NullOutput;
@@ -22,19 +23,7 @@ import static org.junit.Assert.assertNotNull;
 
 public class NutTest {
 
-    public static Path BIN;
-
     private static final Logger LOGGER = LoggerFactory.getLogger(NutTest.class);
-
-    @BeforeClass
-    public static void setUp() throws Exception {
-        String ffmpegHome = System.getProperty("FFMPEG_BIN");
-        if (ffmpegHome == null) {
-            ffmpegHome = System.getenv("FFMPEG_BIN");
-        }
-        assertNotNull("Nor command line property, neither system variable FFMPEG_BIN is set up", ffmpegHome);
-        BIN = Paths.get(ffmpegHome);
-    }
 
     @Test
     public void read() throws Exception {
@@ -74,7 +63,7 @@ public class NutTest {
         // [null @ 0000000000dca4e0] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 15050833 >= 15048033
         // This is because of EOR frames in NUT (the have the same timestamp as previous frames in the same stream), so it's OK
 
-        FFmpegResult mpeg = FFmpeg.atPath(BIN)
+        FFmpegResult mpeg = FFmpeg.atPath(Config.FFMPEG_BIN)
                 .addInput(UrlInput.fromPath(outputPath))
                 .addOutput(new NullOutput())
                 .execute();
@@ -87,7 +76,7 @@ public class NutTest {
     public void dumpNutHeaders() throws Exception {
         Path rawNut = Files.createTempFile("raw_video", ".nut");
 
-        FFmpeg.atPath(BIN)
+        FFmpeg.atPath(Config.FFMPEG_BIN)
                 .addInput(
                         UrlInput.fromPath(Artifacts.VIDEO_MP4)
                                 .setDuration(1000)
