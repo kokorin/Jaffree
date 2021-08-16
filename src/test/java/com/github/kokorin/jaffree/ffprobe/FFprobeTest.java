@@ -1,6 +1,7 @@
 package com.github.kokorin.jaffree.ffprobe;
 
 import com.github.kokorin.jaffree.Artifacts;
+import com.github.kokorin.jaffree.Config;
 import com.github.kokorin.jaffree.LogLevel;
 import com.github.kokorin.jaffree.Rational;
 import com.github.kokorin.jaffree.StackTraceMatcher;
@@ -41,8 +42,6 @@ import static org.junit.Assert.fail;
 public class FFprobeTest {
     private final FormatParser formatParser;
 
-    public static Path BIN;
-
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
 
@@ -55,22 +54,11 @@ public class FFprobeTest {
         this.formatParser = formatParser;
     }
 
-    @BeforeClass
-    public static void setUp() throws Exception {
-        String ffmpegHome = System.getProperty("FFMPEG_BIN");
-        if (ffmpegHome == null) {
-            ffmpegHome = System.getenv("FFMPEG_BIN");
-        }
-        assertNotNull("Nor command line property, neither system variable FFMPEG_BIN is set up",
-                ffmpegHome);
-        BIN = Paths.get(ffmpegHome);
-    }
-
     //private boolean showData;
 
     @Test
     public void testShowDataWithShowStreams() throws Exception {
-        FFprobeResult result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(Config.FFMPEG_BIN)
                 .setInput(Artifacts.VIDEO_MP4)
                 .setShowData(true)
                 .setShowStreams(true)
@@ -99,7 +87,7 @@ public class FFprobeTest {
 
     @Test
     public void testShowDataWithShowPackets() throws Exception {
-        FFprobeResult result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(Config.FFMPEG_BIN)
                 .setInput(Artifacts.VIDEO_MP4)
                 .setShowData(true)
                 .setShowPackets(true)
@@ -120,7 +108,7 @@ public class FFprobeTest {
 
     @Test
     public void testShowDataHashWithShowStreams() throws Exception {
-        FFprobeResult result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(Config.FFMPEG_BIN)
                 .setInput(Artifacts.VIDEO_MP4)
                 .setShowDataHash("MD5")
                 .setShowStreams(true)
@@ -135,7 +123,7 @@ public class FFprobeTest {
 
     @Test
     public void testShowDataHashWithShowPackets() throws Exception {
-        FFprobeResult result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(Config.FFMPEG_BIN)
                 .setInput(Artifacts.VIDEO_MP4)
                 .setShowDataHash("MD5")
                 .setShowPackets(true)
@@ -155,7 +143,7 @@ public class FFprobeTest {
 
     @Test
     public void testShowFormat() throws Exception {
-        FFprobeResult result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(Config.FFMPEG_BIN)
                 .setInput(Artifacts.VIDEO_MP4)
                 .setShowFormat(true)
                 .setFormatParser(formatParser)
@@ -188,7 +176,7 @@ public class FFprobeTest {
     @Test
     public void testShowEntries() throws Exception {
 
-        FFprobeResult result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(Config.FFMPEG_BIN)
                 .setInput(Artifacts.VIDEO_MP4)
                 .setShowEntries(
                         "packet=pts_time,duration_time,stream_index : stream=index,codec_type")
@@ -214,7 +202,7 @@ public class FFprobeTest {
 
     @Test
     public void testShowFrames() throws Exception {
-        FFprobeResult result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(Config.FFMPEG_BIN)
                 .setInput(Artifacts.VIDEO_WITH_SUBTITLES)
                 .setShowFrames(true)
                 .setFormatParser(formatParser)
@@ -263,7 +251,7 @@ public class FFprobeTest {
 
     @Test
     public void testShowLog() throws Exception {
-        FFprobeResult result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(Config.FFMPEG_BIN)
                 .setInput(Artifacts.VIDEO_MP4)
                 .setShowFrames(true)
                 .setShowLog(LogLevel.TRACE)
@@ -297,7 +285,7 @@ public class FFprobeTest {
 
     @Test
     public void testShowStreams() throws Exception {
-        FFprobeResult result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(Config.FFMPEG_BIN)
                 .setInput(Artifacts.VIDEO_MP4)
                 .setShowStreams(true)
                 .setFormatParser(formatParser)
@@ -362,7 +350,7 @@ public class FFprobeTest {
 
     @Test
     public void testSelectStreamWithShowStreams() throws Exception {
-        FFprobeResult result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(Config.FFMPEG_BIN)
                 .setInput(Artifacts.VIDEO_MP4)
                 .setShowStreams(true)
                 .setSelectStreams(StreamType.VIDEO)
@@ -379,7 +367,7 @@ public class FFprobeTest {
 
     @Test
     public void testSelectStreamWithShowPackets() throws Exception {
-        FFprobeResult result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(Config.FFMPEG_BIN)
                 .setInput(Artifacts.VIDEO_MP4)
                 .setShowPackets(true)
                 .setSelectStreams("1")
@@ -396,7 +384,7 @@ public class FFprobeTest {
 
     @Test
     public void testShowPrograms() throws Exception {
-        FFprobeResult result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(Config.FFMPEG_BIN)
                 .setInput(Artifacts.VIDEO_WITH_PROGRAMS)
                 .setShowPrograms(true)
                 .setFormatParser(formatParser)
@@ -439,7 +427,7 @@ public class FFprobeTest {
 
     @Test
     public void testShowChapters() throws Exception {
-        FFprobeResult result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(Config.FFMPEG_BIN)
                 .setInput(Artifacts.VIDEO_WITH_CHAPTERS)
                 .setShowChapters(true)
                 .setFormatParser(formatParser)
@@ -474,7 +462,7 @@ public class FFprobeTest {
 
     @Test
     public void testCountFramesAndPackets() throws Exception {
-        FFprobeResult result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(Config.FFMPEG_BIN)
                 .setInput(Artifacts.VIDEO_MP4)
                 .setShowStreams(true)
                 .setCountFrames(true)
@@ -495,7 +483,7 @@ public class FFprobeTest {
 
     @Test
     public void testReadIntervals() throws Exception {
-        FFprobeResult result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(Config.FFMPEG_BIN)
                 .setInput(Artifacts.VIDEO_MP4)
                 .setShowPackets(true)
                 .setReadIntervals("30%+#42")
@@ -512,7 +500,7 @@ public class FFprobeTest {
 
     @Test
     public void testShowPacketsAndFrames() {
-        FFprobeResult result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(Config.FFMPEG_BIN)
                 .setInput(Artifacts.VIDEO_WITH_SUBTITLES)
                 .setShowPackets(true)
                 .setShowFrames(true)
@@ -607,7 +595,7 @@ public class FFprobeTest {
         FFprobeResult result;
         try (InputStream rotatedInput = FFprobeTest.class.getResourceAsStream("rotated.mp4")) {
             assertNotNull(rotatedInput);
-            result = FFprobe.atPath(BIN)
+            result = FFprobe.atPath(Config.FFMPEG_BIN)
                     .setInput(rotatedInput)
                     .setShowStreams(true)
                     .setFormatParser(formatParser)
@@ -635,7 +623,7 @@ public class FFprobeTest {
     @Test
     @Ignore("ffprobe 4.4 doesn't output frame side data")
     public void testFrameSideDataListAttributes() throws Exception {
-        FFprobeResult result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(Config.FFMPEG_BIN)
                 .setInput(Artifacts.VIDEO_MJPEG)
                 .setShowFrames(true)
                 .setLogLevel(LogLevel.DEBUG)
@@ -666,7 +654,7 @@ public class FFprobeTest {
 
     @Test
     public void testPacketSideDataListAttributes() throws Exception {
-        FFprobeResult result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(Config.FFMPEG_BIN)
                 .setInput(Artifacts.AUDIO_OPUS)
                 .setShowPackets(true)
                 .setFormatParser(formatParser)
@@ -698,7 +686,7 @@ public class FFprobeTest {
     public void testExceptionIsThrownIfFfprobeExitsWithError() {
         expectedException.expect(new StackTraceMatcher("No such file or directory"));
 
-        FFprobeResult result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(Config.FFMPEG_BIN)
                 .setInput(Paths.get("nonexistent.mp4"))
                 .setFormatParser(formatParser)
                 .execute();
@@ -707,7 +695,7 @@ public class FFprobeTest {
 
     @Test
     public void testProbeSize() throws Exception {
-        FFprobeResult result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(Config.FFMPEG_BIN)
                 .setShowStreams(true)
                 .setProbeSize(10_000_000L)
                 .setInput(Artifacts.VIDEO_MP4)
@@ -721,7 +709,7 @@ public class FFprobeTest {
 
     @Test
     public void testAnalyzeDuration() throws Exception {
-        FFprobeResult result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(Config.FFMPEG_BIN)
                 .setShowStreams(true)
                 .setAnalyzeDuration(10_000_000L)
                 .setInput(Artifacts.VIDEO_MP4)
@@ -735,7 +723,7 @@ public class FFprobeTest {
 
     @Test
     public void testAnalyzeDuration2() throws Exception {
-        FFprobeResult result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(Config.FFMPEG_BIN)
                 .setShowStreams(true)
                 .setAnalyzeDuration(10, TimeUnit.SECONDS)
                 .setInput(Artifacts.VIDEO_MP4)
@@ -749,7 +737,7 @@ public class FFprobeTest {
 
     @Test
     public void testFpsProbeSize() throws Exception {
-        FFprobeResult result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(Config.FFMPEG_BIN)
                 .setShowStreams(true)
                 .setFpsProbeSize(100L)
                 .setInput(Artifacts.VIDEO_MP4)
@@ -763,7 +751,7 @@ public class FFprobeTest {
 
     @Test
     public void testAdditionalArguments() {
-        FFprobeResult result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(Config.FFMPEG_BIN)
                 // The same as .setShowStreams(true), just for testing
                 .addArgument("-show_streams")
                 .addArguments("-select_streams", "v")
@@ -786,7 +774,7 @@ public class FFprobeTest {
 
         try (InputStream inputStream = Files
                 .newInputStream(Artifacts.VIDEO_FLV, StandardOpenOption.READ)) {
-            result = FFprobe.atPath(BIN)
+            result = FFprobe.atPath(Config.FFMPEG_BIN)
                     .setShowStreams(true)
                     .setInput(inputStream)
                     .setFormatParser(formatParser)
@@ -804,7 +792,7 @@ public class FFprobeTest {
 
         try (SeekableByteChannel channel = Files
                 .newByteChannel(Artifacts.VIDEO_MP4, StandardOpenOption.READ)) {
-            result = FFprobe.atPath(BIN)
+            result = FFprobe.atPath(Config.FFMPEG_BIN)
                     .setShowStreams(true)
                     .setInput(channel)
                     .setFormatParser(formatParser)
@@ -818,7 +806,7 @@ public class FFprobeTest {
 
     @Test
     public void testAsyncExecution() throws Exception {
-        FFprobeResult result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(Config.FFMPEG_BIN)
                 .setShowStreams(true)
                 .setInput(Artifacts.VIDEO_MP4)
                 .setFormatParser(formatParser)
@@ -841,7 +829,7 @@ public class FFprobeTest {
     public void testAsyncExecutionWithException() throws Exception {
         expectedException.expect(new StackTraceMatcher("No such file or directory"));
 
-        FFprobeResult result = FFprobe.atPath(BIN)
+        FFprobeResult result = FFprobe.atPath(Config.FFMPEG_BIN)
                 .setShowStreams(true)
                 .setInput("non_existent.mp4")
                 .setFormatParser(formatParser)

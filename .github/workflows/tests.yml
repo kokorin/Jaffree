@@ -68,15 +68,15 @@ jobs:
         if: startsWith(matrix.os, 'windows')
 
       - name: Build on Ubuntu
-        run: bash mvnw clean package -B -DFFMPEG_BIN=/usr/bin
+        run: bash mvnw clean package -B
         if: startsWith(matrix.os, 'ubuntu')
 
       - name: Build on MacOS
-        run: bash mvnw clean package -B -DFFMPEG_BIN=/usr/local/opt/ffmpeg/bin
+        run: bash mvnw clean package -B
         if: startsWith(matrix.os, 'macos')
 
       - name: Build on Windows
-        run: ./mvnw clean package -B "-DFFMPEG_BIN=C:\ProgramData\chocolatey\lib\ffmpeg\tools\ffmpeg\bin"
+        run: ./mvnw clean package -B
         if: startsWith(matrix.os, 'windows')
 
   test-release:
