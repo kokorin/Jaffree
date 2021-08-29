@@ -56,4 +56,69 @@ public class FFmpegProgressReaderTest {
         Assert.assertEquals((Long) 0L, progress.getDrop());
         Assert.assertEquals((Double) 9.29, progress.getSpeed());
     }
+
+    /**
+     * Tests progress that has N/A values (first pass in 2 pass encoding for example)
+     */
+    @Test
+    public void readProgressNA() throws Exception {
+        final List<FFmpegProgress> progressList = new ArrayList<>();
+
+        ProgressListener listener = progressList::add;
+
+        FFmpegProgressReader reader = new FFmpegProgressReader(listener);
+        try (InputStream inputStream = getClass().getResourceAsStream("progress-na.log")) {
+            reader.readProgress(inputStream);
+        }
+
+        Assert.assertEquals(3, progressList.size());
+
+        FFmpegProgress progress = progressList.get(0);
+
+        Assert.assertEquals((Long) 1L, progress.getFrame());
+        Assert.assertEquals((Double) 0., progress.getFps());
+        Assert.assertEquals((Double) 0., progress.getQ());
+        Assert.assertNull(progress.getBitrate());
+        Assert.assertNull(progress.getSize());
+        Assert.assertEquals((Long) 0L, progress.getTime(TimeUnit.SECONDS));
+        Assert.assertEquals((Long) 0L, progress.getTimeMillis());
+        Assert.assertEquals((Long) 0L, progress.getTime(TimeUnit.MILLISECONDS));
+        Assert.assertEquals((Long) 0L, progress.getTimeMicros());
+        Assert.assertEquals((Long) 0L, progress.getTime(TimeUnit.MICROSECONDS));
+        Assert.assertEquals((Long) 0L, progress.getDup());
+        Assert.assertEquals((Long) 0L, progress.getDrop());
+        Assert.assertEquals((Double) 0., progress.getSpeed());
+
+        progress = progressList.get(1);
+
+        Assert.assertEquals((Long) 7L, progress.getFrame());
+        Assert.assertEquals((Double) 0., progress.getFps());
+        Assert.assertEquals((Double) 0., progress.getQ());
+        Assert.assertNull(progress.getBitrate());
+        Assert.assertNull(progress.getSize());
+        Assert.assertEquals((Long) 0L, progress.getTime(TimeUnit.SECONDS));
+        Assert.assertEquals((Long) 0L, progress.getTimeMillis());
+        Assert.assertEquals((Long) 0L, progress.getTime(TimeUnit.MILLISECONDS));
+        Assert.assertEquals((Long) 0L, progress.getTimeMicros());
+        Assert.assertEquals((Long) 0L, progress.getTime(TimeUnit.MICROSECONDS));
+        Assert.assertEquals((Long) 0L, progress.getDup());
+        Assert.assertEquals((Long) 0L, progress.getDrop());
+        Assert.assertEquals((Double) 0., progress.getSpeed());
+
+        progress = progressList.get(2);
+
+        Assert.assertEquals((Long) 17L, progress.getFrame());
+        Assert.assertEquals((Double) 14.77, progress.getFps());
+        Assert.assertEquals((Double) 0., progress.getQ());
+        Assert.assertNull(progress.getBitrate());
+        Assert.assertNull(progress.getSize());
+        Assert.assertEquals((Long) 0L, progress.getTime(TimeUnit.SECONDS));
+        Assert.assertEquals((Long) 0L, progress.getTimeMillis());
+        Assert.assertEquals((Long) 0L, progress.getTime(TimeUnit.MILLISECONDS));
+        Assert.assertEquals((Long) 0L, progress.getTimeMicros());
+        Assert.assertEquals((Long) 0L, progress.getTime(TimeUnit.MICROSECONDS));
+        Assert.assertEquals((Long) 0L, progress.getDup());
+        Assert.assertEquals((Long) 0L, progress.getDrop());
+        Assert.assertEquals((Double) 0., progress.getSpeed());
+    }
 }
