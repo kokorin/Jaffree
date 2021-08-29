@@ -86,6 +86,10 @@ public class FFmpegProgressReader implements TcpNegotiator {
             }
             String key = keyValue[0];
             String value = keyValue[1];
+            
+            if ("N/A".equals(value)) {
+                continue;
+            }
 
             switch (key) {
                 case "frame":
