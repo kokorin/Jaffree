@@ -1,5 +1,5 @@
 /*
- *    Copyright 2021 Denis Kokorin, Cromefire_
+ *    Copyright 2021 Denis Kokorin
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -86,10 +86,6 @@ public class FFmpegProgressReader implements TcpNegotiator {
             }
             String key = keyValue[0];
             String value = keyValue[1];
-
-            if ("N/A".equals(value)) {
-                continue;
-            }
 
             switch (key) {
                 case "frame":
