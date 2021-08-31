@@ -1,5 +1,5 @@
 /*
- *    Copyright  2021 Denis Kokorin
+ *    Copyright  2021 Denis Kokorin, Cromefire_
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ public final class ParseUtil {
      * @return parsed long or null if value can't be parsed
      */
     public static Long parseLong(final String value) {
-        if (value != null && !value.isEmpty()) {
+        if (value != null && !value.isEmpty() && !"N/A".equals(value)) {
             try {
                 return Long.parseLong(value);
             } catch (NumberFormatException e) {
@@ -66,7 +66,7 @@ public final class ParseUtil {
      * @return parsed double or null if value can't be parsed
      */
     public static Double parseDouble(final String value) {
-        if (value != null && !value.isEmpty()) {
+        if (value != null && !value.isEmpty() && !"N/A".equals(value)) {
             try {
                 return Double.parseDouble(value);
             } catch (NumberFormatException e) {
@@ -163,11 +163,7 @@ public final class ParseUtil {
     }
 
     private static String removeSuffix(final String value, final String suffix) {
-        if (value == null || value.isEmpty()) {
-            return null;
-        }
-
-        if (!value.endsWith(suffix)) {
+        if (value == null || value.isEmpty() || !value.endsWith(suffix)) {
             return null;
         }
 
