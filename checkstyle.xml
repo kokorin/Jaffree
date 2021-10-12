@@ -112,6 +112,7 @@
         <module name="JavadocStyle"/>
         <module name="MissingJavadocType"/>
         <module name="MissingJavadocMethod"/>
+        <module name="NonEmptyAtclauseDescription"/>
 
         <!-- Checks for Naming Conventions.                  -->
         <!-- See https://checkstyle.org/config_naming.html -->
