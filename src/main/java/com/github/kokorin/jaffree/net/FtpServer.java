@@ -284,6 +284,7 @@ public class FtpServer extends TcpServer {
             LOGGER.debug("Data connection established: {}", dataSocket);
             copied = IOUtil.copy(Channels.newInputStream(channel), dataOutput, buffer);
             LOGGER.debug("Copied {} bytes to data socket", copied);
+            println(output, "226 Operation successful");
         } catch (SocketException e) {
             // ffmpeg can close data connection without fully reading requested data.
             // This is not an error and should be ignored.
@@ -311,6 +312,7 @@ public class FtpServer extends TcpServer {
             LOGGER.debug("Data connection established: {}", dataSocket);
             copied = IOUtil.copy(dataInput, Channels.newOutputStream(channel), buffer);
             LOGGER.debug("Copied {} bytes from data socket", copied);
+            println(output, "226 Operation successful");
         } catch (SocketException e) {
             LOGGER.info("Data connection error ignored (STOR): {}", e.getMessage());
         }
