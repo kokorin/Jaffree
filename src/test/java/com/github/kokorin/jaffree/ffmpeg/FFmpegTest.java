@@ -209,7 +209,8 @@ public class FFmpegTest {
 
     @Test
     public void testForceStopWithProgressListenerException() throws Exception {
-        expectedException.expect(new StackTraceMatcher("Stop ffmpeg with ProgressListener Exception"));
+        expectedException.expect(
+                new StackTraceMatcher("Stop ffmpeg with ProgressListener Exception"));
 
         Path tempDir = Files.createTempDirectory("jaffree");
         Path outputPath = tempDir.resolve(Artifacts.VIDEO_MP4.getFileName());
@@ -493,7 +494,9 @@ public class FFmpegTest {
 
     @Test
     public void testExceptionIsThrownIfFfmpegExitsWithError() {
-        expectedException.expect(new StackTraceMatcher("No such file or directory"));
+        expectedException.expect(
+                new StackTraceMatcher("Process execution has ended with non-zero status")
+        );
 
         FFmpegResult result = FFmpeg.atPath(Config.FFMPEG_BIN)
                 .addInput(UrlInput.fromPath(ERROR_MP4))
@@ -717,7 +720,8 @@ public class FFmpegTest {
 
         LOGGER.debug("Will write to " + outputPath);
 
-        try (SeekableByteChannel channel = Files.newByteChannel(outputPath, CREATE, WRITE, READ, TRUNCATE_EXISTING)) {
+        try (SeekableByteChannel channel = Files.newByteChannel(outputPath, CREATE, WRITE, READ,
+                TRUNCATE_EXISTING)) {
             FFmpegResult result = FFmpeg.atPath(Config.FFMPEG_BIN)
                     .addInput(
                             UrlInput.fromPath(Artifacts.VIDEO_MP4)

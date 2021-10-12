@@ -684,7 +684,9 @@ public class FFprobeTest {
 
     @Test
     public void testExceptionIsThrownIfFfprobeExitsWithError() {
-        expectedException.expect(new StackTraceMatcher("No such file or directory"));
+        expectedException.expect(
+                new StackTraceMatcher("Process execution has ended with non-zero status")
+        );
 
         FFprobeResult result = FFprobe.atPath(Config.FFMPEG_BIN)
                 .setInput(Paths.get("nonexistent.mp4"))
@@ -827,7 +829,9 @@ public class FFprobeTest {
 
     @Test
     public void testAsyncExecutionWithException() throws Exception {
-        expectedException.expect(new StackTraceMatcher("No such file or directory"));
+        expectedException.expect(
+                new StackTraceMatcher("Process execution has ended with non-zero status")
+        );
 
         FFprobeResult result = FFprobe.atPath(Config.FFMPEG_BIN)
                 .setShowStreams(true)

@@ -27,7 +27,7 @@ import java.io.InputStream;
 /**
  * {@link StdReader} implementation which reads and ignores bytes read.
  *
- * @param <T>
+ * @param <T> type of parsed result
  */
 public class GobblingStdReader<T> implements StdReader<T> {
 
