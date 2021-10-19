@@ -8,6 +8,7 @@ import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffprobe.FFprobe;
 import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
 import com.github.kokorin.jaffree.ffprobe.Stream;
+import com.github.kokorin.jaffree.process.ProcessHandler;
 import com.github.kokorin.jaffree.process.ProcessHelper;
 import org.hamcrest.core.AllOf;
 import org.hamcrest.core.StringContains;
@@ -905,5 +906,14 @@ public class FFmpegTest {
                 .execute();
 
         assertEquals(2, probeResult.getStreams().size());
+    }
+
+    @Test
+    @Ignore("Should be ran manually")
+    public void testNoFFmpegExecutableFound() {
+        FFmpeg.atPath(Paths.get("."))
+                .addInput(UrlInput.fromPath(Artifacts.VIDEO_MP4))
+                .addOutput(new NullOutput())
+                .execute();
     }
 }
