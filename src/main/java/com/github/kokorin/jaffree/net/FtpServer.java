@@ -83,6 +83,8 @@ public class FtpServer extends TcpServer {
              OutputStream controlOutput = controlServerSocket.getOutputStream()) {
 
             operate(controlReader, controlOutput, dataServerSocket);
+        } catch (IOException e) {
+            LOGGER.debug("Connection closed: {}", e.getMessage());
         } catch (Exception e) {
             throw new JaffreeException("Failed to serve FTP", e);
         }
@@ -105,10 +107,12 @@ public class FtpServer extends TcpServer {
         boolean quit = false;
         while (!quit) {
             String line = controlReader.readLine();
+
             if (line == null) {
-                LOGGER.debug("Closing control connection");
                 break;
             }
+
+            LOGGER.debug("Received command: {}", line);
 
             String[] commandAndArgs = line.split(" ", 2);
             String command = commandAndArgs[0].toUpperCase();
@@ -116,8 +120,6 @@ public class FtpServer extends TcpServer {
             if (commandAndArgs.length == 2) {
                 args = commandAndArgs[1];
             }
-
-            LOGGER.debug("Received command: {}", line);
 
             switch (command) {
                 case "USER":
@@ -148,7 +150,8 @@ public class FtpServer extends TcpServer {
                     doAbor(controlOutput);
                     break;
                 case "FEAT":
-                    // intentional fall through
+                    doFeat(controlOutput);
+                    break;
                 case "EPSV":
                     doNotImplemented(controlOutput);
                     break;
@@ -283,12 +286,15 @@ public class FtpServer extends TcpServer {
              OutputStream dataOutput = dataSocket.getOutputStream()) {
             LOGGER.debug("Data connection established: {}", dataSocket);
             copied = IOUtil.copy(Channels.newInputStream(channel), dataOutput, buffer);
+            dataOutput.flush();
             LOGGER.debug("Copied {} bytes to data socket", copied);
+            println(output, "226 Operation successful");
         } catch (SocketException e) {
             // ffmpeg can close data connection without fully reading requested data.
             // This is not an error and should be ignored.
             // FTP server should serve further requests sent via Control connection
             LOGGER.debug("Data connection error ignored (RETR): {}", e.getMessage());
+            println(output, "426 TCP connection broken");
         }
     }
 
@@ -311,8 +317,10 @@ public class FtpServer extends TcpServer {
             LOGGER.debug("Data connection established: {}", dataSocket);
             copied = IOUtil.copy(dataInput, Channels.newOutputStream(channel), buffer);
             LOGGER.debug("Copied {} bytes from data socket", copied);
+            println(output, "226 Operation successful");
         } catch (SocketException e) {
             LOGGER.info("Data connection error ignored (STOR): {}", e.getMessage());
+            println(output, "426 TCP connection broken");
         }
     }
 
@@ -324,6 +332,16 @@ public class FtpServer extends TcpServer {
      */
     private void doAbor(final OutputStream output) throws IOException {
         println(output, "226 Closing data connection.");
+    }
+
+    /**
+     * Sends response to FEAT (features) control command.
+     *
+     * @param output output to write response
+     * @throws IOException socket IO exception
+     */
+    private void doFeat(final OutputStream output) throws IOException {
+        println(output, "211 No features.");
     }
 
     /**
@@ -340,6 +358,7 @@ public class FtpServer extends TcpServer {
         LOGGER.debug("Responding: {}", line);
         output.write(line.getBytes());
         output.write(NEW_LINE);
+        output.flush();
     }
 
     /**

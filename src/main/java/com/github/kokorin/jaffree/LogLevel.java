@@ -95,6 +95,34 @@ public enum LogLevel {
     }
 
     /**
+     * Checks if passed in log level has the same or higher severity.
+     *
+     * @param other log level to compare with
+     * @return true if log level has the same or higher severity.
+     */
+    public boolean isEqualOrHigher(final LogLevel other) {
+        return this.code() <= other.code();
+    }
+
+    /**
+     * Checks if this log level is {@link #INFO} or higher.
+     *
+     * @return true if {@link #INFO} or higher.
+     */
+    public boolean isInfoOrHigher() {
+        return isEqualOrHigher(INFO);
+    }
+
+    /**
+     * Checks if this log level is {@link #ERROR} or higher.
+     *
+     * @return true if {@link #ERROR} or higher.
+     */
+    public boolean isErrorOrHigher() {
+        return isEqualOrHigher(ERROR);
+    }
+
+    /**
      * Returns LogLevel with specified code.
      *
      * @param code category code

@@ -13,7 +13,7 @@ Inspired by [ffmpeg-cli-wrapper](https://github.com/bramp/ffmpeg-cli-wrapper)
 
 **OS**: Ubuntu, MacOS, Windows
 
-**JDK**: 8, 11, 14
+**JDK**: 8, 11, 17
 
 # Usage 
 
@@ -533,10 +533,3 @@ will have Java 9 bytecode (version 53).
 ```shell
 mvn clean install -PJ9-module
 ```
-
-## Unit Tests
-
-Some code in the unit tests relies on having ffmpeg / ffprobe available on your `PATH`.
-Other parts of the unit test code requires that you have configured `FFMPEG_BIN` as either an environment variable or as a Java system property.
-
-You will need to ensure that both are set up correctly in order to run the unit tests successfully.

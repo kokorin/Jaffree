@@ -29,7 +29,7 @@ import java.io.InputStreamReader;
 /**
  * {@link StdReader} implementation which reads and logs everything been read.
  *
- * @param <T>
+ * @param <T> type of parsed result
  */
 public class LoggingStdReader<T> implements StdReader<T> {
     private static final Logger LOGGER = LoggerFactory.getLogger(LoggingStdReader.class);

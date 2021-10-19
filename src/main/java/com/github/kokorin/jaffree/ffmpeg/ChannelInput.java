@@ -51,11 +51,10 @@ public class ChannelInput extends TcpInput<ChannelInput> implements Input {
 
     /**
      * Creates {@link ChannelInput}.
-     * <p>
-     * ffmpeg uses fileName's extension to autodetect input format
      *
      * @param channel byte channel
      * @return ChannelInput
+     * @see #fromChannel(String, SeekableByteChannel)
      */
     public static ChannelInput fromChannel(final SeekableByteChannel channel) {
         return new ChannelInput(channel);
