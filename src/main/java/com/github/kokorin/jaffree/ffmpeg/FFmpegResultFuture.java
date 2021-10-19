@@ -37,11 +37,11 @@ public class FFmpegResultFuture {
     /**
      * Creates {@link FFmpegResultFuture}.
      *
-     * @param resultFuture
-     * @param stopper
+     * @param resultFuture result future
+     * @param stopper      stopper
      */
     public FFmpegResultFuture(final CompletableFuture<FFmpegResult> resultFuture,
-            final Stopper stopper) {
+                              final Stopper stopper) {
         this.resultFuture = resultFuture;
         this.stopper = stopper;
     }
@@ -144,9 +144,10 @@ public class FFmpegResultFuture {
     /**
      * Returns a completion that can be used to chain operations after FFmpeg completes, using the
      * {@link CompletionStage} Java 8 API.
+     *
      * @return completion that will complete when ffmpeg completes normally, and will complete
-     *  exceptionally with a {@link CancellationException} if ffmpeg is forcefully stopped or with a
-     *  {@link JaffreeException} if an error occurs.
+     * exceptionally with a {@link CancellationException} if ffmpeg is forcefully stopped or with a
+     * {@link JaffreeException} if an error occurs.
      */
     public CompletableFuture<FFmpegResult> toCompletableFuture() {
         return resultFuture;

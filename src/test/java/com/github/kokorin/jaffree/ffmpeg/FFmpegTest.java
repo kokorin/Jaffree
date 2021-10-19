@@ -8,6 +8,7 @@ import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffprobe.FFprobe;
 import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
 import com.github.kokorin.jaffree.ffprobe.Stream;
+import com.github.kokorin.jaffree.process.ProcessHandler;
 import com.github.kokorin.jaffree.process.ProcessHelper;
 import org.hamcrest.core.AllOf;
 import org.hamcrest.core.StringContains;
@@ -209,7 +210,8 @@ public class FFmpegTest {
 
     @Test
     public void testForceStopWithProgressListenerException() throws Exception {
-        expectedException.expect(new StackTraceMatcher("Stop ffmpeg with ProgressListener Exception"));
+        expectedException.expect(
+                new StackTraceMatcher("Stop ffmpeg with ProgressListener Exception"));
 
         Path tempDir = Files.createTempDirectory("jaffree");
         Path outputPath = tempDir.resolve(Artifacts.VIDEO_MP4.getFileName());
@@ -493,7 +495,9 @@ public class FFmpegTest {
 
     @Test
     public void testExceptionIsThrownIfFfmpegExitsWithError() {
-        expectedException.expect(new StackTraceMatcher("No such file or directory"));
+        expectedException.expect(
+                new StackTraceMatcher("Process execution has ended with non-zero status")
+        );
 
         FFmpegResult result = FFmpeg.atPath(Config.FFMPEG_BIN)
                 .addInput(UrlInput.fromPath(ERROR_MP4))
@@ -717,7 +721,8 @@ public class FFmpegTest {
 
         LOGGER.debug("Will write to " + outputPath);
 
-        try (SeekableByteChannel channel = Files.newByteChannel(outputPath, CREATE, WRITE, READ, TRUNCATE_EXISTING)) {
+        try (SeekableByteChannel channel = Files.newByteChannel(outputPath, CREATE, WRITE, READ,
+                TRUNCATE_EXISTING)) {
             FFmpegResult result = FFmpeg.atPath(Config.FFMPEG_BIN)
                     .addInput(
                             UrlInput.fromPath(Artifacts.VIDEO_MP4)
@@ -901,5 +906,14 @@ public class FFmpegTest {
                 .execute();
 
         assertEquals(2, probeResult.getStreams().size());
+    }
+
+    @Test
+    @Ignore("Should be ran manually")
+    public void testNoFFmpegExecutableFound() {
+        FFmpeg.atPath(Paths.get("."))
+                .addInput(UrlInput.fromPath(Artifacts.VIDEO_MP4))
+                .addOutput(new NullOutput())
+                .execute();
     }
 }

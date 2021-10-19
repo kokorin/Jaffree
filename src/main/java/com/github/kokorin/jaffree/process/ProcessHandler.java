@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -145,10 +146,10 @@ public class ProcessHandler<T> {
 
                 return interactWithProcess(process);
             } catch (IOException e) {
+                collectDebugInformation();
                 throw new JaffreeException("Failed to start process.", e);
             } finally {
                 if (process != null) {
-                    // TODO on Windows process sometimes doesn't stop and keeps running
                     process.destroy();
                     // Process must be destroyed before closing streams, can't use
                     // try-with-resources, as resources are closing when leaving try block,
@@ -199,7 +200,9 @@ public class ProcessHandler<T> {
 
         if (!Integer.valueOf(0).equals(status)) {
             throw new JaffreeException(
-                    "Process execution has ended with non-zero status: " + status);
+                    "Process execution has ended with non-zero status: " + status
+                            + ". Check logs for detailed error message."
+            );
         }
 
         T result = resultRef.get();
@@ -317,5 +320,18 @@ public class ProcessHandler<T> {
                     executor.getRunningThreadNames());
             Thread.sleep(100);
         } while (executor.isRunning());
+    }
+
+    private static void collectDebugInformation() {
+        try {
+            LOGGER.warn("Collecting debug information");
+            LOGGER.warn("User: {}", System.getProperty("user.name"));
+            LOGGER.warn("OS: {}", System.getProperty("os.name"));
+            LOGGER.warn("User Dir: {}", System.getProperty("user.dir"));
+            LOGGER.warn("Work Dir: {}", Paths.get(".").toAbsolutePath());
+            LOGGER.warn("PATH: {}", System.getenv("PATH"));
+        } catch (Exception e) {
+            LOGGER.warn("Failure while collecting debug information.", e);
+        }
     }
 }
