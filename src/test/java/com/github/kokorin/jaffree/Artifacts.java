@@ -18,6 +18,7 @@ public class Artifacts {
     public static final Path VIDEO_MP4 = getMp4Artifact(180);
     public static final Path VIDEO_MKV = getMkvArtifact(180);
     public static final Path VIDEO_FLV = getFlvArtifact(180);
+    public static final Path VIDEO_TS = getTsArtifact(180);
     public static final Path SMALL_FLV = getFlvArtifact(20);
     public static final Path SMALL_MP4 = getMp4Artifact(20);
     public static final Path VIDEO_WITH_PROGRAMS = getTsArtifactWithPrograms();
@@ -34,6 +35,10 @@ public class Artifacts {
 
     private static Path getFlvArtifact(int duration) {
         return getArtifact("640x480", 30, 44_100, "flv", duration);
+    }
+
+    private static Path getTsArtifact(int duration) {
+        return getArtifact("640x480", 30, 44_100, "ts", duration);
     }
 
     private static synchronized Path getNutArtifact(int duration) {
