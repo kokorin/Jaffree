@@ -27,6 +27,7 @@ import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -712,6 +713,32 @@ public class FFmpegTest {
 
         assertTrue(Files.exists(outputPath));
         assertTrue(Files.size(outputPath) > 1000);
+    }
+
+    @Test
+    public void testChannelWithNonSeekableInput() throws IOException {
+        Path inputTs = Artifacts.VIDEO_TS;
+        Path tempDir = Files.createTempDirectory("jaffree");
+        Path outputPng = tempDir.resolve("output1.png");
+        try (
+                SeekableByteChannel inputChannel = Files.newByteChannel(inputTs,
+                        StandardOpenOption.READ)
+        ) {
+            FFmpeg.atPath()
+                    .addInput(ChannelInput.fromChannel(inputChannel).setPosition(2000L))
+                    .setOverwriteOutput(true)
+                    .addOutput(
+                            UrlOutput.toPath(outputPng)
+                                    .setFormat("image2")
+                                    .setFrameCount(StreamType.VIDEO, 1L)
+                                    .addArguments("-q:v", "1")
+                                    .disableStream(StreamType.AUDIO)
+                                    .disableStream(StreamType.SUBTITLE)
+                    )
+                    .execute();
+        }
+
+        assertTrue(Files.size(outputPng) > 1000);
     }
 
     @Test

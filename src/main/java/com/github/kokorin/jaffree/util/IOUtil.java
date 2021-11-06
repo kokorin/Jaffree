@@ -62,7 +62,7 @@ public final class IOUtil {
     public static long copy(final InputStream input, final OutputStream output, final byte[] buffer)
             throws IOException {
         if (buffer.length == 0) {
-            throw new IllegalArgumentException("Buffer  must be not empty");
+            throw new IllegalArgumentException("Buffer must be not empty");
         }
 
         long count = 0;
