@@ -268,6 +268,8 @@ public class FtpServer extends TcpServer {
         int portLow = port & 0xFF;
         println(output, "227 Entering Passive Mode (" + address + ","
                 + portHi + "," + portLow + ").");
+        //After entering passive mode FTP server should retrieve a file from the first byte.
+        channel.position(0);
     }
 
     /**
@@ -281,13 +283,13 @@ public class FtpServer extends TcpServer {
             throws IOException {
         println(output, "150 File status okay; about to open data connection.");
 
-        long copied = 0;
         try (Socket dataSocket = dataServerSocket.accept();
              OutputStream dataOutput = dataSocket.getOutputStream()) {
-            LOGGER.debug("Data connection established: {}", dataSocket);
-            copied = IOUtil.copy(Channels.newInputStream(channel), dataOutput, buffer);
-            dataOutput.flush();
+            LOGGER.debug("Data connection established, position: {} socket: {}", channel.position(),
+                    dataSocket);
+            long copied = IOUtil.copy(Channels.newInputStream(channel), dataOutput, buffer);
             LOGGER.debug("Copied {} bytes to data socket", copied);
+            dataOutput.flush();
             println(output, "226 Operation successful");
         } catch (SocketException e) {
             // ffmpeg can close data connection without fully reading requested data.
@@ -311,11 +313,11 @@ public class FtpServer extends TcpServer {
                         final String path) throws IOException {
         println(output, "150 File status okay; about to open data connection.");
 
-        long copied = 0;
         try (Socket dataSocket = dataServerSocket.accept();
              InputStream dataInput = dataSocket.getInputStream()) {
-            LOGGER.debug("Data connection established: {}", dataSocket);
-            copied = IOUtil.copy(dataInput, Channels.newOutputStream(channel), buffer);
+            LOGGER.debug("Data connection established, position: {} socket: {}", channel.position(),
+                    dataSocket);
+            long copied = IOUtil.copy(dataInput, Channels.newOutputStream(channel), buffer);
             LOGGER.debug("Copied {} bytes from data socket", copied);
             println(output, "226 Operation successful");
         } catch (SocketException e) {
