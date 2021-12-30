@@ -48,7 +48,7 @@ public class FilterGraph {
      * @param chainsToAdd filter chains to add
      * @return this
      */
-    public FilterGraph addFilterChains(final List<FilterChain> chainsToAdd) {
+    public FilterGraph addFilterChains(final List<? extends FilterChain> chainsToAdd) {
         chains.addAll(chainsToAdd);
         return this;
     }

@@ -25,9 +25,13 @@ public class RationalTest {
         assertEquals(new Rational(1L, 10_000_000_000_000_000L), Rational.valueOf(1. / 10_000_000_000_000_000L));
         assertEquals(new Rational(10_000_000_000_000_000L, 1L), Rational.valueOf(10_000_000_000_000_000.));
 
-        assertEquals(Rational.valueOf(1L), Rational.valueOf("1"));
-        assertEquals(Rational.valueOf(1L), Rational.valueOf("1/1"));
-        assertEquals(new Rational(1L, 10L), Rational.valueOf("1/10"));
+        assertEquals(Rational.ONE, Rational.valueOf("1"));
+        assertEquals(Rational.ONE, Rational.valueOf("1/1"));
+        assertEquals(Rational.ONE, Rational.valueOf((Number) 1));
+        assertEquals(Rational.ONE, Rational.valueOf((Number) 1L));
+        assertEquals(Rational.ONE, Rational.valueOf((Number) 1.0));
+        assertEquals(Rational.ONE, Rational.valueOf((Number) 1.0f));
+        assertEquals(Rational.ONE.divide(10), Rational.valueOf("1/10"));
     }
 
     @Test

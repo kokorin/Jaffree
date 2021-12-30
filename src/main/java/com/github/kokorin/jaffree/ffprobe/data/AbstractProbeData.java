@@ -427,14 +427,9 @@ public abstract class AbstractProbeData implements ProbeData {
             if (value == null || value.equals("") || value.equals("0/0") || value.equals("N/A")) {
                 return null;
             }
-            if (value instanceof Double) {
-                return Rational.valueOf((Double) value);
-            }
-            if (value instanceof Float) {
-                return Rational.valueOf((Float) value);
-            }
+
             if (value instanceof Number) {
-                return Rational.valueOf(((Number) value).longValue());
+                return Rational.valueOf((Number) value);
             }
 
             try {

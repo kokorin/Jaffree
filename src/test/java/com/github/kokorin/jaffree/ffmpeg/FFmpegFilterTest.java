@@ -2,6 +2,8 @@ package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.Artifacts;
 import com.github.kokorin.jaffree.Config;
+import com.github.kokorin.jaffree.LogLevel;
+import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffprobe.FFprobe;
 import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
 import com.github.kokorin.jaffree.ffprobe.Stream;
@@ -13,6 +15,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
+
+import static org.junit.Assert.assertNotNull;
 
 public class FFmpegFilterTest {
 
@@ -108,14 +112,14 @@ public class FFmpegFilterTest {
                 .addOutput(UrlOutput.toPath(outputPath))
                 .execute();
 
-        Assert.assertNotNull(result);
+        assertNotNull(result);
 
         FFprobeResult probe = FFprobe.atPath(Config.FFMPEG_BIN)
                 .setInput(outputPath)
                 .setShowStreams(true)
                 .execute();
 
-        Assert.assertNotNull(probe);
+        assertNotNull(probe);
 
         int width = 0;
         int height = 0;
@@ -146,10 +150,14 @@ public class FFmpegFilterTest {
         Path outputPath = tempDir.resolve("concat.mp4");
 
         FFmpegResult result = FFmpeg.atPath(Config.FFMPEG_BIN)
-                .addInput(UrlInput.fromPath(Artifacts.VIDEO_MP4).setDuration(5, TimeUnit.SECONDS))
                 .addInput(
-                        UrlInput.fromPath(Artifacts.VIDEO_MKV).setPositionEof(-5, TimeUnit.SECONDS))
-
+                        UrlInput.fromPath(Artifacts.VIDEO_MP4)
+                                .setDuration(5, TimeUnit.SECONDS)
+                )
+                .addInput(
+                        UrlInput.fromPath(Artifacts.VIDEO_MKV)
+                                .setPositionEof(-5, TimeUnit.SECONDS)
+                )
                 .setComplexFilter(FilterGraph.of(
                         FilterChain.of(
                                 Filter.fromInputLink("0:v")
@@ -174,19 +182,71 @@ public class FFmpegFilterTest {
                 )
                 .execute();
 
-        Assert.assertNotNull(result);
+        assertNotNull(result);
 
         FFprobeResult probe = FFprobe.atPath(Config.FFMPEG_BIN)
                 .setInput(outputPath)
                 .setShowStreams(true)
                 .execute();
+        assertNotNull(probe);
 
         double duration = 0.0;
         for (Stream stream : probe.getStreams()) {
             duration = Math.max(duration, stream.getDuration());
         }
 
-        Assert.assertNotNull(probe);
         Assert.assertEquals(10.0, duration, 0.1);
+    }
+
+    @Test
+    public void drawTextWithSpecialCharacters() throws Exception {
+        Path tempDir = Files.createTempDirectory("jaffree");
+        Path outputPath = tempDir.resolve("draw_text.mp4");
+
+        FFmpegResult result = FFmpeg.atPath(Config.FFMPEG_BIN)
+                .addInput(
+                        UrlInput.fromPath(Artifacts.VIDEO_MP4)
+                                .setDuration(15, TimeUnit.SECONDS)
+                )
+                .setComplexFilter(
+                        FilterGraph.of(
+                                FilterChain.of(
+                                        Filter.withName("drawtext")
+                                                .addInputLink(StreamType.VIDEO)
+                                                .addArgument("text",
+                                                        "this is a 'string': may contain one, or more," +
+                                                                " special characters like: [ or ] or = or even ;")
+                                                .addArgument("box", "1")
+                                                .addArgument("boxborderw", "5")
+                                                .addArgument("boxcolor", "red")
+                                                .addArgument("fontsize", "24")
+                                ),
+                                FilterChain.of(
+                                        Filter.withName("afade")
+                                                .addInputLink(StreamType.AUDIO)
+                                                .addArgument("t", "in")
+                                                .addArgument("ss", "0")
+                                                .addArgument("d", "10")
+                                )
+                        )
+                )
+                .addOutput(UrlOutput.toPath(outputPath))
+                .execute();
+
+
+        assertNotNull(result);
+
+        FFprobeResult probe = FFprobe.atPath(Config.FFMPEG_BIN)
+                .setInput(outputPath)
+                .setShowStreams(true)
+                .execute();
+        assertNotNull(probe);
+
+        double duration = 0.0;
+        for (Stream stream : probe.getStreams()) {
+            duration = Math.max(duration, stream.getDuration());
+        }
+
+        Assert.assertEquals(15.0, duration, 0.1);
     }
 }

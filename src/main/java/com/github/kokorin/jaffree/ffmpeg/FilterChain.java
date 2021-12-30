@@ -48,7 +48,7 @@ public class FilterChain {
      * @param filtersToAdd filters to add
      * @return this
      */
-    public FilterChain addFilters(final List<Filter> filtersToAdd) {
+    public FilterChain addFilters(final List<? extends Filter> filtersToAdd) {
         filters.addAll(filtersToAdd);
         return this;
     }
