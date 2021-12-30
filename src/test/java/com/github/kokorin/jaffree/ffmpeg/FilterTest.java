@@ -34,11 +34,11 @@ public class FilterTest {
     @Test
     public void testEscape() throws Exception {
         Assert.assertEquals("\\\\", GenericFilter.escape("\\"));
-        Assert.assertEquals("\\'", GenericFilter.escape("'"));
-        Assert.assertEquals("\\:", GenericFilter.escape(":"));
+        Assert.assertEquals("\\\\\\'", GenericFilter.escape("'"));
+        Assert.assertEquals("\\\\:", GenericFilter.escape(":"));
 
         String text = "this is a 'string': may contain one, or more, special characters";
-        String expected = "this is a \\'string\\'\\: may contain one, or more, special characters";
+        String expected = "this is a \\\\\\'string\\\\\\'\\\\: may contain one\\, or more\\, special characters";
         Assert.assertEquals(expected, GenericFilter.escape(text));
     }
 
