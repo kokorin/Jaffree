@@ -1,14 +1,9 @@
 package examples;
 
 import com.github.kokorin.jaffree.ffmpeg.FFmpeg;
-import com.github.kokorin.jaffree.ffmpeg.FFmpegProgress;
-import com.github.kokorin.jaffree.ffmpeg.NullOutput;
+import com.github.kokorin.jaffree.ffmpeg.output.NullOutput;
 import com.github.kokorin.jaffree.ffmpeg.OutputListener;
-import com.github.kokorin.jaffree.ffmpeg.ProgressListener;
-import com.github.kokorin.jaffree.ffmpeg.UrlInput;
-import com.github.kokorin.jaffree.ffmpeg.UrlOutput;
-
-import java.util.concurrent.atomic.AtomicLong;
+import com.github.kokorin.jaffree.ffmpeg.input.UrlInput;
 
 public class ParsingOutputExample {
 

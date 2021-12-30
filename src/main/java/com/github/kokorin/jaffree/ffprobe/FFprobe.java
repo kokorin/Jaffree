@@ -21,6 +21,10 @@ import com.github.kokorin.jaffree.LogLevel;
 import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffprobe.data.FormatParser;
 import com.github.kokorin.jaffree.ffprobe.data.JsonFormatParser;
+import com.github.kokorin.jaffree.ffprobe.input.ChannelInput;
+import com.github.kokorin.jaffree.ffprobe.input.Input;
+import com.github.kokorin.jaffree.ffprobe.input.PipeInput;
+import com.github.kokorin.jaffree.ffprobe.input.UrlInput;
 import com.github.kokorin.jaffree.process.ProcessHandler;
 import com.github.kokorin.jaffree.process.ProcessHelper;
 import com.github.kokorin.jaffree.process.StdReader;
@@ -416,7 +420,7 @@ public class FFprobe {
      * @return this
      */
     public FFprobe setInput(final String inputUriOrPath) {
-        return setInput(new UrlInput(inputUriOrPath));
+        return setInput(UrlInput.fromUrl(inputUriOrPath));
     }
 
     /**

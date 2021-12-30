@@ -17,6 +17,9 @@
 
 package com.github.kokorin.jaffree.ffmpeg;
 
+import com.github.kokorin.jaffree.ffmpeg.input.FrameInput;
+import com.github.kokorin.jaffree.ffmpeg.output.FrameOutput;
+
 /**
  * Represents audio/video stream.
  *
