@@ -109,7 +109,7 @@ public class GenericFilter implements Filter {
      *
      * @param value value
      * @return this
-     * @see <a href="https://ffmpeg.org/ffmpeg-filters.html#toc-Notes-on-filtergraph-escaping">
+     * @see <a href="https://ffmpeg.org/ffmpeg-filters.html#Notes-on-filtergraph-escaping">
      * filtergraph escaping</a>
      */
     public GenericFilter addArgument(final String value) {
@@ -125,7 +125,7 @@ public class GenericFilter implements Filter {
      *
      * @param value value
      * @return this
-     * @see <a href="https://ffmpeg.org/ffmpeg-filters.html#toc-Notes-on-filtergraph-escaping">
+     * @see <a href="https://ffmpeg.org/ffmpeg-filters.html#Notes-on-filtergraph-escaping">
      * filtergraph escaping</a>
      */
     public GenericFilter addArgumentEscaped(final String value) {
@@ -148,7 +148,7 @@ public class GenericFilter implements Filter {
      * Prints filter description according to ffmpeg filtergraph syntax.
      *
      * @return filter description
-     * @see <a href="https://ffmpeg.org/ffmpeg-filters.html#toc-Filtergraph-syntax-1">
+     * @see <a href="https://ffmpeg.org/ffmpeg-filters.html#Filtergraph-syntax-1">
      * filtergraph syntax</a>
      */
     @Override
@@ -180,12 +180,16 @@ public class GenericFilter implements Filter {
     }
 
     /**
-     * A first level escaping affects the content of each filter option value, which may contain
-     * the special character {@code}:{@code} used to separate values, or one of
-     * the escaping characters {@code}\'{@code}.
+     * An escaping affects the content of each filter option value, which may contain the special
+     * character.
+     * <p>
+     * This method implements 1st and 2nd level escaping. 3rd level escaping (shell command) is done
+     * by Java Process API.
      *
      * @param value value to be escaped
      * @return escaped value
+     * @see <a href="https://ffmpeg.org/ffmpeg-filters.html#Notes-on-filtergraph-escaping">
+     * filtergraph escaping</a>
      */
     static String escape(final String value) {
         if (value == null) {
@@ -194,7 +198,11 @@ public class GenericFilter implements Filter {
 
         return value
                 .replace("\\", "\\\\")
-                .replace(":", "\\:")
-                .replace("'", "\\'");
+                .replace(":", "\\\\:")
+                .replace(",", "\\,")
+                .replace("[", "\\[")
+                .replace("]", "\\]")
+                .replace(";", "\\;")
+                .replace("'", "\\\\\\'");
     }
 }

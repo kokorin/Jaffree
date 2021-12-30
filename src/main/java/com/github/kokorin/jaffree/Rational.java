@@ -122,7 +122,7 @@ public final class Rational extends Number implements Comparable<Rational> {
      * @return {@code this + val}
      */
     public Rational add(final Number value) {
-        Rational that = toRational(value);
+        Rational that = valueOf(value);
         return new Rational(
                 this.numerator * that.denominator + that.numerator * this.denominator,
                 this.denominator * that.denominator
@@ -136,7 +136,7 @@ public final class Rational extends Number implements Comparable<Rational> {
      * @return {@code this - val}
      */
     public Rational subtract(final Number value) {
-        Rational that = toRational(value);
+        Rational that = valueOf(value);
         return add(that.negate());
     }
 
@@ -147,7 +147,7 @@ public final class Rational extends Number implements Comparable<Rational> {
      * @return {@code this * value}
      */
     public Rational multiply(final Number value) {
-        Rational that = toRational(value);
+        Rational that = valueOf(value);
         return new Rational(this.numerator * that.numerator, this.denominator * that.denominator);
     }
 
@@ -158,7 +158,7 @@ public final class Rational extends Number implements Comparable<Rational> {
      * @return {@code this / value}
      */
     public Rational divide(final Number value) {
-        return multiply(toRational(value).inverse());
+        return multiply(valueOf(value).inverse());
     }
 
     /**
@@ -178,7 +178,7 @@ public final class Rational extends Number implements Comparable<Rational> {
      * @return {@code this < value}
      */
     public boolean lessThan(final Number that) {
-        return compareTo(toRational(that)) < 0;
+        return compareTo(valueOf(that)) < 0;
     }
 
     /**
@@ -188,7 +188,7 @@ public final class Rational extends Number implements Comparable<Rational> {
      * @return {@code this <= value}
      */
     public boolean lessThanOrEqual(final Number that) {
-        return compareTo(toRational(that)) <= 0;
+        return compareTo(valueOf(that)) <= 0;
     }
 
     /**
@@ -198,7 +198,7 @@ public final class Rational extends Number implements Comparable<Rational> {
      * @return {@code this > value}
      */
     public boolean greaterThan(final Number that) {
-        return compareTo(toRational(that)) > 0;
+        return compareTo(valueOf(that)) > 0;
     }
 
     /**
@@ -208,7 +208,7 @@ public final class Rational extends Number implements Comparable<Rational> {
      * @return {@code this >= value}
      */
     public boolean greaterThanOrEqual(final Number that) {
-        return compareTo(toRational(that)) >= 0;
+        return compareTo(valueOf(that)) >= 0;
     }
 
     /**
@@ -303,6 +303,23 @@ public final class Rational extends Number implements Comparable<Rational> {
         return new Rational(numerator, denominator);
     }
 
+    /**
+     * Returns a {@link Rational} whose value is equal to that of the specified {@code Number}.
+     *
+     * @param value value of the {@link Rational} to return.
+     * @return a {@link Rational} with the specified value.
+     */
+    public static Rational valueOf(final Number value) {
+        if (value instanceof Rational) {
+            return (Rational) value;
+        }
+
+        if (value instanceof Double || value instanceof Float) {
+            return valueOf(value.doubleValue());
+        }
+
+        return valueOf(value.longValue());
+    }
 
     /**
      * Parses {@link Rational}.
@@ -341,18 +358,6 @@ public final class Rational extends Number implements Comparable<Rational> {
         } catch (NumberFormatException e) {
             throw new NumberFormatException("For input string: \"" + value + "\"");
         }
-    }
-
-    private static Rational toRational(final Number value) {
-        if (value instanceof Rational) {
-            return (Rational) value;
-        }
-
-        if (value instanceof Double || value instanceof Float) {
-            return valueOf(value.doubleValue());
-        }
-
-        return valueOf(value.longValue());
     }
 
     /**
