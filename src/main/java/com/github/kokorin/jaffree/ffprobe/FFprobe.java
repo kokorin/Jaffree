@@ -557,13 +557,9 @@ public class FFprobe {
     protected List<String> buildArguments() {
         List<String> result = new ArrayList<>();
 
-        // "level" is required for ffmpeg to add [loglevel] to output lines
-        String logLevelArgument = "level";
         if (logLevel != null) {
-            logLevelArgument += "+" + logLevel.name().toLowerCase();
+            result.addAll(Arrays.asList("-loglevel", logLevel.name().toLowerCase()));
         }
-        result.addAll(Arrays.asList("-loglevel", logLevelArgument));
-
 
         if (selectStreams != null) {
             result.addAll(Arrays.asList("-select_streams", selectStreams));
