@@ -1,3 +1,13 @@
+# Stop the War in Ukraine!
+
+# I am Russian living in Ukraine for almost 12 years.  
+
+# https://dearrussian.wtf/
+
+# https://stop-war-in-ukraine.github.io/stop-russia-it/
+
+# I prohibit to use this library in any Russian government related project!
+
 # Jaffree [![Sparkline](https://stars.medv.io/kokorin/Jaffree.svg)](https://stars.medv.io/kokorin/Jaffree)
 
 Jaffree stands for JAva FFmpeg and FFprobe FREE command line wrapper. Jaffree supports programmatic video production and consumption (with transparency)
