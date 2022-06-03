@@ -8,9 +8,8 @@ import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffprobe.FFprobe;
 import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
 import com.github.kokorin.jaffree.ffprobe.Stream;
-import com.github.kokorin.jaffree.process.ProcessHandler;
 import com.github.kokorin.jaffree.process.ProcessHelper;
-import com.github.kokorin.jaffree.process.ProcessNonZeroExitException;
+import com.github.kokorin.jaffree.process.JaffreeAbnormalExitException;
 import org.hamcrest.core.AllOf;
 import org.hamcrest.core.StringContains;
 import org.junit.Assert;
@@ -503,14 +502,14 @@ public class FFmpegTest {
                 .addInput(UrlInput.fromPath(ERROR_MP4))
                 .addOutput(new NullOutput())
                 .execute();
-        } catch (ProcessNonZeroExitException e) {
+        } catch (JaffreeAbnormalExitException e) {
             assertEquals("Process execution has ended with non-zero status: 1. Check logs for detailed error message.", e.getMessage());
             assertEquals(1, e.getProcessErrorLogMessages().size());
             assertEquals("[error] non_existent.mp4: No such file or directory", e.getProcessErrorLogMessages().get(0).message);
             return;
         }
 
-        fail("ProcessNonZeroExitException should have been thrown!");
+        fail("JaffreeAbnormalExitException should have been thrown!");
 
     }
 

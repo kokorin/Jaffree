@@ -25,18 +25,18 @@ import java.util.List;
 /**
  * Non-zero status code exit exception which includes all error messages produced by the process.
  */
-public class ProcessNonZeroExitException extends JaffreeException {
+public class JaffreeAbnormalExitException extends JaffreeException {
     private List<LogMessage> processErrorLogMessages;
 
     /**
-     * Constructs a new {@link ProcessNonZeroExitException} with the specified detail message
+     * Constructs a new {@link JaffreeAbnormalExitException} with the specified detail message
      * and additional context.
      *
      * @param message message
      * @param processErrorLogMessages error log messages produced by the process
      */
-    public ProcessNonZeroExitException(final String message,
-                                       final List<LogMessage> processErrorLogMessages) {
+    public JaffreeAbnormalExitException(final String message,
+                                        final List<LogMessage> processErrorLogMessages) {
         super(message);
 
         this.processErrorLogMessages = processErrorLogMessages;

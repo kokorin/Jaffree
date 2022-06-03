@@ -9,7 +9,7 @@ import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffprobe.data.FlatFormatParser;
 import com.github.kokorin.jaffree.ffprobe.data.FormatParser;
 import com.github.kokorin.jaffree.ffprobe.data.JsonFormatParser;
-import com.github.kokorin.jaffree.process.ProcessNonZeroExitException;
+import com.github.kokorin.jaffree.process.JaffreeAbnormalExitException;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -691,14 +691,14 @@ public class FFprobeTest {
                 .setInput(Paths.get("nonexistent.mp4"))
                 .setFormatParser(formatParser)
                 .execute();
-        } catch (ProcessNonZeroExitException e) {
+        } catch (JaffreeAbnormalExitException e) {
             assertEquals("Process execution has ended with non-zero status: 1. Check logs for detailed error message.", e.getMessage());
             assertEquals(1, e.getProcessErrorLogMessages().size());
             assertEquals("[error] nonexistent.mp4: No such file or directory", e.getProcessErrorLogMessages().get(0).message);
             return;
         }
 
-        fail("ProcessNonZeroExitException should have been thrown!");
+        fail("JaffreeAbnormalExitException should have been thrown!");
     }
 
     @Test
