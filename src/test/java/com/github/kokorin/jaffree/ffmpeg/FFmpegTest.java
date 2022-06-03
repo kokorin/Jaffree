@@ -8,8 +8,8 @@ import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffprobe.FFprobe;
 import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
 import com.github.kokorin.jaffree.ffprobe.Stream;
-import com.github.kokorin.jaffree.process.ProcessHandler;
 import com.github.kokorin.jaffree.process.ProcessHelper;
+import com.github.kokorin.jaffree.process.JaffreeAbnormalExitException;
 import org.hamcrest.core.AllOf;
 import org.hamcrest.core.StringContains;
 import org.junit.Assert;
@@ -44,6 +44,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class FFmpegTest {
     public static Path ERROR_MP4 = Paths.get("non_existent.mp4");
@@ -496,14 +497,20 @@ public class FFmpegTest {
 
     @Test
     public void testExceptionIsThrownIfFfmpegExitsWithError() {
-        expectedException.expect(
-                new StackTraceMatcher("Process execution has ended with non-zero status")
-        );
-
-        FFmpegResult result = FFmpeg.atPath(Config.FFMPEG_BIN)
+        try {
+            FFmpeg.atPath(Config.FFMPEG_BIN)
                 .addInput(UrlInput.fromPath(ERROR_MP4))
                 .addOutput(new NullOutput())
                 .execute();
+        } catch (JaffreeAbnormalExitException e) {
+            assertEquals("Process execution has ended with non-zero status: 1. Check logs for detailed error message.", e.getMessage());
+            assertEquals(1, e.getProcessErrorLogMessages().size());
+            assertEquals("[error] non_existent.mp4: No such file or directory", e.getProcessErrorLogMessages().get(0).message);
+            return;
+        }
+
+        fail("JaffreeAbnormalExitException should have been thrown!");
+
     }
 
     @Test
