@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -72,6 +73,6 @@ public class GobblingStdReader<T> implements StdReader<T> {
      */
     @Override
     public List<LogMessage> getErrorLogMessages() {
-        return null;
+        return Collections.emptyList();
     }
 }

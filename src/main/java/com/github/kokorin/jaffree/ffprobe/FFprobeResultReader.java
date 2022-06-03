@@ -23,6 +23,7 @@ import com.github.kokorin.jaffree.log.LogMessage;
 import com.github.kokorin.jaffree.process.StdReader;
 
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -56,6 +57,6 @@ public class FFprobeResultReader implements StdReader<FFprobeResult> {
      */
     @Override
     public List<LogMessage> getErrorLogMessages() {
-        return null;
+        return Collections.emptyList();
     }
 }

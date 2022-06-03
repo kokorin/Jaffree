@@ -204,8 +204,7 @@ public class ProcessHandler<T> {
                 "Process execution has ended with non-zero status: " + status
                 + ". Check logs for detailed error message.";
 
-            if (stdErrReader.getErrorLogMessages() != null
-                && stdErrReader.getErrorLogMessages().isEmpty()) {
+            if (stdErrReader.getErrorLogMessages().isEmpty()) {
                 throw new JaffreeException(messageWithExitCode);
             } else {
                 final String errorMessages = stdErrReader.getErrorLogMessages().stream()
