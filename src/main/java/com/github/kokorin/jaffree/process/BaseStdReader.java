@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -40,7 +40,7 @@ import java.util.List;
 public abstract class BaseStdReader<T> implements StdReader<T> {
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseStdReader.class);
 
-    private final List<LogMessage> errorLogMessages = new LinkedList<>();
+    private final List<LogMessage> errorLogMessages = new ArrayList<>();
 
     /**
      * Reads provided {@link InputStream} until it's depleted.
@@ -86,7 +86,7 @@ public abstract class BaseStdReader<T> implements StdReader<T> {
                     case ERROR:
                     case FATAL:
                     case PANIC:
-                        errorLogMessages.add(0, logMessage);
+                        errorLogMessages.add(logMessage);
                     case QUIET:
                         LOGGER.error(logMessage.message);
                         break;
