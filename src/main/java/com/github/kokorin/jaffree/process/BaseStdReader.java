@@ -86,8 +86,8 @@ public abstract class BaseStdReader<T> implements StdReader<T> {
                     case ERROR:
                     case FATAL:
                     case PANIC:
-                        errorLogMessages.add(logMessage);
                     case QUIET:
+                        errorLogMessages.add(logMessage);
                         LOGGER.error(logMessage.message);
                         break;
                 }
