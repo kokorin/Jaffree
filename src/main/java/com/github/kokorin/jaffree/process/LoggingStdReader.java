@@ -18,6 +18,7 @@
 package com.github.kokorin.jaffree.process;
 
 import com.github.kokorin.jaffree.JaffreeException;
+import com.github.kokorin.jaffree.log.LogMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +26,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * {@link StdReader} implementation which reads and logs everything been read.
@@ -52,5 +55,13 @@ public class LoggingStdReader<T> implements StdReader<T> {
         }
 
         return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<LogMessage> getErrorLogMessages() {
+        return Collections.emptyList();
     }
 }

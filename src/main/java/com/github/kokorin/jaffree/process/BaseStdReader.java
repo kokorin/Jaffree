@@ -28,6 +28,8 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * {@link BaseStdReader} reads std output, parses result and logs, and sends logs
@@ -37,6 +39,8 @@ import java.io.InputStreamReader;
  */
 public abstract class BaseStdReader<T> implements StdReader<T> {
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseStdReader.class);
+
+    private final List<LogMessage> errorLogMessages = new ArrayList<>();
 
     /**
      * Reads provided {@link InputStream} until it's depleted.
@@ -83,6 +87,7 @@ public abstract class BaseStdReader<T> implements StdReader<T> {
                     case FATAL:
                     case PANIC:
                     case QUIET:
+                        errorLogMessages.add(logMessage);
                         LOGGER.error(logMessage.message);
                         break;
                 }
@@ -97,6 +102,13 @@ public abstract class BaseStdReader<T> implements StdReader<T> {
         }
 
         return result;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public List<LogMessage> getErrorLogMessages() {
+        return errorLogMessages;
     }
 
     /**
