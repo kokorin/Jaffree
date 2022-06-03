@@ -19,9 +19,12 @@ package com.github.kokorin.jaffree.ffprobe;
 
 import com.github.kokorin.jaffree.ffprobe.data.FormatParser;
 import com.github.kokorin.jaffree.ffprobe.data.ProbeData;
+import com.github.kokorin.jaffree.log.LogMessage;
 import com.github.kokorin.jaffree.process.StdReader;
 
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * {@link FFprobeResultReader} adapts {@link StdReader} to {@link FormatParser}.
@@ -47,5 +50,13 @@ public class FFprobeResultReader implements StdReader<FFprobeResult> {
         ProbeData probeData = parser.parse(stdOut);
 
         return new FFprobeResult(probeData);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<LogMessage> getErrorLogMessages() {
+        return Collections.emptyList();
     }
 }
