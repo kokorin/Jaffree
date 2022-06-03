@@ -9,8 +9,8 @@ import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffprobe.data.FlatFormatParser;
 import com.github.kokorin.jaffree.ffprobe.data.FormatParser;
 import com.github.kokorin.jaffree.ffprobe.data.JsonFormatParser;
+import com.github.kokorin.jaffree.process.ProcessNonZeroExitException;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -21,7 +21,6 @@ import org.junit.runners.Parameterized;
 import java.io.InputStream;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
@@ -684,16 +683,20 @@ public class FFprobeTest {
 
     @Test
     public void testExceptionIsThrownIfFfprobeExitsWithError() {
-        expectedException.expect(
-                new StackTraceMatcher("Process execution has ended with non-zero status: 1. Check logs for detailed error message. Errors seen: <[error] nonexistent.mp4: No such file or directory>")
-        );
-
-        FFprobeResult result = FFprobe.atPath(Config.FFMPEG_BIN)
+        try {
+            FFprobe.atPath(Config.FFMPEG_BIN)
                 .setInput(Paths.get("nonexistent.mp4"))
                 .setFormatParser(formatParser)
                 .execute();
-    }
+        } catch (ProcessNonZeroExitException _e) {
+            assertEquals("Process execution has ended with non-zero status: 1. Check logs for detailed error message.", _e.getMessage());
+            assertEquals(1, _e.getProcessErrorLogMessages().size());
+            assertEquals("[error] nonexistent.mp4: No such file or directory", _e.getProcessErrorLogMessages().get(0).message);
+            return;
+        }
 
+        fail("ProcessNonZeroExitException should have been thrown!");
+    }
 
     @Test
     public void testProbeSize() throws Exception {
