@@ -18,11 +18,13 @@
 package com.github.kokorin.jaffree.process;
 
 import com.github.kokorin.jaffree.JaffreeException;
+import com.github.kokorin.jaffree.log.LogMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 /**
  * {@link StdReader} implementation which reads and ignores bytes read.
@@ -30,7 +32,6 @@ import java.io.InputStream;
  * @param <T> type of parsed result
  */
 public class GobblingStdReader<T> implements StdReader<T> {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(GobblingStdReader.class);
     private static final long REPORT_EVERY_BYTES = 1_000_000;
     private static final int BUFFER_SIZE = 1014;
@@ -63,6 +64,14 @@ public class GobblingStdReader<T> implements StdReader<T> {
             LOGGER.info("Totally read {} bytes", total);
         }
 
+        return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<LogMessage> getErrorLogMessages() {
         return null;
     }
 }

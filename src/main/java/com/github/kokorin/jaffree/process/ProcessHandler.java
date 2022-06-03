@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 /**
  * {@link ProcessHandler} executes program.
@@ -199,10 +200,22 @@ public class ProcessHandler<T> {
         }
 
         if (!Integer.valueOf(0).equals(status)) {
-            throw new JaffreeException(
-                    "Process execution has ended with non-zero status: " + status
-                            + ". Check logs for detailed error message."
-            );
+            final String messageWithExitCode =
+                "Process execution has ended with non-zero status: " + status
+                + ". Check logs for detailed error message.";
+
+            if (stdErrReader.getErrorLogMessages() != null
+                && stdErrReader.getErrorLogMessages().isEmpty()) {
+                throw new JaffreeException(messageWithExitCode);
+            } else {
+                final String errorMessages = stdErrReader.getErrorLogMessages().stream()
+                    .map(_logMessage -> "<" + _logMessage.message + ">")
+                    .collect(Collectors.joining(", "));
+
+                throw new JaffreeException(
+                    messageWithExitCode + " Errors seen: " + errorMessages
+                );
+            }
         }
 
         T result = resultRef.get();

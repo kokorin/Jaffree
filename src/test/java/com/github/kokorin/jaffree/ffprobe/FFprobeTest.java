@@ -685,7 +685,7 @@ public class FFprobeTest {
     @Test
     public void testExceptionIsThrownIfFfprobeExitsWithError() {
         expectedException.expect(
-                new StackTraceMatcher("Process execution has ended with non-zero status")
+                new StackTraceMatcher("Process execution has ended with non-zero status: 1. Check logs for detailed error message. Errors seen: <[error] nonexistent.mp4: No such file or directory>")
         );
 
         FFprobeResult result = FFprobe.atPath(Config.FFMPEG_BIN)
