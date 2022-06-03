@@ -688,10 +688,10 @@ public class FFprobeTest {
                 .setInput(Paths.get("nonexistent.mp4"))
                 .setFormatParser(formatParser)
                 .execute();
-        } catch (ProcessNonZeroExitException _e) {
-            assertEquals("Process execution has ended with non-zero status: 1. Check logs for detailed error message.", _e.getMessage());
-            assertEquals(1, _e.getProcessErrorLogMessages().size());
-            assertEquals("[error] nonexistent.mp4: No such file or directory", _e.getProcessErrorLogMessages().get(0).message);
+        } catch (ProcessNonZeroExitException e) {
+            assertEquals("Process execution has ended with non-zero status: 1. Check logs for detailed error message.", e.getMessage());
+            assertEquals(1, e.getProcessErrorLogMessages().size());
+            assertEquals("[error] nonexistent.mp4: No such file or directory", e.getProcessErrorLogMessages().get(0).message);
             return;
         }
 

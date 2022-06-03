@@ -503,10 +503,10 @@ public class FFmpegTest {
                 .addInput(UrlInput.fromPath(ERROR_MP4))
                 .addOutput(new NullOutput())
                 .execute();
-        } catch (ProcessNonZeroExitException _e) {
-            assertEquals("Process execution has ended with non-zero status: 1. Check logs for detailed error message.", _e.getMessage());
-            assertEquals(1, _e.getProcessErrorLogMessages().size());
-            assertEquals("[error] non_existent.mp4: No such file or directory", _e.getProcessErrorLogMessages().get(0).message);
+        } catch (ProcessNonZeroExitException e) {
+            assertEquals("Process execution has ended with non-zero status: 1. Check logs for detailed error message.", e.getMessage());
+            assertEquals(1, e.getProcessErrorLogMessages().size());
+            assertEquals("[error] non_existent.mp4: No such file or directory", e.getProcessErrorLogMessages().get(0).message);
             return;
         }
 
