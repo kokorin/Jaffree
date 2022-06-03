@@ -45,6 +45,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class FFmpegTest {
     public static Path ERROR_MP4 = Paths.get("non_existent.mp4");
