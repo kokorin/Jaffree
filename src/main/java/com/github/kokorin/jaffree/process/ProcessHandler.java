@@ -199,10 +199,10 @@ public class ProcessHandler<T> {
         }
 
         if (!Integer.valueOf(0).equals(status)) {
-            throw new JaffreeException(
-                    "Process execution has ended with non-zero status: " + status
-                            + ". Check logs for detailed error message."
-            );
+            throw new JaffreeAbnormalExitException(
+                "Process execution has ended with non-zero status: " + status
+                    + ". Check logs for detailed error message.",
+                stdErrReader.getErrorLogMessages());
         }
 
         T result = resultRef.get();
