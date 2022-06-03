@@ -17,7 +17,10 @@
 
 package com.github.kokorin.jaffree.process;
 
+import com.github.kokorin.jaffree.log.LogMessage;
+
 import java.io.InputStream;
+import java.util.List;
 
 /**
  * Implement {@link StdReader} interface to parse program stdout or stderr streams.
@@ -32,4 +35,11 @@ public interface StdReader<T> {
      * @return parsed result
      */
     T read(InputStream stdOut);
+
+    /**
+     * Get the list of error messages produced by the running process.
+     *
+     * @return error messages
+     */
+    List<LogMessage> getErrorLogMessages();
 }
