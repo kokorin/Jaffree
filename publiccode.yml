@@ -1,0 +1,72 @@
+# This repository adheres to the publiccode.yml standard by including this 
+# metadata file that makes public software easily discoverable.
+# More info at https://github.com/italia/publiccode.yml
+
+publiccodeYmlVersion: '0.2'
+name: Jaffree
+url: 'https://github.com/kokorin/Jaffree'
+releaseDate: '2022-06-03'
+developmentStatus: stable
+softwareVersion: 2022.06.03
+platforms:
+  - web
+  - windows
+  - mac
+  - linux
+  - ios
+  - android
+softwareType: library
+categories:
+  - video-editing
+maintenance:
+  type: internal
+  contacts:
+    - name: Denis Kokorin
+      email: kokorin86@gmail.com
+legal:
+  license: Apache-2.0
+localisation:
+  localisationReady: true
+  availableLanguages:
+    - en
+it:
+  piattaforme:
+    spid: false
+description:
+  it:
+    genericName: Video Processor
+    shortDescription: >-
+      Java ffmpeg and ffprobe command-line wrapper, supports programmatic video
+      production and consumption (with transparency)
+    longDescription: >
+      ### Jaffree
+
+
+      Jaffree stands for Java ffmpeg and ffprobe free command
+      line wrapper.
+
+
+      ### Application
+
+
+      Jaffree allows integration with native ffmpeg  and ffprobe processes from
+      Java. It uses command line to execute process, thus making it simple to
+      run ffmpeg from Java.
+
+
+      ### Features
+
+
+      Despite other ffmpeg and ffprobe wrappers Jaffree also supports:
+
+
+      - Programmatic (pure Java) video and audio consumption and production.
+
+      - Forceful & graceful stopping of ffmpeg
+
+      - Reads/writes video from/to Java SeekableByteChannel/InputStream/OutputStream
+    features:
+      - video
+      - ffmpeg
+      - java
+      - ffprobe
