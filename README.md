@@ -1,3 +1,5 @@
+[![SWUbanner](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct.svg)](https://github.com/vshymanskyy/StandWithUkraine/blob/main/docs/README.md)
+
 # Jaffree [![Sparkline](https://stars.medv.io/kokorin/Jaffree.svg)](https://stars.medv.io/kokorin/Jaffree)
 
 Jaffree stands for JAva FFmpeg and FFprobe FREE command line wrapper. Jaffree supports programmatic video production and consumption (with transparency)
