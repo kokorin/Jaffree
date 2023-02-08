@@ -207,6 +207,31 @@ try (InputStream inputStream =
 }
 ```
 
+## Live Stream Re-Streaming (HLS)
+
+See whole example [here](src/test/java/examples/ReStreamWithHls.java).
+
+```java
+FFmpeg.atPath()
+    .addInput(
+        UrlInput.fromUrl(liveStream)
+    )
+    .addOutput(
+        UrlOutput.toPath(dir.resolve("index.m3u8"))
+            .setFrameRate(30)
+            // check all available options: ffmpeg -help muxer=hls
+            .setFormat("hls")
+            // enforce keyframe every 2s - see setFrameRate
+            .addArguments("-x264-params", "keyint=60")
+            .addArguments("-hls_list_size", "5")
+            .addArguments("-hls_delete_threshold", "5")
+            .addArguments("-hls_time", "2")
+            .addArguments("-hls_flags", "delete_segments")
+    )
+    .setOverwriteOutput(true)
+    .execute();
+```
+
 ## Screen Capture
 
 See whole example [here](src/test/java/examples/ScreenCaptureExample.java).
