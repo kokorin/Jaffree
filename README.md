@@ -1,12 +1,4 @@
-# Stop the War in Ukraine!
-
-# I am Russian living in Ukraine for almost 12 years.  
-
-# https://dearrussian.wtf/
-
-# https://stop-war-in-ukraine.github.io/stop-russia-it/
-
-# I prohibit to use this library in any Russian government related project!
+[![SWUbanner](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct.svg)](https://github.com/vshymanskyy/StandWithUkraine/blob/main/docs/README.md)
 
 # Jaffree [![Sparkline](https://stars.medv.io/kokorin/Jaffree.svg)](https://stars.medv.io/kokorin/Jaffree)
 
@@ -51,7 +43,7 @@ Inspired by [ffmpeg-cli-wrapper](https://github.com/bramp/ffmpeg-cli-wrapper)
 
 ## Checking media streams with ffprobe
 
-See whole example [here](/src/test/java/examples/ShowStreamsExample.java).
+See whole example [here](src/test/java/examples/ShowStreamsExample.java).
 
 ```java
 FFprobeResult result = FFprobe.atPath()
@@ -70,7 +62,7 @@ for (Stream stream : result.getStreams()) {
 
 Sometimes ffprobe can't show exact duration, use ffmpeg trancoding to NULL output to get it.
 
-See whole example [here](/src/test/java/examples/ExactDurationExample.java).
+See whole example [here](src/test/java/examples/ExactDurationExample.java).
 
 ```java
 final AtomicLong durationMillis = new AtomicLong();
@@ -93,7 +85,7 @@ System.out.println("Exact duration: " + durationMillis.get() + " milliseconds");
 
 ## Re-encode and track progress
 
-See whole example [here](/src/test/java/examples/ReEncodeExample.java).
+See whole example [here](src/test/java/examples/ReEncodeExample.java).
 
 ```java
 final AtomicLong duration = new AtomicLong();
@@ -128,7 +120,7 @@ FFmpeg.atPath()
 
 Pay attention that arguments related to Input must be set at Input, not at FFmpeg.
 
-See whole example [here](/src/test/java/examples/CutAndScaleExample.java).
+See whole example [here](src/test/java/examples/CutAndScaleExample.java).
 
 ```java
 FFmpeg.atPath()
@@ -149,7 +141,7 @@ FFmpeg.atPath()
 
 ## Custom parsing of ffmpeg output
 
-See whole example [here](/src/test/java/examples/ParsingOutputExample.java).
+See whole example [here](src/test/java/examples/ParsingOutputExample.java).
 
 ```java
 // StringBuffer - because it's thread safe
@@ -175,7 +167,7 @@ System.out.println("Loudnorm report:\n" + loudnormReport);
 Ability to interact with SeekableByteChannel is one of the features, which distinct Jaffree from 
 similar libraries. Under the hood Jaffree uses tiny FTP server to interact with SeekableByteChannel.
 
-See whole example [here](/src/test/java/examples/UsingChannelsExample.java).
+See whole example [here](src/test/java/examples/UsingChannelsExample.java).
 ```java
 try (SeekableByteChannel inputChannel =
          Files.newByteChannel(pathToSrc, StandardOpenOption.READ);
@@ -198,7 +190,7 @@ requires seekable output for many formats.
 
 Under the hood pipes are not OS pipes, but TCP Sockets. This allows much higher bandwidth.
 
-See whole example [here](/src/test/java/examples/UsingStreamsExample.java).
+See whole example [here](src/test/java/examples/UsingStreamsExample.java).
 
 ```java
 try (InputStream inputStream =
@@ -217,9 +209,34 @@ try (InputStream inputStream =
 }
 ```
 
+## Live Stream Re-Streaming (HLS)
+
+See whole example [here](src/test/java/examples/ReStreamWithHls.java).
+
+```java
+FFmpeg.atPath()
+    .addInput(
+        UrlInput.fromUrl(liveStream)
+    )
+    .addOutput(
+        UrlOutput.toPath(dir.resolve("index.m3u8"))
+            .setFrameRate(30)
+            // check all available options: ffmpeg -help muxer=hls
+            .setFormat("hls")
+            // enforce keyframe every 2s - see setFrameRate
+            .addArguments("-x264-params", "keyint=60")
+            .addArguments("-hls_list_size", "5")
+            .addArguments("-hls_delete_threshold", "5")
+            .addArguments("-hls_time", "2")
+            .addArguments("-hls_flags", "delete_segments")
+    )
+    .setOverwriteOutput(true)
+    .execute();
+```
+
 ## Screen Capture
 
-See whole example [here](/src/test/java/examples/ScreenCaptureExample.java).
+See whole example [here](src/test/java/examples/ScreenCaptureExample.java).
 
 ```java
 FFmpeg.atPath()
@@ -249,8 +266,8 @@ Files.move(pathToOptimized, pathToVideo, StandardCopyOption.REPLACE_EXISTING);
 
 ## Produce Video in Pure Java Code
 
-See whole example [here](/src/test/java/examples/ProduceVideoExample.java). 
-Check also more [advanced example](/src/test/java/examples/BouncingBallExample.java) which produce 
+See whole example [here](src/test/java/examples/ProduceVideoExample.java). 
+Check also more [advanced example](src/test/java/examples/BouncingBallExample.java) which produce 
 both audio and video 
 
 ```java
@@ -293,11 +310,11 @@ FFmpeg.atPath()
 
 Here is an output of the above example:
 
-![example output](/src/test/resources/examples/programmatic.gif)
+![example output](src/test/resources/examples/programmatic.gif)
 
 ### Consume Video in Pure Java Code
 
-See whole example [here](/src/test/java/examples/ExtractFramesExample.java).
+See whole example [here](src/test/java/examples/ExtractFramesExample.java).
 
 ```java
 FFmpeg.atPath()
@@ -343,10 +360,28 @@ FFmpeg.atPath()
         .execute();
 ```
 
+## Managing errors
+
+Jaffree will raise exceptions when a fatal error that causes a non-zero exit code occurs.
+
+In some cases an error can occur but FFmpeg manages to catch it and exit correctly. This can be a 
+convenient case, although sometimes one would prefer an exception to be raised to Jaffree.
+
+To do so, the [`-xerror`](https://ffmpeg.org/ffmpeg.html#Advanced-options) argument can be used to
+tell FFmpeg to exit the process with an error status when an error occurs.
+
+```java
+FFmpeg.atPath()
+      .addArgument("-xerror")
+      // ...
+```
+
+Please see [Issue 276](https://github.com/kokorin/Jaffree/issues/276) for more details on an actual
+usecase.
 
 ## FFmpeg stop
 
-See whole examples [here](/src/test/java/examples/StopExample.java).
+See whole examples [here](src/test/java/examples/StopExample.java).
 
 ### Grace stop
 
@@ -408,7 +443,7 @@ thread.interrupt();
 
 ## Java 8 Completion API
 
-See whole examples [here](/src/test/java/examples/CompletionExample.java).
+See whole examples [here](src/test/java/examples/CompletionExample.java).
 
 ```java
 ffmpeg.executeAsync().toCompletableFuture()
@@ -510,7 +545,7 @@ FFmpegResult result = FFmpeg.atPath(BIN)
 ## Programmatic mosaic video creation
 
 Jaffree allows simultaneous reading from several sources (with one instance per every source and target).
-You can find details in  Mosaic [example](/src/test/java/examples/MosaicExample.java).
+You can find details in  Mosaic [example](src/test/java/examples/MosaicExample.java).
 
 # Build & configuration
 
