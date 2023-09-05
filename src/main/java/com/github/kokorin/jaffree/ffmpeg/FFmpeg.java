@@ -59,6 +59,7 @@ public class FFmpeg {
 
     private LogLevel logLevel = LogLevel.INFO;
     private String contextName = null;
+    private Integer executorTimeoutMillis = null;
 
     private final Path executable;
 
@@ -388,6 +389,23 @@ public class FFmpeg {
     }
 
     /**
+     * Overrides the default {@link com.github.kokorin.jaffree.process.Executor} timeout.
+     * <p>
+     * Most normal use cases will easily complete within the default timeout. It is not recommended
+     * to set an explicit timeout value unless you have actually experienced unwanted timeouts.
+     *
+     * @param executorTimeoutMillis the custom executor timeout in milliseconds
+     * @return this
+     */
+    public FFmpeg setExecutorTimeoutMillis(final int executorTimeoutMillis) {
+        if (executorTimeoutMillis < 0) {
+            throw new IllegalArgumentException("Executor timeout cannot be negative");
+        }
+        this.executorTimeoutMillis = executorTimeoutMillis;
+        return this;
+    }
+
+    /**
      * Starts synchronous ffmpeg execution.
      * <p>
      * Current thread is blocked until ffmpeg is finished.
@@ -484,7 +502,8 @@ public class FFmpeg {
                 .setStdErrReader(createStdErrReader(outputListener))
                 .setStdOutReader(createStdOutReader())
                 .setHelpers(helpers)
-                .setArguments(buildArguments());
+                .setArguments(buildArguments())
+                .setExecutorTimeoutMillis(executorTimeoutMillis);
     }
 
     /**

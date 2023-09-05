@@ -49,8 +49,9 @@ public class ProcessHandler<T> {
     private List<ProcessHelper> helpers = null;
     private Stopper stopper = null;
     private List<String> arguments = Collections.emptyList();
+    private int executorTimeoutMillis = DEFAULT_EXECUTOR_TIMEOUT_MILLIS;
 
-    private static final int EXECUTOR_TIMEOUT_MILLIS = 10_000;
+    private static final int DEFAULT_EXECUTOR_TIMEOUT_MILLIS = 10_000;
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessHandler.class);
 
     /**
@@ -121,6 +122,24 @@ public class ProcessHandler<T> {
     }
 
     /**
+     * Overrides the default Executor timeout.
+     * <p>
+     * A null value is interpreted as "use default timeout".
+     *
+     * @param executorTimeoutMillis the new Executor timeout in milliseconds
+     * @return this
+     */
+    public ProcessHandler<T> setExecutorTimeoutMillis(final Integer executorTimeoutMillis) {
+        if (executorTimeoutMillis != null) {
+            if (executorTimeoutMillis < 0) {
+                throw new IllegalArgumentException("Executor timeout cannot be negative");
+            }
+            this.executorTimeoutMillis = executorTimeoutMillis;
+        }
+        return this;
+    }
+
+    /**
      * Executes a program.
      * <p>
      * Returns program result from stdout or stderr {@link StdReader readers}.
@@ -180,7 +199,9 @@ public class ProcessHandler<T> {
             status = process.waitFor();
             LOGGER.info("Process has finished with status: {}", status);
 
-            waitForExecutorToStop(executor, EXECUTOR_TIMEOUT_MILLIS);
+            if (executorTimeoutMillis > 0) {
+                waitForExecutorToStop(executor, executorTimeoutMillis);
+            }
         } catch (InterruptedException e) {
             LOGGER.warn("Process has been interrupted");
             if (stopper != null) {
