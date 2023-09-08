@@ -13,6 +13,7 @@ import com.github.kokorin.jaffree.process.JaffreeAbnormalExitException;
 import org.hamcrest.core.AllOf;
 import org.hamcrest.core.StringContains;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -379,16 +380,31 @@ public class FFmpegTest {
         Path tempDir = Files.createTempDirectory("jaffree");
         Path outputPath = tempDir.resolve(Artifacts.VIDEO_MP4.getFileName());
 
-        FFmpegResult result = FFmpeg.atPath(Config.FFMPEG_BIN)
-                .addInput(UrlInput.fromPath(Artifacts.VIDEO_MP4))
-                .addOutput(UrlOutput
-                        .toPath(outputPath)
-                        .copyAllCodecs()
-                        .setSizeLimit(1_000_000L)
-                )
-                .execute();
+        final AtomicBoolean muxingErrorDetected = new AtomicBoolean(false);
+        OutputListener outputListener = message -> {
+            if (message.endsWith("Error muxing a packet")) {
+                LOGGER.warn("Detected a muxing error, which indicates ffmpeg bug #10327");
+                muxingErrorDetected.set(true);
+            }
+        };
 
-        Assert.assertNotNull(result);
+        try {
+            FFmpegResult result = FFmpeg.atPath(Config.FFMPEG_BIN)
+                    .addInput(UrlInput.fromPath(Artifacts.VIDEO_MP4))
+                    .setOutputListener(outputListener)
+                    .addOutput(UrlOutput
+                            .toPath(outputPath)
+                            .copyAllCodecs()
+                            .setSizeLimit(1_000_000L)
+                    )
+                    .execute();
+            Assert.assertNotNull(result);
+        } catch (JaffreeAbnormalExitException ex) {
+            // Detect ffmpeg bug "Error muxing a packet when limit file size parameter is set"
+            // https://trac.ffmpeg.org/ticket/10327
+            Assume.assumeFalse("Hit ffmpeg bug #10327 - we will ignore this test", muxingErrorDetected.get());
+            Assert.fail("Abnormal exit for limit file size");
+        }
 
         long outputSize = Files.size(outputPath);
         assertTrue(outputSize > 900_000);
