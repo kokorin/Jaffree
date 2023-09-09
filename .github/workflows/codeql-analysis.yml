@@ -57,7 +57,7 @@ jobs:
           # Prefix the list here with "+" to use these queries and those in the config file.
           # queries: ./path/to/local/query, your-org/your-repo/queries@main
 
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           # be careful not to include ~/.m2/settings.xml which contains credentials
           path: |
