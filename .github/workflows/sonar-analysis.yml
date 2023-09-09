@@ -30,10 +30,11 @@ jobs:
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
 
-      - name: Set up JDK 11
+      - name: Set up JDK
         uses: actions/setup-java@v3
         with:
-          java-version: 11
+          distribution: 'adopt'
+          java-version: 17
 
       - name: Install ffmpeg on Ubuntu
         run: sudo apt-get update && sudo apt-get install -y ffmpeg && ffmpeg -version
