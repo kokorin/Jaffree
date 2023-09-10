@@ -49,8 +49,9 @@ public class ProcessHandler<T> {
     private List<ProcessHelper> helpers = null;
     private Stopper stopper = null;
     private List<String> arguments = Collections.emptyList();
+    private int executorTimeoutMillis = DEFAULT_EXECUTOR_TIMEOUT_MILLIS;
 
-    private static final int EXECUTOR_TIMEOUT_MILLIS = 10_000;
+    private static final int DEFAULT_EXECUTOR_TIMEOUT_MILLIS = 10_000;
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessHandler.class);
 
     /**
@@ -121,6 +122,20 @@ public class ProcessHandler<T> {
     }
 
     /**
+     * Overrides the default Executor timeout.
+     * <p>
+     * A value of 0 is interpreted as "wait indefinitely".
+     *
+     * @param executorTimeoutMillis the new Executor timeout in milliseconds
+     */
+    public void setExecutorTimeoutMillis(final int executorTimeoutMillis) {
+        if (executorTimeoutMillis < 0) {
+            throw new IllegalArgumentException("Executor timeout cannot be negative");
+        }
+        this.executorTimeoutMillis = executorTimeoutMillis;
+    }
+
+    /**
      * Executes a program.
      * <p>
      * Returns program result from stdout or stderr {@link StdReader readers}.
@@ -180,7 +195,7 @@ public class ProcessHandler<T> {
             status = process.waitFor();
             LOGGER.info("Process has finished with status: {}", status);
 
-            waitForExecutorToStop(executor, EXECUTOR_TIMEOUT_MILLIS);
+            waitForExecutorToStop(executor, executorTimeoutMillis);
         } catch (InterruptedException e) {
             LOGGER.warn("Process has been interrupted");
             if (stopper != null) {
@@ -308,9 +323,10 @@ public class ProcessHandler<T> {
             throws InterruptedException {
         LOGGER.debug("Waiting for Executor to stop");
 
-        long waitStarted = System.currentTimeMillis();
+        final long waitStarted = System.currentTimeMillis();
         do {
-            if (System.currentTimeMillis() - waitStarted > timeoutMillis) {
+            // Zero timeout means "wait indefinitely"
+            if (timeoutMillis > 0 && System.currentTimeMillis() - waitStarted > timeoutMillis) {
                 LOGGER.warn("Executor hasn't stopped in {} millis, won't wait longer",
                         timeoutMillis);
                 break;
