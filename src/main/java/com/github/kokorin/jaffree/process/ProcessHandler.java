@@ -172,7 +172,7 @@ public class ProcessHandler<T> {
      */
     protected T interactWithProcess(final Process process) {
         AtomicReference<T> resultRef = new AtomicReference<>();
-        Integer status = null;
+        final int status;
         Executor executor = startExecution(process, resultRef);
 
         try {
@@ -198,7 +198,7 @@ public class ProcessHandler<T> {
                     "Failed to execute, exception appeared in one of helper threads", exceptions);
         }
 
-        if (!Integer.valueOf(0).equals(status)) {
+        if (status != 0) {
             throw new JaffreeAbnormalExitException(
                 "Process execution has ended with non-zero status: " + status
                     + ". Check logs for detailed error message.",
