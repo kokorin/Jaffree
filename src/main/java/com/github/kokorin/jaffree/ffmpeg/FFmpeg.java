@@ -393,6 +393,9 @@ public class FFmpeg {
      * <p>
      * Most normal use cases will easily complete within the default timeout. It is not recommended
      * to set an explicit timeout value unless you have actually experienced unwanted timeouts.
+     * <p>
+     * A value of 0 will disable the timeout.
+     * That is, Jaffree will wait indefinitely for the Executor to complete.
      *
      * @param executorTimeoutMillis the custom executor timeout in milliseconds
      * @return this
@@ -498,12 +501,16 @@ public class FFmpeg {
             helpers.add(progressHelper);
         }
 
-        return new ProcessHandler<FFmpegResult>(executable, contextName)
-                .setStdErrReader(createStdErrReader(outputListener))
-                .setStdOutReader(createStdOutReader())
-                .setHelpers(helpers)
-                .setArguments(buildArguments())
-                .setExecutorTimeoutMillis(executorTimeoutMillis);
+        ProcessHandler<FFmpegResult> processHandler =
+                new ProcessHandler<FFmpegResult>(executable, contextName)
+                        .setStdErrReader(createStdErrReader(outputListener))
+                        .setStdOutReader(createStdOutReader())
+                        .setHelpers(helpers)
+                        .setArguments(buildArguments());
+        if (executorTimeoutMillis != null) {
+            processHandler.setExecutorTimeoutMillis(executorTimeoutMillis);
+        }
+        return processHandler;
     }
 
     /**
