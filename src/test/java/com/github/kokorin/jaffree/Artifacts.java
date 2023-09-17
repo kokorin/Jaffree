@@ -1,9 +1,9 @@
 package com.github.kokorin.jaffree;
 
 import com.github.kokorin.jaffree.ffmpeg.FFmpeg;
-import com.github.kokorin.jaffree.ffmpeg.PipeInput;
-import com.github.kokorin.jaffree.ffmpeg.UrlInput;
-import com.github.kokorin.jaffree.ffmpeg.UrlOutput;
+import com.github.kokorin.jaffree.ffmpeg.input.PipeInput;
+import com.github.kokorin.jaffree.ffmpeg.input.UrlInput;
+import com.github.kokorin.jaffree.ffmpeg.output.UrlOutput;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

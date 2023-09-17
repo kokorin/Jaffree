@@ -2,18 +2,20 @@ package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.Artifacts;
 import com.github.kokorin.jaffree.Config;
-import com.github.kokorin.jaffree.LogLevel;
 import com.github.kokorin.jaffree.StreamType;
+import com.github.kokorin.jaffree.ffmpeg.filter.Filter;
+import com.github.kokorin.jaffree.ffmpeg.filter.FilterChain;
+import com.github.kokorin.jaffree.ffmpeg.filter.FilterGraph;
+import com.github.kokorin.jaffree.ffmpeg.input.UrlInput;
+import com.github.kokorin.jaffree.ffmpeg.output.UrlOutput;
 import com.github.kokorin.jaffree.ffprobe.FFprobe;
 import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
 import com.github.kokorin.jaffree.ffprobe.Stream;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertNotNull;

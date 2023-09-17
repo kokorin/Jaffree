@@ -18,8 +18,8 @@
 package com.github.kokorin.jaffree.net;
 
 import com.github.kokorin.jaffree.JaffreeException;
-import com.github.kokorin.jaffree.ffmpeg.Input;
-import com.github.kokorin.jaffree.ffmpeg.Output;
+import com.github.kokorin.jaffree.ffmpeg.input.Input;
+import com.github.kokorin.jaffree.ffmpeg.output.Output;
 import com.github.kokorin.jaffree.process.ProcessHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

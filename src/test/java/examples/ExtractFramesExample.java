@@ -2,11 +2,11 @@ package examples;
 
 import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffmpeg.FFmpeg;
-import com.github.kokorin.jaffree.ffmpeg.Frame;
-import com.github.kokorin.jaffree.ffmpeg.FrameConsumer;
-import com.github.kokorin.jaffree.ffmpeg.FrameOutput;
+import com.github.kokorin.jaffree.ffmpeg.io.Frame;
+import com.github.kokorin.jaffree.ffmpeg.output.FrameConsumer;
+import com.github.kokorin.jaffree.ffmpeg.output.FrameOutput;
 import com.github.kokorin.jaffree.ffmpeg.Stream;
-import com.github.kokorin.jaffree.ffmpeg.UrlInput;
+import com.github.kokorin.jaffree.ffmpeg.input.UrlInput;
 
 import javax.imageio.ImageIO;
 import java.nio.file.Path;

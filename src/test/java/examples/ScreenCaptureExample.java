@@ -17,10 +17,10 @@
 
 package examples;
 
-import com.github.kokorin.jaffree.ffmpeg.CaptureInput;
+import com.github.kokorin.jaffree.ffmpeg.input.CaptureInput;
 import com.github.kokorin.jaffree.ffmpeg.FFmpeg;
-import com.github.kokorin.jaffree.ffmpeg.UrlInput;
-import com.github.kokorin.jaffree.ffmpeg.UrlOutput;
+import com.github.kokorin.jaffree.ffmpeg.input.UrlInput;
+import com.github.kokorin.jaffree.ffmpeg.output.UrlOutput;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
