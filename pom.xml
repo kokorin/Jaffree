@@ -4,7 +4,7 @@
                     http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.github.kokorin.jaffree</groupId>
+    <groupId>com.github.kevinmarvin.jaffree</groupId>
     <artifactId>jaffree</artifactId>
     <!--Version is controlled by maven-git-versioning-extension -->
     <version>0</version>

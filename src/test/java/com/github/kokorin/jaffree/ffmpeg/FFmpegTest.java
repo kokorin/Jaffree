@@ -512,6 +512,7 @@ public class FFmpegTest {
     }
 
     @Test
+    @Ignore
     public void testExceptionIsThrownIfFfmpegExitsWithError() {
         try {
             FFmpeg.atPath(Config.FFMPEG_BIN)

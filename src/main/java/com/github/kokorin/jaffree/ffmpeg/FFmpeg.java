@@ -47,6 +47,7 @@ public class FFmpeg {
     private final List<Input> inputs = new ArrayList<>();
     private final List<Output> outputs = new ArrayList<>();
     private final List<String> additionalArguments = new ArrayList<>();
+    private final List<String> preInputArguments = new ArrayList<>();
     private boolean overwriteOutput;
     private ProgressListener progressListener;
     private OutputListener outputListener;
@@ -121,6 +122,29 @@ public class FFmpeg {
      */
     public FFmpeg addArgument(final String argument) {
         additionalArguments.add(argument);
+        return this;
+    }
+
+    /**
+     * Adds custom global argument to ffmpeg arguments list before the input arg.
+     *
+     * @param argument argument
+     * @return this
+     */
+    public FFmpeg addPreInputArguments(final String argument) {
+        preInputArguments.add(argument);
+        return this;
+    }
+
+    /**
+     * Adds custom global argument to ffmpeg arguments list before the input arg.
+     *
+     * @param key key argument
+     * @param value value argument
+     * @return this
+     */
+    public FFmpeg addPreInputArguments(final String key, final String value) {
+        preInputArguments.addAll(Arrays.asList(key, value));
         return this;
     }
 
@@ -590,6 +614,9 @@ public class FFmpeg {
             logLevelArgument += "+" + logLevel.name().toLowerCase();
         }
         result.addAll(Arrays.asList("-loglevel", logLevelArgument));
+
+        // Add arguments that should be included before -i
+        result.addAll(preInputArguments);
 
         for (Input input : inputs) {
             result.addAll(input.buildArguments());
