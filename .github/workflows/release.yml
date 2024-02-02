@@ -67,7 +67,7 @@ jobs:
           echo "::set-output name=release_version::$release_version"
           echo "::set-output name=release_date::$release_date"
 
-      - uses: release-drafter/release-drafter@v5
+      - uses: release-drafter/release-drafter@v6
         with:
           config-name: release-drafter-conf.yml
           name: ${{ steps.get-version.outputs.release_version }}
