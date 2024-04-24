@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -187,12 +188,12 @@ public class ProcessHandler<T> {
      */
     protected T interactWithProcess(final Process process) {
         AtomicReference<T> resultRef = new AtomicReference<>();
-        final int status;
         Executor executor = startExecution(process, resultRef);
+        final boolean status;
 
         try {
             LOGGER.info("Waiting for process to finish");
-            status = process.waitFor();
+            status = process.waitFor(executorTimeoutMillis, TimeUnit.MILLISECONDS);
             LOGGER.info("Process has finished with status: {}", status);
 
             waitForExecutorToStop(executor, executorTimeoutMillis);
@@ -213,7 +214,7 @@ public class ProcessHandler<T> {
                     "Failed to execute, exception appeared in one of helper threads", exceptions);
         }
 
-        if (status != 0) {
+        if (status == false) {
             throw new JaffreeAbnormalExitException(
                 "Process execution has ended with non-zero status: " + status
                     + ". Check logs for detailed error message.",
