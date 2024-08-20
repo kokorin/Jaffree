@@ -43,6 +43,7 @@ import static java.nio.file.StandardOpenOption.WRITE;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -519,14 +520,20 @@ public class FFmpegTest {
                 .addOutput(new NullOutput())
                 .execute();
         } catch (JaffreeAbnormalExitException e) {
-            assertEquals("Process execution has ended with non-zero status: 1. Check logs for detailed error message.", e.getMessage());
-            assertEquals(1, e.getProcessErrorLogMessages().size());
-            assertEquals("[error] non_existent.mp4: No such file or directory", e.getProcessErrorLogMessages().get(0).message);
+            if ("Process execution has ended with non-zero status: 254. Check logs for detailed error message.".equals(e.getMessage())) {
+                // FFmpeg 6+
+                assertEquals(3, e.getProcessErrorLogMessages().size());
+                assertEquals("[error] Error opening input file non_existent.mp4.", e.getProcessErrorLogMessages().get(1).message);
+            } else if ("Process execution has ended with non-zero status: 1. Check logs for detailed error message.".equals(e.getMessage())) {
+                assertEquals(1, e.getProcessErrorLogMessages().size());
+                assertEquals("[error] non_existent.mp4: No such file or directory", e.getProcessErrorLogMessages().get(0).message);
+            } else {
+                fail("Unknown FFmpeg output format (update test code!)");
+            }
             return;
         }
 
         fail("JaffreeAbnormalExitException should have been thrown!");
-
     }
 
     @Test
