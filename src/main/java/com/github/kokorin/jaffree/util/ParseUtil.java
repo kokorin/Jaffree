@@ -105,9 +105,10 @@ public final class ParseUtil {
             return null;
         }
 
-        final Matcher matcher = KBYTES_SUFFIX_PATTERN.matcher(value);
+        final String trimmedValue = value.trim();
+        final Matcher matcher = KBYTES_SUFFIX_PATTERN.matcher(trimmedValue);
 
-        return matcher.find() ? parseLongWithSuffix(value.trim(), matcher.group(1)) : null;
+        return matcher.find() ? parseLongWithSuffix(trimmedValue, matcher.group(1)) : null;
     }
 
     /**
