@@ -259,7 +259,7 @@ public class FFmpegTest {
                 .setProgressListener(progressListener)
                 .execute();
 
-        // Note fails in FFmpeg 6.1, 6.1.1, 6.1.2, 7.0, 7.0.1, 7.0.2. To be fixed in the next release, see:
+        // Fails in FFmpeg 6.1, 6.1.1, 6.1.2, 7.0, 7.0.1, 7.0.2. To be fixed in the next release, see:
         // https://github.com/FFmpeg/FFmpeg/commit/598f541ba49cb682dcd74e86858c9a4985149e1f
         assertNotNull(frameRef.get());
     }
