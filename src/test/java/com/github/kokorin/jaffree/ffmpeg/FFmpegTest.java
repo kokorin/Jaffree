@@ -242,6 +242,29 @@ public class FFmpegTest {
     }
 
     @Test
+    public void testFrameCountingWithStreamCopyAndProgressListener() throws Exception {
+        final AtomicReference<Long> frameRef = new AtomicReference<>();
+
+        final ProgressListener progressListener = new ProgressListener() {
+            @Override
+            public void onProgress(FFmpegProgress progress) {
+                System.out.println(progress);
+                frameRef.set(progress.getFrame());
+            }
+        };
+
+        final FFmpegResult result = FFmpeg.atPath(Config.FFMPEG_BIN)
+                .addInput(UrlInput.fromPath(Artifacts.VIDEO_NUT))
+                .addOutput(new NullOutput())
+                .setProgressListener(progressListener)
+                .execute();
+
+        // Note fails in FFmpeg 6.1, 6.1.1, 6.1.2, 7.0, 7.0.1, 7.0.2. To be fixed in the next release, see:
+        // https://github.com/FFmpeg/FFmpeg/commit/598f541ba49cb682dcd74e86858c9a4985149e1f
+        assertNotNull(frameRef.get());
+    }
+
+    @Test
     public void testForceStopWithThreadInterruption() throws Exception {
         Path tempDir = Files.createTempDirectory("jaffree");
         Path outputPath = tempDir.resolve(Artifacts.VIDEO_MP4.getFileName());
