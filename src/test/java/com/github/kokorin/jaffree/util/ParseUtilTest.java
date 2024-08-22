@@ -63,13 +63,25 @@ public class ParseUtilTest {
     }
 
     @Test
-    public void parsResult() throws Exception {
+    public void parseOldKibiByteFormats() {
+        final Long value = ParseUtil.parseSizeInKibiBytes("2904kB");
+        Assert.assertEquals(2904L, value.longValue());
+    }
+
+    @Test
+    public void parseNewKibiByteFormats() {
+        final Long value = ParseUtil.parseSizeInKibiBytes("2904KiB");
+        Assert.assertEquals(2904L, value.longValue());
+    }
+
+    @Test
+    public void parseResult() throws Exception {
         String value = "video:1417kB audio:113kB subtitle:0kB other streams:0kB global headers:0kB muxing overhead: unknown";
         FFmpegResult result = ParseUtil.parseResult(value);
 
         Assert.assertNotNull(result);
-        Assert.assertEquals((Long) 1_417_000L, result.getVideoSize());
-        Assert.assertEquals((Long) 113_000L, result.getAudioSize());
+        Assert.assertEquals((Long) 1_451_008L, result.getVideoSize());
+        Assert.assertEquals((Long) 115_712L, result.getAudioSize());
         Assert.assertEquals((Long) 0L, result.getSubtitleSize());
         Assert.assertEquals((Long) 0L, result.getOtherStreamsSize());
         Assert.assertEquals((Long) 0L, result.getGlobalHeadersSize());
@@ -98,5 +110,4 @@ public class ParseUtilTest {
 
         Assert.assertNull(result);
     }
-
 }
