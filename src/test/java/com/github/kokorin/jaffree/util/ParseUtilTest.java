@@ -69,6 +69,9 @@ public class ParseUtilTest {
 
         final Long newFormat = ParseUtil.parseSizeInKibiBytes("2904KiB");
         Assert.assertEquals(2904L, newFormat.longValue());
+
+        final Long unknownFormat = ParseUtil.parseSizeInKibiBytes("2904KB");
+        Assert.assertNull(unknownFormat);
     }
 
     @Test
