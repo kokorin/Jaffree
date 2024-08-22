@@ -24,15 +24,13 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Parses ffmpeg progress and result values.
  */
 @SuppressWarnings("checkstyle:MagicNumber")
 public final class ParseUtil {
-    private static final Pattern KBYTES_SUFFIX_PATTERN = Pattern.compile("\\d+(KiB|kB)");
+    private static final String[] KBYTES_SUFFIXES = {"kB", "KiB"};
     private static final String KBITS_PER_SECOND_SUFFIX = "kbits/s";
     private static final String SPEED_SUFFIX = "x";
     private static final String PERCENT_SUFFIX = "%";
@@ -106,9 +104,13 @@ public final class ParseUtil {
         }
 
         final String trimmedValue = value.trim();
-        final Matcher matcher = KBYTES_SUFFIX_PATTERN.matcher(trimmedValue);
+        Long result = null;
 
-        return matcher.find() ? parseLongWithSuffix(trimmedValue, matcher.group(1)) : null;
+        for (int i = 0; i < KBYTES_SUFFIXES.length && result == null; i++) {
+            result = parseLongWithSuffix(trimmedValue, KBYTES_SUFFIXES[i]);
+        }
+
+        return result;
     }
 
     /**
