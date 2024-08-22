@@ -243,6 +243,17 @@ public class FFmpegTest {
 
     @Test
     public void testFrameCountingWithStreamCopyAndProgressListener() throws Exception {
+        final AtomicBoolean ffmpegHasStreamCopyBug = new AtomicBoolean(false);
+
+        final OutputListener outputListener = message -> {
+            // Don't check the frame count in at FFmpeg 6.1.x and 7.0.x due to a stream copy bug,
+            // which is addressed on the master branch, see:
+            // https://github.com/FFmpeg/FFmpeg/commit/598f541ba49cb682dcd74e86858c9a4985149e1f
+            if (message.contains("ffmpeg version 6.1") || message.contains("ffmpeg version 7.0")) {
+                ffmpegHasStreamCopyBug.set(true);
+            }
+        };
+
         final AtomicReference<Long> frameRef = new AtomicReference<>();
 
         final ProgressListener progressListener = new ProgressListener() {
@@ -256,12 +267,15 @@ public class FFmpegTest {
         final FFmpegResult result = FFmpeg.atPath(Config.FFMPEG_BIN)
                 .addInput(UrlInput.fromPath(Artifacts.VIDEO_NUT))
                 .addOutput(new NullOutput())
+                .setOutputListener(outputListener)
                 .setProgressListener(progressListener)
                 .execute();
 
-        // Fails in FFmpeg 6.1, 6.1.1, 6.1.2, 7.0, 7.0.1, 7.0.2. To be fixed in the next release, see:
-        // https://github.com/FFmpeg/FFmpeg/commit/598f541ba49cb682dcd74e86858c9a4985149e1f
-        assertNotNull(frameRef.get());
+        if (ffmpegHasStreamCopyBug.get()) {
+            LOGGER.warn("Detected buggy FFmpeg version, frame count not checked");
+        } else {
+            assertNotNull(frameRef.get());
+        }
     }
 
     @Test
