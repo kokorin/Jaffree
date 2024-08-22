@@ -63,15 +63,12 @@ public class ParseUtilTest {
     }
 
     @Test
-    public void parseOldKibiByteFormats() {
-        final Long value = ParseUtil.parseSizeInKibiBytes("2904kB");
-        Assert.assertEquals(2904L, value.longValue());
-    }
+    public void parseKibiByteFormats() {
+        final Long oldFormat = ParseUtil.parseSizeInKibiBytes("2904kB");
+        Assert.assertEquals(2904L, oldFormat.longValue());
 
-    @Test
-    public void parseNewKibiByteFormats() {
-        final Long value = ParseUtil.parseSizeInKibiBytes("2904KiB");
-        Assert.assertEquals(2904L, value.longValue());
+        final Long newFormat = ParseUtil.parseSizeInKibiBytes("2904KiB");
+        Assert.assertEquals(2904L, newFormat.longValue());
     }
 
     @Test
