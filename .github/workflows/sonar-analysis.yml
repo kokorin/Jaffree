@@ -33,8 +33,8 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          distribution: 'adopt'
-          java-version: 17
+          distribution: 'temurin'
+          java-version: 21
 
       - name: Install ffmpeg on Ubuntu
         run: sudo apt-get update && sudo apt-get install -y ffmpeg && ffmpeg -version
