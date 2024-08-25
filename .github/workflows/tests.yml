@@ -60,7 +60,7 @@ jobs:
           ffmpeg-version: release
           linking-type: static
 
-      - run: ffmpeg --version
+      - run: ffmpeg -version
 
       - name: Build and test
         run: ./mvnw clean package -B
