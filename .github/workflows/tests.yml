@@ -25,8 +25,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ ubuntu-latest, macos-latest, windows-latest ]
-        java-version: [ 8, 11, 17 ]
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
       fail-fast: false
 
     steps:
@@ -35,8 +37,8 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          distribution: 'adopt'
-          java-version: ${{ matrix.java-version }}
+          distribution: 'temurin'
+          java-version: 21
 
       - name: Cache Maven Packages
         uses: actions/cache@v3
@@ -56,28 +58,21 @@ jobs:
           key: ${{ runner.os }}-artifacts-${{ hashFiles('**/Artifacts.java') }}
 
       - name: Install ffmpeg on Ubuntu
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg && ffmpeg -version
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
         if: startsWith(matrix.os, 'ubuntu')
-
+  
       - name: Install ffmpeg on MacOS
-        run: brew install ffmpeg && ls -lhtr /usr/local/opt/ffmpeg/ && ffmpeg -version
+        run: brew install ffmpeg
         if: startsWith(matrix.os, 'macos')
 
       - name: Install ffmpeg on Windows
-        run: choco install ffmpeg && ffmpeg -version
+        run: choco install ffmpeg
         if: startsWith(matrix.os, 'windows')
 
-      - name: Build on Ubuntu
-        run: bash mvnw clean package -B
-        if: startsWith(matrix.os, 'ubuntu')
+      - run: ffmpeg -version
 
-      - name: Build on MacOS
-        run: bash mvnw clean package -B
-        if: startsWith(matrix.os, 'macos')
-
-      - name: Build on Windows
+      - name: Build and test
         run: ./mvnw clean package -B
-        if: startsWith(matrix.os, 'windows')
 
   test-release:
     runs-on: ubuntu-latest
@@ -87,8 +82,8 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          distribution: 'adopt'
-          java-version: 11
+          distribution: 'temurin'
+          java-version: 21
 
       - name: Set up RANDOM GPG key
         run: gpg --quick-generate-key --batch  --passphrase '' test42
