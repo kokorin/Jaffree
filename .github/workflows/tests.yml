@@ -63,7 +63,7 @@ jobs:
         if: startsWith(matrix.os, 'macos')
 
       - name: Install ffmpeg on Windows
-        run: winget install ffmpeg --accept-package-agreements
+        run: choco install ffmpeg
         if: startsWith(matrix.os, 'windows')
 
       - run: ffmpeg -version
