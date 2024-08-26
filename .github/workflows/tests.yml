@@ -54,11 +54,17 @@ jobs:
             .artifacts
           key: ${{ runner.os }}-artifacts-${{ hashFiles('**/Artifacts.java') }}
 
-      - uses: FedericoCarboni/setup-ffmpeg@v3
-        id: setup-ffmpeg
-        with:
-          ffmpeg-version: release
-          linking-type: static
+      - name: Install ffmpeg on Ubuntu
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+        if: startsWith(matrix.os, 'ubuntu')
+  
+      - name: Install ffmpeg on MacOS
+        run: brew install ffmpeg
+        if: startsWith(matrix.os, 'macos')
+
+      - name: Install ffmpeg on Windows
+        run: winget install ffmpeg --accept-package-agreements
+        if: startsWith(matrix.os, 'windows')
 
       - run: ffmpeg -version
 
