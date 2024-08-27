@@ -41,7 +41,7 @@ jobs:
           java-version: 21
 
       - name: Cache Maven Packages
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           # be careful not to include ~/.m2/settings.xml which contains credentials
           path: |
@@ -51,7 +51,7 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
 
       - name: Cache Test Artifacts
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             .artifacts
@@ -88,7 +88,7 @@ jobs:
       - name: Set up RANDOM GPG key
         run: gpg --quick-generate-key --batch  --passphrase '' test42
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           # be careful not to include ~/.m2/settings.xml which contains credentials
           path: |
