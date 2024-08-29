@@ -24,7 +24,7 @@ jobs:
           distribution: 'temurin'
           java-version: 21
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           # be careful not to include ~/.m2/settings.xml which contains credentials
           path: |
