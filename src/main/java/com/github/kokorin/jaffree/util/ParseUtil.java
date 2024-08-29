@@ -30,8 +30,7 @@ import java.util.Map;
  */
 @SuppressWarnings("checkstyle:MagicNumber")
 public final class ParseUtil {
-
-    private static final String KBYTES_SUFFIX = "kB";
+    private static final String[] KBYTES_SUFFIXES = {"kB", "KiB"};
     private static final String KBITS_PER_SECOND_SUFFIX = "kbits/s";
     private static final String SPEED_SUFFIX = "x";
     private static final String PERCENT_SUFFIX = "%";
@@ -78,33 +77,40 @@ public final class ParseUtil {
     }
 
     /**
-     * Parses size in kilobytes without exception.
+     * Parses size in kibibytes without exception.
      *
      * @param value string to parse
      * @return parsed long or null if value can't be parsed
      */
     public static Long parseSizeInBytes(final String value) {
-        Long result = parseSizeInKiloBytes(value);
+        Long result = parseSizeInKibiBytes(value);
 
         if (result == null) {
             return null;
         }
 
-        return result * 1000;
+        return result * 1024;
     }
 
     /**
-     * Parses size in kilobytes without exception.
+     * Parses size in kibibytes without exception.
      *
      * @param value string to parse
      * @return parsed long or null if value can't be parsed
      */
-    public static Long parseSizeInKiloBytes(final String value) {
+    public static Long parseSizeInKibiBytes(final String value) {
         if (value == null || value.isEmpty()) {
             return null;
         }
 
-        return parseLongWithSuffix(value.trim(), KBYTES_SUFFIX);
+        final String trimmedValue = value.trim();
+        Long result = null;
+
+        for (int i = 0; i < KBYTES_SUFFIXES.length && result == null; i++) {
+            result = parseLongWithSuffix(trimmedValue, KBYTES_SUFFIXES[i]);
+        }
+
+        return result;
     }
 
     /**

@@ -43,6 +43,7 @@ import static java.nio.file.StandardOpenOption.WRITE;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -238,6 +239,43 @@ public class FFmpegTest {
                 .setProgressListener(progressListener)
                 .addOutput(UrlOutput.toPath(outputPath))
                 .execute();
+    }
+
+    @Test
+    public void testFrameCountingWithStreamCopyAndProgressListener() throws Exception {
+        final AtomicBoolean ffmpegHasStreamCopyBug = new AtomicBoolean(false);
+
+        final OutputListener outputListener = message -> {
+            // Don't check the frame count in at FFmpeg 6.1.x and 7.0.x due to a stream copy bug,
+            // which is addressed on the master branch, see:
+            // https://github.com/FFmpeg/FFmpeg/commit/598f541ba49cb682dcd74e86858c9a4985149e1f
+            if (message.contains("ffmpeg version 6.1") || message.contains("ffmpeg version 7.0")) {
+                ffmpegHasStreamCopyBug.set(true);
+            }
+        };
+
+        final AtomicReference<Long> frameRef = new AtomicReference<>();
+
+        final ProgressListener progressListener = new ProgressListener() {
+            @Override
+            public void onProgress(FFmpegProgress progress) {
+                System.out.println(progress);
+                frameRef.set(progress.getFrame());
+            }
+        };
+
+        final FFmpegResult result = FFmpeg.atPath(Config.FFMPEG_BIN)
+                .addInput(UrlInput.fromPath(Artifacts.VIDEO_NUT))
+                .addOutput(new NullOutput())
+                .setOutputListener(outputListener)
+                .setProgressListener(progressListener)
+                .execute();
+
+        if (ffmpegHasStreamCopyBug.get()) {
+            LOGGER.warn("Detected buggy FFmpeg version, frame count not checked");
+        } else {
+            assertNotNull(frameRef.get());
+        }
     }
 
     @Test
@@ -519,14 +557,24 @@ public class FFmpegTest {
                 .addOutput(new NullOutput())
                 .execute();
         } catch (JaffreeAbnormalExitException e) {
-            assertEquals("Process execution has ended with non-zero status: 1. Check logs for detailed error message.", e.getMessage());
-            assertEquals(1, e.getProcessErrorLogMessages().size());
-            assertEquals("[error] non_existent.mp4: No such file or directory", e.getProcessErrorLogMessages().get(0).message);
+            if ("Process execution has ended with non-zero status: 254. Check logs for detailed error message.".equals(e.getMessage())) {
+                // FFmpeg 6+
+                assertEquals(3, e.getProcessErrorLogMessages().size());
+                assertEquals("[error] Error opening input file non_existent.mp4.", e.getProcessErrorLogMessages().get(1).message);
+            } else if ("Process execution has ended with non-zero status: -2. Check logs for detailed error message.".equals(e.getMessage())) {
+                // FFmpeg 7
+                assertEquals(3, e.getProcessErrorLogMessages().size());
+                assertEquals("[error] Error opening input file non_existent.mp4.", e.getProcessErrorLogMessages().get(1).message);
+            } else if ("Process execution has ended with non-zero status: 1. Check logs for detailed error message.".equals(e.getMessage())) {
+                assertEquals(1, e.getProcessErrorLogMessages().size());
+                assertEquals("[error] non_existent.mp4: No such file or directory", e.getProcessErrorLogMessages().get(0).message);
+            } else {
+                fail("Unknown FFmpeg output format (update test code!): " + e.getMessage());
+            }
             return;
         }
 
         fail("JaffreeAbnormalExitException should have been thrown!");
-
     }
 
     @Test
