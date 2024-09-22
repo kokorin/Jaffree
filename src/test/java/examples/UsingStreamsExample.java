@@ -1,8 +1,8 @@
 package examples;
 
 import com.github.kokorin.jaffree.ffmpeg.FFmpeg;
-import com.github.kokorin.jaffree.ffmpeg.PipeInput;
-import com.github.kokorin.jaffree.ffmpeg.PipeOutput;
+import com.github.kokorin.jaffree.ffmpeg.input.PipeInput;
+import com.github.kokorin.jaffree.ffmpeg.output.PipeOutput;
 
 import java.io.InputStream;
 import java.io.OutputStream;

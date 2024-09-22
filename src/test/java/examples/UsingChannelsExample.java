@@ -1,7 +1,7 @@
 package examples;
 
-import com.github.kokorin.jaffree.ffmpeg.ChannelInput;
-import com.github.kokorin.jaffree.ffmpeg.ChannelOutput;
+import com.github.kokorin.jaffree.ffmpeg.input.ChannelInput;
+import com.github.kokorin.jaffree.ffmpeg.output.ChannelOutput;
 import com.github.kokorin.jaffree.ffmpeg.FFmpeg;
 
 import java.nio.channels.SeekableByteChannel;

@@ -19,6 +19,19 @@ package com.github.kokorin.jaffree.ffmpeg;
 
 import com.github.kokorin.jaffree.LogLevel;
 import com.github.kokorin.jaffree.StreamType;
+import com.github.kokorin.jaffree.ffmpeg.filter.Filter;
+import com.github.kokorin.jaffree.ffmpeg.filter.FilterChain;
+import com.github.kokorin.jaffree.ffmpeg.filter.FilterGraph;
+import com.github.kokorin.jaffree.ffmpeg.input.ChannelInput;
+import com.github.kokorin.jaffree.ffmpeg.input.FrameInput;
+import com.github.kokorin.jaffree.ffmpeg.input.Input;
+import com.github.kokorin.jaffree.ffmpeg.input.PipeInput;
+import com.github.kokorin.jaffree.ffmpeg.input.UrlInput;
+import com.github.kokorin.jaffree.ffmpeg.output.ChannelOutput;
+import com.github.kokorin.jaffree.ffmpeg.output.FrameOutput;
+import com.github.kokorin.jaffree.ffmpeg.output.Output;
+import com.github.kokorin.jaffree.ffmpeg.output.PipeOutput;
+import com.github.kokorin.jaffree.ffmpeg.output.UrlOutput;
 import com.github.kokorin.jaffree.net.NegotiatingTcpServer;
 import com.github.kokorin.jaffree.process.LoggingStdReader;
 import com.github.kokorin.jaffree.process.ProcessHandler;
@@ -38,6 +51,8 @@ import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+
+import static com.github.kokorin.jaffree.ffmpeg.Args.toArguments;
 
 /**
  * {@link FFmpeg} provides an ability to start &amp; stop ffmpeg process and keep track of
@@ -614,7 +629,7 @@ public class FFmpeg {
             result.addAll(Arrays.asList("-filter_complex", complexFilter));
         }
 
-        result.addAll(BaseInOut.toArguments("-filter", filters));
+        result.addAll(toArguments("-filter", filters));
 
         result.addAll(additionalArguments);
 

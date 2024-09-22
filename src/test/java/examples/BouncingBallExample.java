@@ -2,11 +2,11 @@ package examples;
 
 import com.github.kokorin.jaffree.ffmpeg.FFmpeg;
 import com.github.kokorin.jaffree.ffmpeg.FFmpegResult;
-import com.github.kokorin.jaffree.ffmpeg.Frame;
-import com.github.kokorin.jaffree.ffmpeg.FrameInput;
-import com.github.kokorin.jaffree.ffmpeg.FrameProducer;
+import com.github.kokorin.jaffree.ffmpeg.io.Frame;
+import com.github.kokorin.jaffree.ffmpeg.input.FrameInput;
+import com.github.kokorin.jaffree.ffmpeg.input.FrameProducer;
 import com.github.kokorin.jaffree.ffmpeg.Stream;
-import com.github.kokorin.jaffree.ffmpeg.UrlOutput;
+import com.github.kokorin.jaffree.ffmpeg.output.UrlOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

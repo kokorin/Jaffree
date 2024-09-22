@@ -1,20 +1,15 @@
 package examples;
 
 import com.github.kokorin.jaffree.ffmpeg.FFmpeg;
-import com.github.kokorin.jaffree.ffmpeg.FFmpegResult;
-import com.github.kokorin.jaffree.ffmpeg.Frame;
-import com.github.kokorin.jaffree.ffmpeg.FrameInput;
-import com.github.kokorin.jaffree.ffmpeg.FrameProducer;
+import com.github.kokorin.jaffree.ffmpeg.io.Frame;
+import com.github.kokorin.jaffree.ffmpeg.input.FrameInput;
+import com.github.kokorin.jaffree.ffmpeg.input.FrameProducer;
 import com.github.kokorin.jaffree.ffmpeg.Stream;
-import com.github.kokorin.jaffree.ffmpeg.UrlOutput;
+import com.github.kokorin.jaffree.ffmpeg.output.UrlOutput;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 public class ProduceVideoExample {
