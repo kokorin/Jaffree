@@ -40,13 +40,13 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y ffmpeg && ffmpeg -version
 
       - name: Cache SonarCloud packages
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           # be careful not to include ~/.m2/settings.xml which contains credentials
           path: |
